@@ -1,6 +1,6 @@
-## Install Gaia
+## Install Zar
 
-This guide will explain how to install the `gaiad` and `gaiacli` entrypoints onto your system. With these installed on a server, you can participate in the mainnet as either a [Full Node](./join-mainnet.md) or a [Validator](./validators/validator-setup.md).
+This guide will explain how to install the `zard` and `zarcli` entrypoints onto your system. With these installed on a server, you can participate in the mainnet as either a [Full Node](./join-mainnet.md) or a [Validator](./validators/validator-setup.md).
 
 ### Install Go
 
@@ -19,23 +19,23 @@ source ~/.bash_profile
 
 ### Install the binaries
 
-Next, let's install the latest version of Gaia. Make sure you `git checkout` the correct [released version](https://github.com/cosmos/gaia/releases).
+Next, let's install the latest version of Zar. Make sure you `git checkout` the correct [released version](https://github.com/zar-network/zar-network/releases).
 
 ```bash
-git clone -b <latest-release-tag> https://github.com/cosmos/gaia
-cd gaia && make install
+git clone -b <latest-release-tag> https://github.com/zar-network/zar-network
+cd zar && make install
 ```
 
 > _NOTE_: If you have issues at this step, please check that you have the latest stable version of GO installed.
 
-That will install the `gaiad` and `gaiacli` binaries. Verify that everything is OK:
+That will install the `zard` and `zarcli` binaries. Verify that everything is OK:
 
 ```bash
-$ gaiad version --long
-$ gaiacli version --long
+$ zard version --long
+$ zarcli version --long
 ```
 
-`gaiacli` for instance should output something similar to:
+`zarcli` for instance should output something similar to:
 
 ```
 cosmos-sdk: 0.33.0
@@ -62,7 +62,7 @@ Build tags indicate special features that have been enabled in the binary.
 To test any changes made in the SDK or Tendermint, a `replace` clause needs to be added to `go.mod` providing the correct import path.
 
 - Make appropriate changes
-- Add `replace github.com/cosmos/cosmos-sdk => /path/to/clone/cosmos-sdk` to `go.mod`
+- Add `replace github.com/Fantom-foundation/cosmos-sdk => /path/to/clone/cosmos-sdk` to `go.mod`
 - Run `make clean install` or `make clean build`
 - Test changes
 

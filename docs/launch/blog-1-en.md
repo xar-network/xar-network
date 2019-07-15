@@ -18,7 +18,7 @@ Atoms. Please read through the entire guide first to familiarize yourself
 before you actually do anything: [CLI guide][cli]
 
 The process outlined in the guide is currently the only verified and secure way
-to delegate Atoms at launch. This is because the gaiacli tool used in the guide
+to delegate Atoms at launch. This is because the zarcli tool used in the guide
 is the only wallet software undergoing third-party security audits right now.
 No other wallet providers have begun security audits yet.
 
@@ -65,7 +65,7 @@ launch RC][rc]. Once this RC is completed, the Cosmos-SDK team will engage in a
 round of internal bug hunting to further ensure sufficient pre-launch security
 due diligence.
 
-Right after Cosmos-SDK v0.31.0 is released, a Gaia testnet will be released in
+Right after Cosmos-SDK v0.31.0 is released, a Zar testnet will be released in
 an effort to flush out any hard to find bugs.
 
 ### 3 Game of Stakes Completed
@@ -138,9 +138,9 @@ reduce or eliminate the risk of key or credential theft.
 Cosmos mainnet launch:**
 
 - Download software directly from official sources, and make sure that you’re
-  always using the latest, most secure version of gaiacli when you’re doing
+  always using the latest, most secure version of zarcli when you’re doing
   anything that involves your 12 words. The latest versions of Tendermint, the
-  Cosmos-SDK, and gaiacli will always be available from our official GitHub
+  Cosmos-SDK, and zarcli will always be available from our official GitHub
   repositories, and downloading them from there ensures that you will not be
   tricked into using a maliciously modified version of software.
 
@@ -199,14 +199,14 @@ accounts to communicate important news directly to the Cosmos community.*
 
 [whitepaper]: https://cosmos.network/resources/whitepaper
 [fundraiser]: https://fundraiser.cosmos.network/
-[releases]: https://github.com/cosmos/cosmos-sdk/releases
+[releases]: https://github.com/Fantom-foundation/cosmos-sdk/releases
 [cosmos]: https://cosmos.network/launch
 [social]: https://en.wikipedia.org/wiki/Social_engineering_%28security%29
 [phishing]: https://ssd.eff.org/en/module/how-avoid-phishing-attacks
 [spearphishing]: https://en.wikipedia.org/wiki/Phishing#Spear_phishing
 [inbox]: https://www.umass.edu/it/security/phishing-fraudulent-emails-text-messages-phone-calls
 [opportunities]: https://jia.sipa.columbia.edu/weaponization-social-media-spear-phishing-and-cyberattacks-democracy
-[cli]: https://github.com/cosmos/cosmos-sdk/blob/develop/docs/gaia/delegator-guide-cli.md
+[cli]: https://github.com/Fantom-foundation/cosmos-sdk/blob/develop/docs/zar/delegator-guide-cli.md
 [webinar]: https://register.gotowebinar.com/register/5028753165739687691
 [terms]: https://github.com/cosmos/cosmos/blob/master/fundraiser/Interchain%20Cosmos%20Contribution%20Terms%20-%20FINAL.pdf
 [apache]: https://www.apache.org/licenses/LICENSE-2.0
@@ -217,6 +217,6 @@ accounts to communicate important news directly to the Cosmos community.*
 [riot]: https://riot.im/app/#/group/+cosmos:matrix.org
 [telegram]: http://t.me/cosmosproject
 [good]: https://www.psychologytoday.com/us/blog/mind-in-the-machine/201712/how-fear-is-being-used-manipulate-cryptocurrency-markets
-[rc]: https://github.com/cosmos/cosmos-sdk/projects/27
+[rc]: https://github.com/Fantom-foundation/cosmos-sdk/projects/27
 [compromised site]: https://blog.malwarebytes.com/cybercrime/2013/02/tools-of-the-trade-exploit-kits/
 [quiz]: https://phishingquiz.withgoogle.com/

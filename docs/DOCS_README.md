@@ -1,14 +1,14 @@
 # Updating the docs
 
-If you want to open a PR on Gaia to update the documentation, please follow the guidelines in the [`CONTRIBUTING.md`](https://github.com/cosmos/gaia/tree/master/CONTRIBUTING.md)
+If you want to open a PR on Zar to update the documentation, please follow the guidelines in the [`CONTRIBUTING.md`](https://github.com/zar-network/zar-network/tree/master/CONTRIBUTING.md)
 
 ## Docs Build Workflow
 
-The documentation for Gaia is hosted at:
+The documentation for Zar is hosted at:
 
 - https://hub.cosmos.network/docs/ 
 
-built from the files in this (`/docs`) directory for [master](https://github.com/cosmos/gaia/tree/master/docs)
+built from the files in this (`/docs`) directory for [master](https://github.com/zar-network/zar-network/tree/master/docs)
 
 
 ### How It Works
@@ -94,9 +94,9 @@ then navigate to localhost:8080 in your browser.
 
 First, run `make tools` from the root of repo, to install the swagger-ui tool.
 
-Then, edit the `swagger.yaml` manually; it is found [here](https://github.com/cosmos/gaia/blob/master/cmd/gaiacli/swagger-ui/swagger.yaml)
+Then, edit the `swagger.yaml` manually; it is found [here](https://github.com/zar-network/zar-network/blob/master/cmd/zarcli/swagger-ui/swagger.yaml)
 
-Finally, run `make update-gaia-lite-docs` from the root of the repo.
+Finally, run `make update-zar-lite-docs` from the root of the repo.
 
 ## Search
 
@@ -114,10 +114,10 @@ much as possible with its [counterpart in the Tendermint Core repo](https://gith
     make tools
     ```
 2. Edit API docs
-    1. Directly Edit API docs manually: `cmd/gaiacli/swagger-ui/swagger.yaml`.
+    1. Directly Edit API docs manually: `cmd/zarcli/swagger-ui/swagger.yaml`.
     2. Edit API docs within the [Swagger Editor](https://editor.swagger.io/). Please refer to this [document](https://swagger.io/docs/specification/2-0/basic-structure/) for the correct structure in `.yaml`.
-3. Download `swagger.yaml` and replace the old `swagger.yaml` under fold `cmd/gaiacli/swagger-ui`.
-4. Compile gaiacli
+3. Download `swagger.yaml` and replace the old `swagger.yaml` under fold `cmd/zarcli/swagger-ui`.
+4. Compile zarcli
     ```bash
     make install
     ```

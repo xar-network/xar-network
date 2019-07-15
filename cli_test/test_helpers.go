@@ -10,27 +10,27 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/Fantom-foundation/cosmos-sdk/client"
 
 	"github.com/stretchr/testify/require"
 
 	cmn "github.com/tendermint/tendermint/libs/common"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/cosmos/gaia/app"
+	"github.com/zar-network/zar-network/app"
 
-	clientkeys "github.com/cosmos/cosmos-sdk/client/keys"
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/keys"
-	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/simapp"
-	"github.com/cosmos/cosmos-sdk/tests"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/distribution"
-	"github.com/cosmos/cosmos-sdk/x/gov"
-	"github.com/cosmos/cosmos-sdk/x/slashing"
-	"github.com/cosmos/cosmos-sdk/x/staking"
+	clientkeys "github.com/Fantom-foundation/cosmos-sdk/client/keys"
+	"github.com/Fantom-foundation/cosmos-sdk/codec"
+	"github.com/Fantom-foundation/cosmos-sdk/crypto/keys"
+	"github.com/Fantom-foundation/cosmos-sdk/server"
+	"github.com/Fantom-foundation/cosmos-sdk/simapp"
+	"github.com/Fantom-foundation/cosmos-sdk/tests"
+	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
+	"github.com/Fantom-foundation/cosmos-sdk/x/auth"
+	"github.com/Fantom-foundation/cosmos-sdk/x/distribution"
+	"github.com/Fantom-foundation/cosmos-sdk/x/gov"
+	"github.com/Fantom-foundation/cosmos-sdk/x/slashing"
+	"github.com/Fantom-foundation/cosmos-sdk/x/staking"
 )
 
 const (
@@ -72,20 +72,20 @@ var (
 type Fixtures struct {
 	BuildDir      string
 	RootDir       string
-	GaiadBinary   string
-	GaiacliBinary string
+	ZardBinary   string
+	ZarcliBinary string
 	ChainID       string
 	RPCAddr       string
 	Port          string
-	GaiadHome     string
-	GaiacliHome   string
+	ZardHome     string
+	ZarcliHome   string
 	P2PAddr       string
 	T             *testing.T
 }
 
 // NewFixtures creates a new instance of Fixtures with many vars set
 func NewFixtures(t *testing.T) *Fixtures {
-	tmpDir, err := ioutil.TempDir("", "gaia_integration_"+t.Name()+"_")
+	tmpDir, err := ioutil.TempDir("", "zar_integration_"+t.Name()+"_")
 	require.NoError(t, err)
 
 	servAddr, port, err := server.FreeTCPAddr()
@@ -104,10 +104,10 @@ func NewFixtures(t *testing.T) *Fixtures {
 		T:             t,
 		BuildDir:      buildDir,
 		RootDir:       tmpDir,
-		GaiadBinary:   filepath.Join(buildDir, "gaiad"),
-		GaiacliBinary: filepath.Join(buildDir, "gaiacli"),
-		GaiadHome:     filepath.Join(tmpDir, ".gaiad"),
-		GaiacliHome:   filepath.Join(tmpDir, ".gaiacli"),
+		ZardBinary:   filepath.Join(buildDir, "zard"),
+		ZarcliBinary: filepath.Join(buildDir, "zarcli"),
+		ZardHome:     filepath.Join(tmpDir, ".zard"),
+		ZarcliHome:   filepath.Join(tmpDir, ".zarcli"),
 		RPCAddr:       servAddr,
 		P2PAddr:       p2pAddr,
 		Port:          port,
@@ -116,7 +116,7 @@ func NewFixtures(t *testing.T) *Fixtures {
 
 // GenesisFile returns the path of the genesis file
 func (f Fixtures) GenesisFile() string {
-	return filepath.Join(f.GaiadHome, "config", "genesis.json")
+	return filepath.Join(f.ZardHome, "config", "genesis.json")
 }
 
 // GenesisFile returns the application's genesis state
@@ -184,24 +184,24 @@ func (f *Fixtures) Cleanup(dirs ...string) {
 
 // Flags returns the flags necessary for making most CLI calls
 func (f *Fixtures) Flags() string {
-	return fmt.Sprintf("--home=%s --node=%s", f.GaiacliHome, f.RPCAddr)
+	return fmt.Sprintf("--home=%s --node=%s", f.ZarcliHome, f.RPCAddr)
 }
 
 //___________________________________________________________________________________
-// gaiad
+// zard
 
-// UnsafeResetAll is gaiad unsafe-reset-all
+// UnsafeResetAll is zard unsafe-reset-all
 func (f *Fixtures) UnsafeResetAll(flags ...string) {
-	cmd := fmt.Sprintf("%s --home=%s unsafe-reset-all", f.GaiadBinary, f.GaiadHome)
+	cmd := fmt.Sprintf("%s --home=%s unsafe-reset-all", f.ZardBinary, f.ZardHome)
 	executeWrite(f.T, addFlags(cmd, flags))
-	err := os.RemoveAll(filepath.Join(f.GaiadHome, "config", "gentx"))
+	err := os.RemoveAll(filepath.Join(f.ZardHome, "config", "gentx"))
 	require.NoError(f.T, err)
 }
 
-// GDInit is gaiad init
+// GDInit is zard init
 // NOTE: GDInit sets the ChainID for the Fixtures instance
 func (f *Fixtures) GDInit(moniker string, flags ...string) {
-	cmd := fmt.Sprintf("%s init -o --home=%s %s", f.GaiadBinary, f.GaiadHome, moniker)
+	cmd := fmt.Sprintf("%s init -o --home=%s %s", f.ZardBinary, f.ZardHome, moniker)
 	_, stderr := tests.ExecuteT(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 
 	var chainID string
@@ -216,78 +216,78 @@ func (f *Fixtures) GDInit(moniker string, flags ...string) {
 	f.ChainID = chainID
 }
 
-// AddGenesisAccount is gaiad add-genesis-account
+// AddGenesisAccount is zard add-genesis-account
 func (f *Fixtures) AddGenesisAccount(address sdk.AccAddress, coins sdk.Coins, flags ...string) {
-	cmd := fmt.Sprintf("%s add-genesis-account %s %s --home=%s", f.GaiadBinary, address, coins, f.GaiadHome)
+	cmd := fmt.Sprintf("%s add-genesis-account %s %s --home=%s", f.ZardBinary, address, coins, f.ZardHome)
 	executeWriteCheckErr(f.T, addFlags(cmd, flags))
 }
 
-// GenTx is gaiad gentx
+// GenTx is zard gentx
 func (f *Fixtures) GenTx(name string, flags ...string) {
-	cmd := fmt.Sprintf("%s gentx --name=%s --home=%s --home-client=%s", f.GaiadBinary, name, f.GaiadHome, f.GaiacliHome)
+	cmd := fmt.Sprintf("%s gentx --name=%s --home=%s --home-client=%s", f.ZardBinary, name, f.ZardHome, f.ZarcliHome)
 	executeWriteCheckErr(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 }
 
-// CollectGenTxs is gaiad collect-gentxs
+// CollectGenTxs is zard collect-gentxs
 func (f *Fixtures) CollectGenTxs(flags ...string) {
-	cmd := fmt.Sprintf("%s collect-gentxs --home=%s", f.GaiadBinary, f.GaiadHome)
+	cmd := fmt.Sprintf("%s collect-gentxs --home=%s", f.ZardBinary, f.ZardHome)
 	executeWriteCheckErr(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 }
 
-// GDStart runs gaiad start with the appropriate flags and returns a process
+// GDStart runs zard start with the appropriate flags and returns a process
 func (f *Fixtures) GDStart(flags ...string) *tests.Process {
-	cmd := fmt.Sprintf("%s start --home=%s --rpc.laddr=%v --p2p.laddr=%v", f.GaiadBinary, f.GaiadHome, f.RPCAddr, f.P2PAddr)
+	cmd := fmt.Sprintf("%s start --home=%s --rpc.laddr=%v --p2p.laddr=%v", f.ZardBinary, f.ZardHome, f.RPCAddr, f.P2PAddr)
 	proc := tests.GoExecuteTWithStdout(f.T, addFlags(cmd, flags))
 	tests.WaitForTMStart(f.Port)
 	tests.WaitForNextNBlocksTM(1, f.Port)
 	return proc
 }
 
-// GDTendermint returns the results of gaiad tendermint [query]
+// GDTendermint returns the results of zard tendermint [query]
 func (f *Fixtures) GDTendermint(query string) string {
-	cmd := fmt.Sprintf("%s tendermint %s --home=%s", f.GaiadBinary, query, f.GaiadHome)
+	cmd := fmt.Sprintf("%s tendermint %s --home=%s", f.ZardBinary, query, f.ZardHome)
 	success, stdout, stderr := executeWriteRetStdStreams(f.T, cmd)
 	require.Empty(f.T, stderr)
 	require.True(f.T, success)
 	return strings.TrimSpace(stdout)
 }
 
-// ValidateGenesis runs gaiad validate-genesis
+// ValidateGenesis runs zard validate-genesis
 func (f *Fixtures) ValidateGenesis() {
-	cmd := fmt.Sprintf("%s validate-genesis --home=%s", f.GaiadBinary, f.GaiadHome)
+	cmd := fmt.Sprintf("%s validate-genesis --home=%s", f.ZardBinary, f.ZardHome)
 	executeWriteCheckErr(f.T, cmd)
 }
 
 //___________________________________________________________________________________
-// gaiacli keys
+// zarcli keys
 
-// KeysDelete is gaiacli keys delete
+// KeysDelete is zarcli keys delete
 func (f *Fixtures) KeysDelete(name string, flags ...string) {
-	cmd := fmt.Sprintf("%s keys delete --home=%s %s", f.GaiacliBinary, f.GaiacliHome, name)
+	cmd := fmt.Sprintf("%s keys delete --home=%s %s", f.ZarcliBinary, f.ZarcliHome, name)
 	executeWrite(f.T, addFlags(cmd, append(append(flags, "-y"), "-f")))
 }
 
-// KeysAdd is gaiacli keys add
+// KeysAdd is zarcli keys add
 func (f *Fixtures) KeysAdd(name string, flags ...string) {
-	cmd := fmt.Sprintf("%s keys add --home=%s %s", f.GaiacliBinary, f.GaiacliHome, name)
+	cmd := fmt.Sprintf("%s keys add --home=%s %s", f.ZarcliBinary, f.ZarcliHome, name)
 	executeWriteCheckErr(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 }
 
-// KeysAddRecover prepares gaiacli keys add --recover
+// KeysAddRecover prepares zarcli keys add --recover
 func (f *Fixtures) KeysAddRecover(name, mnemonic string, flags ...string) (exitSuccess bool, stdout, stderr string) {
-	cmd := fmt.Sprintf("%s keys add --home=%s --recover %s", f.GaiacliBinary, f.GaiacliHome, name)
+	cmd := fmt.Sprintf("%s keys add --home=%s --recover %s", f.ZarcliBinary, f.ZarcliHome, name)
 	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), client.DefaultKeyPass, mnemonic)
 }
 
-// KeysAddRecoverHDPath prepares gaiacli keys add --recover --account --index
+// KeysAddRecoverHDPath prepares zarcli keys add --recover --account --index
 func (f *Fixtures) KeysAddRecoverHDPath(name, mnemonic string, account uint32, index uint32, flags ...string) {
-	cmd := fmt.Sprintf("%s keys add --home=%s --recover %s --account %d --index %d", f.GaiacliBinary, f.GaiacliHome, name, account, index)
+	cmd := fmt.Sprintf("%s keys add --home=%s --recover %s --account %d --index %d", f.ZarcliBinary, f.ZarcliHome, name, account, index)
 	executeWriteCheckErr(f.T, addFlags(cmd, flags), client.DefaultKeyPass, mnemonic)
 }
 
-// KeysShow is gaiacli keys show
+// KeysShow is zarcli keys show
 func (f *Fixtures) KeysShow(name string, flags ...string) keys.KeyOutput {
-	cmd := fmt.Sprintf("%s keys show --home=%s %s", f.GaiacliBinary, f.GaiacliHome, name)
+	cmd := fmt.Sprintf("%s keys show --home=%s %s", f.ZarcliBinary, f.ZarcliHome, name)
 	out, _ := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	var ko keys.KeyOutput
 	err := clientkeys.UnmarshalJSON([]byte(out), &ko)
@@ -304,88 +304,88 @@ func (f *Fixtures) KeyAddress(name string) sdk.AccAddress {
 }
 
 //___________________________________________________________________________________
-// gaiacli config
+// zarcli config
 
-// CLIConfig is gaiacli config
+// CLIConfig is zarcli config
 func (f *Fixtures) CLIConfig(key, value string, flags ...string) {
-	cmd := fmt.Sprintf("%s config --home=%s %s %s", f.GaiacliBinary, f.GaiacliHome, key, value)
+	cmd := fmt.Sprintf("%s config --home=%s %s %s", f.ZarcliBinary, f.ZarcliHome, key, value)
 	executeWriteCheckErr(f.T, addFlags(cmd, flags))
 }
 
 //___________________________________________________________________________________
-// gaiacli tx send/sign/broadcast
+// zarcli tx send/sign/broadcast
 
-// TxSend is gaiacli tx send
+// TxSend is zarcli tx send
 func (f *Fixtures) TxSend(from string, to sdk.AccAddress, amount sdk.Coin, flags ...string) (bool, string, string) {
-	cmd := fmt.Sprintf("%s tx send %s %s %s %v", f.GaiacliBinary, from, to, amount, f.Flags())
+	cmd := fmt.Sprintf("%s tx send %s %s %s %v", f.ZarcliBinary, from, to, amount, f.Flags())
 	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 }
 
-// TxSign is gaiacli tx sign
+// TxSign is zarcli tx sign
 func (f *Fixtures) TxSign(signer, fileName string, flags ...string) (bool, string, string) {
-	cmd := fmt.Sprintf("%s tx sign %v --from=%s %v", f.GaiacliBinary, f.Flags(), signer, fileName)
+	cmd := fmt.Sprintf("%s tx sign %v --from=%s %v", f.ZarcliBinary, f.Flags(), signer, fileName)
 	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 }
 
-// TxBroadcast is gaiacli tx broadcast
+// TxBroadcast is zarcli tx broadcast
 func (f *Fixtures) TxBroadcast(fileName string, flags ...string) (bool, string, string) {
-	cmd := fmt.Sprintf("%s tx broadcast %v %v", f.GaiacliBinary, f.Flags(), fileName)
+	cmd := fmt.Sprintf("%s tx broadcast %v %v", f.ZarcliBinary, f.Flags(), fileName)
 	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 }
 
-// TxEncode is gaiacli tx encode
+// TxEncode is zarcli tx encode
 func (f *Fixtures) TxEncode(fileName string, flags ...string) (bool, string, string) {
-	cmd := fmt.Sprintf("%s tx encode %v %v", f.GaiacliBinary, f.Flags(), fileName)
+	cmd := fmt.Sprintf("%s tx encode %v %v", f.ZarcliBinary, f.Flags(), fileName)
 	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 }
 
-// TxMultisign is gaiacli tx multisign
+// TxMultisign is zarcli tx multisign
 func (f *Fixtures) TxMultisign(fileName, name string, signaturesFiles []string,
 	flags ...string) (bool, string, string) {
 
-	cmd := fmt.Sprintf("%s tx multisign %v %s %s %s", f.GaiacliBinary, f.Flags(),
+	cmd := fmt.Sprintf("%s tx multisign %v %s %s %s", f.ZarcliBinary, f.Flags(),
 		fileName, name, strings.Join(signaturesFiles, " "),
 	)
 	return executeWriteRetStdStreams(f.T, cmd)
 }
 
 //___________________________________________________________________________________
-// gaiacli tx staking
+// zarcli tx staking
 
-// TxStakingCreateValidator is gaiacli tx staking create-validator
+// TxStakingCreateValidator is zarcli tx staking create-validator
 func (f *Fixtures) TxStakingCreateValidator(from, consPubKey string, amount sdk.Coin, flags ...string) (bool, string, string) {
-	cmd := fmt.Sprintf("%s tx staking create-validator %v --from=%s --pubkey=%s", f.GaiacliBinary, f.Flags(), from, consPubKey)
+	cmd := fmt.Sprintf("%s tx staking create-validator %v --from=%s --pubkey=%s", f.ZarcliBinary, f.Flags(), from, consPubKey)
 	cmd += fmt.Sprintf(" --amount=%v --moniker=%v --commission-rate=%v", amount, from, "0.05")
 	cmd += fmt.Sprintf(" --commission-max-rate=%v --commission-max-change-rate=%v", "0.20", "0.10")
 	cmd += fmt.Sprintf(" --min-self-delegation=%v", "1")
 	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 }
 
-// TxStakingUnbond is gaiacli tx staking unbond
+// TxStakingUnbond is zarcli tx staking unbond
 func (f *Fixtures) TxStakingUnbond(from, shares string, validator sdk.ValAddress, flags ...string) bool {
-	cmd := fmt.Sprintf("%s tx staking unbond %s %v --from=%s %v", f.GaiacliBinary, validator, shares, from, f.Flags())
+	cmd := fmt.Sprintf("%s tx staking unbond %s %v --from=%s %v", f.ZarcliBinary, validator, shares, from, f.Flags())
 	return executeWrite(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 }
 
 //___________________________________________________________________________________
-// gaiacli tx gov
+// zarcli tx gov
 
-// TxGovSubmitProposal is gaiacli tx gov submit-proposal
+// TxGovSubmitProposal is zarcli tx gov submit-proposal
 func (f *Fixtures) TxGovSubmitProposal(from, typ, title, description string, deposit sdk.Coin, flags ...string) (bool, string, string) {
-	cmd := fmt.Sprintf("%s tx gov submit-proposal %v --from=%s --type=%s", f.GaiacliBinary, f.Flags(), from, typ)
+	cmd := fmt.Sprintf("%s tx gov submit-proposal %v --from=%s --type=%s", f.ZarcliBinary, f.Flags(), from, typ)
 	cmd += fmt.Sprintf(" --title=%s --description=%s --deposit=%s", title, description, deposit)
 	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 }
 
-// TxGovDeposit is gaiacli tx gov deposit
+// TxGovDeposit is zarcli tx gov deposit
 func (f *Fixtures) TxGovDeposit(proposalID int, from string, amount sdk.Coin, flags ...string) (bool, string, string) {
-	cmd := fmt.Sprintf("%s tx gov deposit %d %s --from=%s %v", f.GaiacliBinary, proposalID, amount, from, f.Flags())
+	cmd := fmt.Sprintf("%s tx gov deposit %d %s --from=%s %v", f.ZarcliBinary, proposalID, amount, from, f.Flags())
 	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 }
 
-// TxGovVote is gaiacli tx gov vote
+// TxGovVote is zarcli tx gov vote
 func (f *Fixtures) TxGovVote(proposalID int, option gov.VoteOption, from string, flags ...string) (bool, string, string) {
-	cmd := fmt.Sprintf("%s tx gov vote %d %s --from=%s %v", f.GaiacliBinary, proposalID, option, from, f.Flags())
+	cmd := fmt.Sprintf("%s tx gov vote %d %s --from=%s %v", f.ZarcliBinary, proposalID, option, from, f.Flags())
 	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 }
 
@@ -397,7 +397,7 @@ func (f *Fixtures) TxGovSubmitParamChangeProposal(
 
 	cmd := fmt.Sprintf(
 		"%s tx gov submit-proposal param-change %s --from=%s %v",
-		f.GaiacliBinary, proposalPath, from, f.Flags(),
+		f.ZarcliBinary, proposalPath, from, f.Flags(),
 	)
 
 	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
@@ -411,18 +411,18 @@ func (f *Fixtures) TxGovSubmitCommunityPoolSpendProposal(
 
 	cmd := fmt.Sprintf(
 		"%s tx gov submit-proposal community-pool-spend %s --from=%s %v",
-		f.GaiacliBinary, proposalPath, from, f.Flags(),
+		f.ZarcliBinary, proposalPath, from, f.Flags(),
 	)
 
 	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
 }
 
 //___________________________________________________________________________________
-// gaiacli query account
+// zarcli query account
 
-// QueryAccount is gaiacli query account
+// QueryAccount is zarcli query account
 func (f *Fixtures) QueryAccount(address sdk.AccAddress, flags ...string) auth.BaseAccount {
-	cmd := fmt.Sprintf("%s query account %s %v", f.GaiacliBinary, address, f.Flags())
+	cmd := fmt.Sprintf("%s query account %s %v", f.ZarcliBinary, address, f.Flags())
 	out, _ := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	var initRes map[string]json.RawMessage
 	err := json.Unmarshal([]byte(out), &initRes)
@@ -437,11 +437,11 @@ func (f *Fixtures) QueryAccount(address sdk.AccAddress, flags ...string) auth.Ba
 }
 
 //___________________________________________________________________________________
-// gaiacli query txs
+// zarcli query txs
 
-// QueryTxs is gaiacli query txs
+// QueryTxs is zarcli query txs
 func (f *Fixtures) QueryTxs(page, limit int, tags ...string) *sdk.SearchTxsResult {
-	cmd := fmt.Sprintf("%s query txs --page=%d --limit=%d --tags='%s' %v", f.GaiacliBinary, page, limit, queryTags(tags), f.Flags())
+	cmd := fmt.Sprintf("%s query txs --page=%d --limit=%d --tags='%s' %v", f.ZarcliBinary, page, limit, queryTags(tags), f.Flags())
 	out, _ := tests.ExecuteT(f.T, cmd, "")
 	var result sdk.SearchTxsResult
 	cdc := app.MakeCodec()
@@ -452,17 +452,17 @@ func (f *Fixtures) QueryTxs(page, limit int, tags ...string) *sdk.SearchTxsResul
 
 // QueryTxsInvalid query txs with wrong parameters and compare expected error
 func (f *Fixtures) QueryTxsInvalid(expectedErr error, page, limit int, tags ...string) {
-	cmd := fmt.Sprintf("%s query txs --page=%d --limit=%d --tags='%s' %v", f.GaiacliBinary, page, limit, queryTags(tags), f.Flags())
+	cmd := fmt.Sprintf("%s query txs --page=%d --limit=%d --tags='%s' %v", f.ZarcliBinary, page, limit, queryTags(tags), f.Flags())
 	_, err := tests.ExecuteT(f.T, cmd, "")
 	require.EqualError(f.T, expectedErr, err)
 }
 
 //___________________________________________________________________________________
-// gaiacli query staking
+// zarcli query staking
 
-// QueryStakingValidator is gaiacli query staking validator
+// QueryStakingValidator is zarcli query staking validator
 func (f *Fixtures) QueryStakingValidator(valAddr sdk.ValAddress, flags ...string) staking.Validator {
-	cmd := fmt.Sprintf("%s query staking validator %s %v", f.GaiacliBinary, valAddr, f.Flags())
+	cmd := fmt.Sprintf("%s query staking validator %s %v", f.ZarcliBinary, valAddr, f.Flags())
 	out, _ := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	var validator staking.Validator
 	cdc := app.MakeCodec()
@@ -471,9 +471,9 @@ func (f *Fixtures) QueryStakingValidator(valAddr sdk.ValAddress, flags ...string
 	return validator
 }
 
-// QueryStakingUnbondingDelegationsFrom is gaiacli query staking unbonding-delegations-from
+// QueryStakingUnbondingDelegationsFrom is zarcli query staking unbonding-delegations-from
 func (f *Fixtures) QueryStakingUnbondingDelegationsFrom(valAddr sdk.ValAddress, flags ...string) []staking.UnbondingDelegation {
-	cmd := fmt.Sprintf("%s query staking unbonding-delegations-from %s %v", f.GaiacliBinary, valAddr, f.Flags())
+	cmd := fmt.Sprintf("%s query staking unbonding-delegations-from %s %v", f.ZarcliBinary, valAddr, f.Flags())
 	out, _ := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	var ubds []staking.UnbondingDelegation
 	cdc := app.MakeCodec()
@@ -482,9 +482,9 @@ func (f *Fixtures) QueryStakingUnbondingDelegationsFrom(valAddr sdk.ValAddress, 
 	return ubds
 }
 
-// QueryStakingDelegationsTo is gaiacli query staking delegations-to
+// QueryStakingDelegationsTo is zarcli query staking delegations-to
 func (f *Fixtures) QueryStakingDelegationsTo(valAddr sdk.ValAddress, flags ...string) []staking.Delegation {
-	cmd := fmt.Sprintf("%s query staking delegations-to %s %v", f.GaiacliBinary, valAddr, f.Flags())
+	cmd := fmt.Sprintf("%s query staking delegations-to %s %v", f.ZarcliBinary, valAddr, f.Flags())
 	out, _ := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	var delegations []staking.Delegation
 	cdc := app.MakeCodec()
@@ -493,9 +493,9 @@ func (f *Fixtures) QueryStakingDelegationsTo(valAddr sdk.ValAddress, flags ...st
 	return delegations
 }
 
-// QueryStakingPool is gaiacli query staking pool
+// QueryStakingPool is zarcli query staking pool
 func (f *Fixtures) QueryStakingPool(flags ...string) staking.Pool {
-	cmd := fmt.Sprintf("%s query staking pool %v", f.GaiacliBinary, f.Flags())
+	cmd := fmt.Sprintf("%s query staking pool %v", f.ZarcliBinary, f.Flags())
 	out, _ := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	var pool staking.Pool
 	cdc := app.MakeCodec()
@@ -504,9 +504,9 @@ func (f *Fixtures) QueryStakingPool(flags ...string) staking.Pool {
 	return pool
 }
 
-// QueryStakingParameters is gaiacli query staking parameters
+// QueryStakingParameters is zarcli query staking parameters
 func (f *Fixtures) QueryStakingParameters(flags ...string) staking.Params {
-	cmd := fmt.Sprintf("%s query staking params %v", f.GaiacliBinary, f.Flags())
+	cmd := fmt.Sprintf("%s query staking params %v", f.ZarcliBinary, f.Flags())
 	out, _ := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	var params staking.Params
 	cdc := app.MakeCodec()
@@ -516,11 +516,11 @@ func (f *Fixtures) QueryStakingParameters(flags ...string) staking.Params {
 }
 
 //___________________________________________________________________________________
-// gaiacli query gov
+// zarcli query gov
 
-// QueryGovParamDeposit is gaiacli query gov param deposit
+// QueryGovParamDeposit is zarcli query gov param deposit
 func (f *Fixtures) QueryGovParamDeposit() gov.DepositParams {
-	cmd := fmt.Sprintf("%s query gov param deposit %s", f.GaiacliBinary, f.Flags())
+	cmd := fmt.Sprintf("%s query gov param deposit %s", f.ZarcliBinary, f.Flags())
 	out, _ := tests.ExecuteT(f.T, cmd, "")
 	var depositParam gov.DepositParams
 	cdc := app.MakeCodec()
@@ -529,9 +529,9 @@ func (f *Fixtures) QueryGovParamDeposit() gov.DepositParams {
 	return depositParam
 }
 
-// QueryGovParamVoting is gaiacli query gov param voting
+// QueryGovParamVoting is zarcli query gov param voting
 func (f *Fixtures) QueryGovParamVoting() gov.VotingParams {
-	cmd := fmt.Sprintf("%s query gov param voting %s", f.GaiacliBinary, f.Flags())
+	cmd := fmt.Sprintf("%s query gov param voting %s", f.ZarcliBinary, f.Flags())
 	out, _ := tests.ExecuteT(f.T, cmd, "")
 	var votingParam gov.VotingParams
 	cdc := app.MakeCodec()
@@ -540,9 +540,9 @@ func (f *Fixtures) QueryGovParamVoting() gov.VotingParams {
 	return votingParam
 }
 
-// QueryGovParamTallying is gaiacli query gov param tallying
+// QueryGovParamTallying is zarcli query gov param tallying
 func (f *Fixtures) QueryGovParamTallying() gov.TallyParams {
-	cmd := fmt.Sprintf("%s query gov param tallying %s", f.GaiacliBinary, f.Flags())
+	cmd := fmt.Sprintf("%s query gov param tallying %s", f.ZarcliBinary, f.Flags())
 	out, _ := tests.ExecuteT(f.T, cmd, "")
 	var tallyingParam gov.TallyParams
 	cdc := app.MakeCodec()
@@ -551,9 +551,9 @@ func (f *Fixtures) QueryGovParamTallying() gov.TallyParams {
 	return tallyingParam
 }
 
-// QueryGovProposals is gaiacli query gov proposals
+// QueryGovProposals is zarcli query gov proposals
 func (f *Fixtures) QueryGovProposals(flags ...string) gov.Proposals {
-	cmd := fmt.Sprintf("%s query gov proposals %v", f.GaiacliBinary, f.Flags())
+	cmd := fmt.Sprintf("%s query gov proposals %v", f.ZarcliBinary, f.Flags())
 	stdout, stderr := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	if strings.Contains(stderr, "No matching proposals found") {
 		return gov.Proposals{}
@@ -566,9 +566,9 @@ func (f *Fixtures) QueryGovProposals(flags ...string) gov.Proposals {
 	return out
 }
 
-// QueryGovProposal is gaiacli query gov proposal
+// QueryGovProposal is zarcli query gov proposal
 func (f *Fixtures) QueryGovProposal(proposalID int, flags ...string) gov.Proposal {
-	cmd := fmt.Sprintf("%s query gov proposal %d %v", f.GaiacliBinary, proposalID, f.Flags())
+	cmd := fmt.Sprintf("%s query gov proposal %d %v", f.ZarcliBinary, proposalID, f.Flags())
 	out, _ := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	var proposal gov.Proposal
 	cdc := app.MakeCodec()
@@ -577,9 +577,9 @@ func (f *Fixtures) QueryGovProposal(proposalID int, flags ...string) gov.Proposa
 	return proposal
 }
 
-// QueryGovVote is gaiacli query gov vote
+// QueryGovVote is zarcli query gov vote
 func (f *Fixtures) QueryGovVote(proposalID int, voter sdk.AccAddress, flags ...string) gov.Vote {
-	cmd := fmt.Sprintf("%s query gov vote %d %s %v", f.GaiacliBinary, proposalID, voter, f.Flags())
+	cmd := fmt.Sprintf("%s query gov vote %d %s %v", f.ZarcliBinary, proposalID, voter, f.Flags())
 	out, _ := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	var vote gov.Vote
 	cdc := app.MakeCodec()
@@ -588,9 +588,9 @@ func (f *Fixtures) QueryGovVote(proposalID int, voter sdk.AccAddress, flags ...s
 	return vote
 }
 
-// QueryGovVotes is gaiacli query gov votes
+// QueryGovVotes is zarcli query gov votes
 func (f *Fixtures) QueryGovVotes(proposalID int, flags ...string) []gov.Vote {
-	cmd := fmt.Sprintf("%s query gov votes %d %v", f.GaiacliBinary, proposalID, f.Flags())
+	cmd := fmt.Sprintf("%s query gov votes %d %v", f.ZarcliBinary, proposalID, f.Flags())
 	out, _ := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	var votes []gov.Vote
 	cdc := app.MakeCodec()
@@ -599,9 +599,9 @@ func (f *Fixtures) QueryGovVotes(proposalID int, flags ...string) []gov.Vote {
 	return votes
 }
 
-// QueryGovDeposit is gaiacli query gov deposit
+// QueryGovDeposit is zarcli query gov deposit
 func (f *Fixtures) QueryGovDeposit(proposalID int, depositor sdk.AccAddress, flags ...string) gov.Deposit {
-	cmd := fmt.Sprintf("%s query gov deposit %d %s %v", f.GaiacliBinary, proposalID, depositor, f.Flags())
+	cmd := fmt.Sprintf("%s query gov deposit %d %s %v", f.ZarcliBinary, proposalID, depositor, f.Flags())
 	out, _ := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	var deposit gov.Deposit
 	cdc := app.MakeCodec()
@@ -610,9 +610,9 @@ func (f *Fixtures) QueryGovDeposit(proposalID int, depositor sdk.AccAddress, fla
 	return deposit
 }
 
-// QueryGovDeposits is gaiacli query gov deposits
+// QueryGovDeposits is zarcli query gov deposits
 func (f *Fixtures) QueryGovDeposits(propsalID int, flags ...string) []gov.Deposit {
-	cmd := fmt.Sprintf("%s query gov deposits %d %v", f.GaiacliBinary, propsalID, f.Flags())
+	cmd := fmt.Sprintf("%s query gov deposits %d %v", f.ZarcliBinary, propsalID, f.Flags())
 	out, _ := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	var deposits []gov.Deposit
 	cdc := app.MakeCodec()
@@ -626,7 +626,7 @@ func (f *Fixtures) QueryGovDeposits(propsalID int, flags ...string) []gov.Deposi
 
 // QuerySigningInfo returns the signing info for a validator
 func (f *Fixtures) QuerySigningInfo(val string) slashing.ValidatorSigningInfo {
-	cmd := fmt.Sprintf("%s query slashing signing-info %s %s", f.GaiacliBinary, val, f.Flags())
+	cmd := fmt.Sprintf("%s query slashing signing-info %s %s", f.ZarcliBinary, val, f.Flags())
 	res, errStr := tests.ExecuteT(f.T, cmd, "")
 	require.Empty(f.T, errStr)
 	cdc := app.MakeCodec()
@@ -636,9 +636,9 @@ func (f *Fixtures) QuerySigningInfo(val string) slashing.ValidatorSigningInfo {
 	return sinfo
 }
 
-// QuerySlashingParams is gaiacli query slashing params
+// QuerySlashingParams is zarcli query slashing params
 func (f *Fixtures) QuerySlashingParams() slashing.Params {
-	cmd := fmt.Sprintf("%s query slashing params %s", f.GaiacliBinary, f.Flags())
+	cmd := fmt.Sprintf("%s query slashing params %s", f.ZarcliBinary, f.Flags())
 	res, errStr := tests.ExecuteT(f.T, cmd, "")
 	require.Empty(f.T, errStr)
 	cdc := app.MakeCodec()
@@ -653,7 +653,7 @@ func (f *Fixtures) QuerySlashingParams() slashing.Params {
 
 // QueryRewards returns the rewards of a delegator
 func (f *Fixtures) QueryRewards(delAddr sdk.AccAddress, flags ...string) distribution.QueryDelegatorTotalRewardsResponse {
-	cmd := fmt.Sprintf("%s query distribution rewards %s %s", f.GaiacliBinary, delAddr, f.Flags())
+	cmd := fmt.Sprintf("%s query distribution rewards %s %s", f.ZarcliBinary, delAddr, f.Flags())
 	res, errStr := tests.ExecuteT(f.T, cmd, "")
 	require.Empty(f.T, errStr)
 	cdc := app.MakeCodec()
@@ -668,7 +668,7 @@ func (f *Fixtures) QueryRewards(delAddr sdk.AccAddress, flags ...string) distrib
 
 // QueryTotalSupply returns the total supply of coins
 func (f *Fixtures) QueryTotalSupply(flags ...string) (totalSupply sdk.Coins) {
-	cmd := fmt.Sprintf("%s query supply total %s", f.GaiacliBinary, f.Flags())
+	cmd := fmt.Sprintf("%s query supply total %s", f.ZarcliBinary, f.Flags())
 	res, errStr := tests.ExecuteT(f.T, cmd, "")
 	require.Empty(f.T, errStr)
 	cdc := app.MakeCodec()
@@ -679,7 +679,7 @@ func (f *Fixtures) QueryTotalSupply(flags ...string) (totalSupply sdk.Coins) {
 
 // QueryTotalSupplyOf returns the total supply of a given coin denom
 func (f *Fixtures) QueryTotalSupplyOf(denom string, flags ...string) sdk.Int {
-	cmd := fmt.Sprintf("%s query supply total %s %s", f.GaiacliBinary, denom, f.Flags())
+	cmd := fmt.Sprintf("%s query supply total %s %s", f.ZarcliBinary, denom, f.Flags())
 	res, errStr := tests.ExecuteT(f.T, cmd, "")
 	require.Empty(f.T, errStr)
 	cdc := app.MakeCodec()

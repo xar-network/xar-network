@@ -28,16 +28,16 @@ You can find other configuration examples [here](https://github.com/tendermint/k
 # Example KMS configuration file
 [[validator]]
 addr = "tcp://localhost:26658"    # or "unix:///path/to/socket"
-chain_id = "gaia-11001"
+chain_id = "zar-11001"
 reconnect = true # true is the default
 secret_key = "~/.tmkms/secret_connection.key"
 
 [[providers.ledgertm]]
-chain_ids = ["gaia-11001"]
+chain_ids = ["zar-11001"]
 ```
 
-- Edit `addr` to point to your `gaiad` instance.
-- Adjust `chain-id` to match your `.gaiad/config/config.toml` settings.
+- Edit `addr` to point to your `zard` instance.
+- Adjust `chain-id` to match your `.zard/config/config.toml` settings.
 - `provider.ledgertm` has not additional parameters at the moment, however, it is important that you keep that header to enable the feature.
 
 *Plug your Ledger device and open the Tendermint validator app.*
@@ -52,7 +52,7 @@ tmkms keygen ~/.tmkms/secret_connection.key
 
 ### Retrieve validator key
 
-The last step is to retrieve the validator key that you will use in `gaiad`.
+The last step is to retrieve the validator key that you will use in `zard`.
 
 Start the KMS:
 
@@ -68,15 +68,15 @@ The output should look similar to:
 07:28:24 [INFO] KMS node ID: 1BC12314E2E1C29015B66017A397F170C6ECDE4A
 ```
 
-The KMS may complain that it cannot connect to gaiad. That is fine, we will fix it in the next section.
+The KMS may complain that it cannot connect to zard. That is fine, we will fix it in the next section.
 
 This output indicates the validator key linked to this particular device is: `cosmosvalconspub1zcjduepqy53m39prgp9dz3nz96kaav3el5e0th8ltwcf8cpavqdvpxgr5slsd6wz6f`
 
 Take note of the validator pubkey that appears in your screen. *We will use it in the next section.*
 
-## Gaia configuration
+## Zar configuration
 
-You need to enable KMS access by editing `.gaiad/config/config.toml`. In this file, modify `priv_validator_laddr` to create a listening address/port or a unix socket in `gaiad`.
+You need to enable KMS access by editing `.zard/config/config.toml`. In this file, modify `priv_validator_laddr` to create a listening address/port or a unix socket in `zard`.
 
 For example:
 
@@ -88,13 +88,13 @@ priv_validator_laddr = "tcp://127.0.0.1:26658"
 ...
 ```
 
-Let's assume that you have set up your validator account and called it `kmsval`. You can tell gaiad the key that we've got in the previous section.
+Let's assume that you have set up your validator account and called it `kmsval`. You can tell zard the key that we've got in the previous section.
 
 ```bash
-gaiad gentx --name kmsval --pubkey {.ValidatorKey} 
+zard gentx --name kmsval --pubkey {.ValidatorKey} 
 ```
 
-Now start `gaiad`. You should see that the KMS connects and receives a signature request.
+Now start `zard`. You should see that the KMS connects and receives a signature request.
 
 Once the ledger receives the first message, it will ask for confirmation that the values are adequate.
 

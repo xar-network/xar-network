@@ -9,36 +9,36 @@ import (
 	dbm "github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/libs/log"
 
-	bam "github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/simapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/version"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
-	distr "github.com/cosmos/cosmos-sdk/x/distribution"
-	distrclient "github.com/cosmos/cosmos-sdk/x/distribution/client"
-	"github.com/cosmos/cosmos-sdk/x/genaccounts"
-	"github.com/cosmos/cosmos-sdk/x/genutil"
-	"github.com/cosmos/cosmos-sdk/x/gov"
-	"github.com/cosmos/cosmos-sdk/x/mint"
-	"github.com/cosmos/cosmos-sdk/x/params"
-	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
-	"github.com/cosmos/cosmos-sdk/x/slashing"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/supply"
+	bam "github.com/Fantom-foundation/cosmos-sdk/baseapp"
+	"github.com/Fantom-foundation/cosmos-sdk/codec"
+	"github.com/Fantom-foundation/cosmos-sdk/simapp"
+	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
+	"github.com/Fantom-foundation/cosmos-sdk/types/module"
+	"github.com/Fantom-foundation/cosmos-sdk/version"
+	"github.com/Fantom-foundation/cosmos-sdk/x/auth"
+	"github.com/Fantom-foundation/cosmos-sdk/x/bank"
+	"github.com/Fantom-foundation/cosmos-sdk/x/crisis"
+	distr "github.com/Fantom-foundation/cosmos-sdk/x/distribution"
+	distrclient "github.com/Fantom-foundation/cosmos-sdk/x/distribution/client"
+	"github.com/Fantom-foundation/cosmos-sdk/x/genaccounts"
+	"github.com/Fantom-foundation/cosmos-sdk/x/genutil"
+	"github.com/Fantom-foundation/cosmos-sdk/x/gov"
+	"github.com/Fantom-foundation/cosmos-sdk/x/mint"
+	"github.com/Fantom-foundation/cosmos-sdk/x/params"
+	paramsclient "github.com/Fantom-foundation/cosmos-sdk/x/params/client"
+	"github.com/Fantom-foundation/cosmos-sdk/x/slashing"
+	"github.com/Fantom-foundation/cosmos-sdk/x/staking"
+	"github.com/Fantom-foundation/cosmos-sdk/x/supply"
 )
 
-const appName = "GaiaApp"
+const appName = "ZarApp"
 
 var (
-	// default home directories for gaiacli
-	DefaultCLIHome = os.ExpandEnv("$HOME/.gaiacli")
+	// default home directories for zarcli
+	DefaultCLIHome = os.ExpandEnv("$HOME/.zarcli")
 
-	// default home directories for gaiad
-	DefaultNodeHome = os.ExpandEnv("$HOME/.gaiad")
+	// default home directories for zard
+	DefaultNodeHome = os.ExpandEnv("$HOME/.zard")
 
 	// The ModuleBasicManager is in charge of setting up basic,
 	// non-dependant module elements, such as codec registration
@@ -73,7 +73,7 @@ func MakeCodec() *codec.Codec {
 }
 
 // Extended ABCI application
-type GaiaApp struct {
+type ZarApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
 
@@ -109,9 +109,9 @@ type GaiaApp struct {
 	mm *module.Manager
 }
 
-// NewGaiaApp returns a reference to an initialized GaiaApp.
-func NewGaiaApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
-	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp)) *GaiaApp {
+// NewZarApp returns a reference to an initialized ZarApp.
+func NewZarApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
+	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp)) *ZarApp {
 
 	cdc := MakeCodec()
 
@@ -119,7 +119,7 @@ func NewGaiaApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest b
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetAppVersion(version.Version)
 
-	var app = &GaiaApp{
+	var app = &ZarApp{
 		BaseApp:        bApp,
 		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
@@ -235,23 +235,23 @@ func NewGaiaApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest b
 }
 
 // application updates every begin block
-func (app *GaiaApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+func (app *ZarApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
 
 // application updates every end block
-func (app *GaiaApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+func (app *ZarApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
 }
 
 // application update at chain initialization
-func (app *GaiaApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *ZarApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState simapp.GenesisState
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 
 // load a particular height
-func (app *GaiaApp) LoadHeight(height int64) error {
+func (app *ZarApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keyMain)
 }

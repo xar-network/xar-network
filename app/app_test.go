@@ -8,24 +8,24 @@ import (
 	"github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/simapp"
+	"github.com/Fantom-foundation/cosmos-sdk/codec"
+	"github.com/Fantom-foundation/cosmos-sdk/simapp"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-func TestGaiadExport(t *testing.T) {
+func TestZardExport(t *testing.T) {
 	db := db.NewMemDB()
-	gapp := NewGaiaApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
+	gapp := NewZarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
 	setGenesis(gapp)
 
 	// Making a new app object with the db, so that initchain hasn't been called
-	newGapp := NewGaiaApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
+	newGapp := NewZarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
 	_, _, err := newGapp.ExportAppStateAndValidators(false, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 }
 
-func setGenesis(gapp *GaiaApp) error {
+func setGenesis(gapp *ZarApp) error {
 
 	genesisState := simapp.NewDefaultGenesisState()
 	stateBytes, err := codec.MarshalJSONIndent(gapp.cdc, genesisState)

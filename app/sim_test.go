@@ -17,18 +17,18 @@ import (
 	dbm "github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/cosmos/cosmos-sdk/simapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	authsim "github.com/cosmos/cosmos-sdk/x/auth/simulation"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	distrsim "github.com/cosmos/cosmos-sdk/x/distribution/simulation"
-	govsim "github.com/cosmos/cosmos-sdk/x/gov/simulation"
-	paramsim "github.com/cosmos/cosmos-sdk/x/params/simulation"
-	"github.com/cosmos/cosmos-sdk/x/simulation"
-	slashingsim "github.com/cosmos/cosmos-sdk/x/slashing/simulation"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-	stakingsim "github.com/cosmos/cosmos-sdk/x/staking/simulation"
+	"github.com/Fantom-foundation/cosmos-sdk/baseapp"
+	"github.com/Fantom-foundation/cosmos-sdk/simapp"
+	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
+	authsim "github.com/Fantom-foundation/cosmos-sdk/x/auth/simulation"
+	"github.com/Fantom-foundation/cosmos-sdk/x/bank"
+	distrsim "github.com/Fantom-foundation/cosmos-sdk/x/distribution/simulation"
+	govsim "github.com/Fantom-foundation/cosmos-sdk/x/gov/simulation"
+	paramsim "github.com/Fantom-foundation/cosmos-sdk/x/params/simulation"
+	"github.com/Fantom-foundation/cosmos-sdk/x/simulation"
+	slashingsim "github.com/Fantom-foundation/cosmos-sdk/x/slashing/simulation"
+	"github.com/Fantom-foundation/cosmos-sdk/x/staking"
+	stakingsim "github.com/Fantom-foundation/cosmos-sdk/x/staking/simulation"
 )
 
 var (
@@ -60,7 +60,7 @@ func init() {
 }
 
 // helper function for populating input for SimulateFromSeed
-func getSimulateFromSeedInput(tb testing.TB, w io.Writer, app *GaiaApp) (
+func getSimulateFromSeedInput(tb testing.TB, w io.Writer, app *ZarApp) (
 	testing.TB, io.Writer, *baseapp.BaseApp, simulation.AppStateFn, int64,
 	simulation.WeightedOperations, sdk.Invariants, int, int, bool, bool, bool) {
 
@@ -149,7 +149,7 @@ func appStateRandomizedFn(
 	return appState, accs, "simulation"
 }
 
-func testAndRunTxs(app *GaiaApp) []simulation.WeightedOperation {
+func testAndRunTxs(app *ZarApp) []simulation.WeightedOperation {
 	cdc := MakeCodec()
 	ap := make(simulation.AppParams)
 
@@ -342,9 +342,9 @@ func testAndRunTxs(app *GaiaApp) []simulation.WeightedOperation {
 	}
 }
 
-func invariants(app *GaiaApp) []sdk.Invariant {
+func invariants(app *ZarApp) []sdk.Invariant {
 	// TODO: fix PeriodicInvariants, it doesn't seem to call individual invariants for a period of 1
-	// Ref: https://github.com/cosmos/cosmos-sdk/issues/4631
+	// Ref: https://github.com/Fantom-foundation/cosmos-sdk/issues/4631
 	if period == 1 {
 		return app.crisisKeeper.Invariants()
 	}
@@ -357,7 +357,7 @@ func fauxMerkleModeOpt(bapp *baseapp.BaseApp) {
 }
 
 // Profile with:
-// /usr/local/go/bin/go test -benchmem -run=^$ github.com/cosmos/cosmos-sdk/GaiaApp -bench ^BenchmarkFullAppSimulation$ -SimulationCommit=true -cpuprofile cpu.out
+// /usr/local/go/bin/go test -benchmem -run=^$ github.com/Fantom-foundation/cosmos-sdk/ZarApp -bench ^BenchmarkFullAppSimulation$ -SimulationCommit=true -cpuprofile cpu.out
 func BenchmarkFullAppSimulation(b *testing.B) {
 	logger := log.NewNopLogger()
 
@@ -368,7 +368,7 @@ func BenchmarkFullAppSimulation(b *testing.B) {
 		db.Close()
 		os.RemoveAll(dir)
 	}()
-	app := NewGaiaApp(logger, db, nil, true, 0)
+	app := NewZarApp(logger, db, nil, true, 0)
 
 	// Run randomized simulation
 	// TODO parameterize numbers, save for a later PR
@@ -406,8 +406,8 @@ func TestFullAppSimulation(t *testing.T) {
 		os.RemoveAll(dir)
 	}()
 
-	app := NewGaiaApp(logger, db, nil, true, 0, fauxMerkleModeOpt)
-	require.Equal(t, "GaiaApp", app.Name())
+	app := NewZarApp(logger, db, nil, true, 0, fauxMerkleModeOpt)
+	require.Equal(t, "ZarApp", app.Name())
 
 	// Run randomized simulation
 	_, err := simulation.SimulateFromSeed(getSimulateFromSeedInput(t, os.Stdout, app))
@@ -443,8 +443,8 @@ func TestAppImportExport(t *testing.T) {
 		os.RemoveAll(dir)
 	}()
 
-	app := NewGaiaApp(logger, db, nil, true, 0, fauxMerkleModeOpt)
-	require.Equal(t, "GaiaApp", app.Name())
+	app := NewZarApp(logger, db, nil, true, 0, fauxMerkleModeOpt)
+	require.Equal(t, "ZarApp", app.Name())
 
 	// Run randomized simulation
 	_, err := simulation.SimulateFromSeed(getSimulateFromSeedInput(t, os.Stdout, app))
@@ -472,8 +472,8 @@ func TestAppImportExport(t *testing.T) {
 		os.RemoveAll(newDir)
 	}()
 
-	newApp := NewGaiaApp(log.NewNopLogger(), newDB, nil, true, 0, fauxMerkleModeOpt)
-	require.Equal(t, "GaiaApp", newApp.Name())
+	newApp := NewZarApp(log.NewNopLogger(), newDB, nil, true, 0, fauxMerkleModeOpt)
+	require.Equal(t, "ZarApp", newApp.Name())
 
 	var genesisState simapp.GenesisState
 	err = app.cdc.UnmarshalJSON(appState, &genesisState)
@@ -539,8 +539,8 @@ func TestAppSimulationAfterImport(t *testing.T) {
 		os.RemoveAll(dir)
 	}()
 
-	app := NewGaiaApp(logger, db, nil, true, 0, fauxMerkleModeOpt)
-	require.Equal(t, "GaiaApp", app.Name())
+	app := NewZarApp(logger, db, nil, true, 0, fauxMerkleModeOpt)
+	require.Equal(t, "ZarApp", app.Name())
 
 	// Run randomized simulation
 	stopEarly, err := simulation.SimulateFromSeed(getSimulateFromSeedInput(t, os.Stdout, app))
@@ -578,8 +578,8 @@ func TestAppSimulationAfterImport(t *testing.T) {
 		os.RemoveAll(newDir)
 	}()
 
-	newApp := NewGaiaApp(log.NewNopLogger(), newDB, nil, true, 0, fauxMerkleModeOpt)
-	require.Equal(t, "GaiaApp", newApp.Name())
+	newApp := NewZarApp(log.NewNopLogger(), newDB, nil, true, 0, fauxMerkleModeOpt)
+	require.Equal(t, "ZarApp", newApp.Name())
 	newApp.InitChain(abci.RequestInitChain{
 		AppStateBytes: appState,
 	})
@@ -605,7 +605,7 @@ func TestAppStateDeterminism(t *testing.T) {
 		for j := 0; j < numTimesToRunPerSeed; j++ {
 			logger := log.NewNopLogger()
 			db := dbm.NewMemDB()
-			app := NewGaiaApp(logger, db, nil, true, 0)
+			app := NewZarApp(logger, db, nil, true, 0)
 
 			// Run randomized simulation
 			simulation.SimulateFromSeed(
@@ -637,7 +637,7 @@ func BenchmarkInvariants(b *testing.B) {
 		os.RemoveAll(dir)
 	}()
 
-	app := NewGaiaApp(logger, db, nil, true, 0)
+	app := NewZarApp(logger, db, nil, true, 0)
 
 	// 2. Run parameterized simulation (w/o invariants)
 	_, err := simulation.SimulateFromSeed(

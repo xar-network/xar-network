@@ -13,20 +13,20 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/cosmos/gaia/app"
+	"github.com/zar-network/zar-network/app"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/store"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/genaccounts"
-	genaccscli "github.com/cosmos/cosmos-sdk/x/genaccounts/client/cli"
-	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-	"github.com/cosmos/cosmos-sdk/x/staking"
+	"github.com/Fantom-foundation/cosmos-sdk/baseapp"
+	"github.com/Fantom-foundation/cosmos-sdk/client"
+	"github.com/Fantom-foundation/cosmos-sdk/server"
+	"github.com/Fantom-foundation/cosmos-sdk/store"
+	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
+	"github.com/Fantom-foundation/cosmos-sdk/x/genaccounts"
+	genaccscli "github.com/Fantom-foundation/cosmos-sdk/x/genaccounts/client/cli"
+	genutilcli "github.com/Fantom-foundation/cosmos-sdk/x/genutil/client/cli"
+	"github.com/Fantom-foundation/cosmos-sdk/x/staking"
 )
 
-// gaiad custom flags
+// zard custom flags
 const flagInvCheckPeriod = "inv-check-period"
 
 var invCheckPeriod uint
@@ -43,8 +43,8 @@ func main() {
 	ctx := server.NewDefaultContext()
 	cobra.EnableCommandSorting = false
 	rootCmd := &cobra.Command{
-		Use:               "gaiad",
-		Short:             "Gaia Daemon (server)",
+		Use:               "zard",
+		Short:             "Zar Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(ctx),
 	}
 
@@ -72,7 +72,7 @@ func main() {
 }
 
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application {
-	return app.NewGaiaApp(
+	return app.NewZarApp(
 		logger, db, traceStore, true, invCheckPeriod,
 		baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))),
 		baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
@@ -85,13 +85,13 @@ func exportAppStateAndTMValidators(
 ) (json.RawMessage, []tmtypes.GenesisValidator, error) {
 
 	if height != -1 {
-		gApp := app.NewGaiaApp(logger, db, traceStore, false, uint(1))
+		gApp := app.NewZarApp(logger, db, traceStore, false, uint(1))
 		err := gApp.LoadHeight(height)
 		if err != nil {
 			return nil, nil, err
 		}
 		return gApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 	}
-	gApp := app.NewGaiaApp(logger, db, traceStore, true, uint(1))
+	gApp := app.NewZarApp(logger, db, traceStore, true, uint(1))
 	return gApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 }

@@ -5,17 +5,17 @@ import (
 	"os"
 	"path"
 
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/keys"
-	"github.com/cosmos/cosmos-sdk/client/lcd"
-	"github.com/cosmos/cosmos-sdk/client/rpc"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/version"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
-	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
+	"github.com/Fantom-foundation/cosmos-sdk/client"
+	"github.com/Fantom-foundation/cosmos-sdk/client/keys"
+	"github.com/Fantom-foundation/cosmos-sdk/client/lcd"
+	"github.com/Fantom-foundation/cosmos-sdk/client/rpc"
+	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
+	"github.com/Fantom-foundation/cosmos-sdk/version"
+	"github.com/Fantom-foundation/cosmos-sdk/x/auth"
+	authcmd "github.com/Fantom-foundation/cosmos-sdk/x/auth/client/cli"
+	authrest "github.com/Fantom-foundation/cosmos-sdk/x/auth/client/rest"
+	"github.com/Fantom-foundation/cosmos-sdk/x/bank"
+	bankcmd "github.com/Fantom-foundation/cosmos-sdk/x/bank/client/cli"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -23,7 +23,7 @@ import (
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/cli"
 
-	"github.com/cosmos/gaia/app"
+	"github.com/zar-network/zar-network/app"
 )
 
 func main() {
@@ -45,8 +45,8 @@ func main() {
 	// with the cdc
 
 	rootCmd := &cobra.Command{
-		Use:   "gaiacli",
-		Short: "Command line interface for interacting with gaiad",
+		Use:   "zarcli",
+		Short: "Command line interface for interacting with zard",
 	}
 
 	// Add --chain-id to persistent flags and mark it required

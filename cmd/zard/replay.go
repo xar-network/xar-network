@@ -17,18 +17,18 @@ import (
 	tmsm "github.com/tendermint/tendermint/state"
 	tm "github.com/tendermint/tendermint/types"
 
-	"github.com/cosmos/gaia/app"
+	"github.com/zar-network/zar-network/app"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/store"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/Fantom-foundation/cosmos-sdk/baseapp"
+	"github.com/Fantom-foundation/cosmos-sdk/server"
+	"github.com/Fantom-foundation/cosmos-sdk/store"
+	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
 )
 
 func replayCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "replay <root-dir>",
-		Short: "Replay gaia transactions",
+		Short: "Replay zar transactions",
 		RunE: func(_ *cobra.Command, args []string) error {
 			return replayTxs(args[0])
 		},
@@ -92,7 +92,7 @@ func replayTxs(rootDir string) error {
 
 	// Application
 	fmt.Fprintln(os.Stderr, "Creating application")
-	myapp := app.NewGaiaApp(
+	myapp := app.NewZarApp(
 		ctx.Logger, appDB, traceStoreWriter, true, uint(1),
 		baseapp.SetPruning(store.PruneEverything), // nothing
 	)

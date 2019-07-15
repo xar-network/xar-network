@@ -1,10 +1,10 @@
-module github.com/cosmos/gaia
+module github.com/zar-network/zar-network
 
 go 1.12
 
 require (
 	github.com/btcsuite/btcd v0.0.0-20190523000118-16327141da8c // indirect
-	github.com/cosmos/cosmos-sdk v0.28.2-0.20190709192957-95f60ea120f0
+	github.com/Fantom-foundation/cosmos-sdk v0.28.2-0.20190709192957-95f60ea120f0
 	github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d // indirect
 	github.com/etcd-io/bbolt v1.3.3 // indirect
 	github.com/go-kit/kit v0.9.0 // indirect

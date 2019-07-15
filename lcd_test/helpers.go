@@ -10,23 +10,23 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/lcd"
-	"github.com/cosmos/cosmos-sdk/codec"
-	crkeys "github.com/cosmos/cosmos-sdk/crypto/keys"
-	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/simapp"
-	"github.com/cosmos/cosmos-sdk/tests"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
-	distr "github.com/cosmos/cosmos-sdk/x/distribution"
-	"github.com/cosmos/cosmos-sdk/x/genaccounts"
-	"github.com/cosmos/cosmos-sdk/x/genutil"
-	"github.com/cosmos/cosmos-sdk/x/mint"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/Fantom-foundation/cosmos-sdk/client"
+	"github.com/Fantom-foundation/cosmos-sdk/client/lcd"
+	"github.com/Fantom-foundation/cosmos-sdk/codec"
+	crkeys "github.com/Fantom-foundation/cosmos-sdk/crypto/keys"
+	"github.com/Fantom-foundation/cosmos-sdk/server"
+	"github.com/Fantom-foundation/cosmos-sdk/simapp"
+	"github.com/Fantom-foundation/cosmos-sdk/tests"
+	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
+	"github.com/Fantom-foundation/cosmos-sdk/x/auth"
+	authrest "github.com/Fantom-foundation/cosmos-sdk/x/auth/client/rest"
+	"github.com/Fantom-foundation/cosmos-sdk/x/crisis"
+	distr "github.com/Fantom-foundation/cosmos-sdk/x/distribution"
+	"github.com/Fantom-foundation/cosmos-sdk/x/genaccounts"
+	"github.com/Fantom-foundation/cosmos-sdk/x/genutil"
+	"github.com/Fantom-foundation/cosmos-sdk/x/mint"
+	"github.com/Fantom-foundation/cosmos-sdk/x/staking"
+	"github.com/Fantom-foundation/cosmos-sdk/x/supply"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -47,7 +47,7 @@ import (
 	tmrpc "github.com/tendermint/tendermint/rpc/lib/server"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	gapp "github.com/cosmos/gaia/app"
+	gapp "github.com/zar-network/zar-network/app"
 )
 
 // TODO: Make InitializeTestLCD safe to call in multiple tests at the same time
@@ -70,7 +70,7 @@ func InitializeLCD(nValidators int, initAddrs []sdk.AccAddress, minting bool, po
 	logger = log.NewFilter(logger, log.AllowError())
 
 	db := dbm.NewMemDB()
-	app := gapp.NewGaiaApp(logger, db, nil, true, 0)
+	app := gapp.NewZarApp(logger, db, nil, true, 0)
 	cdc = gapp.MakeCodec()
 
 	genDoc, valConsPubKeys, valOperAddrs, privVal, err := defaultGenesis(config, nValidators, initAddrs, minting)
@@ -295,7 +295,7 @@ func defaultGenesis(config *tmcfg.Config, nValidators int, initAddrs []sdk.AccAd
 // TODO: Clean up the WAL dir or enable it to be not persistent!
 func startTM(
 	tmcfg *tmcfg.Config, logger log.Logger, genDoc *tmtypes.GenesisDoc,
-	privVal tmtypes.PrivValidator, app *gapp.GaiaApp,
+	privVal tmtypes.PrivValidator, app *gapp.ZarApp,
 ) (*nm.Node, error) {
 
 	genDocProvider := func() (*tmtypes.GenesisDoc, error) { return genDoc, nil }
@@ -341,7 +341,7 @@ func startLCD(logger log.Logger, listenAddr string, cdc *codec.Codec) (net.Liste
 	return listener, nil
 }
 
-// NOTE: If making updates here also update cmd/gaia/cmd/gaiacli/main.go
+// NOTE: If making updates here also update cmd/zar/cmd/zarcli/main.go
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)

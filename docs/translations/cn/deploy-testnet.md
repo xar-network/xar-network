@@ -1,23 +1,23 @@
 # 部署你自己的测试网
 
-这篇文章介绍了三种创建`gaiad`节点的测试网的方式，每种针对不同的使用场景：
+这篇文章介绍了三种创建`zard`节点的测试网的方式，每种针对不同的使用场景：
 
 1. 单节点，本地的，手动的测试网
 2. 多节点，本地的，自动的测试网
 3. 多节点，远程的，自动的测试网
 
-支持代码可以在[networks目录](https://github.com/cosmos/cosmos-sdk/tree/develop/networks)中找到，还可以在`local`或`remote`子目录中找到。
+支持代码可以在[networks目录](https://github.com/Fantom-foundation/cosmos-sdk/tree/develop/networks)中找到，还可以在`local`或`remote`子目录中找到。
 
 > 注意：`remote`网络引导教程可能与最新版本不同步，不可完全依赖。
 
 ## 可获取的Docker镜像
 
-如果你需要使用或部署gaia作为容器，你可以跳过`build`步骤并使用官方镜像，$TAG标识你感兴趣的版本：
+如果你需要使用或部署zar作为容器，你可以跳过`build`步骤并使用官方镜像，$TAG标识你感兴趣的版本：
 
-+ `docker run -it -v ~/.gaiad:/root/.gaiad -v ~/.gaiacli:/root/.gaiacli tendermint:$TAG gaiad init`
-+ `docker run -it -p 26657:26657 -p 26656:26656 -v ~/.gaiad:/root/.gaiad -v ~/.gaiacli:/root/.gaiacli tendermint:$TAG gaiad start`
++ `docker run -it -v ~/.zard:/root/.zard -v ~/.zarcli:/root/.zarcli tendermint:$TAG zard init`
++ `docker run -it -p 26657:26657 -p 26656:26656 -v ~/.zard:/root/.zard -v ~/.zarcli:/root/.zarcli tendermint:$TAG zard start`
 + ...
-+ `docker run -it -v ~/.gaiad:/root/.gaiad -v ~/.gaiacli:/root/.gaiacli tendermint:$TAG gaiacli version`
++ `docker run -it -v ~/.zard:/root/.zard -v ~/.zarcli:/root/.zarcli tendermint:$TAG zarcli version`
 
 相同的镜像也可以用于构建你自己的docker-compose栈
 
@@ -26,7 +26,7 @@
 本教程可帮助你创建一个在本地运行网络的验证人节点，以进行测试和其他相关的用途。
 
 ### 需要
-+ [安装gaia](./installation.md)
++ [安装zar](./installation.md)
 + [安装`jq`](https://stedolan.github.io/jq/download/)(可选的)
 
 ### 创建genesis文件并启动网络
@@ -36,51 +36,51 @@
 cd $HOME
 
 # Initialize the genesis.json file that will help you to bootstrap the network
-gaiad init --chain-id=testing testing
+zard init --chain-id=testing testing
 
 # Create a key to hold your validator account
-gaiacli keys add validator
+zarcli keys add validator
 
 # Add that key into the genesis.app_state.accounts array in the genesis file
 # NOTE: this command lets you set the number of coins. Make sure this account has some coins
 # with the genesis.app_state.staking.params.bond_denom denom, the default is staking
-gaiad add-genesis-account $(gaiacli keys show validator -a) 1000000000stake,1000000000validatortoken
+zard add-genesis-account $(zarcli keys show validator -a) 1000000000stake,1000000000validatortoken
 
 # Generate the transaction that creates your validator
-gaiad gentx --name validator
+zard gentx --name validator
 
 # Add the generated bonding transaction to the genesis file
-gaiad collect-gentxs
+zard collect-gentxs
 
-# Now its safe to start `gaiad`
-gaiad start
+# Now its safe to start `zard`
+zard start
 ```
 
-启动将会把`gaiad`相关的所有数据放在`~/.gaiad`目录。你可以检查所创建的genesis文件——`~/.gaiad/config/genesis.json`。同时`gaiacli`也已经配置完成并且有了一个拥有token的账户(stake和自定义的代币)。
+启动将会把`zard`相关的所有数据放在`~/.zard`目录。你可以检查所创建的genesis文件——`~/.zard/config/genesis.json`。同时`zarcli`也已经配置完成并且有了一个拥有token的账户(stake和自定义的代币)。
 
 ## 多节点，本地的，自动的测试网
 
-在[networks/local目录](https://github.com/cosmos/cosmos-sdk/tree/develop/networks/local)中运行如下命令:
+在[networks/local目录](https://github.com/Fantom-foundation/cosmos-sdk/tree/develop/networks/local)中运行如下命令:
 
 ### 需要
-+ [安装gaia](./installation.md)
++ [安装zar](./installation.md)
 + [安装docker](https://docs.docker.com/install/)
 + [安装docker-compose](https://docs.docker.com/compose/install/)
 
 
 ### 编译
 
-编译`gaiad`二进制文件(linux)和运行`localnet`命令所需的`tendermint/gaianode` docker images。这个二进制文件将被安装到container中，并且可以更新重建image，因此您只需要构建一次image。
+编译`zard`二进制文件(linux)和运行`localnet`命令所需的`tendermint/zarnode` docker images。这个二进制文件将被安装到container中，并且可以更新重建image，因此您只需要构建一次image。
 
 ```
 # Work from the SDK repo
-cd $GOPATH/src/github.com/cosmos/cosmos-sdk
+cd $GOPATH/src/github.com/Fantom-foundation/cosmos-sdk
 
 # Build the linux binary in ./build
 make build-linux
 
-# Build tendermint/gaiadnode image
-make build-docker-gaiadnode
+# Build tendermint/zardnode image
+make build-docker-zardnode
 ```
 
 ### 运行你的测试网
@@ -91,14 +91,14 @@ make build-docker-gaiadnode
 make localnet-start
 ```
 
-此命令使用gaiadnode image创建了一个4节点网络。每个节点的端口可以在下表中找到：
+此命令使用zardnode image创建了一个4节点网络。每个节点的端口可以在下表中找到：
 
 | `Node ID` | `P2P Port` | `RPC Port` |
 | ----- | ----- | ---- |
-| `gaianode0` | `26656` | `26657` |
-| `gaianode1` | `26659` | `26660` |
-| `gaianode2` | `26661` | `26662` |
-| `gaianode3` | `26663` | `26664` |
+| `zarnode0` | `26656` | `26657` |
+| `zarnode1` | `26659` | `26660` |
+| `zarnode2` | `26661` | `26662` |
+| `zarnode3` | `26663` | `26664` |
 
 更新可执行程序，只需要重新编译并重启节点:
 
@@ -108,72 +108,72 @@ make build-linux localnet-start
 
 ### 配置
 
-`make localnet-start`命令通过调用`gaiad testnet`命令在`./build`中创建了一个4节点测试网络的文件。输出`./build`目录下一些文件:
+`make localnet-start`命令通过调用`zard testnet`命令在`./build`中创建了一个4节点测试网络的文件。输出`./build`目录下一些文件:
 
 ```bash
 $ tree -L 2 build/
 build/
-├── gaiacli
-├── gaiad
+├── zarcli
+├── zard
 ├── gentxs
 │   ├── node0.json
 │   ├── node1.json
 │   ├── node2.json
 │   └── node3.json
 ├── node0
-│   ├── gaiacli
+│   ├── zarcli
 │   │   ├── key_seed.json
 │   │   └── keys
-│   └── gaiad
-│       ├── ${LOG:-gaiad.log}
+│   └── zard
+│       ├── ${LOG:-zard.log}
 │       ├── config
 │       └── data
 ├── node1
-│   ├── gaiacli
+│   ├── zarcli
 │   │   └── key_seed.json
-│   └── gaiad
-│       ├── ${LOG:-gaiad.log}
+│   └── zard
+│       ├── ${LOG:-zard.log}
 │       ├── config
 │       └── data
 ├── node2
-│   ├── gaiacli
+│   ├── zarcli
 │   │   └── key_seed.json
-│   └── gaiad
-│       ├── ${LOG:-gaiad.log}
+│   └── zard
+│       ├── ${LOG:-zard.log}
 │       ├── config
 │       └── data
 └── node3
-    ├── gaiacli
+    ├── zarcli
     │   └── key_seed.json
-    └── gaiad
-        ├── ${LOG:-gaiad.log}
+    └── zard
+        ├── ${LOG:-zard.log}
         ├── config
         └── data
 ```
 
-每个`./build/nodeN`目录被挂载到对应container的`/gaiad`目录。
+每个`./build/nodeN`目录被挂载到对应container的`/zard`目录。
 
 ### 日志输出
 
-日志被保存在每个`./build/nodeN/gaiad/gaia.log`文件中。你也可以直接通过Docker来查看日志：
+日志被保存在每个`./build/nodeN/zard/zar.log`文件中。你也可以直接通过Docker来查看日志：
 
 ```bash
-docker logs -f gaiadnode0
+docker logs -f zardnode0
 ```
 
 
 ### 密钥&账户
 
-你需要使用指定节点的`gaiacli`目录作为你的`home`来同`gaiacli`交互，并执行查询或者创建交易:
+你需要使用指定节点的`zarcli`目录作为你的`home`来同`zarcli`交互，并执行查询或者创建交易:
 
 ```bash
-gaiacli keys list --home ./build/node0/gaiacli
+zarcli keys list --home ./build/node0/zarcli
 ```
 
 现在账户已经存在了，你可以创建新的账户并向其发送资金！
 
 ::: 提示
-注意：每个节点的密钥种子放在`./build/nodeN/gaiacli/key_seed.json`中，可以通过`gaiacli keys add --restore`命令来回复。
+注意：每个节点的密钥种子放在`./build/nodeN/zarcli/key_seed.json`中，可以通过`zarcli keys add --restore`命令来回复。
 :::
 
 ### 特殊的可执行程序
@@ -181,13 +181,13 @@ gaiacli keys list --home ./build/node0/gaiacli
 
 ```
 # Run with custom binary
-BINARY=gaiafoo make localnet-start
+BINARY=zarfoo make localnet-start
 ```
 
 
 ## 多节点，远程的，自动的测试网
 
-应该从[networks目录](https://github.com/cosmos/cosmos-sdk/tree/develop/networks)运行下面的命令。
+应该从[networks目录](https://github.com/Fantom-foundation/cosmos-sdk/tree/develop/networks)运行下面的命令。
 
 ### Terraform & Ansible
 

@@ -5,7 +5,7 @@
 :::
 
 ::: 警告
-你需要先完成[安装`gaia`](./installation.md)
+你需要先完成[安装`zar`](./installation.md)
 :::
 
 ## 创建一个新节点
@@ -30,8 +30,8 @@
 首先，移除过期的文件并重置数据：
 
 ```bash
-rm $HOME/.gaiad/config/addrbook.json $HOME/.gaiad/config/genesis.json
-gaiad unsafe-reset-all
+rm $HOME/.zard/config/addrbook.json $HOME/.zard/config/genesis.json
+zard unsafe-reset-all
 ```
 
 你的节点现在处于原始状态并保留了最初的`priv_validator.json`文件和`config.toml`文件。如果之前你还有其他的哨兵节点或者全节点，你的节点仍然会连接他们，但是会失败，因为他们还没有升级。
@@ -45,7 +45,7 @@ gaiad unsafe-reset-all
 现在升级软件：
 
 ```bash
-cd $GOPATH/src/github.com/cosmos/cosmos-sdk
+cd $GOPATH/src/github.com/Fantom-foundation/cosmos-sdk
 git fetch --all && git checkout master
 make update_tools install
 ```
@@ -54,6 +54,6 @@ make update_tools install
 *注意*：如果在这一步出现问题，请检查是否安装了最新稳定版本的Go。
 :::
 
-注意这里我们使用的是包含最新稳定发布版本的`master`分支。请查看[testnet repo](https://github.com/cosmos/testnets)查看哪个版本的测试网需要哪一个Cosmos-SDK版本，在[SDK发布版](https://github.com/cosmos/cosmos-sdk/releases)中对应的详细信息。
+注意这里我们使用的是包含最新稳定发布版本的`master`分支。请查看[testnet repo](https://github.com/cosmos/testnets)查看哪个版本的测试网需要哪一个Cosmos-SDK版本，在[SDK发布版](https://github.com/Fantom-foundation/cosmos-sdk/releases)中对应的详细信息。
 
 你的全节点已经升级成功！

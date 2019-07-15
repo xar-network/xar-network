@@ -1,10 +1,10 @@
-# gaia文档
+# zar文档
 
-欢迎阅读`Gaia`文档。 `Gaia`是Cosmos Hub目前的应用程序名。
+欢迎阅读`Zar`文档。 `Zar`是Cosmos Hub目前的应用程序名。
 
 ## 加入Cosmos Hub主网
 
-- [安装`gaia`程序](./installation.md)
+- [安装`zar`程序](./installation.md)
 - [启动一个全节点并加入主网](./join-mainnet.md)
 - [升级成一个验证人节点](./validators/validator-setup.md)
 
@@ -12,9 +12,9 @@
 
 - [加入测试网](./join-testnet.md)
 
-## 部署你自己的`gaia`测试网络
+## 部署你自己的`zar`测试网络
 
-- [部署你自己的`gaia`测试网](./deploy-testnet.md)
+- [部署你自己的`zar`测试网](./deploy-testnet.md)
 
 ## 额外资源
 

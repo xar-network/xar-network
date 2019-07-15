@@ -1,14 +1,14 @@
 # Cosmos Hub Documentation
 
-Welcome to the documentation of the **Cosmos Hub application: `gaia`**.
+Welcome to the documentation of the **Cosmos Hub application: `zar`**.
 
-## What is Gaia?
+## What is Zar?
 
-- [Gaia](./what-is-gaia.md)
+- [Zar](./what-is-zar.md)
 
 ## Join the Cosmos Hub Mainnet
 
-- [Install the `gaia` application](./installation.md)
+- [Install the `zar` application](./installation.md)
 - [Set up a full node and join the mainnet](./join-mainnet.md)
 - [Upgrade to a validator node](./validators/validator-setup.md)
 
@@ -16,9 +16,9 @@ Welcome to the documentation of the **Cosmos Hub application: `gaia`**.
 
 - [Join the testnet](./join-testnet.md)
 
-## Setup Your Own `gaia` Testnet
+## Setup Your Own `zar` Testnet
 
-- [Setup your own `gaia` testnet](./deploy-testnet.md)
+- [Setup your own `zar` testnet](./deploy-testnet.md)
 
 ## Additional Resources
 
@@ -29,7 +29,7 @@ Welcome to the documentation of the **Cosmos Hub application: `gaia`**.
 
 # Contribute
 
-See [this file](https://github.com/cosmos/gaia/blob/master/docs/DOCS_README.md) for details of the build process and
+See [this file](https://github.com/zar-network/zar-network/blob/master/docs/DOCS_README.md) for details of the build process and
 considerations when making changes.
 
 # Version

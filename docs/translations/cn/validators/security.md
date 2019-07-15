@@ -48,7 +48,7 @@ private_peer_ids = "ipaddress of validator nodes"
 
 默认情况下，具有以下前缀的大写环境变量将替换小写命令行标志：
 
-+ `GA`（对应Gaia的标识）
++ `GA`（对应Zar的标识）
 + `TM`（对应Tendermint的标识）
 + `BC`（对应democli或basecli的标识）
 

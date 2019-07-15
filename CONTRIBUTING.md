@@ -13,15 +13,15 @@
   * [Release Procedure](#release-procedure)
   * [Point Release Procedure](#point-release-procedure)
 
-Thank you for considering making contributions to Gaia and related
+Thank you for considering making contributions to Zar and related
 repositories!
 
 Contributing to this repo can mean many things such as participated in
 discussion or proposing code changes. To ensure a smooth workflow for all
 contributors, the general procedure for contributing has been established:
 
-  1. either [open](https://github.com/cosmos/gaia/issues/new/choose) or
-     [find](https://github.com/cosmos/gaia/issues) an issue you'd like to help with,
+  1. either [open](https://github.com/zar-network/zar-network/issues/new/choose) or
+     [find](https://github.com/zar-network/zar-network/issues) an issue you'd like to help with,
   2. participate in thoughtful discussion on that issue,
   3. if you would then like to contribute code:
      1. if a the issue is a proposal, ensure that the proposal has been accepted,
@@ -32,7 +32,7 @@ contributors, the general procedure for contributing has been established:
        to begin work,
      4. follow standard github best practices: fork the repo, branch from the
        top of `master`, make some commits, and submit a PR to `master`,
-         - for core developers working within the Gaia repo, 
+         - for core developers working within the Zar repo,
 	 to ensure a clear ownership of branches, branches must be named with the convention `yourname/{issue-}feature-name`.  
      5. submit your PR early and make sure it's opened as a `Draft`, even if it's
         incomplete, this indicates to the community you're working on something and
@@ -50,7 +50,7 @@ tools` for installing the linting tools.
 
 Other notes:
   - Looking for a good place to start contributing? How about checking out some
-    [good first issues](https://github.com/cosmos/gaia/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+    [good first issues](https://github.com/zar-network/zar-network/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
   - Please make sure to use `gofmt` before every commit - the easiest way to do
     this is have your editor run it for you upon saving a file. Additionally
     please ensure that your code is lint compliant by running `make lint`
@@ -78,27 +78,27 @@ All PRs require two Reviews before merge (except docs changes, or variable name-
 
 ### Updating Documentation
 
-If you open a PR in Gaia, it is mandatory to update the relevant documentation in /docs.
+If you open a PR in Zar, it is mandatory to update the relevant documentation in /docs.
 
-* If your changes relate specifically to the gaia application, please modify the docs/ folder.
+* If your changes relate specifically to the zar application, please modify the docs/ folder.
 
 ## Forking
 
 Please note that Go requires code to live under absolute paths, which complicates forking.
-While my fork lives at `https://github.com/rigeyrigerige/gaia`,
-the code should never exist at  `$GOPATH/src/github.com/rigeyrigerige/gaia`.
+While my fork lives at `https://github.com/rigeyrigerige/zar`,
+the code should never exist at  `$GOPATH/src/github.com/rigeyrigerige/zar`.
 Instead, we use `git remote` to add the fork as a new remote for the original repo,
-`$GOPATH/src/github.com/cosmos/gaia `, and do all the work there.
+`$GOPATH/src/github.com/zar-network/zar-network `, and do all the work there.
 
 For instance, to create a fork and work on a branch of it, I would:
 
   - Create the fork on github, using the fork button.
-  - Go to the original repo checked out locally (i.e. `$GOPATH/src/github.com/cosmos/gaia`)
+  - Go to the original repo checked out locally (i.e. `$GOPATH/src/github.com/zar-network/zar-network`)
   - `git remote rename origin upstream`
-  - `git remote add origin git@github.com:rigeyrigerige/gaia.git`
+  - `git remote add origin git@github.com:rigeyrigerige/zar.git`
 
-Now `origin` refers to my fork and `upstream` refers to the Gaia version.
-So I can `git push -u origin master` to update my fork, and make pull requests to Gaia from there.
+Now `origin` refers to my fork and `upstream` refers to the Zar version.
+So I can `git push -u origin master` to update my fork, and make pull requests to Zar from there.
 Of course, replace `rigeyrigerige` with your git handle.
 
 To pull in updates from the origin repo, run
@@ -158,7 +158,7 @@ User-facing repos should adhere to the trunk based development branching model: 
 
 Libraries need not follow the model strictly, but would be wise to.
 
-Gaia utilizes [semantic versioning](https://semver.org/).
+Zar utilizes [semantic versioning](https://semver.org/).
 
 ### PR Targeting
 
@@ -173,7 +173,7 @@ only pull requests targeted directly against master.
   - `master` must never fail `make test` or `make test_cli`
   - `master` should not fail `make lint`
   - no `--force` onto `master` (except when reverting a broken commit, which should seldom happen)
-  - create a development branch either on github.com/cosmos/gaia, or your fork (using `git remote add origin`)
+  - create a development branch either on github.com/zar-network/zar-network, or your fork (using `git remote add origin`)
   - before submitting a pull request, begin `git rebase` on top of `master`
 
 ### Pull Merge Procedure
@@ -189,7 +189,7 @@ only pull requests targeted directly against master.
   - after simulation has successfully completed, create the release branch (`release/vX.XX.X`) from the `RC` branch
   - merge the release branch to `master` to incorporate the `CHANGELOG.md` updates
   - delete the `RC` branches
- 
+
 ### Point Release Procedure
 
 At the moment, only a single major release will be supported, so all point

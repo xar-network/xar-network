@@ -1,5 +1,5 @@
 ---
-name: "gaia-darwin"
+name: "zar-darwin"
 enable_cache: true
 distro: "ubuntu"
 suites:
@@ -20,8 +20,8 @@ packages:
 - "xxd"
 - "quilt"
 remotes:
-- "url": "https://github.com/cosmos/gaia.git"
-  "dir": "gaia"
+- "url": "https://github.com/zar-network/zar-network.git"
+  "dir": "zar"
 files:
 - "golang-debian-1.12.5-1.tar.gz"
 script: |
@@ -53,12 +53,12 @@ script: |
   export GO111MODULE=on
 
   # Make release tarball
-  pushd gaia
+  pushd zar
   VERSION=$(git describe --tags | sed 's/^v//')
   COMMIT=$(git log -1 --format='%H')
-  DISTNAME=gaia-${VERSION}
+  DISTNAME=zar-${VERSION}
   git archive --format tar.gz --prefix ${DISTNAME}/ -o ${DISTNAME}.tar.gz HEAD
-  SOURCEDIST=`pwd`/`echo gaia-*.tar.gz`
+  SOURCEDIST=`pwd`/`echo zar-*.tar.gz`
   popd
 
   # Correct tar file order
@@ -66,11 +66,11 @@ script: |
   pushd temp
   tar xf $SOURCEDIST
   rm $SOURCEDIST
-  find gaia-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > $SOURCEDIST
+  find zar-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > $SOURCEDIST
   popd
 
   # Prepare GOPATH and install deps
-  distsrc=${GOPATH}/src/github.com/cosmos/gaia
+  distsrc=${GOPATH}/src/github.com/zar-network/zar-network
   mkdir -p ${distsrc}
   pushd ${distsrc}
   tar --strip-components=1 -xf $SOURCEDIST
@@ -79,21 +79,21 @@ script: |
 
   # Configure LDFLAGS for reproducible builds
   LDFLAGS="-extldflags=-static -buildid=${VERSION} -s -w \
-    -X github.com/cosmos/cosmos-sdk/version.Name=gaia \
-    -X github.com/cosmos/cosmos-sdk/version.ServerName=gaiad \
-    -X github.com/cosmos/cosmos-sdk/version.ClientName=gaiacli \
-    -X github.com/cosmos/cosmos-sdk/version.Version=${VERSION} \
-    -X github.com/cosmos/cosmos-sdk/version.Commit=${COMMIT} \
-    -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger"
+    -X github.com/Fantom-foundation/cosmos-sdk/version.Name=zar \
+    -X github.com/Fantom-foundation/cosmos-sdk/version.ServerName=zard \
+    -X github.com/Fantom-foundation/cosmos-sdk/version.ClientName=zarcli \
+    -X github.com/Fantom-foundation/cosmos-sdk/version.Version=${VERSION} \
+    -X github.com/Fantom-foundation/cosmos-sdk/version.Commit=${COMMIT} \
+    -X github.com/Fantom-foundation/cosmos-sdk/version.BuildTags=netgo,ledger"
 
   # Extract release tarball and build
   for arch in ${ARCHS}; do
     INSTALLPATH=`pwd`/installed/${DISTNAME}-${arch}
     mkdir -p ${INSTALLPATH}
 
-    # Build gaia tool suite
+    # Build zar tool suite
     pushd ${distsrc}
-    for prog in gaiacli gaiad; do
+    for prog in zarcli zard; do
       GOARCH=${arch} GOROOT_FINAL=${GOROOT} go build -a \
         -gcflags=all=-trimpath=${GOPATH} \
         -asmflags=all=-trimpath=${GOPATH} \

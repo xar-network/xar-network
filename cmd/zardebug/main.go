@@ -14,10 +14,10 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 
-	gaia "github.com/cosmos/gaia/app"
+	zar "github.com/zar-network/zar-network/app"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
+	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
+	"github.com/Fantom-foundation/cosmos-sdk/x/auth"
 )
 
 func init() {
@@ -36,14 +36,14 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:          "gaiadebug",
-	Short:        "Gaia debug tool",
+	Use:          "zardebug",
+	Short:        "Zar debug tool",
 	SilenceUsage: true,
 }
 
 var txCmd = &cobra.Command{
 	Use:   "tx",
-	Short: "Decode a gaia tx from hex or base64",
+	Short: "Decode a zar tx from hex or base64",
 	RunE:  runTxCmd,
 }
 
@@ -139,7 +139,7 @@ func runPubKeyCmd(cmd *cobra.Command, args []string) error {
 		pubkeyBytes = pubKey[:]
 	}
 
-	cdc := gaia.MakeCodec()
+	cdc := zar.MakeCodec()
 	pubKeyJSONBytes, err := cdc.MarshalJSON(pubKey)
 	if err != nil {
 		return err
@@ -226,7 +226,7 @@ func runTxCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	var tx = auth.StdTx{}
-	cdc := gaia.MakeCodec()
+	cdc := zar.MakeCodec()
 
 	err = cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx)
 	if err != nil {

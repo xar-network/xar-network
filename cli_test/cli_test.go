@@ -19,18 +19,18 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/cosmos/gaia/app"
+	"github.com/zar-network/zar-network/app"
 
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/tests"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/genaccounts"
-	"github.com/cosmos/cosmos-sdk/x/gov"
-	"github.com/cosmos/cosmos-sdk/x/mint"
+	"github.com/Fantom-foundation/cosmos-sdk/client"
+	"github.com/Fantom-foundation/cosmos-sdk/tests"
+	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
+	"github.com/Fantom-foundation/cosmos-sdk/x/auth"
+	"github.com/Fantom-foundation/cosmos-sdk/x/genaccounts"
+	"github.com/Fantom-foundation/cosmos-sdk/x/gov"
+	"github.com/Fantom-foundation/cosmos-sdk/x/mint"
 )
 
-func TestGaiaCLIKeysAddMultisig(t *testing.T) {
+func TestZarCLIKeysAddMultisig(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
@@ -53,7 +53,7 @@ func TestGaiaCLIKeysAddMultisig(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIKeysAddRecover(t *testing.T) {
+func TestZarCLIKeysAddRecover(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
@@ -68,7 +68,7 @@ func TestGaiaCLIKeysAddRecover(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIKeysAddRecoverHDPath(t *testing.T) {
+func TestZarCLIKeysAddRecoverHDPath(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
@@ -88,11 +88,11 @@ func TestGaiaCLIKeysAddRecoverHDPath(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIMinimumFees(t *testing.T) {
+func TestZarCLIMinimumFees(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server with minimum fees
+	// start zard server with minimum fees
 	minGasPrice, _ := sdk.NewDecFromStr("0.000006")
 	fees := fmt.Sprintf(
 		"--minimum-gas-prices=%s,%s",
@@ -124,11 +124,11 @@ func TestGaiaCLIMinimumFees(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIGasPrices(t *testing.T) {
+func TestZarCLIGasPrices(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server with minimum fees
+	// start zard server with minimum fees
 	minGasPrice, _ := sdk.NewDecFromStr("0.000006")
 	proc := f.GDStart(fmt.Sprintf("--minimum-gas-prices=%s", sdk.NewDecCoinFromDec(feeDenom, minGasPrice)))
 	defer proc.Stop(false)
@@ -157,11 +157,11 @@ func TestGaiaCLIGasPrices(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIFeesDeduction(t *testing.T) {
+func TestZarCLIFeesDeduction(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server with minimum fees
+	// start zard server with minimum fees
 	minGasPrice, _ := sdk.NewDecFromStr("0.000006")
 	proc := f.GDStart(fmt.Sprintf("--minimum-gas-prices=%s", sdk.NewDecCoinFromDec(feeDenom, minGasPrice)))
 	defer proc.Stop(false)
@@ -209,11 +209,11 @@ func TestGaiaCLIFeesDeduction(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLISend(t *testing.T) {
+func TestZarCLISend(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server
+	// start zard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -278,11 +278,11 @@ func TestGaiaCLISend(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIGasAuto(t *testing.T) {
+func TestZarCLIGasAuto(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server
+	// start zard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -336,11 +336,11 @@ func TestGaiaCLIGasAuto(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLICreateValidator(t *testing.T) {
+func TestZarCLICreateValidator(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server
+	// start zard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -409,7 +409,7 @@ func TestGaiaCLICreateValidator(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIQueryRewards(t *testing.T) {
+func TestZarCLIQueryRewards(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 	cdc := app.MakeCodec()
@@ -425,13 +425,13 @@ func TestGaiaCLIQueryRewards(t *testing.T) {
 	require.NoError(t, err)
 	genesisState[mint.ModuleName] = mintDataBz
 
-	genFile := filepath.Join(f.GaiadHome, "config", "genesis.json")
+	genFile := filepath.Join(f.ZardHome, "config", "genesis.json")
 	genDoc, err := tmtypes.GenesisDocFromFile(genFile)
 	require.NoError(t, err)
 	genDoc.AppState, err = cdc.MarshalJSON(genesisState)
 	require.NoError(t, genDoc.SaveAs(genFile))
 
-	// start gaiad server
+	// start zard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -442,11 +442,11 @@ func TestGaiaCLIQueryRewards(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIQuerySupply(t *testing.T) {
+func TestZarCLIQuerySupply(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server
+	// start zard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -459,11 +459,11 @@ func TestGaiaCLIQuerySupply(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLISubmitProposal(t *testing.T) {
+func TestZarCLISubmitProposal(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server
+	// start zard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -603,7 +603,7 @@ func TestGaiaCLISubmitProposal(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLISubmitParamChangeProposal(t *testing.T) {
+func TestZarCLISubmitParamChangeProposal(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
@@ -667,7 +667,7 @@ func TestGaiaCLISubmitParamChangeProposal(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLISubmitCommunityPoolSpendProposal(t *testing.T) {
+func TestZarCLISubmitCommunityPoolSpendProposal(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
@@ -684,7 +684,7 @@ func TestGaiaCLISubmitCommunityPoolSpendProposal(t *testing.T) {
 	require.NoError(t, err)
 	genesisState[mint.ModuleName] = mintDataBz
 
-	genFile := filepath.Join(f.GaiadHome, "config", "genesis.json")
+	genFile := filepath.Join(f.ZardHome, "config", "genesis.json")
 	genDoc, err := tmtypes.GenesisDocFromFile(genFile)
 	require.NoError(t, err)
 	genDoc.AppState, err = cdc.MarshalJSON(genesisState)
@@ -751,11 +751,11 @@ func TestGaiaCLISubmitCommunityPoolSpendProposal(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIQueryTxPagination(t *testing.T) {
+func TestZarCLIQueryTxPagination(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server
+	// start zard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -804,11 +804,11 @@ func TestGaiaCLIQueryTxPagination(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIValidateSignatures(t *testing.T) {
+func TestZarCLIValidateSignatures(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server
+	// start zard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -854,11 +854,11 @@ func TestGaiaCLIValidateSignatures(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLISendGenerateSignAndBroadcast(t *testing.T) {
+func TestZarCLISendGenerateSignAndBroadcast(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server
+	// start zard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -938,11 +938,11 @@ func TestGaiaCLISendGenerateSignAndBroadcast(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIMultisignInsufficientCosigners(t *testing.T) {
+func TestZarCLIMultisignInsufficientCosigners(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server with minimum fees
+	// start zard server with minimum fees
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -990,11 +990,11 @@ func TestGaiaCLIMultisignInsufficientCosigners(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIEncode(t *testing.T) {
+func TestZarCLIEncode(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server
+	// start zard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -1028,11 +1028,11 @@ func TestGaiaCLIEncode(t *testing.T) {
 	require.Equal(t, "deadbeef", decodedTx.Memo)
 }
 
-func TestGaiaCLIMultisignSortSignatures(t *testing.T) {
+func TestZarCLIMultisignSortSignatures(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server with minimum fees
+	// start zard server with minimum fees
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -1093,11 +1093,11 @@ func TestGaiaCLIMultisignSortSignatures(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIMultisign(t *testing.T) {
+func TestZarCLIMultisign(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server with minimum fees
+	// start zard server with minimum fees
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -1159,7 +1159,7 @@ func TestGaiaCLIMultisign(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestGaiaCLIConfig(t *testing.T) {
+func TestZarCLIConfig(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 	node := fmt.Sprintf("%s:%s", f.RPCAddr, f.Port)
@@ -1173,7 +1173,7 @@ func TestGaiaCLIConfig(t *testing.T) {
 	f.CLIConfig("trace", "false")
 	f.CLIConfig("indent", "true")
 
-	config, err := ioutil.ReadFile(path.Join(f.GaiacliHome, "config", "config.toml"))
+	config, err := ioutil.ReadFile(path.Join(f.ZarcliHome, "config", "config.toml"))
 	require.NoError(t, err)
 	expectedConfig := fmt.Sprintf(`broadcast-mode = "block"
 chain-id = "%s"
@@ -1188,7 +1188,7 @@ trust-node = true
 	f.Cleanup()
 }
 
-func TestGaiadCollectGentxs(t *testing.T) {
+func TestZardCollectGentxs(t *testing.T) {
 	t.Parallel()
 	var customMaxBytes, customMaxGas int64 = 99999999, 1234567
 	f := NewFixtures(t)
@@ -1236,7 +1236,7 @@ func TestGaiadCollectGentxs(t *testing.T) {
 	f.Cleanup(gentxDir)
 }
 
-func TestGaiadAddGenesisAccount(t *testing.T) {
+func TestZardAddGenesisAccount(t *testing.T) {
 	t.Parallel()
 	f := NewFixtures(t)
 
@@ -1283,7 +1283,7 @@ func TestSlashingGetParams(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server
+	// start zard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -1304,7 +1304,7 @@ func TestValidateGenesis(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start gaiad server
+	// start zard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 

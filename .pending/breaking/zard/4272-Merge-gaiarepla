@@ -1,0 +1,2 @@
+#4272 Merge zarreplay functionality into zard replay.
+Drop `zarreplay` in favor of new `zard replay` command.

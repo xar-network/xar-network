@@ -7,14 +7,14 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/slashing"
-	"github.com/cosmos/cosmos-sdk/x/staking"
+	"github.com/Fantom-foundation/cosmos-sdk/codec"
+	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
+	"github.com/Fantom-foundation/cosmos-sdk/x/slashing"
+	"github.com/Fantom-foundation/cosmos-sdk/x/staking"
 )
 
-// export the state of gaia for a genesis file
-func (app *GaiaApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string,
+// export the state of zar for a genesis file
+func (app *ZarApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string,
 ) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
 
 	// as if they could withdraw from the start of the next block
@@ -36,7 +36,7 @@ func (app *GaiaApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteLis
 // prepare for fresh start at zero height
 // NOTE zero height genesis is a temporary feature which will be deprecated
 //      in favour of export at a block height
-func (app *GaiaApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []string) {
+func (app *ZarApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []string) {
 	applyWhiteList := false
 
 	//Check if there is a whitelist
