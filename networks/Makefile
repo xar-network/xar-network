@@ -17,7 +17,7 @@ REGION_LIMIT?=1
 
 # Path to zard for deployment. Must be a Linux binary.
 BINARY?=$(CURDIR)/../build/zard
-GAIACLI_BINARY?=$(CURDIR)/../build/zarcli
+ZARCLI_BINARY?=$(CURDIR)/../build/zarcli
 
 # Path to the genesis.json and config.toml files to deploy on full nodes.
 GENESISFILE?=$(CURDIR)/../build/genesis.json
@@ -105,8 +105,8 @@ upgrade-seeds: disclaimer
 	#Make sure you have AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY or your IAM roles set for AWS API access.
 	@if ! [ -f $(HOME)/.ssh/id_rsa.pub ]; then ssh-keygen ; fi
 	@if [ -z "`file $(BINARY) | grep 'ELF 64-bit'`" ]; then echo "Please build a linux binary using 'make build-linux'." ; false ; fi
-	@if [ -z "`file $(GAIACLI_BINARY) | grep 'ELF 64-bit'`" ]; then echo "Please build a linux binary using 'make build-linux'." ; false ; fi
-	cd remote/ansible && ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory/ec2.py -l "tag_Environment_$(CLUSTER_NAME)" -u centos -b -e BINARY=$(BINARY) -e GAIACLI_BINARY=$(GAIACLI_BINARY) -e UNSAFE_RESET_ALL=$(UNSAFE_RESET_ALL) upgrade-zar.yml
+	@if [ -z "`file $(ZARCLI_BINARY) | grep 'ELF 64-bit'`" ]; then echo "Please build a linux binary using 'make build-linux'." ; false ; fi
+	cd remote/ansible && ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory/ec2.py -l "tag_Environment_$(CLUSTER_NAME)" -u centos -b -e BINARY=$(BINARY) -e ZARCLI_BINARY=$(ZARCLI_BINARY) -e UNSAFE_RESET_ALL=$(UNSAFE_RESET_ALL) upgrade-zar.yml
 
 
 list:

@@ -15,7 +15,7 @@ GO_TARBALL_URL="https://salsa.debian.org/go-team/compiler/golang/-/archive/debia
 # Defaults
 
 DEFAULT_SIGN_COMMAND='gpg --detach-sign'
-DEFAULT_GAIA_SIGS=${GAIA_SIGS:-'zar.sigs'}
+DEFAULT_ZAR_SIGS=${ZAR_SIGS:-'zar.sigs'}
 DEFAULT_GITIAN_REPO='https://github.com/devrandom/gitian-builder'
 DEFAULT_GBUILD_FLAGS=''
 DEFAULT_SIGS_REPO='https://github.com/zar-network/zar-network.sigs'
@@ -54,8 +54,8 @@ The following platforms are supported:
    -s IDENTITY      sign build as IDENTITY
 
 If a GPG identity is supplied via the -s flag, the build will be signed and verified.
-The signature will be saved in '${DEFAULT_GAIA_SIGS}/'. An alternative output directory
-for signatures can be supplied via the environment variable \$GAIA_SIGS.
+The signature will be saved in '${DEFAULT_ZAR_SIGS}/'. An alternative output directory
+for signatures can be supplied via the environment variable \$ZAR_SIGS.
 
 The default signing command used to sign the build is '$DEFAULT_SIGN_COMMAND'.
 An alternative signing command can be supplied via the environment
@@ -171,7 +171,7 @@ shift "$((OPTIND-1))"
 g_platforms=$(f_demangle_platforms "${1}")
 g_workdir="$(pwd)"
 g_commit="$(git rev-parse HEAD)"
-g_sigs_dir=${GAIA_SIGS:-"${g_workdir}/${DEFAULT_GAIA_SIGS}"}
+g_sigs_dir=${ZAR_SIGS:-"${g_workdir}/${DEFAULT_ZAR_SIGS}"}
 
 f_ensure_cache
 

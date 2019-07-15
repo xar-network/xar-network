@@ -2,7 +2,7 @@
 
 - name: Copy binary
   copy:
-    src: "{{GAIACLI_BINARY}}"
+    src: "{{ZARCLI_BINARY}}"
     dest: /usr/bin/zarcli
     mode: 0755
   notify: restart zarcli

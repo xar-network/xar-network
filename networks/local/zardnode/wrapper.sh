@@ -23,13 +23,12 @@ fi
 ##
 ## Run binary with all parameters
 ##
-export GAIADHOME="/zard/node${ID}/zard"
+export ZARDHOME="/zard/node${ID}/zard"
 
-if [ -d "`dirname ${GAIADHOME}/${LOG}`" ]; then
-  "$BINARY" --home "$GAIADHOME" "$@" | tee "${GAIADHOME}/${LOG}"
+if [ -d "`dirname ${ZARDHOME}/${LOG}`" ]; then
+  "$BINARY" --home "$ZARDHOME" "$@" | tee "${ZARDHOME}/${LOG}"
 else
-  "$BINARY" --home "$GAIADHOME" "$@"
+  "$BINARY" --home "$ZARDHOME" "$@"
 fi
 
 chmod 777 -R /zard
-

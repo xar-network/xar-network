@@ -323,18 +323,18 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - run: |
-          GAIAD_VERSION=''
+          ZARD_VERSION=''
           if [ "${CIRCLE_BRANCH}" = "master" ]; then
-            GAIAD_VERSION="stable"
+            ZARD_VERSION="stable"
           elif [ "${CIRCLE_BRANCH}" = "develop" ]; then
-            GAIAD_VERSION="develop"
+            ZARD_VERSION="develop"
           fi
-          if [ -z "${GAIAD_VERSION}" ]; then
+          if [ -z "${ZARD_VERSION}" ]; then
             docker build .
           else
-            docker build -t tendermint/zar:$GAIAD_VERSION .
+            docker build -t tendermint/zar:$ZARD_VERSION .
             docker login --password-stdin -u $DOCKER_USER <<<$DOCKER_PASS
-            docker push tendermint/zar:$GAIAD_VERSION
+            docker push tendermint/zar:$ZARD_VERSION
           fi
 
   docker_tagged:
