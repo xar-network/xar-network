@@ -10,6 +10,8 @@
 
 This repository hosts `Zar`.
 
+`Zar` is a Fantom compatible stable coin issuance platform for the South African Rand. `Zar` is based off of Gaia wrapped around the Cosmos SDK which is wrapped around Fantom's TxFlow consensus. 
+
 **Note**: Requires [Go 1.12+](https://golang.org/dl/)
 
 ## ZAR Network Mainnet
