@@ -168,13 +168,13 @@ txs by `gasPrice` in the mempool, so providing higher fees or gas prices may yie
 e.g.
 
 ```bash
-zarcli tx send ... --fees=50000uatom
+zarcli tx send ... --fees=50000uftm
 ```
 
 or
 
 ```bash
-zarcli tx send ... --gas-prices=0.025uatom
+zarcli tx send ... --gas-prices=0.025uftm
 ```
 
 ### Account
@@ -371,7 +371,7 @@ Please refer to the [Validator Setup](../validators/validator-setup.md) section 
 
 #### Delegate to a Validator
 
-On the upcoming mainnet, you can delegate `atom` to a validator. These [delegators](/resources/delegators-faq) can receive part of the validator's fee revenue. Read more about the [Cosmos Token Model](https://github.com/cosmos/cosmos/raw/master/Cosmos_Token_Model.pdf).
+On the upcoming mainnet, you can delegate `ftm` to a validator. These [delegators](/resources/delegators-faq) can receive part of the validator's fee revenue. Read more about the [Cosmos Token Model](https://github.com/cosmos/cosmos/raw/master/Cosmos_Token_Model.pdf).
 
 ##### Query Validators
 
@@ -389,11 +389,11 @@ zarcli query staking validator <account_cosmosval>
 
 #### Bond Tokens
 
-On the Cosmos Hub mainnet, we delegate `uatom`, where `1atom = 1000000uatom`. Here's how you can bond tokens to a testnet validator (_i.e._ delegate):
+On the Cosmos Hub mainnet, we delegate `uftm`, where `1ftm = 1000000uftm`. Here's how you can bond tokens to a testnet validator (_i.e._ delegate):
 
 ```bash
 zarcli tx staking delegate \
-  --amount=10000000uatom \
+  --amount=10000000uftm \
   --validator=<validator> \
   --from=<key_name> \
   --chain-id=<chain_id>
@@ -431,7 +431,7 @@ amount of tokens, use this following command.
 ```bash
 zarcli tx staking unbond \
   <validator_addr> \
-  10atom \
+  10ftm \
   --from=<key_name> \
   --chain-id=<chain_id>
 ```
@@ -466,7 +466,7 @@ A redelegation is a type delegation that allows you to bond illiquid tokens from
 zarcli tx staking redelegate \
   <src-validator-operator-addr> \
   <dst-validator-operator-addr> \
-  10atom \
+  10ftm \
   --from=<key_name> \
   --chain-id=<chain_id>
 ```
@@ -539,11 +539,11 @@ You can also query all of the delegations to a particular validator:
 Governance is the process from which users in the Cosmos Hub can come to consensus
 on software upgrades, parameters of the mainnet or signaling mechanisms through
 text proposals. This is done through voting on proposals, which will be submitted
-by `ATOM` holders on the mainnet.
+by `FTM` holders on the mainnet.
 
 Some considerations about the voting process:
 
-- Voting is done by bonded `ATOM` holders on a 1 bonded `ATOM` 1 vote basis
+- Voting is done by bonded `FTM` holders on a 1 bonded `FTM` 1 vote basis
 - Delegators inherit the vote of their validator if they don't vote
 - Votes are tallied at the end of the voting period (2 weeks on mainnet) where
 each address can vote multiple times to update its `Option` value (paying the transaction fee each time),
@@ -572,7 +572,7 @@ zarcli tx gov submit-proposal \
   --title=<title> \
   --description=<description> \
   --type="Text" \
-  --deposit="1000000uatom" \
+  --deposit="1000000uftm" \
   --from=<name> \
   --chain-id=<chain_id>
 ```
@@ -654,10 +654,10 @@ zarcli query gov proposer <proposal_id>
 
 #### Increase Deposit
 
-In order for a proposal to be broadcasted to the network, the amount deposited must be above a `minDeposit` value (initial value: `512000000uatom`). If the proposal you previously created didn't meet this requirement, you can still increase the total amount deposited to activate it. Once the minimum deposit is reached, the proposal enters voting period:
+In order for a proposal to be broadcasted to the network, the amount deposited must be above a `minDeposit` value (initial value: `512000000uftm`). If the proposal you previously created didn't meet this requirement, you can still increase the total amount deposited to activate it. Once the minimum deposit is reached, the proposal enters voting period:
 
 ```bash
-zarcli tx gov deposit <proposal_id> "10000000uatom" \
+zarcli tx gov deposit <proposal_id> "10000000uftm" \
   --from=<name> \
   --chain-id=<chain_id>
 ```
@@ -831,7 +831,7 @@ The first step to create a multisig transaction is to initiate it on behalf
 of the multisig address created above:
 
 ```bash
-zarcli tx send cosmos1570v2fq3twt0f0x02vhxpuzc9jc4yl30q2qned 1000000uatom \
+zarcli tx send cosmos1570v2fq3twt0f0x02vhxpuzc9jc4yl30q2qned 1000000uftm \
   --from=<multisig_address> \
   --generate-only > unsignedTx.json
 ```

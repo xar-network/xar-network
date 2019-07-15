@@ -41,7 +41,7 @@ You can edit the `~/.zard/config/zard.toml` file in order to enable the anti spa
 
 # The minimum gas prices a validator is willing to accept for processing a
 # transaction. A transaction's fees must meet the minimum of any denomination
-# specified in this config (e.g. 10uatom).
+# specified in this config (e.g. 10uftm).
 
 minimum-gas-prices = ""
 ```
@@ -84,7 +84,7 @@ For more information on seeds and peers, you can [read this](https://github.com/
 ## A Note on Gas and Fees
 
 ::: warning
-On Cosmos Hub mainnet, the accepted denom is `uatom`, where `1atom = 1.000.000uatom`
+On Cosmos Hub mainnet, the accepted denom is `uftm`, where `1ftm = 1.000.000uftm`
 :::
 
 Transactions on the Cosmos Hub network need to include a transaction fee in order to be processed. This fee pays for the gas required to run the transaction. The formula is the following:
@@ -100,14 +100,14 @@ The `gasPrice` is the price of each unit of `gas`. Each validator sets a `min-ga
 The transaction `fees` are the product of `gas` and `gasPrice`. As a user, you have to input 2 out of 3. The higher the `gasPrice`/`fees`, the higher the chance that your transaction will get included in a block. 
 
 ::: tip
-For mainnet, the recommended `gas-prices` is `0.025uatom`. 
+For mainnet, the recommended `gas-prices` is `0.025uftm`. 
 ::: 
 
 ## Set `minimum-gas-prices`
 
 Your full-node keeps unconfirmed transactions in its mempool. In order to protect it from spam, it is better to set a `minimum-gas-prices` that the transaction must meet in order to be accepted in your node's mempool. This parameter can be set in the following file `~/.zard/config/zard.toml`.
 
-The initial recommended `min-gas-prices` is `0.025uatom`, but you might want to change it later. 
+The initial recommended `min-gas-prices` is `0.025uftm`, but you might want to change it later. 
 
 ## Run a Full Node
 
@@ -151,7 +151,7 @@ zard export --height [height] --for-zero-height > [filename].json
 
 Help to prevent a catastrophe by running invariants on each block on your full
 node. In essence, by running invariants you ensure that the state of mainnet is
-the correct expected state. One vital invariant check is that no atoms are
+the correct expected state. One vital invariant check is that no ftms are
 being created or destroyed outside of expected protocol, however there are many
 other invariant checks each unique to their respective module. Because invariant checks 
 are computationally expensive, they are not enabled by default. To run a node with 

@@ -29,12 +29,12 @@ zard tendermint show-validator
 To create your validator, just use the following command:
 
 ::: warning 
-Don't use more `uatom` than you have! 
+Don't use more `uftm` than you have! 
 :::
 
 ```bash
 zarcli tx staking create-validator \
-  --amount=1000000uatom \
+  --amount=1000000uftm \
   --pubkey=$(zard tendermint show-validator) \
   --moniker="choose a moniker" \
   --chain-id=<chain_id> \
@@ -43,7 +43,7 @@ zarcli tx staking create-validator \
   --commission-max-change-rate="0.01" \
   --min-self-delegation="1" \
   --gas="auto" \
-  --gas-prices="0.025uatom" \
+  --gas-prices="0.025uftm" \
   --from=<key_name>
 ```
 
@@ -52,7 +52,7 @@ When specifying commission parameters, the `commission-max-change-rate` is used 
 :::
 
 ::: tip
-`Min-self-delegation` is a stritly positive integer that represents the minimum amount of self-delegated voting power your validator must always have. A `min-self-delegation` of 1 means your validator will never have a self-delegation lower than `1atom`, or `1000000uatom`
+`Min-self-delegation` is a stritly positive integer that represents the minimum amount of self-delegated voting power your validator must always have. A `min-self-delegation` of 1 means your validator will never have a self-delegation lower than `1ftm`, or `1000000uftm`
 :::
 
 You can confirm that you are in the validator set by using a third party explorer.
@@ -79,12 +79,12 @@ A `gentx` is a JSON file carrying a self-delegation. All genesis transactions ar
 :::
 
 ::: warning Note
-Don't use more `uatom` than you have! 
+Don't use more `uftm` than you have! 
 :::
 
 ```bash
 zard gentx \
-  --amount <amount_of_delegation_uatom> \
+  --amount <amount_of_delegation_uftm> \
   --commission-rate <commission_rate> \
   --commission-max-rate <commission_max_rate> \
   --commission-max-change-rate <commission_max_change_rate> \
@@ -114,7 +114,7 @@ zarcli tx staking edit-validator
   --details="To infinity and beyond!" \
   --chain-id=<chain_id> \
   --gas="auto" \
-  --gas-prices="0.025uatom" \
+  --gas-prices="0.025uftm" \
   --from=<key_name> \
   --commission-rate="0.10"
 ```

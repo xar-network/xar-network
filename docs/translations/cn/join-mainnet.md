@@ -39,7 +39,7 @@ moniker = "<your_custom_moniker>"
 
 # The minimum gas prices a validator is willing to accept for processing a
 # transaction. A transaction's fees must meet the minimum of any denomination
-# specified in this config (e.g. 10uatom).
+# specified in this config (e.g. 10uftm).
 
 minimum-gas-prices = ""
 ```
@@ -80,7 +80,7 @@ zard start
 你可以阅读[这里](https://github.com/tendermint/tendermint/blob/develop/docs/tendermint-core/using-tendermint.md#peers)了解更多伙伴节点和种子节点的信息。
 
 ::: 警告
-在Cosmos Hub主网中，可接受的币种是`uatom`,`1atom = 1.000.000uatom`
+在Cosmos Hub主网中，可接受的币种是`uftm`,`1ftm = 1.000.000uftm`
 :::
 
 Cosmos Hub网络中的交易需要支付一笔交易手续费以得到处理。手续费支付执行交易所消耗的gas。计算公式如下：
@@ -97,14 +97,14 @@ fees = gas * gasPrices
 交易的`fees`是`gas`与`gasPrice`的结果。作为一个用户，你必须输入三者中的两者。更高的`gasPrice`/`fees`，将提高你的交易被打包的机会。
 
 ::: 提示
-主网中推荐的`gas-prices`是`0.025uatom`
+主网中推荐的`gas-prices`是`0.025uftm`
 :::
 
 ## 设置`minimum-gas-prices`
 
 你的全节点可以在交易池中放入未确认的交易。为了保护其免受Spam攻击，最好设置一个`minimum-gas-prices`来过滤交易以决定是否要放入交易池。这个参数可以在`~/.zard/config/zard.toml`文件中配置。
 
-推荐的初始`minimum-gas-prices`是`0.025uatom`，如果你愿意可以稍后再修改它。
+推荐的初始`minimum-gas-prices`是`0.025uftm`，如果你愿意可以稍后再修改它。
 
 ## 运行一个全节点
 

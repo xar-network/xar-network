@@ -147,13 +147,13 @@ zarcli keys show --multisig-threshold K name1 name2 name3 [...]
 比如：
 
 ```bash
-zarcli tx send ... --fees=50000uatom
+zarcli tx send ... --fees=50000uftm
 ```
 
 或：
 
 ```bash
-zarcli tx send ... --gas-prices=0.025uatom
+zarcli tx send ... --gas-prices=0.025uftm
 ```
 
 
@@ -329,7 +329,7 @@ zarcli query slashing params
 
 #### 向一个验证人委托
 
-一旦主网上线，你可以把`atom`委托给一个验证人。这些委托人可以收到部分验证人的收益。阅读[Cosmos Token Model](https://github.com/cosmos/cosmos/raw/master/Cosmos_Token_Model.pdf)了解更多信息。
+一旦主网上线，你可以把`ftm`委托给一个验证人。这些委托人可以收到部分验证人的收益。阅读[Cosmos Token Model](https://github.com/cosmos/cosmos/raw/master/Cosmos_Token_Model.pdf)了解更多信息。
 
 #### 查询验证人
 
@@ -347,11 +347,11 @@ zarcli query staking validator <account_cosmosval>
 
 #### 绑定 Token
 
-在Cosmos Hub主网中，我们绑定`uatom`，`1atom = 1000000uatom`。你可以把token绑定在一个测试网验证人节点上（即委托）：
+在Cosmos Hub主网中，我们绑定`uftm`，`1ftm = 1000000uftm`。你可以把token绑定在一个测试网验证人节点上（即委托）：
 
 ```bash
 zarcli tx staking delegate \
-  --amount=10000000uatom \
+  --amount=10000000uftm \
   --validator=<validator> \
   --from=<key_name> \
   --chain-id=<chain_id>
@@ -389,7 +389,7 @@ zarcli query staking delegations <delegator_addr>
 ```bash
 zarcli tx staking unbond \
   <validator_addr> \
-  10atom \
+  10ftm \
   --from=<key_name> \
   --chain-id=<chain_id>
 ```
@@ -426,7 +426,7 @@ zarcli query staking unbonding-delegations-from <account_cosmosval>
 zarcli tx staking redelegate \
   <src-validator-operator-addr> \
   <dst-validator-operator-addr> \
-  10atom \
+  10ftm \
   --from=<key_name> \
   --chain-id=<chain_id>
 ```
@@ -518,7 +518,7 @@ zarcli tx gov submit-proposal \
   --title=<title> \
   --description=<description> \
   --type="Text" \
-  --deposit="1000000uatom" \
+  --deposit="1000000uftm" \
   --from=<name> \
   --chain-id=<chain_id>
 ```
@@ -604,7 +604,7 @@ zarcli query gov proposer <proposal_id>
 为了将提案广播到网络，存入的金额必须高于`minDeposit`值（初始值：`10steak`）。如果你之前创建的提案不符合此要求，你仍可以增加存入的总金额以激活它。达到最低存入金后，提案进入投票期：
 
 ```bash
-zarcli tx gov deposit <proposal_id> "10000000uatom" \
+zarcli tx gov deposit <proposal_id> "10000000uftm" \
   --from=<name> \
   --chain-id=<chain_id>
 ```
@@ -761,7 +761,7 @@ zarcli keys show p1p2p3 --show-multisig
 创建多签交易的第一步是使用上面创建的多签地址初始化：
 
 ```bash
-zarcli tx send cosmos1570v2fq3twt0f0x02vhxpuzc9jc4yl30q2qned 10000000uatom \
+zarcli tx send cosmos1570v2fq3twt0f0x02vhxpuzc9jc4yl30q2qned 10000000uftm \
   --from=<multisig_address> \
   --generate-only > unsignedTx.json
 ```

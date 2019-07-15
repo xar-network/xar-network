@@ -29,7 +29,7 @@
 - [状态查询](#状态查询)
 - [发起交易](#发起交易)
     + [关于gas费和手续费](#关于gas费和手续费)
-    + [抵押Atom通证 & 提取奖励](#抵押atom通证--提取奖励)
+    + [抵押Atom通证 & 提取奖励](#抵押ftm通证--提取奖励)
     + [参与链上治理](#参与链上治理)
     + [从一台离线电脑上签署交易](#从一台离线电脑上签署交易)
 
@@ -320,7 +320,7 @@ zarcli config chain-id gos-6
 ## 状态查询
 
 ::: 提示
-** 准备抵押ATOM通证和取回奖励前，需要先完成 [`zarcli` 配置](#设置-zarcli)**
+** 准备抵押FTM通证和取回奖励前，需要先完成 [`zarcli` 配置](#设置-zarcli)**
 :::
 
 
@@ -399,20 +399,20 @@ fees = gas * gasPrices
 
 ```bash
 // 向指定验证人绑定一定数量的Atom通证
-// 参数设定样例: <validatorAddress>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToBound>=10000000000uatom, <gasPrice>=1000uatom
+// 参数设定样例: <validatorAddress>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToBound>=10000000000uftm, <gasPrice>=1000uftm
 
 zarcli tx staking delegate <validatorAddress> <amountToBond> --from <delegatorKeyName> --gas auto --gas-prices <gasPrice>
 
 
 // 提取所有的奖励
-// 参数设定样例: <gasPrice>=1000uatom
+// 参数设定样例: <gasPrice>=1000uftm
 
 zarcli tx distribution withdraw-all-rewards --from <delegatorKeyName> --gas auto --gas-prices <gasPrice>
 
 
 // 向指定验证人申请解绑一定数量的Atom通证
 // 解绑的通证需要3周后才能完全解绑并可以交易，
-// 参数设定样例: <validatorAddress>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToUnbound>=10000000000uatom, <gasPrice>=1000uatom
+// 参数设定样例: <validatorAddress>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToUnbound>=10000000000uftm, <gasPrice>=1000uftm
 
 zarcli tx staking unbond <validatorAddress> <amountToUnbond> --from <delegatorKeyName> --gas auto --gas-prices <gasPrice>
 ```
@@ -458,7 +458,7 @@ Cosmos Hub有一个内建的治理系统，该系统允许抵押通证的持有�
 #### 实践练习
 
 ::: 提示
-**在您能够抵押通证或者提取奖励以前，您需要了解[通证抵押](#抵押atom通证--提取奖励)**
+**在您能够抵押通证或者提取奖励以前，您需要了解[通证抵押](#抵押ftm通证--提取奖励)**
 :::
 
 ::: 警告
@@ -469,14 +469,14 @@ Cosmos Hub有一个内建的治理系统，该系统允许抵押通证的持有�
 ```bash
 // 提交一个提案
 // <type>=text/parameter_change/software_upgrade
-// ex value for flag: <gasPrice>=100uatom
+// ex value for flag: <gasPrice>=100uftm
 
-zarcli tx gov submit-proposal --title "Test Proposal" --description "My awesome proposal" --type <type> --deposit=10000000uatom --gas auto --gas-prices <gasPrice> --from <delegatorKeyName>
+zarcli tx gov submit-proposal --title "Test Proposal" --description "My awesome proposal" --type <type> --deposit=10000000uftm --gas auto --gas-prices <gasPrice> --from <delegatorKeyName>
 
 // 增加对提案的抵押
 // Retrieve proposalID from $zarcli query gov proposals --status deposit_period
 // 通过 $zarcli query gov proposals --status deposit_period 命令获得 `proposalID` 
-// 参数设定样例: <deposit>=1000000uatom
+// 参数设定样例: <deposit>=1000000uftm
 
 zarcli tx gov deposit <proposalID> <deposit> --gas auto --gas-prices <gasPrice> --from <delegatorKeyName>
 
@@ -495,7 +495,7 @@ zarcli tx gov vote <proposalID> <option> --gas auto --gas-prices <gasPrice> --fr
 
 ```bash
 // 抵押Atom通证
-// 参数设定样例: <amountToBound>=10000000000uatom, <bech32AddressOfValidator>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <gasPrice>=1000uatom
+// 参数设定样例: <amountToBound>=10000000000uftm, <bech32AddressOfValidator>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <gasPrice>=1000uftm
 
 zarcli tx staking delegate <validatorAddress> <amountToBond> --from <delegatorKeyName> --gas auto --gas-prices <gasPrice> --generate-only > unsignedTX.json
 ```

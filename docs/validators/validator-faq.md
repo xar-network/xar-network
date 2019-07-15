@@ -48,7 +48,7 @@ Any participant in the network can signal that they want to become a validator b
 * **Commission max change rate:** The maximum daily increase of the validator  commission. This parameter cannot be changed after `create-validator` is processed.
 * **Minimum self-delegation:** Minimum amount of Atoms the validator needs to have bonded at all time. If the validator's self-delegated stake falls below this limit, their entire staking pool will unbond.
 
-Once a validator is created, Atom holders can delegate atoms to them, effectively adding stake to their pool. The total stake of an address is the combination of Atoms bonded by delegators and Atoms self-bonded by the entity which designated themselves.
+Once a validator is created, Atom holders can delegate ftms to them, effectively adding stake to their pool. The total stake of an address is the combination of Atoms bonded by delegators and Atoms self-bonded by the entity which designated themselves.
 
 Out of all validator candidates that signaled themselves, the 100 with the most total stake are the ones who are designated as validators. They become **validators** If a validator's total stake falls below the top 100 then that validator loses their validator privileges: they don't participate in consensus and generate rewards any more. Over time, the maximum number of validators will increase, according to the following schedule (*Note: this schedule can be changed by governance*):
 
@@ -100,7 +100,7 @@ Self-delegation is delegation from a validator to themselves. This amount can be
 
 ### Is there a minimum amount of Atoms that must be delegated to be an active (=bonded) validator?
 
-The minimum is `1 atom`. 
+The minimum is `1 ftm`. 
 
 ### How will delegators choose their validators?
 
@@ -161,7 +161,7 @@ Yes, they will. If governance decides so, validators of the Cosmos hub may be re
 Each member of a validator's staking pool earns different types of revenue:
 
 * **Block rewards:** Native tokens of applications run by validators (e.g. Atoms on the Cosmos Hub) are inflated to produce block provisions. These provisions exist to incentivize Atom holders to bond their stake, as non-bonded Atom will be diluted over time.
-* **Transaction fees:** The Cosmos Hub maintains a whitelist of token that are accepted as fee payment. The initial fee token is the `atom`.
+* **Transaction fees:** The Cosmos Hub maintains a whitelist of token that are accepted as fee payment. The initial fee token is the `ftm`.
 
 This total revenue is divided among validators' staking pools according to each validator's weight. Then, within each validator's staking pool the revenue is divided among delegators in proportion to each delegator's stake. A commission on delegators' revenue is applied by the validator before it is distributed.
 
@@ -177,7 +177,7 @@ Revenue received by a validator's pool is split between the validator and their 
 
 ### How are block rewards distributed?
 
-Block rewards are distributed proportionally to all validators relative to their voting power. This means that even though each validator gains atoms with each reward, all validators will maintain equal weight over time.
+Block rewards are distributed proportionally to all validators relative to their voting power. This means that even though each validator gains ftms with each reward, all validators will maintain equal weight over time.
 
 Let us take an example where we have 10 validators with equal voting power and a commission rate of 1%. Let us also assume that the reward for a block is 1000 Atoms and that each validator has 20% of self-bonded Atoms. These tokens do not go directly to the proposer. Instead, they are evenly spread among validators. So now each validator's pool has 100 Atoms. These 100 Atoms will be distributed according to each participant's stake:
 
@@ -225,7 +225,7 @@ If a validator misbehaves, their delegated stake will be partially slashed. Ther
 
 ### Do validators need to self-delegate Atoms?
 
-Yes, they do need to self-delegate at least `1 atom`. Even though there is no obligation for validators to self-delegate more than `1 atom`, delegators should want their validator to have more self-delegated Atoms in their staking pool. In other words, validators should have skin in the game.
+Yes, they do need to self-delegate at least `1 ftm`. Even though there is no obligation for validators to self-delegate more than `1 ftm`, delegators should want their validator to have more self-delegated Atoms in their staking pool. In other words, validators should have skin in the game.
 
 In order for delegators to have some guarantee about how much skin-in-the-game their validator has, the latter can signal a minimum amount of self-delegated Atoms. If a validator's self-delegation goes below the limit that it predefined, this validator and all of its delegators will unbond.
 

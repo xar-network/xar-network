@@ -23,7 +23,7 @@ CLI를 사용하는 위임자는 매우 실험적인 블록체인 기술이 사�
     + [다른 풀노드와 연결하기](#connecting-to-a-remote-full-node)
 - [`zarcli` 설정하기](#setting-up-zarcli)
 - [상태(state) 조회하기](#querying-the-state)
-- [아톰 위임하기 / 위임 철회(unbond)하기 / 보상 수령하기](#bonding-atoms-and-withdrawing-rewards)
+- [아톰 위임하기 / 위임 철회(unbond)하기 / 보상 수령하기](#bonding-ftms-and-withdrawing-rewards)
 - [거버넌스에 참여하기](#participating-in-governance)
 - [오프라인 컴퓨터에서 트랜잭션 서명하기](#signing-transactions-from-an-offline-computer)
 
@@ -300,7 +300,7 @@ zarcli query
 ## 트랜잭션 전송하기
 
 ::: warning
-코스모스 메인넷에서는 `uatom` 단위가 표준 단위로 사용됩니다. `1atom = 1,000,000uatom`으로 환산됩니다.
+코스모스 메인넷에서는 `uftm` 단위가 표준 단위로 사용됩니다. `1ftm = 1,000,000uftm`으로 환산됩니다.
 :::
 
 ### 가스와 수수료에 대해서
@@ -319,7 +319,7 @@ zarcli query
 트랜잭션 피(`fees`)는 `gas` 수량과 `gasPrice`를 곱한 값입니다. 유저는 3개의 값 중 2개의 값을 입력하게 됩니다. `gasPrice`가 높을수록 트랜잭션이 블록에 포함될 확률이 높아집니다.
 
 ::: tip
-메인넷 권장 `gas-prices`는 `0.025uatom` 입니다.
+메인넷 권장 `gas-prices`는 `0.025uftm` 입니다.
 :::
 
 ### 아톰 위임하기 / 리워드 수령하기
@@ -334,7 +334,7 @@ zarcli query
 
 ```bash
 // 아톰 위임하기 
-// 각 플래그 값 예시: <위임할 수량(amountToBound)> = 10000uatom, <검증인의 bech32 주소(bech32AddressOfValidator)> = cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <가스 가격(gasPrice)> = 0.025uatom
+// 각 플래그 값 예시: <위임할 수량(amountToBound)> = 10000uftm, <검증인의 bech32 주소(bech32AddressOfValidator)> = cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <가스 가격(gasPrice)> = 0.025uftm
 
 zarcli tx staking --amount <위임할 수량(amountToBond)> --validator <검증인의 bech32 주소(bech32AddressOfValidator)> --from <위임자 키 명칭(delegatorKeyName)> --gas auto --gas-prices <가스 가격(gasPrice)>
 
@@ -389,13 +389,13 @@ zarcli query tx <tx 해시값(txHash)>
 ```bash
 // 프로포절 제안하기
 // <프로포절 종류(type)>=text/parameter_change/software_upgrade
-// 플래그 값 예시: <가스 가격(gasPrice)>=0.025uatom
+// 플래그 값 예시: <가스 가격(gasPrice)>=0.025uftm
 
-zarcli tx gov submit-proposal --title "Test Proposal" --description "My awesome proposal" --type <프로포절 종류(type)> --deposit=10000000uatom --gas auto --gas-prices <가스 가격(gasPrice)> --from <위임자 키 명칭(delegatorKeyName)>
+zarcli tx gov submit-proposal --title "Test Proposal" --description "My awesome proposal" --type <프로포절 종류(type)> --deposit=10000000uftm --gas auto --gas-prices <가스 가격(gasPrice)> --from <위임자 키 명칭(delegatorKeyName)>
 
 // 프로포절의 예치금 추가하기
 // 프로포절의 proposalID 조회: $zarcli query gov proposals --status deposit_period
-// 파라미터 값 예시: <예치금(deposit)>=10000000uatom
+// 파라미터 값 예시: <예치금(deposit)>=10000000uftm
 
 zarcli tx gov deposit <프로포절 ID(proposalID)> <추가할 예치금(deposit)> --gas auto --gas-prices <가스 가격(gasPrice)> --from <위임자 키 명칭(delegatorKeyName)>
 
@@ -412,7 +412,7 @@ zarcli tx gov vote <프로포절 ID(proposalID)> <표 선택(option)> --gas auto
 
 ```bash
 // 아톰 본딩하기 
-// 플래그 값 예시: <본딩할 수량(amountToBond)>=10000000uatom, <위임할 검증인의 bech32 주소(bech32AddressOfValidator)>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <가스 가격(gasPrice)>=0.025uatom
+// 플래그 값 예시: <본딩할 수량(amountToBond)>=10000000uftm, <위임할 검증인의 bech32 주소(bech32AddressOfValidator)>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <가스 가격(gasPrice)>=0.025uftm
 
 zarcli tx staking --amount <본딩할 수량(amountToBond)> --validator <위임할 검증인의 bech32 주소(bech32AddressOfValidator)> --gas auto --gas-prices <가스 가격(gasPrice)> --generate-only > unsignedTX.json
 ```

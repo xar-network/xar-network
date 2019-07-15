@@ -136,7 +136,7 @@ zarcli tx send ... --fees=100photino
 또는
 
 ```bash
-zarcli tx send ... --gas-prices=1uatom
+zarcli tx send ... --gas-prices=1uftm
 ```
 
 ### 계정
@@ -312,7 +312,7 @@ zarcli query slashing params
 
 #### 검증인에게 위임하기
 
-메인넷에서는 `atom`을 특정 검증인에게 위임할 수 있습니다. 스테이킹에 참여하는 [위임인](/resources/delegators-faq)은 검증인 보상의 일부를 받을 수 있습니다. 관련 정보는 [코스모스 토큰 모델](https://github.com/cosmos/cosmos/raw/master/Cosmos_Token_Model.pdf)에서 확인하세요.
+메인넷에서는 `ftm`을 특정 검증인에게 위임할 수 있습니다. 스테이킹에 참여하는 [위임인](/resources/delegators-faq)은 검증인 보상의 일부를 받을 수 있습니다. 관련 정보는 [코스모스 토큰 모델](https://github.com/cosmos/cosmos/raw/master/Cosmos_Token_Model.pdf)에서 확인하세요.
 
 ##### 검증인 조회하기
 
@@ -330,12 +330,12 @@ zarcli query staking validator <account_cosmosval(cosmosval 계정)>
 
 #### 토큰 본딩하기
 
-테스트넷의 경우 `atom`이 아닌 `stake`를 위임합니다. 특정 테스트넷 검증인에게 토큰을 본딩하기 위해서는:
+테스트넷의 경우 `ftm`이 아닌 `stake`를 위임합니다. 특정 테스트넷 검증인에게 토큰을 본딩하기 위해서는:
 
 
 ```bash
 zarcli tx staking delegate \
-  --amount=10000000uatom \
+  --amount=10000000uftm \
   --validator=<validator(검증인 주소)> \
   --from=<key_name(트랜잭션을 발생할 키/계정 이름)> \
   --chain-id=<chain_id(체인 아이디)>
@@ -378,7 +378,7 @@ zarcli query staking delegation <delegator_addr(위임자 코스모스 주소)>
 ```bash
 zarcli tx staking unbond \
   <validator_addr> \
-  10atom \
+  10ftm \
   --from=<key_name> \
   --chain-id=<chain_id>
 ```
@@ -413,7 +413,7 @@ zarcli query staking unbonding-delegations-from <account_cosmosval(검증인 cos
 zarcli tx staking redelegate \
   <src-validator-operator-addr> \
   <dst-validator-operator-addr> \
-  10atom \
+  10ftm \
   --from=<key_name> \
   --chain-id=<chain_id>
 ```
@@ -508,7 +508,7 @@ zarcli tx gov submit-proposal \
   --title=<title(프로포절 제목)> \
   --description=<description(프로포절 설명)> \
   --type=<Text/ParameterChange/SoftwareUpgrade(프로포절 타입)> \
-  --deposit=<40000000uatom(예치금 수량)> \
+  --deposit=<40000000uftm(예치금 수량)> \
   --from=<name(트랜잭션을 발생시킬 키/계정 이름)> \
   --chain-id=<chain_id(체인 아이디)>
 ```
@@ -540,7 +540,7 @@ zarcli query gov proposer <proposal_id(프로포절 ID)>
 프로포절이 네트워크에 전파되기 위해서는 해당 프로포절의 보증금이 `minDeposit` 값 이상이어야 합니다 (현재 기본 값은 `10 stake`입니다). 만약 사전에 생성한 프로포절이 해당 기준을 충족하지 못하였다면 추후에 보증금을 추가 예치하여 활성화할 수 있습니다. 프로포절의 보증금이 최소 값을 도달하면 해당 프로포절의 투표는 활성화 됩니다:
 
 ```bash
-zarcli tx gov deposit <proposal_id(프로포절 ID)> <200000000uatom(금액)> \
+zarcli tx gov deposit <proposal_id(프로포절 ID)> <200000000uftm(금액)> \
   --from=<name(트랜잭션을 발생시킬 키/계정 이름)> \
   --chain-id=<chain_id(체인 아이디)>
 ```
@@ -681,7 +681,7 @@ zarcli keys show --address p1p2p3
 위 주소를 기반으로 멀티시그 트랜잭션을 생성하는 과정의 첫 단계는 다음과 같습니다:
 
 ```bash
-zarcli tx send cosmos1570v2fq3twt0f0x02vhxpuzc9jc4yl30q2qned 10000000uatom \
+zarcli tx send cosmos1570v2fq3twt0f0x02vhxpuzc9jc4yl30q2qned 10000000uftm \
   --from=<multisig_address(멀티시그 주소)> \
   --generate-only > unsignedTx.json
 ```

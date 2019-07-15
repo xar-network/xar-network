@@ -160,7 +160,7 @@ zarcli keys show <keyName> -d
 Confirm that the address displayed on your Ledger matches that shown on Lunie.io before proceeding.
 Now you can use your Ledger key to sign transctions on Lunie.
 
-To learn more about using Lunie, [here is a tutorial](https://medium.com/easy2stake/how-to-delegate-re-delegate-un-delegate-cosmos-atoms-with-the-lunie-web-wallet-eb72369e52db) on staking and delegating ATOMs using the Lunie web wallet.
+To learn more about using Lunie, [here is a tutorial](https://medium.com/easy2stake/how-to-delegate-re-delegate-un-delegate-cosmos-ftms-with-the-lunie-web-wallet-eb72369e52db) on staking and delegating FTMs using the Lunie web wallet.
 
 # The Cosmos Standard Transaction
 
@@ -181,5 +181,5 @@ Feel welcome to reach out in our [Telegram channel](https://t.me/cosmosproject) 
 
 Here are a few relevant and helpful tutorials from the wonderful Cosmos community:
 
-- [Ztake](https://medium.com/@miranugumanova) - [How to Redelegate Cosmos Atoms with the Lunie Web Wallet](https://medium.com/@miranugumanova/how-to-re-delegate-cosmos-atoms-with-lunie-web-wallet-8303752832c5)
-- [Cryptium Labs](https://medium.com/cryptium-cosmos) - [How to store your ATOMS on your Ledger and delegate with the command line](https://medium.com/cryptium-cosmos/how-to-store-your-cosmos-atoms-on-your-ledger-and-delegate-with-the-command-line-929eb29705f)
+- [Ztake](https://medium.com/@miranugumanova) - [How to Redelegate Cosmos Atoms with the Lunie Web Wallet](https://medium.com/@miranugumanova/how-to-re-delegate-cosmos-ftms-with-lunie-web-wallet-8303752832c5)
+- [Cryptium Labs](https://medium.com/cryptium-cosmos) - [How to store your FTMS on your Ledger and delegate with the command line](https://medium.com/cryptium-cosmos/how-to-store-your-cosmos-ftms-on-your-ledger-and-delegate-with-the-command-line-929eb29705f)

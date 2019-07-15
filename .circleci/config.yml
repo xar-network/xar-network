@@ -194,7 +194,7 @@ jobs:
             export GO111MODULE=on
             for pkg in $(go list ./... | grep -v github.com/zar-network/zar-network/cli_test | grep -v '/simulation' | circleci tests split --split-by=timings); do
               id=$(echo "$pkg" | sed 's|[/.]|_|g')
-              go test -mod=readonly -timeout 8m -race -coverprofile=/tmp/workspace/profiles/$id.out -covermode=atomic -tags='ledger test_ledger_mock' "$pkg" | tee "/tmp/logs/$id-$RANDOM.log"
+              go test -mod=readonly -timeout 8m -race -coverprofile=/tmp/workspace/profiles/$id.out -covermode=ftmic -tags='ledger test_ledger_mock' "$pkg" | tee "/tmp/logs/$id-$RANDOM.log"
             done
       - persist_to_workspace:
           root: /tmp/workspace
@@ -217,7 +217,7 @@ jobs:
 
             echo "--> Concatenating profiles:"
             ls /tmp/workspace/profiles/
-            echo "mode: atomic" > coverage.txt
+            echo "mode: ftmic" > coverage.txt
             for prof in $(ls /tmp/workspace/profiles/); do
               tail -n +2 /tmp/workspace/profiles/"$prof" >> coverage.txt
             done

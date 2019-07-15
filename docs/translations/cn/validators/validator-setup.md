@@ -27,12 +27,12 @@ zard tendermint show-validator
 使用下面的命令创建你的验证人：
 
 ::: 注意
-不要使用多于你所拥有的`uatom`!
+不要使用多于你所拥有的`uftm`!
 :::
 
 ```bash
 zarcli tx staking create-validator \
-  --amount=1000000uatom \
+  --amount=1000000uftm \
   --pubkey=$(zard tendermint show-validator) \
   --moniker="choose a moniker" \
   --chain-id=<chain_id> \
@@ -41,7 +41,7 @@ zarcli tx staking create-validator \
   --commission-max-change-rate="0.01" \
   --min-self-delegation="1" \
   --gas="auto" \
-  --gas-prices="0.025uatom" \
+  --gas-prices="0.025uftm" \
   --from=<key_name>
 ```
 
@@ -76,12 +76,12 @@ zard tendermint show-validator
 :::
 
 ::: 注意
-不要使用多于你所拥有的`uatom`!
+不要使用多于你所拥有的`uftm`!
 :::
 
 ```bash
 zard gentx \
-  --amount <amount_of_delegation_uatom> \
+  --amount <amount_of_delegation_uftm> \
   --commission-rate <commission_rate> \
   --commission-max-rate <commission_max_rate> \
   --commission-max-change-rate <commission_max_change_rate> \
@@ -111,7 +111,7 @@ zarcli tx staking edit-validator
   --details="To infinity and beyond!" \
   --chain-id=<chain_id> \
   --gas="auto" \
-  --gas-prices="0.025uatom" \
+  --gas-prices="0.025uftm" \
   --from=<key_name> \
   --commission-rate="0.10"
 ```

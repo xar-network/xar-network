@@ -40,7 +40,7 @@ Please exercise extreme caution!
 - [Querying the State](#querying-the-state)
 - [Sending Transactions](#sending-transactions)
     + [A Note on Gas and Fees](#a-note-on-gas-and-fees)
-    + [Bonding Atoms and Withdrawing Rewards](#bonding-atoms-and-withdrawing-rewards)
+    + [Bonding Atoms and Withdrawing Rewards](#bonding-ftms-and-withdrawing-rewards)
     + [Participating in Governance](#participating-in-governance)
     + [Signing Transactions from an Offline Computer](#signing-transactions-from-an-offline-computer)
 
@@ -292,7 +292,7 @@ zarcli config chain-id cosmoshub-2
 ## Querying the State
 
 ::: tip
-**Before you can bond atoms and withdraw rewards, you need to [set up `zarcli`](#setting-up-zarcli)**
+**Before you can bond ftms and withdraw rewards, you need to [set up `zarcli`](#setting-up-zarcli)**
 :::
 
 `zarcli` lets you query all relevant information from the blockchain, like account balances, amount of bonded tokens, outstanding rewards, governance proposals and more. Next is a list of the most useful commands for delegator. 
@@ -337,7 +337,7 @@ For each command, you can use the `-h` or `--help` flag to get more information.
 ## Sending Transactions
 
 ::: warning
-On Cosmos Hub mainnet, the accepted denom is `uatom`, where `1atom = 1,000,000uatom`
+On Cosmos Hub mainnet, the accepted denom is `uftm`, where `1ftm = 1,000,000uftm`
 :::
 
 ### A Note on Gas and Fees
@@ -355,13 +355,13 @@ The `gasPrice` is the price of each unit of `gas`. Each validator sets a `min-ga
 The transaction `fees` are the product of `gas` and `gasPrice`. As a user, you have to input 2 out of 3. The higher the `gasPrice`/`fees`, the higher the chance that your transaction will get included in a block. 
 
 ::: tip
-For mainnet, the recommended `gas-prices` is `0.025uatom`. 
+For mainnet, the recommended `gas-prices` is `0.025uftm`. 
 ::: 
 
 ### Sending Tokens
 
 ::: tip
-**Before you can bond atoms and withdraw rewards, you need to [set up `zarcli`](#setting-up-zarcli) and [create an account](#creating-an-account)**
+**Before you can bond ftms and withdraw rewards, you need to [set up `zarcli`](#setting-up-zarcli) and [create an account](#creating-an-account)**
 :::
 
 ::: warning
@@ -370,8 +370,8 @@ For mainnet, the recommended `gas-prices` is `0.025uatom`.
 
 ```bash
 // Send a certain amount of tokens to an address
-// Ex value for parameters (do not actually use these values in your tx!!): <to_address>=cosmos16m93fezfiezhvnjajzrfyszml8qm92a0w67ntjhd3d0 <amount>=1000000uatom 
-// Ex value for flags: <gasPrice>=0.025uatom
+// Ex value for parameters (do not actually use these values in your tx!!): <to_address>=cosmos16m93fezfiezhvnjajzrfyszml8qm92a0w67ntjhd3d0 <amount>=1000000uftm 
+// Ex value for flags: <gasPrice>=0.025uftm
 
 zarcli tx send <to_address> <amount> --from <yourKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
 ```
@@ -379,7 +379,7 @@ zarcli tx send <to_address> <amount> --from <yourKeyName> --gas auto --gas-adjus
 ### Bonding Atoms and Withdrawing Rewards
 
 ::: tip
-**Before you can bond atoms and withdraw rewards, you need to [set up `zarcli`](#setting-up-zarcli) and [create an account](#creating-an-account)**
+**Before you can bond ftms and withdraw rewards, you need to [set up `zarcli`](#setting-up-zarcli) and [create an account](#creating-an-account)**
 :::
 
 ::: warning
@@ -392,7 +392,7 @@ zarcli tx send <to_address> <amount> --from <yourKeyName> --gas auto --gas-adjus
 
 ```bash
 // Bond a certain amount of Atoms to a given validator
-// ex value for flags: <validatorAddress>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToBound>=10000000uatom, <gasPrice>=0.025uatom
+// ex value for flags: <validatorAddress>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToBound>=10000000uftm, <gasPrice>=0.025uftm
 
 zarcli tx staking delegate <validatorAddress> <amountToBond> --from <delegatorKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
 
@@ -401,19 +401,19 @@ zarcli tx staking delegate <validatorAddress> <amountToBond> --from <delegatorKe
 // Can only be used if already bonded to a validator
 // Redelegation takes effect immediately, there is no waiting period to redelegate
 // After a redelegation, no other redelegation can be made from the account for the next 3 weeks
-// ex value for flags: <stcValidatorAddress>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToRedelegate>=100000000uatom, <gasPrice>=0.025uatom
+// ex value for flags: <stcValidatorAddress>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToRedelegate>=100000000uftm, <gasPrice>=0.025uftm
 
 zarcli tx staking redelegate <srcValidatorAddress> <destValidatorAddress> <amountToRedelegate> --from <delegatorKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
 
 // Withdraw all rewards
-// ex value for flag: <gasPrice>=0.025uatom
+// ex value for flag: <gasPrice>=0.025uftm
 
 zarcli tx distribution withdraw-all-rewards --from <delegatorKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
 
 
 // Unbond a certain amount of Atoms from a given validator 
 // You will have to wait 3 weeks before your Atoms are fully unbonded and transferrable 
-// ex value for flags: <validatorAddress>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToUnbound>=10000000uatom, <gasPrice>=0.025uatom
+// ex value for flags: <validatorAddress>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToUnbound>=10000000uftm, <gasPrice>=0.025uftm
 
 zarcli tx staking unbond <validatorAddress> <amountToUnbond> --from <delegatorKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
 ```
@@ -458,7 +458,7 @@ At the end of the voting period, the proposal is accepted if there are more than
 #### In Practice
 
 ::: tip
-**Before you can bond atoms and withdraw rewards, you need to [bond Atoms](#bonding-atoms-and-withdrawing-rewards)**
+**Before you can bond ftms and withdraw rewards, you need to [bond Atoms](#bonding-ftms-and-withdrawing-rewards)**
 :::
 
 ::: warning
@@ -468,13 +468,13 @@ At the end of the voting period, the proposal is accepted if there are more than
 ```bash
 // Submit a Proposal
 // <type>=text/parameter_change/software_upgrade
-// ex value for flag: <gasPrice>=0.025uatom
+// ex value for flag: <gasPrice>=0.025uftm
 
-zarcli tx gov submit-proposal --title "Test Proposal" --description "My awesome proposal" --type <type> --deposit=10000000uatom --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice> --from <delegatorKeyName>
+zarcli tx gov submit-proposal --title "Test Proposal" --description "My awesome proposal" --type <type> --deposit=10000000uftm --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice> --from <delegatorKeyName>
 
 // Increase deposit of a proposal
 // Retrieve proposalID from $zarcli query gov proposals --status deposit_period
-// ex value for parameter: <deposit>=10000000uatom
+// ex value for parameter: <deposit>=10000000uftm
 
 zarcli tx gov deposit <proposalID> <deposit> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice> --from <delegatorKeyName>
 
@@ -491,7 +491,7 @@ If you do not have a ledger device and want to interact with your private key on
 
 ```bash
 // Bond Atoms 
-// ex value for flags: <amountToBound>=10000000uatom, <bech32AddressOfValidator>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <gasPrice>=0.025uatom, <delegatorAddress>=cosmos10snjt8dmpr5my0h76xj48ty80uzwhraqalu4eg
+// ex value for flags: <amountToBound>=10000000uftm, <bech32AddressOfValidator>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <gasPrice>=0.025uftm, <delegatorAddress>=cosmos10snjt8dmpr5my0h76xj48ty80uzwhraqalu4eg
 
 zarcli tx staking delegate <validatorAddress> <amountToBond> --from <delegatorAddress> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice> --generate-only > unsignedTX.json
 ```

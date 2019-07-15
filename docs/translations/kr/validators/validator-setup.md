@@ -36,7 +36,7 @@ zard tendermint show-validator
 
 ```bash
 zarcli tx staking create-validator \
-  --amount=5000000uatom \
+  --amount=5000000uftm \
   --pubkey=$(zard tendermint show-validator) \
   --moniker="choose a moniker" \
   --chain-id=<chain_id> \
