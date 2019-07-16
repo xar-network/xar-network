@@ -74,7 +74,7 @@ Cosmos Hub是一个权益证明（PoS）区块链，意味着验证人的权重�
 ### 我要怎样加入到测试网？
 测试网络是一个在主网上线之前很好的测试验证人设置的环境。
 
-我们将参与测试网络视为一个向社区展示你是有准备且有能力去运行验证人节点的方式。你可以在[这里](https://github.com/Fantom-foundation/cosmos-sdk/tree/develop/cmd/zar/testnets)和[这里](https://github.com/cosmos/testnets)找到有关测试网的更多内容。
+我们将参与测试网络视为一个向社区展示你是有准备且有能力去运行验证人节点的方式。你可以在[这里](https://github.com/cosmos/cosmos-sdk/tree/develop/cmd/zar/testnets)和[这里](https://github.com/cosmos/testnets)找到有关测试网的更多内容。
 
 
 ### 密钥的不同类型？

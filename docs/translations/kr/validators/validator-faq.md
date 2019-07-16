@@ -70,7 +70,7 @@
 
 ### 어떻게 테스트넷에 참여할 수 있나요?
 
-테스트넷은 로치 전에 검증인 세팅을 확인할 수 있는 좋은 환경입니다. 테스트넷에 참가함으로 본인이 검증인 운영을 위해 준비해왔다는 것을 보여주는 기회가 될 수도 있습니다. 테스트넷에 관련된 정보는 [여기](https://github.com/Fantom-foundation/cosmos-sdk/tree/develop/cmd/zar/testnets) 와 [여기](https://github.com/cosmos/testnets)에서 확인하실 수 있습니다.
+테스트넷은 로치 전에 검증인 세팅을 확인할 수 있는 좋은 환경입니다. 테스트넷에 참가함으로 본인이 검증인 운영을 위해 준비해왔다는 것을 보여주는 기회가 될 수도 있습니다. 테스트넷에 관련된 정보는 [여기](https://github.com/cosmos/cosmos-sdk/tree/develop/cmd/zar/testnets) 와 [여기](https://github.com/cosmos/testnets)에서 확인하실 수 있습니다.
 
 ### 어떤 종류들의 '키'가 있나요?
 

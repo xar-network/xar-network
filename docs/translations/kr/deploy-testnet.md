@@ -6,7 +6,7 @@
 2. 멀티-노드, 로컬, 자동 테스트넷
 3. 멀티-노드, 리모트, 자동 테스트넷
 
-관련 코드는 [네트워크 디렉토리](https://github.com/Fantom-foundation/cosmos-sdk/tree/develop/networks)와 하단의 `local`과 `remote` 서브 디렉토리에서 찾으실 수 있습니다.
+관련 코드는 [네트워크 디렉토리](https://github.com/cosmos/cosmos-sdk/tree/develop/networks)와 하단의 `local`과 `remote` 서브 디렉토리에서 찾으실 수 있습니다.
 
 > 참고: 현재 `remote` 관련 정보는 최신 릴리즈와 호환성이 맞지 않을 수 있으므로 참고하시기 바랍니다.
 
@@ -50,7 +50,7 @@ zard start
 
 ## 멀티 노드, 로컬, 자동 테스트넷
 
-관련 코드 [networks/local 디렉토리](https://github.com/Fantom-foundation/cosmos-sdk/tree/develop/networks/local):
+관련 코드 [networks/local 디렉토리](https://github.com/cosmos/cosmos-sdk/tree/develop/networks/local):
 
 ### 필수 사항
 
@@ -66,7 +66,7 @@ Build the `zard` binary (linux) and the `tendermint/zardnode` docker image requi
 
 ```bash
 # Work from the SDK repo
-cd $GOPATH/src/github.com/Fantom-foundation/cosmos-sdk
+cd $GOPATH/src/github.com/cosmos/cosmos-sdk
 
 # Build the linux binary in ./build
 make build-linux
@@ -179,7 +179,7 @@ BINARY=zarfoo make localnet-start
 
 ## 멀티 노드, 리모트, 자동 테스트넷
 
-다음 환경은 [네트워크 디렉터리](https://github.com/Fantom-foundation/cosmos-sdk/tree/develop/networks)에서 실행하셔야 합니다.
+다음 환경은 [네트워크 디렉터리](https://github.com/cosmos/cosmos-sdk/tree/develop/networks)에서 실행하셔야 합니다.
 
 ### Terraform 과 Ansible
 

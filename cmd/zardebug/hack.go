@@ -7,9 +7,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/Fantom-foundation/cosmos-sdk/store"
+	"github.com/cosmos/cosmos-sdk/store"
 
-	"github.com/Fantom-foundation/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/baseapp"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -18,7 +18,7 @@ import (
 
 	"github.com/tendermint/tendermint/libs/log"
 
-	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	zar "github.com/zar-network/zar-network/app"
 )

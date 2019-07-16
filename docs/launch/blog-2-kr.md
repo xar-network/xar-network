@@ -37,7 +37,7 @@
 
 첫 단계에서 오직 CLI를 사용해서 트랜잭션을 발생하는 것을 코스모스 허브와 소통할 때 사용될 보이저(Voyager) 지갑은 현재 알파 단계에 있기 때문에 안전하게 사용할 수 있는 프로그램은 CLI 뿐이라는 것을 강조합니다. 보이저 지갑이 안전하다는 판단이 내려지고 베타가 시작될때 별도의 공지가 있겠습니다.
 
-CLI 가이드 🔗: [https://github.com/Fantom-foundation/cosmos-sdk/blob/develop/docs/translations/kr/zar/delegator-guide-cli.md](https://github.com/Fantom-foundation/cosmos-sdk/blob/develop/docs/translations/kr/zar/delegator-guide-cli.md)
+CLI 가이드 🔗: [https://github.com/cosmos/cosmos-sdk/blob/develop/docs/translations/kr/zar/delegator-guide-cli.md](https://github.com/cosmos/cosmos-sdk/blob/develop/docs/translations/kr/zar/delegator-guide-cli.md)
 
 CLI 위임 투토리얼 (영어): [https://www.youtube.com/watch?v=ydZw6o6Mzy0](https://www.youtube.com/watch?v=ydZw6o6Mzy0)
 

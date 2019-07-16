@@ -16,16 +16,16 @@ import (
 
 	zar "github.com/zar-network/zar-network/app"
 
-	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
-	"github.com/Fantom-foundation/cosmos-sdk/x/auth"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth"
 )
 
 func init() {
 
 	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount(sdk.Bech32PrefixAccAddr, sdk.Bech32PrefixAccPub)
-	config.SetBech32PrefixForValidator(sdk.Bech32PrefixValAddr, sdk.Bech32PrefixValPub)
-	config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
+	config.SetBech32PrefixForAccount("zar", "zarpub")
+	config.SetBech32PrefixForValidator("zarvaloper", "zarvaloperpub")
+	config.SetBech32PrefixForConsensusNode("zarvalcons", "zarvalconspub")
 	config.Seal()
 
 	rootCmd.AddCommand(txCmd)

@@ -7,9 +7,9 @@ import (
 
 	"github.com/zar-network/zar-network/app"
 
-	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
-	"github.com/Fantom-foundation/cosmos-sdk/x/auth"
-	"github.com/Fantom-foundation/cosmos-sdk/x/bank"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 )
 
 // This will fail half the time with the second output being 173

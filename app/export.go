@@ -7,10 +7,10 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/Fantom-foundation/cosmos-sdk/codec"
-	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
-	"github.com/Fantom-foundation/cosmos-sdk/x/slashing"
-	"github.com/Fantom-foundation/cosmos-sdk/x/staking"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
+	"github.com/cosmos/cosmos-sdk/x/staking"
 )
 
 // export the state of zar for a genesis file

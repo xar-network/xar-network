@@ -15,15 +15,15 @@ import (
 
 	"github.com/zar-network/zar-network/app"
 
-	"github.com/Fantom-foundation/cosmos-sdk/baseapp"
-	"github.com/Fantom-foundation/cosmos-sdk/client"
-	"github.com/Fantom-foundation/cosmos-sdk/server"
-	"github.com/Fantom-foundation/cosmos-sdk/store"
-	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
-	"github.com/Fantom-foundation/cosmos-sdk/x/genaccounts"
-	genaccscli "github.com/Fantom-foundation/cosmos-sdk/x/genaccounts/client/cli"
-	genutilcli "github.com/Fantom-foundation/cosmos-sdk/x/genutil/client/cli"
-	"github.com/Fantom-foundation/cosmos-sdk/x/staking"
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/cosmos/cosmos-sdk/store"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/genaccounts"
+	genaccscli "github.com/cosmos/cosmos-sdk/x/genaccounts/client/cli"
+	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
+	"github.com/cosmos/cosmos-sdk/x/staking"
 )
 
 // zard custom flags
@@ -35,9 +35,9 @@ func main() {
 	cdc := app.MakeCodec()
 
 	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount(sdk.Bech32PrefixAccAddr, sdk.Bech32PrefixAccPub)
-	config.SetBech32PrefixForValidator(sdk.Bech32PrefixValAddr, sdk.Bech32PrefixValPub)
-	config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
+	config.SetBech32PrefixForAccount("zar", "zarpub")
+	config.SetBech32PrefixForValidator("zarvaloper", "zarvaloperpub")
+	config.SetBech32PrefixForConsensusNode("zarvalcons", "zarvalconspub")
 	config.Seal()
 
 	ctx := server.NewDefaultContext()

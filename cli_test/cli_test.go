@@ -21,13 +21,13 @@ import (
 
 	"github.com/zar-network/zar-network/app"
 
-	"github.com/Fantom-foundation/cosmos-sdk/client"
-	"github.com/Fantom-foundation/cosmos-sdk/tests"
-	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
-	"github.com/Fantom-foundation/cosmos-sdk/x/auth"
-	"github.com/Fantom-foundation/cosmos-sdk/x/genaccounts"
-	"github.com/Fantom-foundation/cosmos-sdk/x/gov"
-	"github.com/Fantom-foundation/cosmos-sdk/x/mint"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/tests"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/genaccounts"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	"github.com/cosmos/cosmos-sdk/x/mint"
 )
 
 func TestZarCLIKeysAddMultisig(t *testing.T) {

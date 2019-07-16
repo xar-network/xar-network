@@ -19,10 +19,10 @@ import (
 
 	"github.com/zar-network/zar-network/app"
 
-	"github.com/Fantom-foundation/cosmos-sdk/baseapp"
-	"github.com/Fantom-foundation/cosmos-sdk/server"
-	"github.com/Fantom-foundation/cosmos-sdk/store"
-	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/cosmos/cosmos-sdk/store"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func replayCmd() *cobra.Command {

@@ -29,7 +29,7 @@ This is a command with boilerplate for using Go as a scripting language to hack
 on an existing Zar state.
 
 Currently we have an example for the state of zar-6001 after it
-[crashed](https://github.com/Fantom-foundation/cosmos-sdk/blob/master/cmd/zar/testnets/STATUS.md#june-13-2018-230-est---published-postmortem-of-zar-6001-failure). 
+[crashed](https://github.com/cosmos/cosmos-sdk/blob/master/cmd/zar/testnets/STATUS.md#june-13-2018-230-est---published-postmortem-of-zar-6001-failure). 
 If you run `zardebug hack $HOME/.zard` on that 
 state, it will do a binary search on the state history to find when the state
 invariant was violated.

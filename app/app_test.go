@@ -8,8 +8,8 @@ import (
 	"github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/Fantom-foundation/cosmos-sdk/codec"
-	"github.com/Fantom-foundation/cosmos-sdk/simapp"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/simapp"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 )

@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Fantom-foundation/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client"
 
 	"github.com/stretchr/testify/require"
 
@@ -19,18 +19,18 @@ import (
 
 	"github.com/zar-network/zar-network/app"
 
-	clientkeys "github.com/Fantom-foundation/cosmos-sdk/client/keys"
-	"github.com/Fantom-foundation/cosmos-sdk/codec"
-	"github.com/Fantom-foundation/cosmos-sdk/crypto/keys"
-	"github.com/Fantom-foundation/cosmos-sdk/server"
-	"github.com/Fantom-foundation/cosmos-sdk/simapp"
-	"github.com/Fantom-foundation/cosmos-sdk/tests"
-	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
-	"github.com/Fantom-foundation/cosmos-sdk/x/auth"
-	"github.com/Fantom-foundation/cosmos-sdk/x/distribution"
-	"github.com/Fantom-foundation/cosmos-sdk/x/gov"
-	"github.com/Fantom-foundation/cosmos-sdk/x/slashing"
-	"github.com/Fantom-foundation/cosmos-sdk/x/staking"
+	clientkeys "github.com/cosmos/cosmos-sdk/client/keys"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keys"
+	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/cosmos/cosmos-sdk/simapp"
+	"github.com/cosmos/cosmos-sdk/tests"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/distribution"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
+	"github.com/cosmos/cosmos-sdk/x/staking"
 )
 
 const (

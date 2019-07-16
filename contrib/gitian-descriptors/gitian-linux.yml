@@ -78,12 +78,12 @@ script: |
 
   # Configure LDFLAGS for reproducible builds
   LDFLAGS="-extldflags=-static -buildid=${VERSION} -s -w \
-    -X github.com/Fantom-foundation/cosmos-sdk/version.Name=zar \
-    -X github.com/Fantom-foundation/cosmos-sdk/version.ServerName=zard \
-    -X github.com/Fantom-foundation/cosmos-sdk/version.ClientName=zarcli \
-    -X github.com/Fantom-foundation/cosmos-sdk/version.Version=${VERSION} \
-    -X github.com/Fantom-foundation/cosmos-sdk/version.Commit=${COMMIT} \
-    -X github.com/Fantom-foundation/cosmos-sdk/version.BuildTags=netgo,ledger"
+    -X github.com/cosmos/cosmos-sdk/version.Name=zar \
+    -X github.com/cosmos/cosmos-sdk/version.ServerName=zard \
+    -X github.com/cosmos/cosmos-sdk/version.ClientName=zarcli \
+    -X github.com/cosmos/cosmos-sdk/version.Version=${VERSION} \
+    -X github.com/cosmos/cosmos-sdk/version.Commit=${COMMIT} \
+    -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger"
 
   # Extract release tarball and build
   for arch in ${ARCHS}; do

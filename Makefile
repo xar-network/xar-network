@@ -4,7 +4,7 @@ PACKAGES_SIMTEST=$(shell go list ./... | grep '/simulation')
 VERSION := $(shell echo $(shell git describe --tags) | sed 's/^v//')
 COMMIT := $(shell git log -1 --format='%H')
 LEDGER_ENABLED ?= true
-SDK_PACK := $(shell go list -m github.com/Fantom-foundation/cosmos-sdk | sed  's/ /\@/g')
+SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 
 export GO111MODULE = on
 
@@ -22,7 +22,7 @@ ifeq ($(LEDGER_ENABLED),true)
   else
     UNAME_S = $(shell uname -s)
     ifeq ($(UNAME_S),OpenBSD)
-      $(warning OpenBSD detected, disabling ledger support (https://github.com/Fantom-foundation/cosmos-sdk/issues/1988))
+      $(warning OpenBSD detected, disabling ledger support (https://github.com/cosmos/cosmos-sdk/issues/1988))
     else
       GCC = $(shell command -v gcc 2> /dev/null)
       ifeq ($(GCC),)
@@ -47,15 +47,15 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 # process linker flags
 
-ldflags = -X github.com/Fantom-foundation/cosmos-sdk/version.Name=zar \
-		  -X github.com/Fantom-foundation/cosmos-sdk/version.ServerName=zar \
-		  -X github.com/Fantom-foundation/cosmos-sdk/version.ClientName=zarcli \
-		  -X github.com/Fantom-foundation/cosmos-sdk/version.Version=$(VERSION) \
-		  -X github.com/Fantom-foundation/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X "github.com/Fantom-foundation/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
+ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=zar \
+		  -X github.com/cosmos/cosmos-sdk/version.ServerName=zar \
+		  -X github.com/cosmos/cosmos-sdk/version.ClientName=zarcli \
+		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
+		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
+		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
 ifeq ($(WITH_CLEVELDB),yes)
-  ldflags += -X github.com/Fantom-foundation/cosmos-sdk/types.DBBackend=cleveldb
+  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
 endif
 ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
@@ -145,7 +145,7 @@ lint: golangci-lint
 format:
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/lcd/statik/statik.go" | xargs gofmt -w -s
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/lcd/statik/statik.go" | xargs misspell -w
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/lcd/statik/statik.go" | xargs goimports -w -local github.com/Fantom-foundation/cosmos-sdk
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/lcd/statik/statik.go" | xargs goimports -w -local github.com/cosmos/cosmos-sdk
 
 benchmark:
 	@go test -mod=readonly -bench=. ./...

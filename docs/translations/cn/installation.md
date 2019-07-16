@@ -20,7 +20,7 @@ Cosmos SDK需要安装**Go 1.12+**
 
 ### 安装二进制执行程序
 
-接下来，安装最新版本的Zar。需要确认您 `git checkout 了正确的[发布版本](https://github.com/Fantom-foundation/cosmos-sdk/releases)。
+接下来，安装最新版本的Zar。需要确认您 `git checkout 了正确的[发布版本](https://github.com/cosmos/cosmos-sdk/releases)。
 
 ::: warning
 对于主网，请确保你的版本大于或等于`v0.33.0`

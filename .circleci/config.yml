@@ -15,7 +15,7 @@ defaults: &linux_defaults
 macos_config: &macos_defaults
   macos:
     xcode: "10.1.0"
-  working_directory: /Users/distiller/project/src/github.com/Fantom-foundation/cosmos-sdk
+  working_directory: /Users/distiller/project/src/github.com/cosmos/cosmos-sdk
   environment:
     GO_VERSION: "1.12.5"
 
@@ -234,7 +234,7 @@ jobs:
           command: bash <(curl -s https://codecov.io/bash) -f coverage.txt
 
   localnet:
-      working_directory: /home/circleci/.go_workspace/src/github.com/Fantom-foundation/cosmos-sdk
+      working_directory: /home/circleci/.go_workspace/src/github.com/cosmos/cosmos-sdk
       machine:
         image: circleci/classic:latest
       environment:

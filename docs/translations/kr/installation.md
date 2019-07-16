@@ -20,7 +20,7 @@ source ~/.bash_profile
 
 ### 바이너리 설치하기
 
-다음은 최신 Zar 버전을 설치하는 것입니다. 예시에서는 최신 스테이블 릴리즈가 포함되어있는 `master` 브랜치를 이용해 진행됩니다. 필요에 따라 `git checkout`을 통해 [최신 릴리즈](https://github.com/Fantom-foundation/cosmos-sdk/releases)가 설치되어있는지 확인하세요.
+다음은 최신 Zar 버전을 설치하는 것입니다. 예시에서는 최신 스테이블 릴리즈가 포함되어있는 `master` 브랜치를 이용해 진행됩니다. 필요에 따라 `git checkout`을 통해 [최신 릴리즈](https://github.com/cosmos/cosmos-sdk/releases)가 설치되어있는지 확인하세요.
 
 ```bash
 git clone -b <latest-release-tag> https://github.com/zar-network/zar-network

@@ -4,6 +4,6 @@
 
 `zarcli keys --help` 명령어를 통해 추가 정보를 얻으실 수 있습니다.
 
-[테스트넷 투토리얼](https://github.com/Fantom-foundation/cosmos-sdk/tree/develop/cmd/zar/testnets)에서 관련 정보를 확인하실 수 있습니다.
+[테스트넷 투토리얼](https://github.com/cosmos/cosmos-sdk/tree/develop/cmd/zar/testnets)에서 관련 정보를 확인하실 수 있습니다.
 
 참고: 이 문서는 현재 작업중에 있습니다.

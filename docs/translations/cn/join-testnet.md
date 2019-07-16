@@ -45,7 +45,7 @@ zard unsafe-reset-all
 现在升级软件：
 
 ```bash
-cd $GOPATH/src/github.com/Fantom-foundation/cosmos-sdk
+cd $GOPATH/src/github.com/cosmos/cosmos-sdk
 git fetch --all && git checkout master
 make update_tools install
 ```
@@ -54,6 +54,6 @@ make update_tools install
 *注意*：如果在这一步出现问题，请检查是否安装了最新稳定版本的Go。
 :::
 
-注意这里我们使用的是包含最新稳定发布版本的`master`分支。请查看[testnet repo](https://github.com/cosmos/testnets)查看哪个版本的测试网需要哪一个Cosmos-SDK版本，在[SDK发布版](https://github.com/Fantom-foundation/cosmos-sdk/releases)中对应的详细信息。
+注意这里我们使用的是包含最新稳定发布版本的`master`分支。请查看[testnet repo](https://github.com/cosmos/testnets)查看哪个版本的测试网需要哪一个Cosmos-SDK版本，在[SDK发布版](https://github.com/cosmos/cosmos-sdk/releases)中对应的详细信息。
 
 你的全节点已经升级成功！

@@ -10,7 +10,7 @@
   * 레저 기기에 코스모스 앱을 설치하기 위해서는 [`ledger-cosmos`](https://github.com/cosmos/ledger-cosmos/blob/master/docs/BUILD.md) 깃허브 레포지토리를 확인하세요.
   * 실전 운용 가능한 앱 버전은 추후 [레저 앱스토어](https://www.ledgerwallet.com/apps)를 통해 배포될 예정입니다.
   
-> **참고:** 코스모스 키는 [BIP 44 Hierarchical Deterministic wallet 스펙](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)에 파생되었습니다. 관련 패스에 대한 정보는 [hd package](https://github.com/Fantom-foundation/cosmos-sdk/blob/develop/crypto/keys/hd/hdpath.go#L30)를 참고하세요.
+> **참고:** 코스모스 키는 [BIP 44 Hierarchical Deterministic wallet 스펙](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)에 파생되었습니다. 관련 패스에 대한 정보는 [hd package](https://github.com/cosmos/cosmos-sdk/blob/develop/crypto/keys/hd/hdpath.go#L30)를 참고하세요.
 
 코스모스 앱을 레저 기기에 성공적으로 설치하시고, `zarcli` 에서 레저와 연결하는데 성공하셨다면 다음과 같이 레저 키를 생성하실 수 있습니다:
 

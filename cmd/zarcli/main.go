@@ -5,17 +5,17 @@ import (
 	"os"
 	"path"
 
-	"github.com/Fantom-foundation/cosmos-sdk/client"
-	"github.com/Fantom-foundation/cosmos-sdk/client/keys"
-	"github.com/Fantom-foundation/cosmos-sdk/client/lcd"
-	"github.com/Fantom-foundation/cosmos-sdk/client/rpc"
-	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
-	"github.com/Fantom-foundation/cosmos-sdk/version"
-	"github.com/Fantom-foundation/cosmos-sdk/x/auth"
-	authcmd "github.com/Fantom-foundation/cosmos-sdk/x/auth/client/cli"
-	authrest "github.com/Fantom-foundation/cosmos-sdk/x/auth/client/rest"
-	"github.com/Fantom-foundation/cosmos-sdk/x/bank"
-	bankcmd "github.com/Fantom-foundation/cosmos-sdk/x/bank/client/cli"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/keys"
+	"github.com/cosmos/cosmos-sdk/client/lcd"
+	"github.com/cosmos/cosmos-sdk/client/rpc"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/version"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
+	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -35,9 +35,9 @@ func main() {
 
 	// Read in the configuration file for the sdk
 	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount(sdk.Bech32PrefixAccAddr, sdk.Bech32PrefixAccPub)
-	config.SetBech32PrefixForValidator(sdk.Bech32PrefixValAddr, sdk.Bech32PrefixValPub)
-	config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
+	config.SetBech32PrefixForAccount("zar", "zarpub")
+	config.SetBech32PrefixForValidator("zarvaloper", "zarvaloperpub")
+	config.SetBech32PrefixForConsensusNode("zarvalcons", "zarvalconspub")
 	config.Seal()
 
 	// TODO: setup keybase, viper object, etc. to be passed into

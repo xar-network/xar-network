@@ -2,11 +2,11 @@
 
 #### 런칭 준비 체크리스트 & 안전하게 아톰 수령하기
 
-2016년 여름, 코스모스 [백서가](https://cosmos.network/resources/whitepaper) 세상에 공개되었습니다. 이후 2017년 봄, 코스모스의 [펀드레이저가](펀드레이저가) 성공적으로 완료되었습니다. 그리고 2019년 2월, 코스모스의 소프트웨어[가 기능 완성](https://github.com/Fantom-foundation/cosmos-sdk/releases/tag/v0.31.0)(feature complete)단계에 도달했습니다. 이제 코스모스 허브의 런칭을 앞두고 있는 이 시점에서, 아톰 보유자들은 무엇을 해야될까요?
+2016년 여름, 코스모스 [백서가](https://cosmos.network/resources/whitepaper) 세상에 공개되었습니다. 이후 2017년 봄, 코스모스의 [펀드레이저가](펀드레이저가) 성공적으로 완료되었습니다. 그리고 2019년 2월, 코스모스의 소프트웨어[가 기능 완성](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.31.0)(feature complete)단계에 도달했습니다. 이제 코스모스 허브의 런칭을 앞두고 있는 이 시점에서, 아톰 보유자들은 무엇을 해야될까요?
 
 아톰 보유자는 메인넷에서 본인의 아톰을 검증인에게 위임하고 거버넌스 프로포절에 투표를 할 수 있는 권리를 가질 수 있게 됩니다. 어떻게 보면 위임자들의 선택이 코스모스 네트워크의 성공을 좌우할 수 있다고 볼 수 있습니다. 단, 런칭 초기 아톰 송금 기능은 프로토콜 레벨에서 비활성화될 계획이며, 추후 하드포크를 통해 활성화될 것입니다.
 
-**📒 안전하게 아톰을 위임하기 원하는 아톰 보유자들은 다음 가이드라인을 숙지하시고 따르시기 바랍니다. 본인의 안전을 위해서 [CLI 사용법](https://github.com/Fantom-foundation/cosmos-sdk/blob/develop/docs/zar/delegator-guide-cli.md)을 충분히 숙지하기 전에는 별도의 행동을 하시지 않는 것을 추천해 드립니다.**
+**📒 안전하게 아톰을 위임하기 원하는 아톰 보유자들은 다음 가이드라인을 숙지하시고 따르시기 바랍니다. 본인의 안전을 위해서 [CLI 사용법](https://github.com/cosmos/cosmos-sdk/blob/develop/docs/zar/delegator-guide-cli.md)을 충분히 숙지하기 전에는 별도의 행동을 하시지 않는 것을 추천해 드립니다.**
 
 안전하게 아톰을 위임하는 방법은 이 가이드에 설명된 것 외에는 없습니다. 현재로써 `zarcli` 외 보안 감사를 거친 월렛 소프트웨어는 없습니다. 다른 월렛은 보안 감사를 시작하지 않은 상태입니다.
 
@@ -26,7 +26,7 @@
 지난 1월, 코스모스 SDK는 다수의 외부 보안 감사 절차의 첫 단계를 진행했습니다. 보안 감사는 약 2주 반 기간에 걸려 진행되었습니다. 현재 두 개의 기관이 코스모스 SDK 코드를 검증한 상태이며, 다른 한 개 기관의 보안 감사가 진행 중입니다.
 
 ### 4: 코스모스 SDK 기능 동결 (feature freeze)
-코스모스 SDK의 최종 주요 수정 사항은 [SDK v0.31.0 RC에](https://github.com/Fantom-foundation/cosmos-sdk/projects/27) 반영되었습니다. 해당 RC(Release candidate)가 완료된 후, 코스모스 SDK 팀은 추가적인 디버깅을 진행하여 런칭 전 보안성 확보를 위해 노력을 기울일 예정입니다.
+코스모스 SDK의 최종 주요 수정 사항은 [SDK v0.31.0 RC에](https://github.com/cosmos/cosmos-sdk/projects/27) 반영되었습니다. 해당 RC(Release candidate)가 완료된 후, 코스모스 SDK 팀은 추가적인 디버깅을 진행하여 런칭 전 보안성 확보를 위해 노력을 기울일 예정입니다.
 
 코스모스 SDK v0.31.0이 릴리즈된 후, 혹시라도 발견되지 않은 버그를 검증하기 위해 Zar 테스트넷을 추가로 진행할 계획입니다.
 

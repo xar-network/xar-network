@@ -18,17 +18,17 @@ import (
 	"github.com/tendermint/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 
-	"github.com/Fantom-foundation/cosmos-sdk/client"
-	"github.com/Fantom-foundation/cosmos-sdk/client/keys"
-	"github.com/Fantom-foundation/cosmos-sdk/codec"
-	"github.com/Fantom-foundation/cosmos-sdk/server"
-	srvconfig "github.com/Fantom-foundation/cosmos-sdk/server/config"
-	sdk "github.com/Fantom-foundation/cosmos-sdk/types"
-	"github.com/Fantom-foundation/cosmos-sdk/types/module"
-	"github.com/Fantom-foundation/cosmos-sdk/x/auth"
-	"github.com/Fantom-foundation/cosmos-sdk/x/genaccounts"
-	"github.com/Fantom-foundation/cosmos-sdk/x/genutil"
-	"github.com/Fantom-foundation/cosmos-sdk/x/staking"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/keys"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/server"
+	srvconfig "github.com/cosmos/cosmos-sdk/server/config"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/genaccounts"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
+	"github.com/cosmos/cosmos-sdk/x/staking"
 )
 
 var (
@@ -234,7 +234,7 @@ func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 		}
 
 		// TODO: Rename config file to server.toml as it's not particular to Zar
-		// (REF: https://github.com/Fantom-foundation/cosmos-sdk/issues/4125).
+		// (REF: https://github.com/cosmos/cosmos-sdk/issues/4125).
 		zarConfigFilePath := filepath.Join(nodeDir, "config/zard.toml")
 		srvconfig.WriteConfigFile(zarConfigFilePath, zarConfig)
 	}
