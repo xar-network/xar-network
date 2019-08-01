@@ -35,9 +35,9 @@ func main() {
 
 	// Read in the configuration file for the sdk
 	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount("zar", "zarpub")
-	config.SetBech32PrefixForValidator("zarvaloper", "zarvaloperpub")
-	config.SetBech32PrefixForConsensusNode("zarvalcons", "zarvalconspub")
+	config.SetBech32PrefixForAccount("zar", "zarp")
+	config.SetBech32PrefixForValidator("zva", "zvap")
+	config.SetBech32PrefixForConsensusNode("zca", "zcap")
 	config.Seal()
 
 	// TODO: setup keybase, viper object, etc. to be passed into
