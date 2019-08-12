@@ -2,9 +2,12 @@ package issue
 
 import (
 	"fmt"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/zar-network/zar-network/x/issue/internal/keeper"
+	"github.com/zar-network/zar-network/x/issue/internal/types"
 	"github.com/zar-network/zar-network/x/issue/msgs"
 )
 
@@ -14,33 +17,33 @@ func NewHandler(k Keeper) sdk.Handler {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 
 		switch msg := msg.(type) {
-		case msgs.MsgIssue:
+		case types.MsgIssue:
 			return handleMsgIssue(ctx, k, msg)
-		case msgs.MsgIssueTransferOwnership:
+		case types.MsgIssueTransferOwnership:
 			return handleMsgIssueTransferOwnership(ctx, k, msg)
-		case msgs.MsgIssueDescription:
+		case types.MsgIssueDescription:
 			return handleMsgIssueDescription(ctx, k, msg)
-		case msgs.MsgIssueMint:
+		case types.MsgIssueMint:
 			return handleMsgIssueMint(ctx, k, msg)
-		case msgs.MsgIssueBurnOwner:
+		case types.MsgIssueBurnOwner:
 			return handleMsgIssueBurnOwner(ctx, k, msg)
-		case msgs.MsgIssueBurnHolder:
+		case types.MsgIssueBurnHolder:
 			return handleMsgIssueBurnHolder(ctx, k, msg)
-		case msgs.MsgIssueBurnFrom:
+		case types.MsgIssueBurnFrom:
 			return handleMsgIssueBurnFrom(ctx, k, msg)
-		case msgs.MsgIssueDisableFeature:
+		case types.MsgIssueDisableFeature:
 			return handleMsgIssueDisableFeature(ctx, k, msg)
-		case msgs.MsgIssueApprove:
+		case types.MsgIssueApprove:
 			return handleMsgIssueApprove(ctx, k, msg)
-		case msgs.MsgIssueSendFrom:
+		case types.MsgIssueSendFrom:
 			return handleMsgIssueSendFrom(ctx, k, msg)
-		case msgs.MsgIssueIncreaseApproval:
+		case types.MsgIssueIncreaseApproval:
 			return handleMsgIssueIncreaseApproval(ctx, k, msg)
-		case msgs.MsgIssueDecreaseApproval:
+		case types.MsgIssueDecreaseApproval:
 			return handleMsgIssueDecreaseApproval(ctx, k, msg)
-		case msgs.MsgIssueFreeze:
+		case types.MsgIssueFreeze:
 			return handleMsgIssueFreeze(ctx, k, msg)
-		case msgs.MsgIssueUnFreeze:
+		case types.MsgIssueUnFreeze:
 			return handleMsgIssueUnFreeze(ctx, k, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized gov msg type: %T", msg)
@@ -73,14 +76,14 @@ func handleMsgIssueIncreaseApproval(ctx sdk.Context, keeper keeper.Keeper, msg m
 		return err.Result()
 	}
 
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				sdk.EventTypeMessage,
-				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			),
-		)
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		),
+	)
 
-		return sdk.Result{Events: ctx.EventManager().Events()}
+	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
 //Handle handleMsgIssueApprove
@@ -112,14 +115,14 @@ func handleMsgIssueBurnFrom(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueB
 		return err.Result()
 	}
 
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				sdk.EventTypeMessage,
-				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			),
-		)
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		),
+	)
 
-		return sdk.Result{Events: ctx.EventManager().Events()}
+	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
 //Handle handleMsgIssueBurnHolder
@@ -152,14 +155,14 @@ func handleMsgIssueBurnOwner(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssue
 		return err.Result()
 	}
 
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				sdk.EventTypeMessage,
-				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			),
-		)
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		),
+	)
 
-		return sdk.Result{Events: ctx.EventManager().Events()}
+	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
 //Handle handleMsgIssueDescription
@@ -172,14 +175,14 @@ func handleMsgIssueDescription(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIss
 		return err.Result()
 	}
 
-			ctx.EventManager().EmitEvent(
-				sdk.NewEvent(
-					sdk.EventTypeMessage,
-					sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-				),
-			)
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		),
+	)
 
-			return sdk.Result{Events: ctx.EventManager().Events()}
+	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
 //Handle handleMsgIssueDisableFeature
@@ -245,14 +248,14 @@ func handleMsgIssueSendFrom(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueS
 		return err.Result()
 	}
 
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				sdk.EventTypeMessage,
-				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			),
-		)
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		),
+	)
 
-		return sdk.Result{Events: ctx.EventManager().Events()}
+	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
 //Handle handleMsgIssueTransferOwnership
@@ -265,14 +268,14 @@ func handleMsgIssueTransferOwnership(ctx sdk.Context, k keeper.Keeper, msg msgs.
 		return err.Result()
 	}
 
-			ctx.EventManager().EmitEvent(
-				sdk.NewEvent(
-					sdk.EventTypeMessage,
-					sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-				),
-			)
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		),
+	)
 
-			return sdk.Result{Events: ctx.EventManager().Events()}
+	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
 //Handle handleMsgIssueUnFreeze

@@ -5,6 +5,16 @@ import (
 )
 
 const (
+	QueryParams    = "params"
+	QueryIssues    = "list"
+	QueryIssue     = "query"
+	QueryAllowance = "allowance"
+	QueryFreeze    = "freeze"
+	QueryFreezes   = "freezes"
+	QuerySearch    = "search"
+)
+
+const (
 	// ModuleKey is the name of the module
 	ModuleName = "issue"
 	// StoreKey is the store key string for issue

@@ -8,34 +8,25 @@ import (
 	"github.com/zar-network/zar-network/x/issue/internal/types"
 )
 
-const (
-	QueryParams    = "params"
-	QueryIssues    = "list"
-	QueryIssue     = "query"
-	QueryAllowance = "allowance"
-	QueryFreeze    = "freeze"
-	QueryFreezes   = "freezes"
-	QuerySearch    = "search"
-)
-
 //NewQuerier instance
 func NewQuerier(k Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) ([]byte, sdk.Error) {
 		switch path[0] {
-		case QueryParams:
+		case types.QueryParams:
 			return queryParams(ctx, k)
-		case QueryIssue:
+		case types.QueryIssue:
 			return queryIssue(ctx, path[1], k)
-		case QueryAllowance:
+		case types.QueryAllowance:
 			return queryAllowance(ctx, path[1], path[2], path[3], k)
-		case QueryFreeze:
+		case types.QueryFreeze:
 			return queryFreeze(ctx, path[1], path[2], k)
-		case QueryFreezes:
+		case types.QueryFreezes:
 			return queryFreezes(ctx, path[1], k)
-		case QuerySearch:
+		case types.QuerySearch:
 			return querySymbol(ctx, path[1], k)
-		case QueryIssues:
+		case types.QueryIssues:
 			return queryIssues(ctx, req, k)
+
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown issue query endpoint")
 		}

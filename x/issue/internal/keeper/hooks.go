@@ -7,11 +7,11 @@ import (
 
 // Wrapper struct
 type Hooks struct {
-	keeper Keeper
+	keeper BaseKeeper
 }
 
 // Create new box hooks
-func (keeper Keeper) Hooks() Hooks { return Hooks{keeper} }
+func (keeper BaseKeeper) Hooks() Hooks { return Hooks{keeper} }
 
 func (hooks Hooks) CanSend(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) (bool, sdk.Error) {
 	for _, v := range amt {
