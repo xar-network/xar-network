@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -11,30 +10,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
 
+	"github.com/zar-network/zar-network/x/issue/client/utils"
 	"github.com/zar-network/zar-network/x/issue/internal/types"
 )
-
-func GetQueryIssuePath(issueID string) string {
-	return fmt.Sprintf("%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryIssue, issueID)
-}
-func GetQueryParamsPath() string {
-	return fmt.Sprintf("%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryParams)
-}
-func GetQueryIssueAllowancePath(issueID string, owner sdk.AccAddress, spender sdk.AccAddress) string {
-	return fmt.Sprintf("%s/%s/%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryAllowance, issueID, owner.String(), spender.String())
-}
-func GetQueryIssueFreezePath(issueID string, accAddress sdk.AccAddress) string {
-	return fmt.Sprintf("%s/%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryFreeze, issueID, accAddress.String())
-}
-func GetQueryIssueFreezesPath(issueID string) string {
-	return fmt.Sprintf("%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryFreezes, issueID)
-}
-func GetQueryIssueSearchPath(symbol string) string {
-	return fmt.Sprintf("%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QuerySearch, symbol)
-}
-func GetQueryIssuesPath() string {
-	return fmt.Sprintf("%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryIssues)
-}
 
 func queryParamsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 
@@ -46,7 +24,7 @@ func queryParamsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		res, height, err := cliCtx.QueryWithData(GetQueryParamsPath(), nil)
+		res, height, err := cliCtx.QueryWithData(utils.GetQueryParamsPath(), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -64,7 +42,7 @@ func queryIssueHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		vars := mux.Vars(r)
-		issueID := vars[IssueID]
+		issueID := vars["issue-id"]
 
 		if err := types.CheckIssueId(issueID); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -76,7 +54,7 @@ func queryIssueHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		res, height, err := cliCtx.QueryWithData(GetQueryIssuePath(issueID), nil)
+		res, height, err := cliCtx.QueryWithData(utils.GetQueryIssuePath(issueID), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -88,20 +66,20 @@ func queryIssueHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func queryIssueSearchHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
+func queryIssueSearchHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
 		vars := mux.Vars(r)
-		symbol := vars[Symbol]
+		symbol := vars["symbol"]
 
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
 			return
 		}
 
-		res, height, err := cliCtx.QueryWithData(GetQueryIssueSearchPath(symbol), nil)
+		res, height, err := cliCtx.QueryWithData(utils.GetQueryIssueSearchPath(symbol), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -152,7 +130,7 @@ func queryIssuesHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		res, height, err := cliCtx.QueryWithData(GetQueryIssuesPath(), bz)
+		res, height, err := cliCtx.QueryWithData(utils.GetQueryIssuesPath(), bz)
 
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
@@ -170,7 +148,7 @@ func queryIssueFreezeHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		vars := mux.Vars(r)
-		issueID := vars[IssueID]
+		issueID := vars["issue-id"]
 
 		if err := types.CheckIssueId(issueID); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -190,7 +168,7 @@ func queryIssueFreezeHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		res, height, err := cliCtx.QueryWithData(GetQueryIssueFreezePath(issueID, addr), nil)
+		res, height, err := cliCtx.QueryWithData(utils.GetQueryIssueFreezePath(issueID, addr), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -207,7 +185,7 @@ func queryIssueFreezesHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		vars := mux.Vars(r)
-		issueID := vars[IssueID]
+		issueID := vars["issue-id"]
 
 		if err := types.CheckIssueId(issueID); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -218,7 +196,7 @@ func queryIssueFreezesHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 		if !ok {
 			return
 		}
-		res, height, err := cliCtx.QueryWithData(GetQueryIssueFreezesPath(issueID), nil)
+		res, height, err := cliCtx.QueryWithData(utils.GetQueryIssueFreezesPath(issueID), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -235,13 +213,12 @@ func queryIssueAllowanceHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) h
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		vars := mux.Vars(r)
-		issueID := vars[IssueID]
+		issueID := vars["issue-id"]
 
 		if err := types.CheckIssueId(issueID); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		vars := mux.Vars(r)
 		bech32addr := vars["address"]
 
 		addr, err := sdk.AccAddressFromBech32(bech32addr)
@@ -254,12 +231,12 @@ func queryIssueAllowanceHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) h
 		if !ok {
 			return
 		}
-		spenderAddress, err := sdk.AccAddressFromBech32(vars["spender_address"])
+		spenderAddr, err := sdk.AccAddressFromBech32(vars["spender_address"])
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		res, height, err := cliCtx.QueryWithData(GetQueryIssueAllowancePath(issueID, owner, spender), nil)
+		res, height, err := cliCtx.QueryWithData(utils.GetQueryIssueAllowancePath(issueID, addr, spenderAddr), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return

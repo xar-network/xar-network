@@ -2,16 +2,35 @@ package utils
 
 import (
 	"fmt"
-	"strconv"
-	"time"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	issuequeriers "github.com/zar-network/zar-network/x/issue/client/queriers"
 	"github.com/zar-network/zar-network/x/issue/internal/types"
 )
+
+func GetQueryIssuePath(issueID string) string {
+	return fmt.Sprintf("%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryIssue, issueID)
+}
+func GetQueryParamsPath() string {
+	return fmt.Sprintf("%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryParams)
+}
+func GetQueryIssueAllowancePath(issueID string, owner sdk.AccAddress, spender sdk.AccAddress) string {
+	return fmt.Sprintf("%s/%s/%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryAllowance, issueID, owner.String(), spender.String())
+}
+func GetQueryIssueFreezePath(issueID string, accAddress sdk.AccAddress) string {
+	return fmt.Sprintf("%s/%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryFreeze, issueID, accAddress.String())
+}
+func GetQueryIssueFreezesPath(issueID string) string {
+	return fmt.Sprintf("%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryFreezes, issueID)
+}
+func GetQueryIssueSearchPath(symbol string) string {
+	return fmt.Sprintf("%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QuerySearch, symbol)
+}
+func GetQueryIssuesPath() string {
+	return fmt.Sprintf("%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryIssues)
+}
 
 func burnCheck(sender auth.Account, burnFrom sdk.AccAddress, issueInfo types.Issue, amount sdk.Int, burnType string, cli bool) error {
 	coins := sender.GetCoins()
@@ -71,9 +90,16 @@ func burnCheck(sender auth.Account, burnFrom sdk.AccAddress, issueInfo types.Iss
 	return nil
 }
 
-func GetBurnMsg(cdc *codec.Codec, cliCtx context.CLIContext, sender auth.Account,
-	burnFrom sdk.AccAddress, issueID string, amount sdk.Int, burnFromType string, cli bool) (sdk.Msg, error) {
-	issueInfo, err := GetIssueByID(cdc, cliCtx, issueID)
+func GetBurnMsg(
+	cliCtx context.CLIContext,
+	sender auth.Account,
+	burnFrom sdk.AccAddress,
+	issueID string,
+	amount sdk.Int,
+	burnFromType string,
+	cli bool,
+) (sdk.Msg, error) {
+	issueInfo, err := GetIssueByID(cliCtx, issueID)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +136,14 @@ func GetBurnMsg(cdc *codec.Codec, cliCtx context.CLIContext, sender auth.Account
 	return msg, nil
 }
 
-func GetIssueFreezeMsg(cdc *codec.Codec, cliCtx context.CLIContext, account auth.Account, freezeType string, issueID string, address string, endTime string, freeze bool) (sdk.Msg, error) {
+func GetIssueFreezeMsg(
+	cliCtx context.CLIContext,
+	account auth.Account,
+	freezeType string,
+	issueID string,
+	address string,
+	freeze bool,
+) (sdk.Msg, error) {
 	_, ok := types.FreezeTypes[freezeType]
 	if !ok {
 		return nil, types.Errorf(types.ErrUnknownFreezeType())
@@ -122,7 +155,7 @@ func GetIssueFreezeMsg(cdc *codec.Codec, cliCtx context.CLIContext, account auth
 	if err != nil {
 		return nil, err
 	}
-	issueInfo, err := IssueOwnerCheck(cdc, cliCtx, account, issueID)
+	issueInfo, err := IssueOwnerCheck(cliCtx, account, issueID)
 	if err != nil {
 		return nil, err
 	}
@@ -130,11 +163,7 @@ func GetIssueFreezeMsg(cdc *codec.Codec, cliCtx context.CLIContext, account auth
 		if issueInfo.IsFreezeDisabled() {
 			return nil, types.ErrCanNotFreeze()
 		}
-		freezeEndTime, err := strconv.ParseInt(endTime, 10, 64)
-		if err != nil {
-			return nil, types.Errorf(types.ErrFreezeEndTimestampNotValid())
-		}
-		msg := types.NewMsgIssueFreeze(issueID, account.GetAddress(), accAddress, freezeType, freezeEndTime)
+		msg := types.NewMsgIssueFreeze(issueID, account.GetAddress(), accAddress, freezeType)
 		if err := msg.ValidateService(); err != nil {
 			return msg, types.Errorf(err)
 		}
@@ -147,11 +176,19 @@ func GetIssueFreezeMsg(cdc *codec.Codec, cliCtx context.CLIContext, account auth
 	return msg, nil
 }
 
-func GetIssueApproveMsg(cdc *codec.Codec, cliCtx context.CLIContext, issueID string, account auth.Account, accAddress sdk.AccAddress, approveType string, amount sdk.Int, cli bool) (sdk.Msg, error) {
+func GetIssueApproveMsg(
+	cliCtx context.CLIContext,
+	issueID string,
+	account auth.Account,
+	accAddress sdk.AccAddress,
+	approveType string,
+	amount sdk.Int,
+	cli bool,
+) (sdk.Msg, error) {
 	if err := types.CheckIssueId(issueID); err != nil {
 		return nil, types.Errorf(err)
 	}
-	issueInfo, err := GetIssueByID(cdc, cliCtx, issueID)
+	issueInfo, err := GetIssueByID(cliCtx, issueID)
 	if err != nil {
 		return nil, err
 	}
@@ -178,79 +215,64 @@ func GetIssueApproveMsg(cdc *codec.Codec, cliCtx context.CLIContext, issueID str
 	return msg, nil
 }
 
-func CheckAllowance(cdc *codec.Codec, cliCtx context.CLIContext, issueID string, owner sdk.AccAddress, spender sdk.AccAddress, amount sdk.Int) error {
-	res, err := issuequeriers.QueryIssueAllowance(issueID, owner, spender, cliCtx)
+func CheckAllowance(
+	cliCtx context.CLIContext,
+	issueID string,
+	owner sdk.AccAddress,
+	spender sdk.AccAddress,
+	amount sdk.Int,
+) error {
+	res, _, err := cliCtx.QueryWithData(GetQueryIssueAllowancePath(issueID, owner, spender), nil)
 	if err != nil {
 		return err
 	}
 	var approval types.Approval
-	cdc.MustUnmarshalJSON(res, &approval)
+	cliCtx.Codec.MustUnmarshalJSON(res, &approval)
 
 	if approval.Amount.LT(amount) {
 		return types.Errorf(types.ErrNotEnoughAmountToTransfer())
 	}
 	return nil
-
 }
 
-func GetIssueByID(cdc *codec.Codec, cliCtx context.CLIContext, issueID string) (types.Issue, error) {
+func GetIssueByID(cliCtx context.CLIContext, issueID string) (types.Issue, error) {
 	var issueInfo types.Issue
 	// Query the issue
-	res, err := issuequeriers.QueryIssueByID(issueID, cliCtx)
+	res, _, err := cliCtx.QueryWithData(GetQueryIssuePath(issueID), nil)
 	if err != nil {
 		return nil, err
 	}
-	cdc.MustUnmarshalJSON(res, &issueInfo)
+	cliCtx.Codec.MustUnmarshalJSON(res, &issueInfo)
 	return issueInfo, nil
 }
 
-func IssueOwnerCheck(cliCtx context.CLIContext, sender auth.Account, issueID string) (types.Issue, error) {
+func IssueOwnerCheck(cliCtx context.CLIContext, sender sdk.AccAddress, issueID string) (types.Issue, error) {
 	var issueInfo types.Issue
 	// Query the issue
-	res, err := issuequeriers.QueryIssueByID(issueID, cliCtx)
+	res, _, err := cliCtx.QueryWithData(GetQueryIssuePath(issueID), nil)
 	if err != nil {
 		return nil, err
 	}
-	cdc.MustUnmarshalJSON(res, &issueInfo)
+	cliCtx.Codec.MustUnmarshalJSON(res, &issueInfo)
 
-	if !sender.GetAddress().Equals(issueInfo.GetOwner()) {
-		return nil, types.Errorf(types.ErrOwnerMismatch(issueID))
+	if !sender.Equals(issueInfo.GetOwner()) {
+		return nil, types.Errorf(types.ErrOwnerMismatch())
 	}
 	return issueInfo, nil
-}
-
-func checkFreezeByOut(issueID string, freeze types.IssueFreeze, from sdk.AccAddress) sdk.Error {
-	if freeze.OutEndTime > 0 && time.Unix(freeze.OutEndTime, 0).After(time.Now()) {
-		return types.ErrCanNotTransferOut()
-	}
-	return nil
-}
-
-func checkFreezeByIn(issueID string, freeze types.IssueFreeze, to sdk.AccAddress) sdk.Error {
-	if freeze.InEndTime > 0 && time.Unix(freeze.InEndTime, 0).After(time.Now()) {
-		return types.ErrCanNotTransferIn()
-	}
-	return nil
 }
 
 func CheckFreeze(cdc *codec.Codec, cliCtx context.CLIContext, issueID string, from sdk.AccAddress, to sdk.AccAddress) error {
-	res, err := issuequeriers.QueryIssueFreeze(issueID, from, cliCtx)
+	res, _, err := cliCtx.QueryWithData(GetQueryIssueFreezePath(issueID, from), nil)
 	if err != nil {
 		return err
 	}
 	var freeze types.IssueFreeze
-	cdc.MustUnmarshalJSON(res, &freeze)
+	cliCtx.Codec.MustUnmarshalJSON(res, &freeze)
 
-	if checkErr := checkFreezeByOut(issueID, freeze, from); checkErr != nil {
-		return types.Errorf(checkErr)
-	}
-	res, err = issuequeriers.QueryIssueFreeze(issueID, to, cliCtx)
+	res, _, err = cliCtx.QueryWithData(GetQueryIssueFreezePath(issueID, to), nil)
 	if err != nil {
 		return err
 	}
-	cdc.MustUnmarshalJSON(res, &freeze)
-	if checkErr := checkFreezeByIn(issueID, freeze, to); checkErr != nil {
-		return types.Errorf(checkErr)
-	}
+	cliCtx.Codec.MustUnmarshalJSON(res, &freeze)
 	return nil
 }

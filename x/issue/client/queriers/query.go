@@ -1,37 +1,6 @@
 package queriers
 
-import (
-	"fmt"
-
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/zar-network/zar-network/x/issue/internal/types"
-)
-
-func GetQueryIssuePath(issueID string) string {
-	return fmt.Sprintf("%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryIssue, issueID)
-}
-func GetQueryParamsPath() string {
-	return fmt.Sprintf("%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryParams)
-}
-func GetQueryIssueAllowancePath(issueID string, owner sdk.AccAddress, spender sdk.AccAddress) string {
-	return fmt.Sprintf("%s/%s/%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryAllowance, issueID, owner.String(), spender.String())
-}
-func GetQueryIssueFreezePath(issueID string, accAddress sdk.AccAddress) string {
-	return fmt.Sprintf("%s/%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryFreeze, issueID, accAddress.String())
-}
-func GetQueryIssueFreezesPath(issueID string) string {
-	return fmt.Sprintf("%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryFreezes, issueID)
-}
-func GetQueryIssueSearchPath(symbol string) string {
-	return fmt.Sprintf("%s/%s/%s/%s", types.Custom, types.QuerierRoute, types.QuerySearch, symbol)
-}
-func GetQueryIssuesPath() string {
-	return fmt.Sprintf("%s/%s/%s", types.Custom, types.QuerierRoute, types.QueryIssues)
-}
-
-func QueryIssueBySymbol(symbol string, cliCtx context.CLIContext) ([]byte, int64, error) {
+/*func QueryIssueBySymbol(symbol string, cliCtx context.CLIContext) ([]byte, int64, error) {
 	return cliCtx.QueryWithData(GetQueryIssueSearchPath(symbol), nil)
 }
 func QueryParams(cliCtx context.CLIContext) ([]byte, int64, error) {
@@ -55,4 +24,4 @@ func QueryIssuesList(params types.IssueQueryParams, cdc *codec.Codec, cliCtx con
 		return nil, -1, err
 	}
 	return cliCtx.QueryWithData(GetQueryIssuesPath(), bz)
-}
+}*/

@@ -10,22 +10,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
+	cutils "github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/gorilla/mux"
 
-	clientutils "github.com/zar-network/zar-network/x/issue/client/utils"
-	"github.com/zar-network/zar-network/x/issue/types"
-)
-
-const (
-	IssueID    = "issue-id"
-	Feature    = "feature"
-	AccAddress = "accAddress"
-	From       = "from"
-	FreezeType = "freeze-type"
-	EndTime    = "end-time"
-	Symbol     = "symbol"
-	Amount     = "amount"
-	To         = "to"
+	"github.com/zar-network/zar-network/x/issue/client/utils"
+	"github.com/zar-network/zar-network/x/issue/internal/types"
 )
 
 // RegisterRoutes register distribution REST routes.
@@ -49,36 +38,36 @@ type PostIssueBaseReq struct {
 // RegisterRoutes - Central function to define routes that get registered by the main application
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc("/issue", postIssueHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/approve/{%s}/{%s}/{%s}", IssueID, AccAddress, Amount), postIssueApproveHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/approve/increase/{%s}/{%s}/{%s}", IssueID, AccAddress, Amount), postIssueIncreaseApproval(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/approve/decrease/{%s}/{%s}/{%s}", IssueID, AccAddress, Amount), postIssueDecreaseApproval(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/burn/{%s}/{%s}", IssueID, Amount), postBurnHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/burn-from/{%s}/{%s}/{%s}", IssueID, AccAddress, Amount), postBurnFromHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/freeze/{%s}/{%s}/{%s}/{%s}", FreezeType, IssueID, AccAddress, EndTime), postIssueFreezeHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/unfreeze/{%s}/{%s}/{%s}", FreezeType, IssueID, AccAddress), postIssueUnFreezeHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/send-from/{%s}/{%s}/{%s}/{%s}", IssueID, From, To, Amount), postIssueSendFrom(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/mint/{%s}/{%s}/{%s}", IssueID, Amount, To), postMintHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/ownership/transfer/{%s}/{%s}", IssueID, To), postTransferOwnershipHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/description/{%s}", IssueID), postDescribeHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/feature/disable/{%s}/{%s}", IssueID, Feature), postDisableFeatureHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/issue/approve/{%s}/{%s}/{%s}", "issue-id", "accAddress", "amount"), postIssueApproveHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/issue/approve/increase/{%s}/{%s}/{%s}", "issue-id", "accAddress", "amount"), postIssueIncreaseApproval(cliCtx)).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/issue/approve/decrease/{%s}/{%s}/{%s}", "issue-id", "accAddress", "amount"), postIssueDecreaseApproval(cliCtx)).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/issue/burn/{%s}/{%s}", "issue-id", "amount"), postBurnHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/issue/burn-from/{%s}/{%s}/{%s}", "issue-id", "accAddress", "amount"), postBurnFromHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/issue/freeze/{%s}/{%s}/{%s}", "freeze-type", "issue-id", "accAddress"), postIssueFreezeHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/issue/unfreeze/{%s}/{%s}/{%s}", "freeze-type", "issue-id", "accAddress"), postIssueUnFreezeHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/issue/send-from/{%s}/{%s}/{%s}/{%s}", "issue-id", "from", "to", "amount"), postIssueSendFrom(cliCtx)).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/issue/mint/{%s}/{%s}/{%s}", "issue-id", "amount", "to"), postMintHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/issue/ownership/transfer/{%s}/{%s}", "issue-id", "to"), postTransferOwnershipHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/issue/description/{%s}", "issue-id"), postDescribeHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/issue/feature/disable/{%s}/{%s}", "issue-id", "feature"), postDisableFeatureHandlerFn(cliCtx)).Methods("POST")
 }
 
 // RegisterRoutes - Central function to define routes that get registered by the main application
 func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc(fmt.Sprintf("/%s/%s", types.QuerierRoute, types.QueryParams), queryParamsHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}", types.QuerierRoute, types.QueryIssue, IssueID), queryIssueHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}", types.QuerierRoute, types.QueryIssue, "issue-id"), queryIssueHandlerFn(cliCtx)).Methods("GET")
 	r.HandleFunc(fmt.Sprintf("/%s/%s", types.QuerierRoute, types.QueryIssues), queryIssuesHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}", types.QuerierRoute, types.QuerySearch, Symbol), queryIssueSearchHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}/{%s}", types.QuerierRoute, types.QueryFreeze, IssueID, restAddress), queryIssueFreezeHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}", types.QuerierRoute, types.QueryFreezes, IssueID), queryIssueFreezesHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}/{%s}/{%s}", types.QuerierRoute, types.QueryAllowance, IssueID, restAddress, spenderAddress), queryIssueAllowanceHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}", types.QuerierRoute, types.QuerySearch, "symbol"), queryIssueSearchHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}/{%s}", types.QuerierRoute, types.QueryFreeze, "issue-id", restAddress), queryIssueFreezeHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}", types.QuerierRoute, types.QueryFreezes, "issue-id"), queryIssueFreezesHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}/{%s}/{%s}", types.QuerierRoute, types.QueryAllowance, "issue-id", restAddress, spenderAddress), queryIssueAllowanceHandlerFn(cliCtx)).Methods("GET")
 }
 
 func postIssueHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		var req PostIssueReq
-		if !rest.ReadRESTReq(w, r, cdc, &req) {
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
 			return
 		}
 
@@ -104,32 +93,32 @@ func postIssueHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		types.WriteGenerateStdTxResponse(w, cliCtx, req.BaseReq, []sdk.Msg{msg})
+		cutils.WriteGenerateStdTxResponse(w, cliCtx, req.BaseReq, []sdk.Msg{msg})
 	}
 }
 
 func postMintHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		issueID := vars[IssueID]
+		issueID := vars["issue-id"]
 
 		if err := types.CheckIssueId(issueID); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		num, err := strconv.ParseInt(vars[Amount], 10, 64)
+		num, err := strconv.ParseInt(vars["amount"], 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		amount := sdk.NewInt(num)
-		toAddr, err := sdk.AccAddressFromBech32(vars[To])
+		toAddr, err := sdk.AccAddressFromBech32(vars["to"])
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		var req PostIssueBaseReq
-		if !rest.ReadRESTReq(w, r, cdc, &req) {
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
 			return
 		}
 		req.BaseReq = req.BaseReq.Sanitize()
@@ -139,44 +128,45 @@ func postMintHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 		fromAddr, err := sdk.AccAddressFromBech32(req.BaseReq.From)
 		if err != nil {
 			return
-		}
+		}cliCtx.
 		account, err := cliCtx.GetAccount(fromAddr)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		issueInfo, err := clientutils.IssueOwnerCheck(cdc, cliCtx, account, issueID)
+		issueInfo, err := utils.IssueOwnerCheck(cliCtx, account, issueID)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		msg := types.NewMsgIssueMint(issueID, fromAddress, amount, issueInfo.GetDecimals(), to)
+		msg := types.NewMsgIssueMint(issueID, fromAddr, toAddr, amount, issueInfo.GetDecimals())
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		types.WriteGenerateStdTxResponse(w, cdc, cliCtx, req.BaseReq, []sdk.Msg{msg})
+		cutils.WriteGenerateStdTxResponse(w, cdc, cliCtx, req.BaseReq, []sdk.Msg{msg})
 	}
 }
 
-func postDisableFeatureHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
+func postDisableFeatureHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		issueID := vars[IssueID]
+		issueID := vars["issue-id"]
+
 		if err := types.CheckIssueId(issueID); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		feature := vars[Feature]
+		feature := vars["feature"]
 		_, ok := types.Features[feature]
 		if !ok {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, types.ErrUnknownFeatures().Error())
 			return
 		}
 		var req PostIssueBaseReq
-		if !rest.ReadRESTReq(w, r, cdc, &req) {
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
 			return
 		}
 		req.BaseReq = req.BaseReq.Sanitize()
@@ -192,7 +182,7 @@ func postDisableFeatureHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) ht
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		_, err = clientutils.IssueOwnerCheck(cdc, cliCtx, account, issueID)
+		_, err = utils.IssueOwnerCheck(cdc, cliCtx, account, issueID)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -210,7 +200,7 @@ func postDisableFeatureHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) ht
 func postDescribeHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		issueID := vars[IssueID]
+		issueID := vars["issue-id"]
 		if err := types.CheckIssueId(issueID); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -241,7 +231,7 @@ func postDescribeHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.Han
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		_, err = clientutils.IssueOwnerCheck(cdc, cliCtx, account, issueID)
+		_, err = utils.IssueOwnerCheck(cdc, cliCtx, account, issueID)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -249,10 +239,10 @@ func postDescribeHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.Han
 		types.WriteGenerateStdTxResponse(w, cdc, cliCtx, req.BaseReq, []sdk.Msg{msg})
 	}
 }
-func postTransferOwnershipHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
+func postTransferOwnershipHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		issueID := vars[IssueID]
+		issueID := vars["issue-id"]
 		if err := types.CheckIssueId(issueID); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -270,7 +260,7 @@ func postTransferOwnershipHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext)
 		if err != nil {
 			return
 		}
-		to, err := sdk.AccAddressFromBech32(vars[To])
+		to, err := sdk.AccAddressFromBech32(vars["to"])
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -286,7 +276,7 @@ func postTransferOwnershipHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext)
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		_, err = clientutils.IssueOwnerCheck(cdc, cliCtx, account, issueID)
+		_, err = utils.IssueOwnerCheck(cdc, cliCtx, account, issueID)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -296,13 +286,13 @@ func postTransferOwnershipHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext)
 	}
 }
 
-func postIssueFreezeHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
-	return issueFreezeHandlerFn(cdc, cliCtx, true)
+func postIssueFreezeHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+	return issueFreezeHandlerFn(cliCtx, true)
 }
-func postIssueUnFreezeHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
-	return issueFreezeHandlerFn(cdc, cliCtx, false)
+func postIssueUnFreezeHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+	return issueFreezeHandlerFn(cliCtx, false)
 }
-func issueFreezeHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext, freeze bool) http.HandlerFunc {
+func issueFreezeHandlerFn(cliCtx context.CLIContext, freeze bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		var req PostIssueBaseReq
@@ -327,7 +317,7 @@ func issueFreezeHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext, freeze bo
 		}
 		vars := mux.Vars(r)
 
-		msg, err := clientutils.GetIssueFreezeMsg(cdc, cliCtx, account, vars[FreezeType], vars[IssueID], vars[AccAddress], vars[EndTime], freeze)
+		msg, err := utils.GetIssueFreezeMsg(cdc, cliCtx, account, vars["freeze-type"], vars["issue-id"], vars["accAddress"], vars[EndTime], freeze)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -337,31 +327,31 @@ func issueFreezeHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext, freeze bo
 	}
 }
 
-func postBurnHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
-	return postBurnFromAddressHandlerFn(cdc, cliCtx, types.BurnHolder)
+func postBurnHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+	return postBurnFromAddressHandlerFn(cliCtx, types.BurnHolder)
 }
-func postBurnFromHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
-	return postBurnFromAddressHandlerFn(cdc, cliCtx, types.BurnFrom)
+func postBurnFromHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+	return postBurnFromAddressHandlerFn(cliCtx, types.BurnFrom)
 }
-func postIssueSendFrom(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
+func postIssueSendFrom(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		issueID := vars[IssueID]
+		issueID := vars["issue-id"]
 		if err := types.CheckIssueId(issueID); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		from, err := sdk.AccAddressFromBech32(vars[From])
+		from, err := sdk.AccAddressFromBech32(vars["from"])
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		to, err := sdk.AccAddressFromBech32(vars[To])
+		to, err := sdk.AccAddressFromBech32(vars["to"])
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		num, err := strconv.ParseInt(vars[Amount], 10, 64)
+		num, err := strconv.ParseInt(vars["amount"], 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -385,18 +375,18 @@ func postIssueSendFrom(cdc *codec.Codec, cliCtx context.CLIContext) http.Handler
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		_, err = clientutils.GetIssueByID(cdc, cliCtx, issueID)
+		_, err = utils.GetIssueByID(cliCtx, issueID)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		if err := clientutils.CheckAllowance(cdc, cliCtx, issueID, from, account.GetAddress(), amount); err != nil {
+		if err := utils.CheckAllowance(cliCtx, issueID, from, account.GetAddress(), amount); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		if err = clientutils.CheckFreeze(cdc, cliCtx, issueID, from, to); err != nil {
+		if err = utils.CheckFreeze(cliCtx, issueID, from, to); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -407,24 +397,24 @@ func postIssueSendFrom(cdc *codec.Codec, cliCtx context.CLIContext) http.Handler
 			return
 		}
 
-		types.WriteGenerateStdTxResponse(w, cdc, cliCtx, req.BaseReq, []sdk.Msg{msg})
+		cutils.WriteGenerateStdTxResponse(w, cliCtx, req.BaseReq, []sdk.Msg{msg})
 	}
 }
 
-func postIssueApproveHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
-	return issueApproveHandlerFn(cdc, cliCtx, types.Approve)
+func postIssueApproveHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+	return issueApproveHandlerFn(cliCtx, types.Approve)
 }
-func postIssueIncreaseApproval(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
-	return issueApproveHandlerFn(cdc, cliCtx, types.IncreaseApproval)
+func postIssueIncreaseApproval(cliCtx context.CLIContext) http.HandlerFunc {
+	return issueApproveHandlerFn(cliCtx, types.IncreaseApproval)
 }
-func postIssueDecreaseApproval(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
-	return issueApproveHandlerFn(cdc, cliCtx, types.DecreaseApproval)
+func postIssueDecreaseApproval(cliCtx context.CLIContext) http.HandlerFunc {
+	return issueApproveHandlerFn(cliCtx, types.DecreaseApproval)
 }
-func issueApproveHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext, approveType string) http.HandlerFunc {
+func issueApproveHandlerFn(cliCtx context.CLIContext, approveType string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		var req PostIssueBaseReq
-		if !rest.ReadRESTReq(w, r, cdc, &req) {
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
 			return
 		}
 
@@ -433,7 +423,7 @@ func issueApproveHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext, approveT
 			return
 		}
 
-		fromAddress, err := sdk.AccAddressFromBech32(req.BaseReq.From)
+		fromAddr, err := sdk.AccAddressFromBech32(req.BaseReq.From)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -441,31 +431,31 @@ func issueApproveHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext, approveT
 
 		vars := mux.Vars(r)
 
-		issueID := vars[IssueID]
-		accAddress, err := sdk.AccAddressFromBech32(vars[AccAddress])
+		issueID := vars["issue-id"]
+		accAddr, err := sdk.AccAddressFromBech32(vars["accAddress"])
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		amount, ok := sdk.NewIntFromString(vars[Amount])
+		amount, ok := sdk.NewIntFromString(vars["amount"])
 		if !ok {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "Amount not a valid int")
 			return
 		}
 
-		account, err := cliCtx.GetAccount(fromAddress)
+		account, err := cliCtx.GetAccount(fromAddr)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		msg, err := clientutils.GetIssueApproveMsg(cdc, cliCtx, issueID, account, accAddress, approveType, amount, false)
+		msg, err := utils.GetIssueApproveMsg(cliCtx, issueID, account, accAddr, approveType, amount, false)
 
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		types.WriteGenerateStdTxResponse(w, cdc, cliCtx, req.BaseReq, []sdk.Msg{msg})
+		cutils.WriteGenerateStdTxResponse(w, cliCtx, req.BaseReq, []sdk.Msg{msg})
 	}
 }

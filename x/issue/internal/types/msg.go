@@ -220,8 +220,14 @@ type MsgIssueMint struct {
 
 var _ sdk.Msg = MsgIssueMint{}
 
-//New MsgIssueMint Instance
-func NewMsgIssueMint(issueId string, fromAddr, toAddr sdk.AccAddress, amount sdk.Int, decimals uint) MsgIssueMint {
+//NewMsgIssueMint Instance
+func NewMsgIssueMint(
+	issueId string,
+	fromAddr,
+	toAddr sdk.AccAddress,
+	amount sdk.Int,
+	decimals uint,
+) MsgIssueMint {
 	return MsgIssueMint{
 		IssueId:     issueId,
 		FromAddress: fromAddr,
