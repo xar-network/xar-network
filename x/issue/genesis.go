@@ -36,8 +36,8 @@ func (data GenesisState) IsEmpty() bool {
 
 // Checks whether 2 GenesisState structs are equivalent.
 func (data GenesisState) Equal(data2 GenesisState) bool {
-	b1 := MsgCdc.MustMarshalBinaryBare(data)
-	b2 := MsgCdc.MustMarshalBinaryBare(data2)
+	b1 := ModuleCdc.MustMarshalBinaryBare(data)
+	b2 := ModuleCdc.MustMarshalBinaryBare(data2)
 	return bytes.Equal(b1, b2)
 }
 

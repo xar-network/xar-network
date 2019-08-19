@@ -4,8 +4,8 @@ package app
 import (
 	"io"
 
+	dbm "github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -43,5 +43,5 @@ func NewZarAppUNSAFE(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLat
 ) (zapp *ZarApp, keyMain, keyStaking *sdk.KVStoreKey, stakingKeeper staking.Keeper) {
 
 	zapp = NewZarApp(logger, db, traceStore, loadLatest, invCheckPeriod, baseAppOptions...)
-	return zapp, zapp.keys[baseapp.MainStoreKey], zapp.keys[staking.StoreKey], zapp.stakingKeeper
+	return zapp, zapp.keyMain, zapp.keyStaking, zapp.stakingKeeper
 }

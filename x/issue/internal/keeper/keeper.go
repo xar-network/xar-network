@@ -31,7 +31,7 @@ type Keeper interface {
 	BurnFrom(ctx sdk.Context, issueID string, amount sdk.Int, sender sdk.AccAddress, who sdk.AccAddress) (sdk.Coins, sdk.Error)
 	GetFreeze(ctx sdk.Context, accAddress sdk.AccAddress, issueID string) types.IssueFreeze
 	GetFreezes(ctx sdk.Context, issueID string) []types.IssueAddressFreeze
-	Freeze(ctx sdk.Context, issueID string, sender sdk.AccAddress, accAddress sdk.AccAddress, freezeType string, endTime int64) sdk.Error
+	Freeze(ctx sdk.Context, issueID string, sender sdk.AccAddress, accAddress sdk.AccAddress, freezeType string) sdk.Error
 	UnFreeze(ctx sdk.Context, issueID string, sender sdk.AccAddress, accAddress sdk.AccAddress, freezeType string) sdk.Error
 	SetIssueDescription(ctx sdk.Context, issueID string, sender sdk.AccAddress, description []byte) sdk.Error
 	TransferOwnership(ctx sdk.Context, issueID string, sender sdk.AccAddress, to sdk.AccAddress) sdk.Error
@@ -500,18 +500,18 @@ func (k BaseKeeper) GetFreezes(ctx sdk.Context, issueID string) []types.IssueAdd
 	}
 	return list
 }
-func (k BaseKeeper) freeze(ctx sdk.Context, issueID string, sender sdk.AccAddress, accAddress sdk.AccAddress, freezeType string, endTime int64) sdk.Error {
+func (k BaseKeeper) freeze(ctx sdk.Context, issueID string, sender sdk.AccAddress, accAddress sdk.AccAddress, freezeType string) sdk.Error {
 	switch freezeType {
 	case types.FreezeIn:
-		return k.freezeIn(ctx, issueID, accAddress, endTime)
+		return k.freezeIn(ctx, issueID, accAddress)
 	case types.FreezeOut:
-		return k.freezeOut(ctx, issueID, accAddress, endTime)
+		return k.freezeOut(ctx, issueID, accAddress)
 	case types.FreezeInAndOut:
-		return k.freezeInAndOut(ctx, issueID, accAddress, endTime)
+		return k.freezeInAndOut(ctx, issueID, accAddress)
 	}
 	return types.ErrUnknownFreezeType()
 }
-func (k BaseKeeper) Freeze(ctx sdk.Context, issueID string, sender sdk.AccAddress, accAddress sdk.AccAddress, freezeType string, endTime int64) sdk.Error {
+func (k BaseKeeper) Freeze(ctx sdk.Context, issueID string, sender sdk.AccAddress, accAddress sdk.AccAddress, freezeType string) sdk.Error {
 	issueInfo, err := k.getIssueByOwner(ctx, sender, issueID)
 	if err != nil {
 		return err
@@ -519,14 +519,14 @@ func (k BaseKeeper) Freeze(ctx sdk.Context, issueID string, sender sdk.AccAddres
 	if issueInfo.IsFreezeDisabled() {
 		return types.ErrCanNotFreeze()
 	}
-	return k.freeze(ctx, issueID, sender, accAddress, freezeType, endTime)
+	return k.freeze(ctx, issueID, sender, accAddress, freezeType)
 }
 func (k BaseKeeper) UnFreeze(ctx sdk.Context, issueID string, sender sdk.AccAddress, accAddress sdk.AccAddress, freezeType string) sdk.Error {
 	_, err := k.getIssueByOwner(ctx, sender, issueID)
 	if err != nil {
 		return err
 	}
-	return k.freeze(ctx, issueID, sender, accAddress, freezeType, types.UnFreezeEndTime)
+	return k.freeze(ctx, issueID, sender, accAddress, freezeType)
 }
 
 func (k BaseKeeper) freezeIn(ctx sdk.Context, issueID string, accAddress sdk.AccAddress, endTime int64) sdk.Error {

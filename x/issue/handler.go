@@ -145,7 +145,7 @@ func handleMsgIssueBurnHolder(ctx sdk.Context, k keeper.Keeper, msg types.MsgIss
 //Handle handleMsgIssueBurnOwner
 func handleMsgIssueBurnOwner(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueBurnOwner) sdk.Result {
 	fee := k.GetParams(ctx).BurnFee
-	if err := k.Fee(ctx, msg.Sender, fee); err != nil {
+	if err := k.Fee(ctx, msg.FromAddress, fee); err != nil {
 		return err.Result()
 	}
 	_, err := k.BurnOwner(ctx, msg.IssueId, msg.Amount, msg.FromAddress)
@@ -202,10 +202,10 @@ func handleMsgIssueDisableFeature(ctx sdk.Context, k keeper.Keeper, msg types.Ms
 //Handle handleMsgIssueFreeze
 func handleMsgIssueFreeze(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueFreeze) sdk.Result {
 	fee := k.GetParams(ctx).FreezeFee
-	if err := k.Fee(ctx, msg.Sender, fee); err != nil {
+	if err := k.Fee(ctx, msg.FromAddress, fee); err != nil {
 		return err.Result()
 	}
-	if err := k.Freeze(ctx, msg.IssueId, msg.FromAddress, msg.ToAddress, msg.FreezeType, msg.EndTime); err != nil {
+	if err := k.Freeze(ctx, msg.IssueId, msg.FromAddress, msg.ToAddress, msg.FreezeType); err != nil {
 		return err.Result()
 	}
 

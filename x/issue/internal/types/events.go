@@ -17,4 +17,6 @@ var (
 	TotalSupply     = "total-supply"
 	MintingFinished = "minting-finished"
 	FreezeType      = "freeze-type"
+
+	AttributeValueCategory = ModuleName
 )

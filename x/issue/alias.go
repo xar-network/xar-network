@@ -8,6 +8,7 @@ import (
 )
 
 type (
+	BaseKeeper    = keeper.BaseKeeper // ibc module depends on this
 	Keeper        = keeper.Keeper
 	CoinIssueInfo = types.CoinIssueInfo
 	Approval      = types.Approval
@@ -17,8 +18,7 @@ type (
 )
 
 var (
-	MsgCdc          = types.MsgCdc
-	NewKeeper       = keeper.NewKeeper
+	ModuleCdc       = types.ModuleCdc
 	NewModuleClient = client.NewModuleClient
 	//GetAccountCmd   = cli.GetAccountCmd
 	QueryCmd      = cli.QueryCmd
