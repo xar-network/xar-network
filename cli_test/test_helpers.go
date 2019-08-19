@@ -14,7 +14,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	cmn "github.com/tendermint/tendermint/libs/common"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/zar-network/zar-network/app"
@@ -158,6 +157,7 @@ func InitFixtures(t *testing.T) (f *Fixtures) {
 
 	f.CLIConfig("chain-id", f.ChainID)
 	f.CLIConfig("broadcast-mode", "block")
+	f.CLIConfig("trust-node", "true")
 
 	// start an account with tokens
 	f.AddGenesisAccount(f.KeyAddress(keyFoo), startCoins)
@@ -718,10 +718,10 @@ func executeWriteRetStdStreams(t *testing.T, cmdStr string, writes ...string) (b
 
 	// Log output.
 	if len(stdout) > 0 {
-		t.Log("Stdout:", cmn.Green(string(stdout)))
+		t.Log("Stdout:", string(stdout))
 	}
 	if len(stderr) > 0 {
-		t.Log("Stderr:", cmn.Red(string(stderr)))
+		t.Log("Stderr:", string(stderr))
 	}
 
 	// Wait for process to exit

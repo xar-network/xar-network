@@ -10,12 +10,14 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/lcd"
 	"github.com/cosmos/cosmos-sdk/codec"
 	crkeys "github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/simapp"
+	"github.com/cosmos/cosmos-sdk/store"
 	"github.com/cosmos/cosmos-sdk/tests"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -27,17 +29,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
-
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 
-	"github.com/tendermint/go-amino"
 	tmcfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/libs/cli"
-	dbm "github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/libs/log"
 	nm "github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
@@ -46,6 +45,7 @@ import (
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmrpc "github.com/tendermint/tendermint/rpc/lib/server"
 	tmtypes "github.com/tendermint/tendermint/types"
+	dbm "github.com/tendermint/tm-db"
 
 	gapp "github.com/zar-network/zar-network/app"
 )
@@ -70,7 +70,7 @@ func InitializeLCD(nValidators int, initAddrs []sdk.AccAddress, minting bool, po
 	logger = log.NewFilter(logger, log.AllowError())
 
 	db := dbm.NewMemDB()
-	app := gapp.NewZarApp(logger, db, nil, true, 0)
+	app := gapp.NewZarApp(logger, db, nil, true, 0, baseapp.SetPruning(store.PruneNothing))
 	cdc = gapp.MakeCodec()
 
 	genDoc, valConsPubKeys, valOperAddrs, privVal, err := defaultGenesis(config, nValidators, initAddrs, minting)
@@ -171,7 +171,7 @@ func defaultGenesis(config *tmcfg.Config, nValidators int, initAddrs []sdk.AccAd
 			sdk.ValAddress(operAddr),
 			pubKey,
 			sdk.NewCoin(sdk.DefaultBondDenom, startTokens),
-			staking.NewDescription(fmt.Sprintf("validator-%d", i+1), "", "", ""),
+			staking.NewDescription(fmt.Sprintf("validator-%d", i+1), "", "", "", ""),
 			staking.NewCommissionRates(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
 			sdk.OneInt(),
 		)
@@ -223,23 +223,28 @@ func defaultGenesis(config *tmcfg.Config, nValidators int, initAddrs []sdk.AccAd
 		accs = append(accs, acc)
 	}
 
-	// supply data
-	supplyDataBz := genesisState[supply.ModuleName]
-	var supplyData supply.GenesisState
-	cdc.MustUnmarshalJSON(supplyDataBz, &supplyData)
-	supplyData.Supply.Total = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, totalSupply))
-	supplyDataBz = cdc.MustMarshalJSON(supplyData)
-	genesisState[supply.ModuleName] = supplyDataBz
-
 	// distr data
 	distrDataBz := genesisState[distr.ModuleName]
 	var distrData distr.GenesisState
 	cdc.MustUnmarshalJSON(distrDataBz, &distrData)
-	distrData.FeePool.CommunityPool = sdk.DecCoins{sdk.DecCoin{Denom: "test", Amount: sdk.NewDecFromInt(sdk.NewInt(10))}}
+
+	commPoolAmt := sdk.NewInt(10)
+	distrData.FeePool.CommunityPool = sdk.DecCoins{sdk.NewDecCoin(sdk.DefaultBondDenom, commPoolAmt)}
 	distrDataBz = cdc.MustMarshalJSON(distrData)
 	genesisState[distr.ModuleName] = distrDataBz
+
+	// staking and genesis accounts
 	genesisState[staking.ModuleName] = cdc.MustMarshalJSON(stakingData)
 	genesisState[genaccounts.ModuleName] = cdc.MustMarshalJSON(accs)
+
+	// supply data
+	supplyDataBz := genesisState[supply.ModuleName]
+	var supplyData supply.GenesisState
+	cdc.MustUnmarshalJSON(supplyDataBz, &supplyData)
+
+	supplyData.Supply = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, totalSupply.Add(commPoolAmt)))
+	supplyDataBz = cdc.MustMarshalJSON(supplyData)
+	genesisState[supply.ModuleName] = supplyDataBz
 
 	// mint genesis (none set within genesisState)
 	mintData := mint.DefaultGenesisState()
@@ -348,7 +353,7 @@ func registerRoutes(rs *lcd.RestServer) {
 	gapp.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
 
-var cdc = amino.NewCodec()
+var cdc = codec.New()
 
 func init() {
 	ctypes.RegisterAmino(cdc)
