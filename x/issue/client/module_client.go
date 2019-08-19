@@ -6,7 +6,7 @@ import (
 	amino "github.com/tendermint/go-amino"
 
 	issueCli "github.com/zar-network/zar-network/x/issue/client/cli"
-	"github.com/zar-network/zar-network/x/issue/types"
+	"github.com/zar-network/zar-network/x/issue/internal/types"
 )
 
 // ModuleClient exports all client functionality from this module
@@ -44,17 +44,17 @@ func (mc ModuleClient) GetCmd() *cobra.Command {
 		issueCli.GetCmdIssueApprove(mc.cdc),
 		issueCli.GetCmdIssueBurn(mc.cdc),
 		issueCli.GetCmdIssueBurnFrom(mc.cdc),
-		issueCli.GetCmdIssueCreate(mc.cdc),
-		issueCli.GetCmdIssueDescription(mc.cdc),
+		issueCli.IssueCreateCmd(mc.cdc),
+		issueCli.IssueDescriptionCmd(mc.cdc),
 		issueCli.GetCmdIssueDecreaseApproval(mc.cdc),
 		issueCli.GetCmdIssueFreeze(mc.cdc),
 		issueCli.GetCmdIssueUnFreeze(mc.cdc),
 		issueCli.GetCmdIssueIncreaseApproval(mc.cdc),
-		issueCli.GetCmdIssueMint(mc.cdc),
+		issueCli.IssueMintCmd(mc.cdc),
 		issueCli.GetCmdIssueSendFrom(mc.cdc),
-		issueCli.GetCmdIssueTransferOwnership(mc.cdc),
+		issueCli.IssueTransferOwnershipCmd(mc.cdc),
 		client.LineBreak,
-		issueCli.GetCmdIssueDisableFeature(mc.cdc),
+		issueCli.IssueDisableFeatureCmd(mc.cdc),
 	)
 
 	for _, cmd := range txCmd {

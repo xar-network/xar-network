@@ -3,19 +3,12 @@ package cli
 import (
 	"strings"
 
-	"github.com/zar-network/zar-network/x/issue/config"
-
-	"github.com/zar-network/zar-network/x/issue/types"
-
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	issuequeriers "github.com/zar-network/zar-network/x/issue/client/queriers"
-	"github.com/zar-network/zar-network/x/issue/errors"
-	"github.com/zar-network/zar-network/x/issue/params"
-	issueutils "github.com/zar-network/zar-network/x/issue/utils"
+	"github.com/zar-network/zar-network/x/issue/internal/types"
 )
 
 // GetQueryParamsCmd implements the query params command.
@@ -23,16 +16,16 @@ func GetQueryParamsCmd(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "params",
 		Short:   "Query the parameters of the lock process",
-		Long:    "Query the all the parameters",
-		Example: "$ zar-networkcli lock params",
+		Long:    "Query all the parameters",
+		Example: "$ zarcli lock params",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			res, err := issuequeriers.QueryParams(cliCtx)
+			res, _, err := cliCtx.QueryWithData(types.GetQueryParamsPath(), nil)
 			if err != nil {
 				return err
 			}
-			var params config.Params
+			var params types.Params
 			cdc.MustUnmarshalJSON(res, &params)
 			return cliCtx.PrintOutput(params)
 		},
@@ -70,11 +63,11 @@ func GetCmdQueryIssue(cdc *codec.Codec) *cobra.Command {
 func processQuery(cdc *codec.Codec, args []string) error {
 	cliCtx := context.NewCLIContext().WithCodec(cdc)
 	issueID := args[0]
-	if err := issueutils.CheckIssueId(issueID); err != nil {
-		return errors.Errorf(err)
+	if err := types.CheckIssueId(issueID); err != nil {
+		return types.Errorf(err)
 	}
 	// Query the issue
-	res, err := issuequeriers.QueryIssueByID(issueID, cliCtx)
+	res, _, err := cliCtx.QueryWithData(types.GetQueryIssuePath(issueID), nil)
 	if err != nil {
 		return err
 	}
@@ -94,8 +87,8 @@ func GetCmdQueryAllowance(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			issueID := args[0]
-			if err := issueutils.CheckIssueId(issueID); err != nil {
-				return errors.Errorf(err)
+			if err := types.CheckIssueId(issueID); err != nil {
+				return types.Errorf(err)
 			}
 			ownerAddress, err := sdk.AccAddressFromBech32(args[1])
 			if err != nil {
@@ -105,7 +98,7 @@ func GetCmdQueryAllowance(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			res, err := issuequeriers.QueryIssueAllowance(issueID, ownerAddress, spenderAddress, cliCtx)
+			res, _, err := cliCtx.QueryWithData(types.GetQueryIssueAllowancePath(issueID, ownerAddress, spenderAddress), nil)
 			if err != nil {
 				return err
 			}
@@ -128,14 +121,14 @@ func GetCmdQueryFreeze(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			issueID := args[0]
-			if err := issueutils.CheckIssueId(issueID); err != nil {
-				return errors.Errorf(err)
+			if err := types.CheckIssueId(issueID); err != nil {
+				return types.Errorf(err)
 			}
 			accAddress, err := sdk.AccAddressFromBech32(args[1])
 			if err != nil {
 				return err
 			}
-			res, err := issuequeriers.QueryIssueFreeze(issueID, accAddress, cliCtx)
+			res, _, err := cliCtx.QueryWithData(types.GetQueryIssueFreezePath(issueID, accAddress), nil)
 			if err != nil {
 				return err
 			}
@@ -161,13 +154,17 @@ func GetCmdQueryIssues(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			issueQueryParams := params.IssueQueryParams{
+			issueQueryParams := types.IssueQueryParams{
 				StartIssueId: viper.GetString(flagStartIssueId),
 				Owner:        address,
 				Limit:        viper.GetInt(flagLimit),
 			}
 			// Query the issue
-			res, err := issuequeriers.QueryIssuesList(issueQueryParams, cdc, cliCtx)
+			bz, err := cliCtx.Codec.MarshalJSON(issueQueryParams)
+			if err != nil {
+				return err
+			}
+			res, _, err := cliCtx.QueryWithData(types.GetQueryIssuesPath(), bz)
 			if err != nil {
 				return err
 			}
@@ -194,10 +191,10 @@ func GetCmdQueryFreezes(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			issueID := args[0]
-			if err := issueutils.CheckIssueId(issueID); err != nil {
-				return errors.Errorf(err)
+			if err := types.CheckIssueId(issueID); err != nil {
+				return types.Errorf(err)
 			}
-			res, err := issuequeriers.QueryIssueFreezes(issueID, cliCtx)
+			res, _, err := cliCtx.QueryWithData(types.GetQueryIssueFreezesPath(issueID), nil)
 			if err != nil {
 				return err
 			}
@@ -220,7 +217,7 @@ func GetCmdSearchIssues(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			// Query the issue
-			res, err := issuequeriers.QueryIssueBySymbol(strings.ToUpper(args[0]), cliCtx)
+			res, _, err := cliCtx.QueryWithData(types.GetQueryIssueSearchPath(strings.ToUpper(args[0])), nil)
 			if err != nil {
 				return err
 			}

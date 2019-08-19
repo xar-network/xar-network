@@ -5,12 +5,10 @@ import (
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
 
-	"github.com/zar-network/zar-network/x/issue/client/utils"
 	"github.com/zar-network/zar-network/x/issue/internal/types"
 )
 
@@ -24,7 +22,7 @@ func queryParamsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		res, height, err := cliCtx.QueryWithData(utils.GetQueryParamsPath(), nil)
+		res, height, err := cliCtx.QueryWithData(types.GetQueryParamsPath(), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -54,7 +52,7 @@ func queryIssueHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		res, height, err := cliCtx.QueryWithData(utils.GetQueryIssuePath(issueID), nil)
+		res, height, err := cliCtx.QueryWithData(types.GetQueryIssuePath(issueID), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -79,7 +77,7 @@ func queryIssueSearchHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		res, height, err := cliCtx.QueryWithData(utils.GetQueryIssueSearchPath(symbol), nil)
+		res, height, err := cliCtx.QueryWithData(types.GetQueryIssueSearchPath(symbol), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -130,7 +128,7 @@ func queryIssuesHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		res, height, err := cliCtx.QueryWithData(utils.GetQueryIssuesPath(), bz)
+		res, height, err := cliCtx.QueryWithData(types.GetQueryIssuesPath(), bz)
 
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
@@ -168,7 +166,7 @@ func queryIssueFreezeHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		res, height, err := cliCtx.QueryWithData(utils.GetQueryIssueFreezePath(issueID, addr), nil)
+		res, height, err := cliCtx.QueryWithData(types.GetQueryIssueFreezePath(issueID, addr), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -196,7 +194,7 @@ func queryIssueFreezesHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 		if !ok {
 			return
 		}
-		res, height, err := cliCtx.QueryWithData(utils.GetQueryIssueFreezesPath(issueID), nil)
+		res, height, err := cliCtx.QueryWithData(types.GetQueryIssueFreezesPath(issueID), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -208,7 +206,7 @@ func queryIssueFreezesHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func queryIssueAllowanceHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
+func queryIssueAllowanceHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -236,7 +234,7 @@ func queryIssueAllowanceHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) h
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		res, height, err := cliCtx.QueryWithData(utils.GetQueryIssueAllowancePath(issueID, addr, spenderAddr), nil)
+		res, height, err := cliCtx.QueryWithData(types.GetQueryIssueAllowancePath(issueID, addr, spenderAddr), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return

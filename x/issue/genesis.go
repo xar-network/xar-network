@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/zar-network/zar-network/x/issue/config"
-
-	"github.com/zar-network/zar-network/x/issue/types"
+	"github.com/zar-network/zar-network/x/issue/internal/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -17,7 +15,7 @@ import (
 type GenesisState struct {
 	StartingIssueId uint64          `json:"starting_issue_id"`
 	Issues          []CoinIssueInfo `json:"issues"`
-	Params          config.Params   `json:"params"`
+	Params          types.Params    `json:"params"`
 }
 
 // NewGenesisState creates a new genesis state.

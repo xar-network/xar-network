@@ -3,10 +3,8 @@ package issue
 import (
 	"github.com/zar-network/zar-network/x/issue/client"
 	"github.com/zar-network/zar-network/x/issue/client/cli"
-	"github.com/zar-network/zar-network/x/issue/config"
 	"github.com/zar-network/zar-network/x/issue/internal/keeper"
 	"github.com/zar-network/zar-network/x/issue/internal/types"
-	"github.com/zar-network/zar-network/x/issue/msgs"
 )
 
 type (
@@ -14,18 +12,18 @@ type (
 	CoinIssueInfo = types.CoinIssueInfo
 	Approval      = types.Approval
 	IssueFreeze   = types.IssueFreeze
-	Params        = config.Params
+	Params        = types.Params
 	Hooks         = keeper.Hooks
 )
 
 var (
-	MsgCdc          = msgs.MsgCdc
+	MsgCdc          = types.MsgCdc
 	NewKeeper       = keeper.NewKeeper
 	NewModuleClient = client.NewModuleClient
 	//GetAccountCmd   = cli.GetAccountCmd
 	QueryCmd      = cli.QueryCmd
-	RegisterCodec = msgs.RegisterCodec
-	DefaultParams = config.DefaultParams
+	RegisterCodec = types.RegisterCodec
+	DefaultParams = types.DefaultParams
 )
 
 const (

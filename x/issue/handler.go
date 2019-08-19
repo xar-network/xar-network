@@ -8,7 +8,6 @@ import (
 
 	"github.com/zar-network/zar-network/x/issue/internal/keeper"
 	"github.com/zar-network/zar-network/x/issue/internal/types"
-	"github.com/zar-network/zar-network/x/issue/msgs"
 )
 
 // NewHandler creates an sdk.Handler for all the issue type messages
@@ -53,7 +52,7 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 //Handle handleMsgIssueDecreaseApproval
-func handleMsgIssueDecreaseApproval(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueDecreaseApproval) sdk.Result {
+func handleMsgIssueDecreaseApproval(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueDecreaseApproval) sdk.Result {
 
 	if err := k.DecreaseApproval(ctx, msg.FromAddress, msg.ToAddress, msg.IssueId, msg.Amount); err != nil {
 		return err.Result()
@@ -70,7 +69,7 @@ func handleMsgIssueDecreaseApproval(ctx sdk.Context, k keeper.Keeper, msg msgs.M
 }
 
 //Handle handleMsgIssueIncreaseApproval
-func handleMsgIssueIncreaseApproval(ctx sdk.Context, keeper keeper.Keeper, msg msgs.MsgIssueIncreaseApproval) sdk.Result {
+func handleMsgIssueIncreaseApproval(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgIssueIncreaseApproval) sdk.Result {
 
 	if err := keeper.IncreaseApproval(ctx, msg.FromAddress, msg.ToAddress, msg.IssueId, msg.Amount); err != nil {
 		return err.Result()
@@ -87,7 +86,7 @@ func handleMsgIssueIncreaseApproval(ctx sdk.Context, keeper keeper.Keeper, msg m
 }
 
 //Handle handleMsgIssueApprove
-func handleMsgIssueApprove(ctx sdk.Context, keeper keeper.Keeper, msg msgs.MsgIssueApprove) sdk.Result {
+func handleMsgIssueApprove(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgIssueApprove) sdk.Result {
 
 	if err := keeper.Approve(ctx, msg.FromAddress, msg.ToAddress, msg.IssueId, msg.Amount); err != nil {
 		return err.Result()
@@ -104,7 +103,7 @@ func handleMsgIssueApprove(ctx sdk.Context, keeper keeper.Keeper, msg msgs.MsgIs
 }
 
 //Handle handleMsgIssueBurnFrom
-func handleMsgIssueBurnFrom(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueBurnFrom) sdk.Result {
+func handleMsgIssueBurnFrom(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueBurnFrom) sdk.Result {
 	fee := k.GetParams(ctx).BurnFromFee
 	if err := k.Fee(ctx, msg.FromAddress, fee); err != nil {
 		return err.Result()
@@ -126,7 +125,7 @@ func handleMsgIssueBurnFrom(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueB
 }
 
 //Handle handleMsgIssueBurnHolder
-func handleMsgIssueBurnHolder(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueBurnHolder) sdk.Result {
+func handleMsgIssueBurnHolder(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueBurnHolder) sdk.Result {
 	_, err := k.BurnHolder(ctx, msg.IssueId, msg.Amount, msg.FromAddress)
 
 	if err != nil {
@@ -144,7 +143,7 @@ func handleMsgIssueBurnHolder(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssu
 }
 
 //Handle handleMsgIssueBurnOwner
-func handleMsgIssueBurnOwner(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueBurnOwner) sdk.Result {
+func handleMsgIssueBurnOwner(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueBurnOwner) sdk.Result {
 	fee := k.GetParams(ctx).BurnFee
 	if err := k.Fee(ctx, msg.Sender, fee); err != nil {
 		return err.Result()
@@ -166,7 +165,7 @@ func handleMsgIssueBurnOwner(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssue
 }
 
 //Handle handleMsgIssueDescription
-func handleMsgIssueDescription(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueDescription) sdk.Result {
+func handleMsgIssueDescription(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueDescription) sdk.Result {
 	fee := k.GetParams(ctx).DescribeFee
 	if err := k.Fee(ctx, msg.FromAddress, fee); err != nil {
 		return err.Result()
@@ -186,7 +185,7 @@ func handleMsgIssueDescription(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIss
 }
 
 //Handle handleMsgIssueDisableFeature
-func handleMsgIssueDisableFeature(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueDisableFeature) sdk.Result {
+func handleMsgIssueDisableFeature(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueDisableFeature) sdk.Result {
 	if err := k.DisableFeature(ctx, msg.FromAddress, msg.IssueId, msg.Feature); err != nil {
 		return err.Result()
 	}
@@ -201,7 +200,7 @@ func handleMsgIssueDisableFeature(ctx sdk.Context, k keeper.Keeper, msg msgs.Msg
 }
 
 //Handle handleMsgIssueFreeze
-func handleMsgIssueFreeze(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueFreeze) sdk.Result {
+func handleMsgIssueFreeze(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueFreeze) sdk.Result {
 	fee := k.GetParams(ctx).FreezeFee
 	if err := k.Fee(ctx, msg.Sender, fee); err != nil {
 		return err.Result()
@@ -221,7 +220,7 @@ func handleMsgIssueFreeze(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueFre
 }
 
 //Handle handleMsgIssueMint
-func handleMsgIssueMint(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueMint) sdk.Result {
+func handleMsgIssueMint(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueMint) sdk.Result {
 	fee := k.GetParams(ctx).MintFee
 	if err := k.Fee(ctx, msg.FromAddress, fee); err != nil {
 		return err.Result()
@@ -242,7 +241,7 @@ func handleMsgIssueMint(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueMint)
 }
 
 //Handle MsgIssueSendFrom
-func handleMsgIssueSendFrom(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueSendFrom) sdk.Result {
+func handleMsgIssueSendFrom(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueSendFrom) sdk.Result {
 
 	if err := k.SendFrom(ctx, msg.FromAddress, msg.From, msg.ToAddress, msg.IssueId, msg.Amount); err != nil {
 		return err.Result()
@@ -259,7 +258,7 @@ func handleMsgIssueSendFrom(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueS
 }
 
 //Handle handleMsgIssueTransferOwnership
-func handleMsgIssueTransferOwnership(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueTransferOwnership) sdk.Result {
+func handleMsgIssueTransferOwnership(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueTransferOwnership) sdk.Result {
 	fee := k.GetParams(ctx).TransferOwnerFee
 	if err := k.Fee(ctx, msg.Sender, fee); err != nil {
 		return err.Result()
@@ -279,7 +278,7 @@ func handleMsgIssueTransferOwnership(ctx sdk.Context, k keeper.Keeper, msg msgs.
 }
 
 //Handle handleMsgIssueUnFreeze
-func handleMsgIssueUnFreeze(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueUnFreeze) sdk.Result {
+func handleMsgIssueUnFreeze(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueUnFreeze) sdk.Result {
 	fee := k.GetParams(ctx).UnFreezeFee
 	if err := k.Fee(ctx, msg.FromAddress, fee); err != nil {
 		return err.Result()
@@ -298,7 +297,7 @@ func handleMsgIssueUnFreeze(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssueU
 }
 
 //Handle handleMsgIssue
-func handleMsgIssue(ctx sdk.Context, k keeper.Keeper, msg msgs.MsgIssue) sdk.Result {
+func handleMsgIssue(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssue) sdk.Result {
 	fee := k.GetParams(ctx).IssueFee
 	if err := k.Fee(ctx, msg.FromAddress, fee); err != nil {
 		return err.Result()

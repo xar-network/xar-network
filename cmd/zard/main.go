@@ -85,13 +85,13 @@ func exportAppStateAndTMValidators(
 ) (json.RawMessage, []tmtypes.GenesisValidator, error) {
 
 	if height != -1 {
-		gApp := app.NewZarApp(logger, db, traceStore, false, uint(1))
-		err := gApp.LoadHeight(height)
+		zApp := app.NewZarApp(logger, db, traceStore, false, uint(1))
+		err := zApp.LoadHeight(height)
 		if err != nil {
 			return nil, nil, err
 		}
-		return gApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
+		return zApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 	}
-	gApp := app.NewZarApp(logger, db, traceStore, true, uint(1))
-	return gApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
+	zApp := app.NewZarApp(logger, db, traceStore, true, uint(1))
+	return zApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 }

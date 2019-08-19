@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"strings"
 
+	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -42,4 +43,19 @@ func MulDecimals(totalSupply sdk.Int, decimals uint) sdk.Int {
 
 func QuoDecimals(totalSupply sdk.Int, decimals uint) sdk.Int {
 	return totalSupply.Quo(GetDecimalsInt(decimals))
+}
+
+func IssueOwnerCheck(cliCtx context.CLIContext, sender sdk.AccAddress, issueID string) (Issue, error) {
+	var issueInfo Issue
+	// Query the issue
+	res, _, err := cliCtx.QueryWithData(GetQueryIssuePath(issueID), nil)
+	if err != nil {
+		return nil, err
+	}
+	cliCtx.Codec.MustUnmarshalJSON(res, &issueInfo)
+
+	if !sender.Equals(issueInfo.GetOwner()) {
+		return nil, Errorf(ErrOwnerMismatch())
+	}
+	return issueInfo, nil
 }

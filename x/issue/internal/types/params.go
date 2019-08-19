@@ -121,3 +121,25 @@ type IssueQueryParams struct {
 	Owner        sdk.AccAddress `json:"owner"`
 	Limit        int            `json:"limit"`
 }
+
+func GetQueryIssuePath(issueID string) string {
+	return fmt.Sprintf("%s/%s/%s/%s", Custom, QuerierRoute, QueryIssue, issueID)
+}
+func GetQueryParamsPath() string {
+	return fmt.Sprintf("%s/%s/%s", Custom, QuerierRoute, QueryParams)
+}
+func GetQueryIssueAllowancePath(issueID string, owner sdk.AccAddress, spender sdk.AccAddress) string {
+	return fmt.Sprintf("%s/%s/%s/%s/%s/%s", Custom, QuerierRoute, QueryAllowance, issueID, owner.String(), spender.String())
+}
+func GetQueryIssueFreezePath(issueID string, accAddress sdk.AccAddress) string {
+	return fmt.Sprintf("%s/%s/%s/%s/%s", Custom, QuerierRoute, QueryFreeze, issueID, accAddress.String())
+}
+func GetQueryIssueFreezesPath(issueID string) string {
+	return fmt.Sprintf("%s/%s/%s/%s", Custom, QuerierRoute, QueryFreezes, issueID)
+}
+func GetQueryIssueSearchPath(symbol string) string {
+	return fmt.Sprintf("%s/%s/%s/%s", Custom, QuerierRoute, QuerySearch, symbol)
+}
+func GetQueryIssuesPath() string {
+	return fmt.Sprintf("%s/%s/%s", Custom, QuerierRoute, QueryIssues)
+}

@@ -7,19 +7,17 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/zar-network/zar-network/x/issue/params"
-
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	clientutils "github.com/zar-network/zar-network/x/issue/client/utils"
-	issueutils "github.com/zar-network/zar-network/x/issue/utils"
 
-	"github.com/zar-network/zar-network/x/issue/errors"
-	"github.com/zar-network/zar-network/x/issue/msgs"
-	"github.com/zar-network/zar-network/x/issue/types"
+	"github.com/zar-network/zar-network/x/issue/client/rest"
+	"github.com/zar-network/zar-network/x/issue/internal/types"
 )
 
 // GetIssueCmd returns the transaction commands for this module
@@ -38,6 +36,7 @@ func GetIssueCmd(cdc *codec.Codec) *cobra.Command {
 		IssueMintCmd(cdc),
 		IssueDisableFeatureCmd(cdc),
 	)
+
 	return issueCmd
 }
 
@@ -45,9 +44,9 @@ func GetIssueCmd(cdc *codec.Codec) *cobra.Command {
 func IssueCreateCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create [from_key_or_address] [name] [symbol] [total_supply]",
-		Args:    cobra.ExactArgs(3),
+		Args:    cobra.ExactArgs(4),
 		Short:   "Issue a new token",
-		Example: "$ zarcli issue create zar_key Zar ZAR 1",
+		Example: "$ zarcli issue create coin_key Coin CN 1",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			totalSupply, ok := sdk.NewIntFromString(args[3])
 
@@ -75,7 +74,7 @@ func IssueCreateCmd(cdc *codec.Codec) *cobra.Command {
 			validateErr := msg.ValidateBasic()
 
 			if validateErr != nil {
-				return errors.Errorf(validateErr)
+				return types.Errorf(validateErr)
 			}
 
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
@@ -95,37 +94,36 @@ func IssueCreateCmd(cdc *codec.Codec) *cobra.Command {
 // IssueTransferOwnershipCmd implements transfer a coin owner ship transaction command.
 func IssueTransferOwnershipCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "transfer-ownership [issue-id] [to_address]",
-		Args:    cobra.ExactArgs(2),
+		Use:     "transfer-ownership [from_key_or_address] [issue_id] [to_address]",
+		Args:    cobra.ExactArgs(3),
 		Short:   "Transfer ownership a token",
 		Long:    "Token owner transfer the ownership to new account",
-		Example: "$ zar-networkcli issue transfer-ownership coin174876e800 gard1vf7pnhwh5v4lmdp59dms2andn2hhperghppkxc --from foo",
+		Example: "$ zarcli issue transfer-ownership coin_key coin174876e800 zard1vf7pnhwh5v4lmdp59dms2andn2hhperghppkxc",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			issueID := args[0]
-			if err := issueutils.CheckIssueId(issueID); err != nil {
-				return errors.Errorf(err)
+			issueID := args[1]
+			if err := types.CheckIssueId(issueID); err != nil {
+				return types.Errorf(err)
 			}
-			txBldr, cliCtx, account, err := clientutils.GetCliContext(cdc)
-			if err != nil {
-				return err
-			}
-			to, err := sdk.AccAddressFromBech32(args[1])
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+
+			to, err := sdk.AccAddressFromBech32(args[2])
 			if err != nil {
 				return err
 			}
 
-			_, err = clientutils.IssueOwnerCheck(cdc, cliCtx, account, issueID)
+			_, err = types.IssueOwnerCheck(cliCtx, cliCtx.GetFromAddress(), issueID)
 			if err != nil {
 				return err
 			}
-			msg := msgs.NewMsgIssueTransferOwnership(issueID, account.GetAddress(), to)
+			msg := types.NewMsgIssueTransferOwnership(issueID, cliCtx.GetFromAddress(), to)
 
 			validateErr := msg.ValidateBasic()
 
 			if validateErr != nil {
-				return errors.Errorf(validateErr)
+				return types.Errorf(validateErr)
 			}
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg}, false)
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
 
@@ -135,43 +133,42 @@ func IssueTransferOwnershipCmd(cdc *codec.Codec) *cobra.Command {
 // IssueDescriptionCmd implements issue a coin transaction command.
 func IssueDescriptionCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "describe [issue-id] [description-file]",
-		Args:    cobra.ExactArgs(2),
-		Short:   "Describe a token",
-		Long:    "Owner can add description of the token issued by owner, and the description need to be in json format. You can customize preferences or use recommended templates.",
-		Example: "$ zar-networkcli issue describe coin174876e800 path/description.json --from foo",
+		Use:     "describe [from_key_or_address] [issue_id] [description_file]",
+		Args:    cobra.ExactArgs(3),
+		Short:   "Add description to a token",
+		Long:    "Owner can add a description of the token. The description needs to be in json format. You can customize preferences or use recommended templates.",
+		Example: "$ zarcli issue describe coin_key coin174876e800 path/description.json --from foo",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			issueID := args[0]
-			if err := issueutils.CheckIssueId(issueID); err != nil {
-				return errors.Errorf(err)
+			if err := types.CheckIssueId(issueID); err != nil {
+				return types.Errorf(err)
 			}
-			txBldr, cliCtx, account, err := clientutils.GetCliContext(cdc)
-			if err != nil {
-				return err
-			}
-			contents, err := ioutil.ReadFile(args[1])
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+
+			contents, err := ioutil.ReadFile(args[2])
 			if err != nil {
 				return err
 			}
 			buffer := bytes.Buffer{}
 			err = json.Compact(&buffer, contents)
 			if err != nil {
-				return errors.ErrCoinDescriptionNotValid()
+				return types.ErrCoinDescriptionNotValid()
 			}
 			contents = buffer.Bytes()
 
-			_, err = clientutils.IssueOwnerCheck(cdc, cliCtx, account, issueID)
+			_, err = types.IssueOwnerCheck(cliCtx, cliCtx.GetFromAddress(), issueID)
 			if err != nil {
 				return err
 			}
-			msg := msgs.NewMsgIssueDescription(issueID, account.GetAddress(), contents)
+			msg := types.NewMsgIssueDescription(issueID, cliCtx.GetFromAddress(), contents)
 
 			validateErr := msg.ValidateBasic()
 
 			if validateErr != nil {
-				return errors.Errorf(validateErr)
+				return types.Errorf(validateErr)
 			}
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg}, false)
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
 
@@ -181,105 +178,331 @@ func IssueDescriptionCmd(cdc *codec.Codec) *cobra.Command {
 // IssueMintCmd implements mint a coinIssue transaction command.
 func IssueMintCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "mint [issue-id] [amount]",
-		Args:  cobra.ExactArgs(2),
-		Short: "Mint a token",
-		Long:  "Token owner mint the token to a address",
-		Example: "$ zar-networkcli issue mint coin174876e800 88888 --from foo\n" +
-			"$ zar-networkcli issue mint coin174876e800 88888 --to=gard1vf7pnhwh5v4lmdp59dms2andn2hhperghppkxc --from foo",
+		Use:     "mint [from_key_or_address] [issue_id] [to] [amount]",
+		Args:    cobra.ExactArgs(4),
+		Short:   "Mint tokens",
+		Long:    "Token owner can mint the token to an address",
+		Example: "$ zarcli issue mint coin_key coin174876e800 zard1vf7pnhwh5v4lmdp59dms2andn2hhperghppkxc 100",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			issueID := args[0]
-			if err := issueutils.CheckIssueId(issueID); err != nil {
-				return errors.Errorf(err)
+			issueID := args[1]
+			if err := types.CheckIssueId(issueID); err != nil {
+				return types.Errorf(err)
 			}
-			amount, ok := sdk.NewIntFromString(args[1])
+			amount, ok := sdk.NewIntFromString(args[3])
 			if !ok {
-				return errors.Errorf(errors.ErrAmountNotValid(args[1]))
+				return types.Errorf(types.ErrAmountNotValid())
 			}
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
 
-			txBldr, cliCtx, account, err := clientutils.GetCliContext(cdc)
+			to, err := sdk.AccAddressFromBech32(args[2])
 			if err != nil {
 				return err
 			}
-			to := account.GetAddress()
-			flagTo := viper.GetString(flagMintTo)
-			if len(flagTo) > 0 {
-				to, err = sdk.AccAddressFromBech32(flagTo)
-				if err != nil {
-					return err
-				}
-			}
 
-			issueInfo, err := clientutils.IssueOwnerCheck(cdc, cliCtx, account, issueID)
+			issueInfo, err := types.IssueOwnerCheck(cliCtx, cliCtx.GetFromAddress(), issueID)
 			if err != nil {
 				return err
 			}
 
 			if issueInfo.IsMintingFinished() {
-				return errors.Errorf(errors.ErrCanNotMint(issueID))
+				return types.Errorf(types.ErrCanNotMint())
 			}
 
-			amount = issueutils.MulDecimals(amount, issueInfo.GetDecimals())
+			amount = types.MulDecimals(amount, issueInfo.GetDecimals())
+			msg := types.NewMsgIssueMint(issueID, cliCtx.GetFromAddress(), to, amount, issueInfo.GetDecimals())
 
-			msg := msgs.MsgIssueMint{IssueId: issueID, Sender: account.GetAddress(), Amount: amount, Decimals: issueInfo.GetDecimals(), To: to}
 			validateErr := msg.ValidateBasic()
 			if validateErr != nil {
-				return errors.Errorf(validateErr)
+				return types.Errorf(validateErr)
 			}
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg}, false)
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
-	cmd.Flags().String(flagMintTo, "", "Mint to account address")
 	return cmd
 }
 
 // IssueDisableFeatureCmd implements disable feature a coinIssue transaction command.
 func IssueDisableFeatureCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "disable [issue-id] [feature]",
-		Args:  cobra.ExactArgs(2),
-		Short: "Disable feature from a token",
+		Use:   "disable [from_key_or_address] [issue_id] [feature]",
+		Args:  cobra.ExactArgs(3),
+		Short: "Disable a feature from the token",
 		Long: fmt.Sprintf("Token Owner disabled the features:\n"+
 			"%s:Token owner can burn the token\n"+
 			"%s:Token holder can burn the token\n"+
 			"%s:Token owner can burn the token from any holder\n"+
 			"%s:Token owner can freeze in and out the token from any address\n"+
 			"%s:Token owner can mint the token", types.BurnOwner, types.BurnHolder, types.BurnFrom, types.Freeze, types.Minting),
-		Example: fmt.Sprintf("$ zar-networkcli issue disable coin174876e800 %s --from foo\n"+
-			"$ zar-networkcli issue disable coin174876e800 %s  --from foo\n"+
-			"$ zar-networkcli issue disable coin174876e800 %s  --from foo\n"+
-			"$ zar-networkcli issue disable coin174876e800 %s  --from foo\n"+
-			"$ zar-networkcli issue disable coin174876e800 %s  --from foo",
+		Example: fmt.Sprintf("$ zarcli issue disable coin_key coin174876e800 %s\n"+
+			"$ zarcli issue disable coin_key coin174876e800 %s\n"+
+			"$ zarcli issue disable coin_key coin174876e800 %s\n"+
+			"$ zarcli issue disable coin_key coin174876e800 %s\n"+
+			"$ zarcli issue disable coin_key coin174876e800 %s",
 			types.BurnOwner, types.BurnHolder, types.BurnFrom, types.Freeze, types.Minting),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			feature := args[1]
+			feature := args[2]
 
 			_, ok := types.Features[feature]
 			if !ok {
-				return errors.Errorf(errors.ErrUnknownFeatures())
+				return types.Errorf(types.ErrUnknownFeatures())
 			}
 
-			issueID := args[0]
-			if err := issueutils.CheckIssueId(issueID); err != nil {
-				return errors.Errorf(err)
+			issueID := args[1]
+			if err := types.CheckIssueId(issueID); err != nil {
+				return types.Errorf(err)
 			}
-			txBldr, cliCtx, account, err := clientutils.GetCliContext(cdc)
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+
+			_, err := types.IssueOwnerCheck(cliCtx, cliCtx.GetFromAddress(), issueID)
 			if err != nil {
 				return err
 			}
-			_, err = clientutils.IssueOwnerCheck(cdc, cliCtx, account, issueID)
-			if err != nil {
-				return err
-			}
 
-			msg := msgs.NewMsgIssueDisableFeature(issueID, account.GetAddress(), feature)
+			msg := types.NewMsgIssueDisableFeature(issueID, cliCtx.GetFromAddress(), feature)
 			validateErr := msg.ValidateBasic()
 			if validateErr != nil {
-				return errors.Errorf(validateErr)
+				return types.Errorf(validateErr)
 			}
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg}, false)
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
 	return cmd
+}
+
+// GetCmdIssueUnFreeze implements freeze a token transaction command.
+func GetCmdIssueFreeze(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "freeze [from_key_or_address] [freeze_type] [issue_id] [address]",
+		Args:  cobra.ExactArgs(4),
+		Short: "Freeze transfers from an address",
+		Long: fmt.Sprintf("Token owner freeze the transfer from an address:\n\n"+
+			"%s:The address can not transfer in\n"+
+			"%s:The address can not transfer out\n"+
+			"%s:The address not can transfer in or out\n\n", types.FreezeIn, types.FreezeOut, types.FreezeInAndOut),
+		Example: "$ zarcli issue freeze coin_key in coin174876e800 zard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
+			"$ zarcli issue freeze coin_key out coin174876e800 zard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
+			"$ zarcli issue freeze coin_key in-out coin174876e800 zard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return issueFreeze(cdc, args, true)
+		},
+	}
+	return cmd
+}
+
+// GetCmdIssueUnFreeze implements un freeze  a token transaction command.
+func GetCmdIssueUnFreeze(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "unfreeze [from_key_or_address] [freeze_type] [issue_id] [address]",
+		Args:  cobra.ExactArgs(4),
+		Short: "UnFreeze transfers from an address",
+		Long: fmt.Sprintf("Token owner unFreeze the transfer from a address:\n\n"+
+			"%s:The address can transfer in\n"+
+			"%s:The address can transfer out\n"+
+			"%s:The address can transfer in and out", types.FreezeIn, types.FreezeOut, types.FreezeInAndOut),
+		Example: "$ zarcli issue unfreeze coin_key in coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
+			"$ zarcli issue unfreeze coin_key out coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
+			"$ zarcli issue unfreeze coin_key in-out coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return issueFreeze(cdc, args, false)
+		},
+	}
+	return cmd
+}
+
+func issueFreeze(cdc *codec.Codec, args []string, freeze bool) error {
+	txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+	cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+
+	msg, err := rest.GetIssueFreezeMsg(cliCtx, cliCtx.GetFromAddress(), args[1], args[2], args[3], freeze)
+	if err != nil {
+		return err
+	}
+	return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+}
+
+// GetCmdIssueBurnFrom implements burn a coinIssue transaction command.
+func GetCmdIssueBurn(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "burn [from_key_or_address] [issue_id] [amount]",
+		Args:    cobra.ExactArgs(3),
+		Short:   "Token holder can burn the token",
+		Long:    "Token holder or the Owner burns the token he holds (the Owner can burn if 'burning_owner_disabled' is false, the holder can burn if 'burning_holder_disabled' is false)",
+		Example: "$ zarcli issue burn coin_key coin174876e800 88888",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return issueBurnFrom(cdc, args, types.BurnHolder)
+		},
+	}
+	return cmd
+}
+
+// GetCmdIssueBurnFrom implements burn a coinIssue transaction command.
+func GetCmdIssueBurnFrom(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "burn-from [from_key_or_address] [issue_id] [from_address] [amount]",
+		Args:    cobra.ExactArgs(4),
+		Short:   "Token owner burns the token",
+		Long:    "Token Owner burns the token from any holder (the Owner can burn if 'burning_any_disabled' is false)",
+		Example: "$ zarcli issue burn-from coin_key coin174876e800 zard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return issueBurnFrom(cdc, args, types.BurnFrom)
+		},
+	}
+	return cmd
+}
+
+func issueBurnFrom(cdc *codec.Codec, args []string, burnFromType string) error {
+	issueID := args[1]
+	if err := types.CheckIssueId(issueID); err != nil {
+		return types.Errorf(err)
+	}
+	txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+	cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+
+	amountStr := ""
+	//burn sender
+	accAddress := cliCtx.GetFromAddress()
+
+	if types.BurnFrom == burnFromType {
+		acc, err := sdk.AccAddressFromBech32(args[2])
+		accAddress = acc
+		if err != nil {
+			return err
+		}
+		amountStr = args[3]
+	} else {
+		amountStr = args[2]
+	}
+	amount, ok := sdk.NewIntFromString(amountStr)
+	if !ok {
+		return types.Errorf(types.ErrAmountNotValid())
+	}
+	msg, err := rest.GetBurnMsg(cliCtx, cliCtx.GetFromAddress(), accAddress, issueID, amount, burnFromType, true)
+	if err != nil {
+		return err
+	}
+	return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+}
+
+// GetCmdIssueSendFrom implements send from a token transaction command.
+func GetCmdIssueSendFrom(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "send-from [from_key_or_address] [issue_id] [from_address] [to_address] [amount]",
+		Args:    cobra.ExactArgs(5),
+		Short:   "Send tokens from one address to another",
+		Long:    "Send tokens from one address to another by allowance",
+		Example: "$ zarcli issue send-from coin_key coin174876e800 zard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n zard1vud9ptwagudgq7yht53cwuf8qfmgkd0qcej0ah 100",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			issueID := args[1]
+			if err := types.CheckIssueId(issueID); err != nil {
+				return types.Errorf(err)
+			}
+			fromAddress, err := sdk.AccAddressFromBech32(args[2])
+			if err != nil {
+				return err
+			}
+			toAddress, err := sdk.AccAddressFromBech32(args[3])
+			if err != nil {
+				return err
+			}
+
+			amount, ok := sdk.NewIntFromString(args[4])
+			if !ok {
+				return types.Errorf(types.ErrAmountNotValid())
+			}
+
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+
+			if err := rest.CheckAllowance(cliCtx, issueID, fromAddress, cliCtx.GetFromAddress(), amount); err != nil {
+				return err
+			}
+
+			if err = rest.CheckFreeze(cliCtx, issueID, fromAddress, toAddress); err != nil {
+				return err
+			}
+
+			issueInfo, err := rest.GetIssueByID(cliCtx, issueID)
+			if err != nil {
+				return err
+			}
+			amount = types.MulDecimals(amount, issueInfo.GetDecimals())
+
+			msg := types.NewMsgIssueSendFrom(issueID, cliCtx.GetFromAddress(), fromAddress, toAddress, amount)
+
+			validateErr := msg.ValidateBasic()
+			if validateErr != nil {
+				return types.Errorf(validateErr)
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+	return cmd
+}
+
+// GetCmdIssueApprove implements approve a token transaction command.
+func GetCmdIssueApprove(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "approve [from_key_or_address] [issue-id] [address] [amount]",
+		Args:    cobra.ExactArgs(4),
+		Short:   "Approve tokens on behalf of sender",
+		Long:    "Approve the passed address to spend the specified amount of tokens on behalf of sender",
+		Example: "$ zarcli issue approve coin_key coin174876e800 zard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return issueApprove(cdc, args, types.Approve)
+		},
+	}
+	return cmd
+}
+
+// GetCmdIssueIncreaseApproval implements increase approval a token transaction command.
+func GetCmdIssueIncreaseApproval(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "increase-approval [from_key_or_address] [issue_id] [address] [amount]",
+		Args:    cobra.ExactArgs(4),
+		Short:   "Increase approval to spend tokens on behalf of sender",
+		Long:    "Increase approval to spend the specified amount of tokens on behalf of sender",
+		Example: "$ zarcli issue increase-approval coin_key coin174876e800 zard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return issueApprove(cdc, args, types.IncreaseApproval)
+		},
+	}
+	return cmd
+}
+
+// GetCmdIssueDecreaseApproval implements decrease approval a token transaction command.
+func GetCmdIssueDecreaseApproval(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "decrease-approval [from_key_or_address] [issue_id] [address] [amount]",
+		Args:    cobra.ExactArgs(4),
+		Short:   "Decrease approval to spend tokens on behalf of sender",
+		Long:    "Decrease approval to spend the specified amount of tokens on behalf of sender",
+		Example: "$ zarcli issue decrease-approval coin_key coin174876e800 zard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return issueApprove(cdc, args, types.DecreaseApproval)
+		},
+	}
+	return cmd
+}
+func issueApprove(cdc *codec.Codec, args []string, approveType string) error {
+	issueID := args[1]
+	accAddress, err := sdk.AccAddressFromBech32(args[2])
+	if err != nil {
+		return err
+	}
+	amount, ok := sdk.NewIntFromString(args[3])
+	if !ok {
+		return types.Errorf(types.ErrAmountNotValid())
+	}
+	txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+	cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+
+	msg, err := rest.GetIssueApproveMsg(cliCtx, issueID, cliCtx.GetFromAddress(), accAddress, approveType, amount, true)
+	if err != nil {
+		return err
+	}
+	return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 }
