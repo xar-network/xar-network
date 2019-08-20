@@ -21,7 +21,7 @@ import (
 )
 
 // GetIssueCmd returns the transaction commands for this module
-func GetIssueCmd(cdc *codec.Codec) *cobra.Command {
+func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	issueCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      "Issue transaction subcommands",

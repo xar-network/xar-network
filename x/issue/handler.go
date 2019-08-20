@@ -109,7 +109,7 @@ func handleMsgIssueBurnFrom(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssue
 		return err.Result()
 	}
 
-	_, err := keeper.BurnFrom(ctx, msg.IssueId, msg.Amount, msg.FromAddress, msg.ToAddress)
+	_, err := k.BurnFrom(ctx, msg.IssueId, msg.Amount, msg.FromAddress, msg.ToAddress)
 	if err != nil {
 		return err.Result()
 	}
@@ -170,7 +170,7 @@ func handleMsgIssueDescription(ctx sdk.Context, k keeper.Keeper, msg types.MsgIs
 	if err := k.Fee(ctx, msg.FromAddress, fee); err != nil {
 		return err.Result()
 	}
-	if err := keeper.SetIssueDescription(ctx, msg.IssueId, msg.FromAddress, msg.Description); err != nil {
+	if err := k.SetIssueDescription(ctx, msg.IssueId, msg.FromAddress, msg.Description); err != nil {
 		return err.Result()
 	}
 
@@ -260,10 +260,10 @@ func handleMsgIssueSendFrom(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssue
 //Handle handleMsgIssueTransferOwnership
 func handleMsgIssueTransferOwnership(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueTransferOwnership) sdk.Result {
 	fee := k.GetParams(ctx).TransferOwnerFee
-	if err := k.Fee(ctx, msg.Sender, fee); err != nil {
+	if err := k.Fee(ctx, msg.FromAddress, fee); err != nil {
 		return err.Result()
 	}
-	if err := k.TransferOwnership(ctx, msg.FromAddress, msg.ToAddress, msg.To); err != nil {
+	if err := k.TransferOwnership(ctx, msg.IssueId, msg.FromAddress, msg.ToAddress); err != nil {
 		return err.Result()
 	}
 

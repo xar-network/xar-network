@@ -476,7 +476,7 @@ func (k BaseKeeper) GetFreeze(ctx sdk.Context, accAddress sdk.AccAddress, issueI
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(KeyFreeze(issueID, accAddress))
 	if len(bz) == 0 {
-		return types.NewIssueFreeze(0, 0)
+		return types.IssueFreeze{false}
 	}
 	var freeze types.IssueFreeze
 	types.ModuleCdc.MustUnmarshalBinaryLengthPrefixed(bz, &freeze)
@@ -494,9 +494,7 @@ func (k BaseKeeper) GetFreezes(ctx sdk.Context, issueID string) []types.IssueAdd
 		keys := strings.Split(string(iterator.Key()), KeyDelimiter)
 		address := keys[len(keys)-1]
 		list = append(list, types.IssueAddressFreeze{
-			Address:    address,
-			OutEndTime: freeze.OutEndTime,
-			InEndTime:  freeze.InEndTime})
+			Address: address})
 	}
 	return list
 }
@@ -529,22 +527,18 @@ func (k BaseKeeper) UnFreeze(ctx sdk.Context, issueID string, sender sdk.AccAddr
 	return k.freeze(ctx, issueID, sender, accAddress, freezeType)
 }
 
-func (k BaseKeeper) freezeIn(ctx sdk.Context, issueID string, accAddress sdk.AccAddress, endTime int64) sdk.Error {
+func (k BaseKeeper) freezeIn(ctx sdk.Context, issueID string, accAddress sdk.AccAddress) sdk.Error {
 	freeze := k.GetFreeze(ctx, accAddress, issueID)
-	freeze.InEndTime = endTime
 	return k.setFreeze(ctx, issueID, accAddress, freeze)
 }
 
-func (k BaseKeeper) freezeOut(ctx sdk.Context, issueID string, accAddress sdk.AccAddress, endTime int64) sdk.Error {
+func (k BaseKeeper) freezeOut(ctx sdk.Context, issueID string, accAddress sdk.AccAddress) sdk.Error {
 	freeze := k.GetFreeze(ctx, accAddress, issueID)
-	freeze.OutEndTime = endTime
 	return k.setFreeze(ctx, issueID, accAddress, freeze)
 }
 
-func (k BaseKeeper) freezeInAndOut(ctx sdk.Context, issueID string, accAddress sdk.AccAddress, endTime int64) sdk.Error {
+func (k BaseKeeper) freezeInAndOut(ctx sdk.Context, issueID string, accAddress sdk.AccAddress) sdk.Error {
 	freeze := k.GetFreeze(ctx, accAddress, issueID)
-	freeze.InEndTime = endTime
-	freeze.OutEndTime = endTime
 	return k.setFreeze(ctx, issueID, accAddress, freeze)
 }
 
@@ -591,11 +585,11 @@ func (k BaseKeeper) DecreaseApproval(ctx sdk.Context, sender sdk.AccAddress, spe
 }
 func (k BaseKeeper) CheckFreeze(ctx sdk.Context, from sdk.AccAddress, to sdk.AccAddress, issueID string) sdk.Error {
 	freeze := k.GetFreeze(ctx, from, issueID)
-	if freeze.OutEndTime > 0 && freeze.OutEndTime > ctx.BlockHeader().Time.Unix() {
+	if freeze.Frozen {
 		return types.ErrCanNotTransferOut()
 	}
 	freeze = k.GetFreeze(ctx, to, issueID)
-	if freeze.InEndTime > 0 && freeze.InEndTime > ctx.BlockHeader().Time.Unix() {
+	if freeze.Frozen {
 		return types.ErrCanNotTransferIn()
 	}
 	return nil

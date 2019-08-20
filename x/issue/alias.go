@@ -17,6 +17,15 @@ type (
 	Hooks         = keeper.Hooks
 )
 
+const (
+	DefaultCodespace  = types.DefaultCodespace
+	ModuleName        = types.ModuleName
+	RouterKey         = types.RouterKey
+	QuerierRoute      = types.QuerierRoute
+	DefaultParamspace = types.DefaultParamspace
+	StoreKey          = types.StoreKey
+)
+
 var (
 	ModuleCdc       = types.ModuleCdc
 	NewModuleClient = client.NewModuleClient
@@ -24,12 +33,4 @@ var (
 	QueryCmd      = cli.QueryCmd
 	RegisterCodec = types.RegisterCodec
 	DefaultParams = types.DefaultParams
-)
-
-const (
-	StoreKey          = types.StoreKey
-	RouterKey         = types.RouterKey
-	QuerierRoute      = types.QuerierRoute
-	DefaultParamspace = types.DefaultParamspace
-	DefaultCodespace  = types.DefaultCodespace
 )

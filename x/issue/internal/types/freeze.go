@@ -13,6 +13,16 @@ const (
 
 var FreezeTypes = map[string]int{FreezeIn: 1, FreezeOut: 1, FreezeInAndOut: 1}
 
+type IssueFreeze struct {
+	Frozen bool `json:"frozen"`
+}
+
+func (ci IssueFreeze) String() string {
+	return fmt.Sprintf(`Frozen:\n
+	Frozen:			%t`,
+		ci.Frozen)
+}
+
 type IssueAddressFreeze struct {
 	Address string `json:"address"`
 }
