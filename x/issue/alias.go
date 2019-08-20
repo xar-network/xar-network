@@ -29,6 +29,7 @@ const (
 var (
 	ModuleCdc       = types.ModuleCdc
 	NewModuleClient = client.NewModuleClient
+	NewKeeper       = keeper.NewKeeper
 	//GetAccountCmd   = cli.GetAccountCmd
 	QueryCmd      = cli.QueryCmd
 	RegisterCodec = types.RegisterCodec

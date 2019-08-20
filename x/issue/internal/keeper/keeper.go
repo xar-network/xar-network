@@ -13,7 +13,6 @@ var _ Keeper = (*BaseKeeper)(nil)
 
 type Keeper interface {
 	GetBankKeeper() BankKeeper
-	GetFeeCollectionKeeper() FeeCollectionKeeper
 	AddIssue(ctx sdk.Context, coinIssueInfo *types.CoinIssueInfo)
 	CreateIssue(ctx sdk.Context, coinIssueInfo *types.CoinIssueInfo) (sdk.Coins, sdk.Error)
 	Fee(ctx sdk.Context, sender sdk.AccAddress, fee sdk.Coin) sdk.Error
@@ -73,8 +72,6 @@ type BaseKeeper struct {
 	storeKey sdk.StoreKey
 	// The reference to the CoinKeeper to modify balances
 	ck BankKeeper
-	// The reference to the FeeCollectionKeeper to add fee
-	feeCollectionKeeper FeeCollectionKeeper
 
 	// Reserved codespace
 	codespace sdk.CodespaceType
@@ -85,21 +82,15 @@ func (keeper BaseKeeper) GetBankKeeper() BankKeeper {
 	return keeper.ck
 }
 
-//Get box feeCollectionKeeper
-func (keeper BaseKeeper) GetFeeCollectionKeeper() FeeCollectionKeeper {
-	return keeper.feeCollectionKeeper
-}
-
 //New issue keeper Instance
-func NewBaseKeeper(cdc *codec.Codec, key sdk.StoreKey, paramsKeeper params.Keeper,
-	paramSpace params.Subspace, ck BankKeeper, feeCollectionKeeper FeeCollectionKeeper, codespace sdk.CodespaceType) BaseKeeper {
+func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, paramsKeeper params.Keeper,
+	paramSpace params.Subspace, ck BankKeeper, codespace sdk.CodespaceType) BaseKeeper {
 	return BaseKeeper{
-		storeKey:            key,
-		paramsKeeper:        paramsKeeper,
-		paramSpace:          paramSpace.WithKeyTable(types.ParamKeyTable()),
-		ck:                  ck,
-		feeCollectionKeeper: feeCollectionKeeper,
-		codespace:           codespace,
+		storeKey:     key,
+		paramsKeeper: paramsKeeper,
+		paramSpace:   paramSpace.WithKeyTable(types.ParamKeyTable()),
+		ck:           ck,
+		codespace:    codespace,
 	}
 }
 
@@ -209,7 +200,6 @@ func (k BaseKeeper) Fee(ctx sdk.Context, sender sdk.AccAddress, fee sdk.Coin) sd
 	if err != nil {
 		return types.ErrNotEnoughFee()
 	}
-	_ = k.GetFeeCollectionKeeper().AddCollectedFees(ctx, sdk.NewCoins(fee))
 	return nil
 }
 

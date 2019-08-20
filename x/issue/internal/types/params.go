@@ -8,10 +8,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 )
 
-func init() {
-	ModuleCdc.RegisterConcrete(Params{}, "issue/Params", nil)
-}
-
 var (
 	// key for constant fee parameter
 	ParamStoreKeyIssueFee         = []byte("IssueFee")
