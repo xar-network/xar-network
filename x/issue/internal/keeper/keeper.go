@@ -3,7 +3,6 @@ package keeper
 import (
 	"strings"
 
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/zar-network/zar-network/x/issue/internal/types"
@@ -42,7 +41,7 @@ type Keeper interface {
 	Allowance(ctx sdk.Context, owner sdk.AccAddress, spender sdk.AccAddress, issueID string) (amount sdk.Int)
 	GetAddressIssues(ctx sdk.Context, accAddress string) (issueIDs []string)
 	GetSymbolIssues(ctx sdk.Context, symbol string) (issueIDs []string)
-	SetParams(ctx sdk.Context, params types.Params)
+	SetParams(ctx sdk.Context, params types.Params) sdk.Error
 	GetParams(ctx sdk.Context) (params types.Params)
 	SetInitialIssueStartingIssueId(ctx sdk.Context, issueID uint64) sdk.Error
 	GetLastIssueID(ctx sdk.Context) (issueID uint64)
@@ -64,8 +63,6 @@ type FeeCollectionKeeper interface {
 
 // Issue Keeper
 type BaseKeeper struct {
-	// The reference to the Param Keeper to get and set Global Params
-	paramsKeeper params.Keeper
 	// The reference to the Paramstore to get and set issue specific params
 	paramSpace params.Subspace
 	// The (unexposed) keys used to access the stores from the Context.
@@ -83,14 +80,13 @@ func (keeper BaseKeeper) GetBankKeeper() BankKeeper {
 }
 
 //New issue keeper Instance
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, paramsKeeper params.Keeper,
+func NewKeeper(key sdk.StoreKey,
 	paramSpace params.Subspace, ck BankKeeper, codespace sdk.CodespaceType) BaseKeeper {
 	return BaseKeeper{
-		storeKey:     key,
-		paramsKeeper: paramsKeeper,
-		paramSpace:   paramSpace.WithKeyTable(types.ParamKeyTable()),
-		ck:           ck,
-		codespace:    codespace,
+		storeKey:   key,
+		paramSpace: paramSpace.WithKeyTable(types.ParamKeyTable()),
+		ck:         ck,
+		codespace:  codespace,
 	}
 }
 
@@ -645,8 +641,15 @@ func (k BaseKeeper) GetSymbolIssues(ctx sdk.Context, symbol string) (issueIDs []
 // Params
 
 // SetParams sets the auth module's parameters.
-func (k BaseKeeper) SetParams(ctx sdk.Context, params types.Params) {
+func (k BaseKeeper) SetParams(ctx sdk.Context, params types.Params) sdk.Error {
+	if !params.IssueFee.IsValid() {
+		return sdk.NewError(k.codespace, types.CodeInvalidGenesis, "invalid issue fee set")
+	}
+	if !params.MintFee.IsValid() {
+		return sdk.NewError(k.codespace, types.CodeInvalidGenesis, "invalid mint fee set")
+	}
 	k.paramSpace.SetParamSet(ctx, &params)
+	return nil
 }
 
 // GetParams gets the auth module's parameters.

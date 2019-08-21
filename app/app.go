@@ -155,7 +155,7 @@ func NewZarApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	app.SlashingKeeper = slashing.NewKeeper(app.cdc, keys[slashing.StoreKey], &stakingKeeper,
 		slashingSubspace, slashing.DefaultCodespace)
 	app.CrisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.SupplyKeeper, auth.FeeCollectorName)
-	app.IssueKeeper = issue.NewKeeper(app.cdc, keys[issue.StoreKey], app.ParamsKeeper, issueSubspace, app.BankKeeper, issue.DefaultCodespace)
+	app.IssueKeeper = issue.NewKeeper(keys[issue.StoreKey], issueSubspace, app.BankKeeper, issue.DefaultCodespace)
 
 	// register the proposal types
 	govRouter := gov.NewRouter()
@@ -183,9 +183,9 @@ func NewZarApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		distr.NewAppModule(app.DistrKeeper, app.SupplyKeeper),
 		gov.NewAppModule(app.GovKeeper, app.SupplyKeeper),
 		mint.NewAppModule(app.MintKeeper),
+		issue.NewAppModule(app.IssueKeeper, app.AccountKeeper),
 		slashing.NewAppModule(app.SlashingKeeper, app.StakingKeeper),
 		staking.NewAppModule(app.StakingKeeper, app.DistrKeeper, app.AccountKeeper, app.SupplyKeeper),
-		issue.NewAppModule(app.IssueKeeper, app.AccountKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -200,7 +200,7 @@ func NewZarApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	app.mm.SetOrderInitGenesis(
 		genaccounts.ModuleName, distr.ModuleName, staking.ModuleName,
 		auth.ModuleName, bank.ModuleName, slashing.ModuleName, gov.ModuleName,
-		mint.ModuleName, supply.ModuleName, crisis.ModuleName, genutil.ModuleName,
+		mint.ModuleName, issue.ModuleName, supply.ModuleName, crisis.ModuleName, genutil.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)

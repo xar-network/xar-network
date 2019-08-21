@@ -20,7 +20,11 @@ type GenesisState struct {
 
 // NewGenesisState creates a new genesis state.
 func NewGenesisState(startingIssueId uint64) GenesisState {
-	return GenesisState{StartingIssueId: startingIssueId}
+	params := types.DefaultParams("ftm")
+	return GenesisState{
+		StartingIssueId: startingIssueId,
+		Params:          params,
+	}
 }
 
 // DefaultGenesisState returns a default genesis state
@@ -42,16 +46,19 @@ func (data GenesisState) Equal(data2 GenesisState) bool {
 }
 
 // InitGenesis sets distribution information for genesis.
-func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data GenesisState) {
-	err := keeper.SetInitialIssueStartingIssueId(ctx, data.StartingIssueId)
+func InitGenesis(ctx sdk.Context, k keeper.Keeper, data GenesisState) {
+	err := k.SetInitialIssueStartingIssueId(ctx, data.StartingIssueId)
 	if err != nil {
 		panic(err)
 	}
 
-	keeper.SetParams(ctx, data.Params)
+	err = k.SetParams(ctx, data.Params)
+	if err != nil {
+		panic(err)
+	}
 
 	for _, issue := range data.Issues {
-		keeper.AddIssue(ctx, &issue)
+		k.AddIssue(ctx, &issue)
 	}
 }
 

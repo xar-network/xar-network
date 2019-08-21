@@ -3,8 +3,6 @@ package tests
 import (
 	"testing"
 
-	"github.com/zar-network/zar-network/x/issue/params"
-
 	keeper2 "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 
 	"github.com/cosmos/cosmos-sdk/x/staking"
@@ -21,10 +19,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/mock"
 
 	"github.com/zar-network/zar-network/x/issue"
-	"github.com/zar-network/zar-network/x/issue/msgs"
-	"github.com/zar-network/zar-network/x/issue/types"
-
-	"github.com/zar-network/zar-network/x/issue/keeper"
+	"github.com/zar-network/zar-network/x/issue/internal/keeper"
+	"github.com/zar-network/zar-network/x/issue/internal/types"
 )
 
 var (
@@ -32,7 +28,7 @@ var (
 	TransferAccAddr      sdk.AccAddress
 	SenderAccAddr        sdk.AccAddress
 
-	IssueParams = params.IssueParams{
+	IssueParams = types.IssueParams{
 		Name:               "testCoin",
 		Symbol:             "TEST",
 		TotalSupply:        sdk.NewInt(10000),
@@ -76,7 +72,7 @@ func getMockApp(t *testing.T, genState issue.GenesisState, genAccs []auth.Accoun
 	mapp *mock.App, keeper keeper.Keeper, sk staking.Keeper, addrs []sdk.AccAddress,
 	pubKeys []crypto.PubKey, privKeys []crypto.PrivKey) {
 	mapp = mock.NewApp()
-	msgs.RegisterCodec(mapp.Cdc)
+	types.RegisterCodec(mapp.Cdc)
 	keyIssue := sdk.NewKVStoreKey(types.StoreKey)
 
 	keyStaking := sdk.NewKVStoreKey(staking.StoreKey)

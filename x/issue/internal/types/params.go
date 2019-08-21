@@ -62,6 +62,17 @@ func (dp Params) Equal(dp2 Params) bool {
 	return bytes.Equal(b1, b2)
 }
 
+// validate params
+func ValidateParams(params Params) error {
+	if !params.IssueFee.IsValid() {
+		panic(fmt.Errorf("invalid issue fee set: %s", params.IssueFee))
+	}
+	if !params.MintFee.IsValid() {
+		panic(fmt.Errorf("invalid mint fee set: %s", params.MintFee))
+	}
+	return nil
+}
+
 // DefaultParams returns a default set of parameters.
 func DefaultParams(denom string) Params {
 	return Params{

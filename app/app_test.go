@@ -9,7 +9,6 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/simapp"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -27,7 +26,8 @@ func TestZardExport(t *testing.T) {
 
 func setGenesis(gapp *ZarApp) error {
 
-	genesisState := simapp.NewDefaultGenesisState()
+	genesisState := ModuleBasics.DefaultGenesis()
+	//genesisState.IssueData = issue.DefaultGenesisState()
 	stateBytes, err := codec.MarshalJSONIndent(gapp.cdc, genesisState)
 	if err != nil {
 		return err
