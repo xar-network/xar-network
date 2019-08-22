@@ -11,8 +11,8 @@ import (
 	"github.com/zar-network/zar-network/x/issue/internal/types"
 )
 
-// GetQueryParamsCmd implements the query params command.
-func GetQueryParamsCmd(cdc *codec.Codec) *cobra.Command {
+// QueryParamsCmd implements the query params command.
+func QueryParamsCmd(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "params",
 		Short:   "Query the parameters of the lock process",
@@ -46,8 +46,8 @@ func QueryCmd(cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-// GetCmdQueryIssue implements the query issue command.
-func GetCmdQueryIssue(cdc *codec.Codec) *cobra.Command {
+// QueryIssueCmd implements the query issue command.
+func QueryIssueCmd(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "query [issue-id]",
 		Args:    cobra.ExactArgs(1),
@@ -76,8 +76,8 @@ func processQuery(cdc *codec.Codec, args []string) error {
 	return cliCtx.PrintOutput(issueInfo)
 }
 
-// GetCmdQueryAllowance implements the query allowance command.
-func GetCmdQueryAllowance(cdc *codec.Codec) *cobra.Command {
+// QueryAllowanceCmd implements the query allowance command.
+func QueryAllowanceCmd(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "query-allowance [issue-id] [owner-address] [spender-address]",
 		Args:    cobra.ExactArgs(3),
@@ -110,8 +110,8 @@ func GetCmdQueryAllowance(cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-// GetCmdQueryFreeze implements the query freeze command.
-func GetCmdQueryFreeze(cdc *codec.Codec) *cobra.Command {
+// QueryFreezeCmd implements the query freeze command.
+func QueryFreezeCmd(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "query-freeze [issue-id] [acc-address]",
 		Args:    cobra.ExactArgs(2),
@@ -140,8 +140,8 @@ func GetCmdQueryFreeze(cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-// GetCmdQueryIssues implements the query issue command.
-func GetCmdQueryIssues(cdc *codec.Codec) *cobra.Command {
+// QueryIssuesCmd implements the query issue command.
+func QueryIssuesCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list",
 		Short:   "Query issue list",
@@ -181,8 +181,8 @@ func GetCmdQueryIssues(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-// GetCmdQueryFreezes implements the query freezes command.
-func GetCmdQueryFreezes(cdc *codec.Codec) *cobra.Command {
+// QueryFreezesCmd implements the query freezes command.
+func QueryFreezesCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list-freeze",
 		Short:   "Query freeze list",
@@ -206,8 +206,8 @@ func GetCmdQueryFreezes(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-// GetCmdQueryIssues implements the query issue command.
-func GetCmdSearchIssues(cdc *codec.Codec) *cobra.Command {
+// QuerySearchIssuesCmd implements the query issue command.
+func QuerySearchIssuesCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "search [symbol]",
 		Args:    cobra.ExactArgs(1),

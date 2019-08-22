@@ -16,6 +16,7 @@ import (
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
+	issuecmd "github.com/zar-network/zar-network/x/issue/client/cli"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -94,6 +95,14 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		rpc.BlockCommand(),
 		authcmd.QueryTxsByEventsCmd(cdc),
 		authcmd.QueryTxCmd(cdc),
+		issuecmd.QueryCmd(cdc),
+		issuecmd.QueryIssueCmd(cdc),
+		issuecmd.QueryFreezeCmd(cdc),
+		issuecmd.QueryIssuesCmd(cdc),
+		issuecmd.QueryParamsCmd(cdc),
+		issuecmd.QueryFreezesCmd(cdc),
+		issuecmd.QueryAllowanceCmd(cdc),
+		issuecmd.QuerySearchIssuesCmd(cdc),
 		client.LineBreak,
 	)
 
