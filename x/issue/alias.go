@@ -1,7 +1,6 @@
 package issue
 
 import (
-	"github.com/zar-network/zar-network/x/issue/client"
 	"github.com/zar-network/zar-network/x/issue/client/cli"
 	"github.com/zar-network/zar-network/x/issue/internal/keeper"
 	"github.com/zar-network/zar-network/x/issue/internal/types"
@@ -27,9 +26,8 @@ const (
 )
 
 var (
-	ModuleCdc       = types.ModuleCdc
-	NewModuleClient = client.NewModuleClient
-	NewKeeper       = keeper.NewKeeper
+	ModuleCdc = types.ModuleCdc
+	NewKeeper = keeper.NewKeeper
 	//GetAccountCmd   = cli.GetAccountCmd
 	QueryCmd      = cli.QueryCmd
 	RegisterCodec = types.RegisterCodec

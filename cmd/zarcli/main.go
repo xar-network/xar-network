@@ -17,6 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 	issuecmd "github.com/zar-network/zar-network/x/issue/client/cli"
+	issuerest "github.com/zar-network/zar-network/x/issue/client/rest"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -126,6 +127,14 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 		authcmd.GetBroadcastCommand(cdc),
 		authcmd.GetEncodeCommand(cdc),
+		issuecmd.GetCmdIssueBurn(cdc),
+		issuecmd.GetCmdIssueFreeze(cdc),
+		issuecmd.GetCmdIssueApprove(cdc),
+		issuecmd.GetCmdIssueBurnFrom(cdc),
+		issuecmd.GetCmdIssueSendFrom(cdc),
+		issuecmd.GetCmdIssueUnFreeze(cdc),
+		issuecmd.GetCmdIssueDecreaseApproval(cdc),
+		issuecmd.GetCmdIssueIncreaseApproval(cdc),
 		client.LineBreak,
 	)
 
@@ -152,6 +161,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
+	issuerest.RegisterRoutes(rs.CliCtx, rs.Mux)
 	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
 
