@@ -88,6 +88,8 @@ func IssueCreateCmd(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().Bool(flagMintingFinished, false, "Token owner can not mint")
 	cmd.Flags().Bool(flagFreezeDisabled, false, "Token holder can transfer the token")
 
+	cmd = client.PostCommands(cmd)[0]
+
 	return cmd
 }
 
@@ -126,6 +128,8 @@ func IssueTransferOwnershipCmd(cdc *codec.Codec) *cobra.Command {
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
 
 	return cmd
 }
@@ -171,6 +175,8 @@ func IssueDescriptionCmd(cdc *codec.Codec) *cobra.Command {
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
 
 	return cmd
 }
@@ -219,6 +225,8 @@ func IssueMintCmd(cdc *codec.Codec) *cobra.Command {
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
 	return cmd
 }
 
@@ -269,6 +277,8 @@ func IssueDisableFeatureCmd(cdc *codec.Codec) *cobra.Command {
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
 	return cmd
 }
 
@@ -289,6 +299,8 @@ func GetCmdIssueFreeze(cdc *codec.Codec) *cobra.Command {
 			return issueFreeze(cdc, args, true)
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
 	return cmd
 }
 
@@ -309,6 +321,8 @@ func GetCmdIssueUnFreeze(cdc *codec.Codec) *cobra.Command {
 			return issueFreeze(cdc, args, false)
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
 	return cmd
 }
 
@@ -335,6 +349,8 @@ func GetCmdIssueBurn(cdc *codec.Codec) *cobra.Command {
 			return issueBurnFrom(cdc, args, types.BurnHolder)
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
 	return cmd
 }
 
@@ -350,6 +366,8 @@ func GetCmdIssueBurnFrom(cdc *codec.Codec) *cobra.Command {
 			return issueBurnFrom(cdc, args, types.BurnFrom)
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
 	return cmd
 }
 
@@ -440,6 +458,8 @@ func GetCmdIssueSendFrom(cdc *codec.Codec) *cobra.Command {
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
 	return cmd
 }
 
@@ -455,6 +475,8 @@ func GetCmdIssueApprove(cdc *codec.Codec) *cobra.Command {
 			return issueApprove(cdc, args, types.Approve)
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
 	return cmd
 }
 
@@ -470,6 +492,8 @@ func GetCmdIssueIncreaseApproval(cdc *codec.Codec) *cobra.Command {
 			return issueApprove(cdc, args, types.IncreaseApproval)
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
 	return cmd
 }
 
@@ -485,6 +509,8 @@ func GetCmdIssueDecreaseApproval(cdc *codec.Codec) *cobra.Command {
 			return issueApprove(cdc, args, types.DecreaseApproval)
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
 	return cmd
 }
 func issueApprove(cdc *codec.Codec, args []string, approveType string) error {
