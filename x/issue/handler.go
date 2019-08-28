@@ -318,7 +318,7 @@ func handleMsgIssue(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssue) sdk.Re
 		FreezeDisabled:     msg.FreezeDisabled,
 	}
 
-	coin, err := k.CreateIssue(ctx, &coinIssueInfo)
+	_, err := k.CreateIssue(ctx, &coinIssueInfo)
 	if err != nil {
 		return err.Result()
 	}
@@ -326,7 +326,7 @@ func handleMsgIssue(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssue) sdk.Re
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute("issue-id", coinIssueInfo.IssueId)
+			sdk.NewAttribute("issue-id", coinIssueInfo.IssueId),
 		),
 	)
 
