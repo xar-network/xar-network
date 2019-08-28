@@ -42,6 +42,5 @@ func KeySymbolIssues(symbol string) []byte {
 }
 
 func KeyIssueIdStr(seq uint64) string {
-
 	return fmt.Sprintf("%s%x", types.IDPreStr, seq)
 }

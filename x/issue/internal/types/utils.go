@@ -3,7 +3,6 @@ package types
 import (
 	"math/big"
 	"math/rand"
-	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,7 +21,7 @@ func GetRandomString(l int) string {
 	return string(result)
 }
 func IsIssueId(issueID string) bool {
-	return strings.HasPrefix(issueID, IDPreStr)
+	return true //strings.HasPrefix(issueID, IDPreStr)
 }
 
 func CheckIssueId(issueID string) sdk.Error {
