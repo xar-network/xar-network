@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
+	db "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 
@@ -24,10 +24,18 @@ func TestZardExport(t *testing.T) {
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 }
 
-func setGenesis(gapp *ZarApp) error {
+// ensure that black listed addresses are properly set in bank keeper
+func TestBlackListedAddrs(t *testing.T) {
+	db := db.NewMemDB()
+	gapp := NewZarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
 
-	genesisState := ModuleBasics.DefaultGenesis()
-	//genesisState.IssueData = issue.DefaultGenesisState()
+	for acc := range maccPerms {
+		require.True(t, gapp.bankKeeper.BlacklistedAddr(gapp.supplyKeeper.GetModuleAddress(acc)))
+	}
+}
+
+func setGenesis(gapp *ZarApp) error {
+	genesisState := simapp.NewDefaultGenesisState()
 	stateBytes, err := codec.MarshalJSONIndent(gapp.cdc, genesisState)
 	if err != nil {
 		return err
@@ -40,6 +48,7 @@ func setGenesis(gapp *ZarApp) error {
 			AppStateBytes: stateBytes,
 		},
 	)
+
 	gapp.Commit()
 	return nil
 }

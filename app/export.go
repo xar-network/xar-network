@@ -14,10 +14,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking/exported"
 )
 
-// ExportAppStateAndValidators exports the state of the application for a genesis
-// file.
-func (app *ZarApp) ExportAppStateAndValidators(
-	forZeroHeight bool, jailWhiteList []string,
+// ExportAppStateAndValidators export the state of zar for a genesis file
+func (app *ZarApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string,
 ) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
 
 	// as if they could withdraw from the start of the next block
