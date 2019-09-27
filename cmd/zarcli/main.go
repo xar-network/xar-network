@@ -127,7 +127,6 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 		authcmd.GetBroadcastCommand(cdc),
 		authcmd.GetEncodeCommand(cdc),
-<<<<<<< HEAD:cmd/zarcli/main.go
 		issuecmd.GetCmdIssueBurn(cdc),
 		issuecmd.GetCmdIssueFreeze(cdc),
 		issuecmd.GetCmdIssueApprove(cdc),
@@ -136,9 +135,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		issuecmd.GetCmdIssueUnFreeze(cdc),
 		issuecmd.GetCmdIssueDecreaseApproval(cdc),
 		issuecmd.GetCmdIssueIncreaseApproval(cdc),
-=======
 		authcmd.GetDecodeCommand(cdc),
->>>>>>> 3e3fae888d394d2d55ec7146984707aecdda4497:cmd/gaiacli/main.go
 		client.LineBreak,
 	)
 

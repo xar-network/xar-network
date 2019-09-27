@@ -9,12 +9,13 @@ import (
 	db "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/simapp"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 func TestZardExport(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := db.NewMemDB()
 	gapp := NewZarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
 	setGenesis(gapp)
 

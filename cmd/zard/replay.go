@@ -92,11 +92,7 @@ func replayTxs(rootDir string) error {
 
 	// Application
 	fmt.Fprintln(os.Stderr, "Creating application")
-<<<<<<< HEAD:cmd/zard/replay.go
 	myapp := app.NewZarApp(
-=======
-	gapp := app.NewGaiaApp(
->>>>>>> 3e3fae888d394d2d55ec7146984707aecdda4497:cmd/gaiad/replay.go
 		ctx.Logger, appDB, traceStoreWriter, true, uint(1),
 		baseapp.SetPruning(store.PruneEverything), // nothing
 	)
@@ -113,7 +109,7 @@ func replayTxs(rootDir string) error {
 	}
 	// tmsm.SaveState(tmDB, genState)
 
-	cc := proxy.NewLocalClientCreator(gapp)
+	cc := proxy.NewLocalClientCreator(myapp)
 	proxyApp := proxy.NewAppConns(cc)
 	err = proxyApp.Start()
 	if err != nil {
