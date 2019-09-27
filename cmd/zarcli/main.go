@@ -16,6 +16,8 @@ import (
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
+	"github.com/cosmos/cosmos-sdk/x/nft"
+	nftcmd "github.com/cosmos/cosmos-sdk/x/nft/client/cli"
 	issuecmd "github.com/zar-network/zar-network/x/issue/client/cli"
 	issuerest "github.com/zar-network/zar-network/x/issue/client/rest"
 
@@ -96,6 +98,8 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		rpc.BlockCommand(),
 		authcmd.QueryTxsByEventsCmd(cdc),
 		authcmd.QueryTxCmd(cdc),
+		nftcmd.GetTxCmd(nft.StoreKey, cdc),
+		nftcmd.GetQueryCmd(nft.StoreKey, cdc),
 		issuecmd.QueryCmd(cdc),
 		issuecmd.QueryIssueCmd(cdc),
 		issuecmd.QueryFreezeCmd(cdc),
