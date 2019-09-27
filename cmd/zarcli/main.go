@@ -18,6 +18,7 @@ import (
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/nft"
 	nftcmd "github.com/cosmos/cosmos-sdk/x/nft/client/cli"
+	nftrest "github.com/cosmos/cosmos-sdk/x/nft/client/rest"
 	issuecmd "github.com/zar-network/zar-network/x/issue/client/cli"
 	issuerest "github.com/zar-network/zar-network/x/issue/client/rest"
 
@@ -98,7 +99,6 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		rpc.BlockCommand(),
 		authcmd.QueryTxsByEventsCmd(cdc),
 		authcmd.QueryTxCmd(cdc),
-		nftcmd.GetTxCmd(nft.StoreKey, cdc),
 		nftcmd.GetQueryCmd(nft.StoreKey, cdc),
 		issuecmd.QueryCmd(cdc),
 		issuecmd.QueryIssueCmd(cdc),
@@ -131,6 +131,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 		authcmd.GetBroadcastCommand(cdc),
 		authcmd.GetEncodeCommand(cdc),
+		nftcmd.GetTxCmd(nft.StoreKey, cdc),
 		issuecmd.GetCmdIssueBurn(cdc),
 		issuecmd.GetCmdIssueFreeze(cdc),
 		issuecmd.GetCmdIssueApprove(cdc),
@@ -167,6 +168,7 @@ func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
 	issuerest.RegisterRoutes(rs.CliCtx, rs.Mux)
+	nftrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec, nft.StoreKey)
 	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
 
