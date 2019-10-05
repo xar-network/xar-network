@@ -25,10 +25,8 @@ fi
 ##
 export ZARDHOME="/zard/node${ID}/zard"
 
-if [ -d "`dirname ${ZARDHOME}/${LOG}`" ]; then
-  "$BINARY" --home "$ZARDHOME" "$@" | tee "${ZARDHOME}/${LOG}"
+if [ -d "$(dirname "${ZARDHOME}"/"${LOG}")" ]; then
+  "${BINARY}" --home "${ZARDHOME}" "$@" | tee "${ZARDHOME}/${LOG}"
 else
-  "$BINARY" --home "$ZARDHOME" "$@"
+  "${BINARY}" --home "${ZARDHOME}" "$@"
 fi
-
-chmod 777 -R /zard
