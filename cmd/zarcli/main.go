@@ -16,9 +16,9 @@ import (
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
-	"github.com/cosmos/cosmos-sdk/x/nft"
-	nftcmd "github.com/cosmos/cosmos-sdk/x/nft/client/cli"
-	nftrest "github.com/cosmos/cosmos-sdk/x/nft/client/rest"
+	"github.com/cosmos/modules/incubator/nft"
+	nftcmd "github.com/cosmos/modules/incubator/nft/client/cli"
+	nftrest "github.com/cosmos/modules/incubator/nft/client/rest"
 	issuecmd "github.com/zar-network/zar-network/x/issue/client/cli"
 	issuerest "github.com/zar-network/zar-network/x/issue/client/rest"
 
