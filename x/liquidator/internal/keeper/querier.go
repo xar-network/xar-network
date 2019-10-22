@@ -4,16 +4,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-)
-
-const (
-	QueryGetOutstandingDebt = "outstanding_debt" // Get the outstanding seized debt
+	"github.com/zar-network/zar-network/x/liquidator/internal/types"
 )
 
 func NewQuerier(keeper Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {
-		case QueryGetOutstandingDebt:
+		case types.QueryGetOutstandingDebt:
 			return queryGetOutstandingDebt(ctx, path[1:], req, keeper)
 		// case QueryGetSurplus:
 		// 	return queryGetSurplus()

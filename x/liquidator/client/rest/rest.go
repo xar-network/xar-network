@@ -5,13 +5,13 @@ import (
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	clientrest "github.com/cosmos/cosmos-sdk/client/rest"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/gorilla/mux"
 
-	"github.com/kava-labs/kava-devnet/blockchain/x/liquidator"
+	"github.com/zar-network/zar-network/x/liquidator/internal/types"
 )
 
 // RegisterRoutes - Central function to define routes that get registered by the main application
@@ -24,12 +24,12 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *codec.Codec) 
 
 func queryDebtHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		res, err := cliCtx.QueryWithData(fmt.Sprintf("custom/liquidator/%s", liquidator.QueryGetOutstandingDebt), nil)
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/liquidator/%s", types.QueryGetOutstandingDebt), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		rest.PostProcessResponse(w, cdc, res, cliCtx.Indent) // write JSON to response writer
+		rest.PostProcessResponse(w, cliCtx, res) // write JSON to response writer
 	}
 }
 
@@ -53,7 +53,7 @@ func seizeCdpHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.Handler
 		}
 
 		// Create msg
-		msg := liquidator.MsgSeizeAndStartCollateralAuction{
+		msg := types.MsgSeizeAndStartCollateralAuction{
 			req.Sender,
 			req.CdpOwner,
 			req.CollateralDenom,
@@ -64,7 +64,7 @@ func seizeCdpHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.Handler
 		}
 
 		// Generate tx and write response
-		clientrest.WriteGenerateStdTxResponse(w, cdc, cliCtx, req.BaseReq, []sdk.Msg{msg})
+		utils.WriteGenerateStdTxResponse(w, cliCtx, req.BaseReq, []sdk.Msg{msg})
 	}
 }
 
@@ -86,7 +86,7 @@ func debtAuctionHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.Hand
 		}
 
 		// Create msg
-		msg := liquidator.MsgStartDebtAuction{
+		msg := types.MsgStartDebtAuction{
 			req.Sender,
 		}
 		if err := msg.ValidateBasic(); err != nil {
@@ -95,6 +95,6 @@ func debtAuctionHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.Hand
 		}
 
 		// Generate tx and write response
-		clientrest.WriteGenerateStdTxResponse(w, cdc, cliCtx, req.BaseReq, []sdk.Msg{msg})
+		utils.WriteGenerateStdTxResponse(w, cliCtx, req.BaseReq, []sdk.Msg{msg})
 	}
 }

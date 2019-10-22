@@ -10,6 +10,10 @@ type SeizedDebt struct {
 	// SentToAuction should always be < Total
 }
 
+const (
+	QueryGetOutstandingDebt = "outstanding_debt" // Get the outstanding seized debt
+)
+
 // Available gets the seized debt that has not been sent for auction. Known as Woe in maker.
 func (sd SeizedDebt) Available() sdk.Int {
 	return sd.Total.Sub(sd.SentToAuction)

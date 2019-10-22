@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	amino "github.com/tendermint/go-amino"
 
-	"github.com/kava-labs/kava-devnet/blockchain/x/liquidator/client/cli"
+	"github.com/zar-network/zar-network/x/liquidator/client/cli"
 )
 
 // ModuleClient exports all client functionality from this module

@@ -8,7 +8,7 @@ import (
 	authtxb "github.com/cosmos/cosmos-sdk/x/auth/client/txbuilder"
 	"github.com/spf13/cobra"
 
-	"github.com/kava-labs/kava-devnet/blockchain/x/liquidator"
+	"github.com/zar-network/zar-network/x/liquidator/internal/types"
 )
 
 func GetCmd_SeizeAndStartCollateralAuction(cdc *codec.Codec) *cobra.Command {
@@ -38,7 +38,7 @@ As this is a forward-reverse auction type, if the max stable coin is bid then bi
 			// TODO validate denom?
 
 			// Prepare and send message
-			msgs := []sdk.Msg{liquidator.MsgSeizeAndStartCollateralAuction{
+			msgs := []sdk.Msg{types.MsgSeizeAndStartCollateralAuction{
 				Sender:          sender,
 				CdpOwner:        cdpOwner,
 				CollateralDenom: denom,
@@ -64,7 +64,7 @@ func GetCmd_StartDebtAuction(cdc *codec.Codec) *cobra.Command {
 			sender := cliCtx.GetFromAddress()
 
 			// Prepare and send message
-			msgs := []sdk.Msg{liquidator.MsgStartDebtAuction{
+			msgs := []sdk.Msg{types.MsgStartDebtAuction{
 				Sender: sender,
 			}}
 			// TODO print out results like auction ID?
