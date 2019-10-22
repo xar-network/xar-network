@@ -1,4 +1,4 @@
-package cdp
+package types
 
 import (
 	"fmt"
@@ -6,6 +6,16 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+const (
+	QueryGetCdps   = "cdps"
+	QueryGetParams = "params"
+)
+
+// StableDenom asset code of the dollar-denominated debt coin
+const StableDenom = "ftg" // TODO allow to be changed
+// GovDenom asset code of the governance coin
+const GovDenom = "ftm"
 
 // CDP is the state of a single Collateralized Debt Position.
 type CDP struct {
@@ -43,12 +53,18 @@ func (cdps CDPs) String() string {
 	return out
 }
 
-// byCollateralRatio is used to sort CDPs
-type byCollateralRatio CDPs
+type QueryCdpsParams struct {
+	CollateralDenom       string         // get CDPs with this collateral denom
+	Owner                 sdk.AccAddress // get CDPs belonging to this owner
+	UnderCollateralizedAt sdk.Dec        // get CDPs that will be below the liquidation ratio when the collateral is at this price.
+}
 
-func (cdps byCollateralRatio) Len() int      { return len(cdps) }
-func (cdps byCollateralRatio) Swap(i, j int) { cdps[i], cdps[j] = cdps[j], cdps[i] }
-func (cdps byCollateralRatio) Less(i, j int) bool {
+// byCollateralRatio is used to sort CDPs
+type ByCollateralRatio CDPs
+
+func (cdps ByCollateralRatio) Len() int      { return len(cdps) }
+func (cdps ByCollateralRatio) Swap(i, j int) { cdps[i], cdps[j] = cdps[j], cdps[i] }
+func (cdps ByCollateralRatio) Less(i, j int) bool {
 	// Sort by "collateral ratio" ie collateralAmount/Debt
 	// The comparison is: collat_i/debt_i < collat_j/debt_j
 	// But to avoid division this can be rearranged to: collat_i*debt_j < collat_j*debt_i

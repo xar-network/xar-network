@@ -1,4 +1,4 @@
-package cdp
+package types
 
 import (
 	"fmt"
@@ -28,11 +28,11 @@ type CollateralParams struct {
 	//DebtFloor        sdk.Int // used to prevent dust
 }
 
-var moduleParamsKey = []byte("CdpModuleParams")
+var ModuleParamsKey = []byte("CdpModuleParams")
 
-func createParamsKeyTable() params.KeyTable {
+func CreateParamsKeyTable() params.KeyTable {
 	return params.NewKeyTable(
-		moduleParamsKey, CdpModuleParams{},
+		ModuleParamsKey, CdpModuleParams{},
 	)
 }
 

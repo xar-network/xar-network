@@ -24,4 +24,4 @@ TODO
  - custom error types, codespace
 
 */
-package cdp
+package types

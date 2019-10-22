@@ -1,10 +1,10 @@
-package liquidator
+package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/kava-labs/kava-devnet/blockchain/x/auction"
-	"github.com/kava-labs/kava-devnet/blockchain/x/cdp"
+	"github.com/zar-network/zar-network/x/auction"
+	"github.com/zar-network/zar-network/x/cdp"
 )
 
 type cdpKeeper interface {

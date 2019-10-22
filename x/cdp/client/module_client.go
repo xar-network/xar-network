@@ -2,9 +2,9 @@ package client
 
 import (
 	"github.com/cosmos/cosmos-sdk/client"
-	cdpcmd "github.com/kava-labs/kava-devnet/blockchain/x/cdp/client/cli"
 	"github.com/spf13/cobra"
 	amino "github.com/tendermint/go-amino"
+	cdpcmd "github.com/zar-network/zar-network/x/cdp/client/cli"
 )
 
 // ModuleClient exports all client functionality from this module

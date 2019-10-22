@@ -18,4 +18,4 @@ TODO
  - tags
  - custom error types, codespace
 */
-package liquidator
+package types

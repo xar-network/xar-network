@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 
-	"github.com/zar-network/zar-network/x/cdp"
+	"github.com/zar-network/zar-network/x/cdp/internal/types"
 )
 
 // GetCmd_GetCdp queries the latest info about a particular cdp
@@ -26,7 +26,7 @@ func GetCmd_GetCdp(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 			collateralType := args[1] // TODO validation?
-			bz, err := cdc.MarshalJSON(cdp.QueryCdpsParams{
+			bz, err := cdc.MarshalJSON(types.QueryCdpsParams{
 				Owner:           ownerAddress,
 				CollateralDenom: collateralType,
 			})
@@ -35,8 +35,8 @@ func GetCmd_GetCdp(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 
 			// Query
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, cdp.QueryGetCdps)
-			res, err := cliCtx.QueryWithData(route, bz)
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryGetCdps)
+			res, _, err := cliCtx.QueryWithData(route, bz)
 			if err != nil {
 				fmt.Printf("error when getting cdp info - %s", err)
 				fmt.Printf("could not get current cdp info - %s %s \n", string(ownerAddress), string(collateralType))
@@ -44,7 +44,7 @@ func GetCmd_GetCdp(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 
 			// Decode and print results
-			var cdps cdp.CDPs
+			var cdps types.CDPs
 			cdc.MustUnmarshalJSON(res, &cdps)
 			if len(cdps) != 1 {
 				panic("Unexpected number of CDPs returned from querier. This shouldn't happen.")
@@ -64,20 +64,20 @@ func GetCmd_GetCdps(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			// Prepare params for querier
-			bz, err := cdc.MarshalJSON(cdp.QueryCdpsParams{CollateralDenom: args[0]}) // denom="" returns all CDPs // TODO will this fail if there are no args?
+			bz, err := cdc.MarshalJSON(types.QueryCdpsParams{CollateralDenom: args[0]}) // denom="" returns all CDPs // TODO will this fail if there are no args?
 			if err != nil {
 				return err
 			}
 
 			// Query
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, cdp.QueryGetCdps)
-			res, err := cliCtx.QueryWithData(route, bz)
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryGetCdps)
+			res, _, err := cliCtx.QueryWithData(route, bz)
 			if err != nil {
 				return err
 			}
 
 			// Decode and print results
-			var out cdp.CDPs
+			var out types.CDPs
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
@@ -98,7 +98,7 @@ func GetCmd_GetUnderCollateralizedCdps(queryRoute string, cdc *codec.Codec) *cob
 			if errSdk != nil {
 				return fmt.Errorf(errSdk.Error()) // TODO check this returns useful output
 			}
-			bz, err := cdc.MarshalJSON(cdp.QueryCdpsParams{
+			bz, err := cdc.MarshalJSON(types.QueryCdpsParams{
 				CollateralDenom:       args[0],
 				UnderCollateralizedAt: price,
 			})
@@ -107,14 +107,14 @@ func GetCmd_GetUnderCollateralizedCdps(queryRoute string, cdc *codec.Codec) *cob
 			}
 
 			// Query
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, cdp.QueryGetCdps)
-			res, err := cliCtx.QueryWithData(route, bz)
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryGetCdps)
+			res, _, err := cliCtx.QueryWithData(route, bz)
 			if err != nil {
 				return err
 			}
 
 			// Decode and print results
-			var out cdp.CDPs
+			var out types.CDPs
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
@@ -131,14 +131,14 @@ func GetCmd_GetParams(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			// Query
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, cdp.QueryGetParams)
-			res, err := cliCtx.QueryWithData(route, nil) // TODO use cliCtx.QueryStore?
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryGetParams)
+			res, _, err := cliCtx.QueryWithData(route, nil) // TODO use cliCtx.QueryStore?
 			if err != nil {
 				return err
 			}
 
 			// Decode and print results
-			var out cdp.CdpModuleParams
+			var out types.CdpModuleParams
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},

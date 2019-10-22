@@ -1,14 +1,12 @@
-package pricefeed
+package cdp
 
 import (
-	"github.com/zar-network/zar-network/x/pricefeed/internal/keeper"
-	"github.com/zar-network/zar-network/x/pricefeed/internal/types"
+	"github.com/zar-network/zar-network/x/cdp/internal/keeper"
+	"github.com/zar-network/zar-network/x/cdp/internal/types"
 )
 
 type (
-	Keeper       = keeper.Keeper
-	CurrentPrice = types.CurrentPrice
-	PostedPrice  = types.PostedPrice
+	Keeper = keeper.Keeper
 )
 
 const (

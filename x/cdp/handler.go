@@ -4,13 +4,15 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/zar-network/zar-network/x/cdp/internal/keeper"
+	"github.com/zar-network/zar-network/x/cdp/internal/types"
 )
 
 // Handle all cdp messages.
-func NewHandler(keeper Keeper) sdk.Handler {
+func NewHandler(keeper keeper.Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 		switch msg := msg.(type) {
-		case MsgCreateOrModifyCDP:
+		case types.MsgCreateOrModifyCDP:
 			return handleMsgCreateOrModifyCDP(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized cdp msg type: %T", msg)
@@ -19,7 +21,7 @@ func NewHandler(keeper Keeper) sdk.Handler {
 	}
 }
 
-func handleMsgCreateOrModifyCDP(ctx sdk.Context, keeper Keeper, msg MsgCreateOrModifyCDP) sdk.Result {
+func handleMsgCreateOrModifyCDP(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgCreateOrModifyCDP) sdk.Result {
 
 	err := keeper.ModifyCDP(ctx, msg.Sender, msg.CollateralDenom, msg.CollateralChange, msg.DebtChange)
 	if err != nil {

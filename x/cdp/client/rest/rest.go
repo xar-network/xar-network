@@ -5,14 +5,13 @@ import (
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
 
-	"github.com/kava-labs/kava-devnet/blockchain/x/cdp"
+	"github.com/zar-network/zar-network/x/cdp/internal/types"
 
-	clientrest "github.com/cosmos/cosmos-sdk/client/rest"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 )
 
 /*
@@ -29,10 +28,10 @@ Get the module params, including authorized collateral denoms.
 */
 
 // RegisterRoutes - Central function to define routes that get registered by the main application
-func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *codec.Codec) {
-	r.HandleFunc("/cdps", getCdpsHandlerFn(cdc, cliCtx)).Methods("GET")
-	r.HandleFunc("/cdps", modifyCdpHandlerFn(cdc, cliCtx)).Methods("PUT")
-	r.HandleFunc("/cdps/params", getParamsHandlerFn(cdc, cliCtx)).Methods("GET")
+func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router) {
+	r.HandleFunc("/cdps", getCdpsHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc("/cdps", modifyCdpHandlerFn(cliCtx)).Methods("PUT")
+	r.HandleFunc("/cdps/params", getParamsHandlerFn(cliCtx)).Methods("GET")
 }
 
 const (
@@ -41,7 +40,7 @@ const (
 	RestUnderCollateralizedAt = "underCollateralizedAt"
 )
 
-func getCdpsHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
+func getCdpsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// get parameters from the URL
 		ownerBech32 := r.URL.Query().Get(RestOwner)
@@ -49,7 +48,7 @@ func getCdpsHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerF
 		priceString := r.URL.Query().Get(RestUnderCollateralizedAt)
 
 		// Construct querier params
-		querierParams := cdp.QueryCdpsParams{}
+		querierParams := types.QueryCdpsParams{}
 
 		if len(ownerBech32) != 0 {
 			owner, err := sdk.AccAddressFromBech32(ownerBech32)
@@ -74,35 +73,35 @@ func getCdpsHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerF
 			querierParams.UnderCollateralizedAt = price
 		}
 
-		querierParamsBz, err := cdc.MarshalJSON(querierParams)
+		querierParamsBz, err := cliCtx.Codec.MarshalJSON(querierParams)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		// Get the CDPs
-		res, err := cliCtx.QueryWithData(fmt.Sprintf("custom/cdp/%s", cdp.QueryGetCdps), querierParamsBz)
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/cdp/%s", types.QueryGetCdps), querierParamsBz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}
 
 		// Return the CDPs
-		rest.PostProcessResponse(w, cdc, res, cliCtx.Indent)
+		rest.PostProcessResponse(w, cliCtx, res)
 
 	}
 }
 
 type ModifyCdpRequestBody struct {
 	BaseReq rest.BaseReq `json:"base_req"`
-	Cdp     cdp.CDP      `json:"cdp"`
+	Cdp     types.CDP    `json:"cdp"`
 }
 
-func modifyCdpHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
+func modifyCdpHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode PUT request body
 		var requestBody ModifyCdpRequestBody
-		if !rest.ReadRESTReq(w, r, cdc, &requestBody) {
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &requestBody) {
 			return
 		}
 		requestBody.BaseReq = requestBody.BaseReq.Sanitize()
@@ -111,22 +110,22 @@ func modifyCdpHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.Handle
 		}
 
 		// Get the stored CDP
-		querierParams := cdp.QueryCdpsParams{
+		querierParams := types.QueryCdpsParams{
 			Owner:           requestBody.Cdp.Owner,
 			CollateralDenom: requestBody.Cdp.CollateralDenom,
 		}
-		querierParamsBz, err := cdc.MarshalJSON(querierParams)
+		querierParamsBz, err := cliCtx.Codec.MarshalJSON(querierParams)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		res, err := cliCtx.QueryWithData(fmt.Sprintf("custom/cdp/%s", cdp.QueryGetCdps), querierParamsBz)
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/cdp/%s", types.QueryGetCdps), querierParamsBz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		var cdps cdp.CDPs
-		err = cdc.UnmarshalJSON(res, &cdps)
+		var cdps types.CDPs
+		err = cliCtx.Codec.UnmarshalJSON(res, &cdps)
 		if len(cdps) != 1 || err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -137,25 +136,25 @@ func modifyCdpHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.Handle
 		debtDelta := requestBody.Cdp.Debt.Sub(cdps[0].Debt)
 
 		// Create and return msg
-		msg := cdp.NewMsgCreateOrModifyCDP(
+		msg := types.NewMsgCreateOrModifyCDP(
 			requestBody.Cdp.Owner,
 			requestBody.Cdp.CollateralDenom,
 			collateralDelta,
 			debtDelta,
 		)
-		clientrest.WriteGenerateStdTxResponse(w, cdc, cliCtx, requestBody.BaseReq, []sdk.Msg{msg})
+		utils.WriteGenerateStdTxResponse(w, cliCtx, requestBody.BaseReq, []sdk.Msg{msg})
 	}
 }
 
-func getParamsHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
+func getParamsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Get the params
-		res, err := cliCtx.QueryWithData(fmt.Sprintf("custom/cdp/%s", cdp.QueryGetParams), nil)
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/cdp/%s", types.QueryGetParams), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 		// Return the params
-		rest.PostProcessResponse(w, cdc, res, cliCtx.Indent)
+		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }

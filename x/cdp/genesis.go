@@ -2,21 +2,23 @@ package cdp
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/zar-network/zar-network/x/cdp/internal/keeper"
+	"github.com/zar-network/zar-network/x/cdp/internal/types"
 )
 
 // GenesisState is the state that must be provided at genesis.
 type GenesisState struct {
-	CdpModuleParams CdpModuleParams `json:"params"`
-	GlobalDebt      sdk.Int         `json:"global_debt"`
+	CdpModuleParams types.CdpModuleParams `json:"params"`
+	GlobalDebt      sdk.Int               `json:"global_debt"`
 	// don't need to setup CollateralStates as they are created as needed
 }
 
 // DefaultGenesisState returns a default genesis state
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		CdpModuleParams{
+		types.CdpModuleParams{
 			GlobalDebtLimit: sdk.NewInt(1000000),
-			CollateralParams: []CollateralParams{
+			CollateralParams: []types.CollateralParams{
 				{
 					Denom:            "btc",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
@@ -34,9 +36,9 @@ func DefaultGenesisState() GenesisState {
 }
 
 // InitGenesis sets the genesis state in the keeper.
-func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
-	keeper.setParams(ctx, data.CdpModuleParams)
-	keeper.setGlobalDebt(ctx, data.GlobalDebt)
+func InitGenesis(ctx sdk.Context, k keeper.Keeper, data GenesisState) {
+	k.SetParams(ctx, data.CdpModuleParams)
+	k.SetGlobalDebt(ctx, data.GlobalDebt)
 }
 
 // ValidateGenesis performs basic validation of genesis data returning an
@@ -54,7 +56,7 @@ func ValidateGenesis(data GenesisState) error {
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
-func ExportGenesis(ctx sdk.Context, keeper Keeper) GenesisState {
+func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) GenesisState {
 	// TODO implement this
 	return DefaultGenesisState()
 }

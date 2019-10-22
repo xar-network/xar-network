@@ -1,8 +1,8 @@
-package cdp
+package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/kava-labs/kava-devnet/blockchain/x/pricefeed"
+	"github.com/zar-network/zar-network/x/pricefeed"
 )
 
 type bankKeeper interface {
