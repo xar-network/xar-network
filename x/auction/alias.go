@@ -1,3 +1,9 @@
+/**
+
+Baseline from Kava Cosmos Module
+
+**/
+
 package auction
 
 import (
