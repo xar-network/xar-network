@@ -8,11 +8,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
+	"github.com/zar-network/zar-network/x/auction/internal/types"
 
-	"github.com/kava-labs/kava-devnet/blockchain/x/auction"
-
-	clientrest "github.com/cosmos/cosmos-sdk/client/rest"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 )
 
 type placeBidReq struct {
@@ -38,12 +37,12 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *codec.Codec) 
 
 func queryGetAuctionsHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		res, err := cliCtx.QueryWithData("/custom/auction/getauctions", nil)
+		res, _, err := cliCtx.QueryWithData("/custom/auction/getauctions", nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}
-		rest.PostProcessResponse(w, cdc, res, cliCtx.Indent)
+		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }
 
@@ -57,7 +56,7 @@ func bidHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc 
 		strBid := vars[restBid]
 		strLot := vars[restLot]
 
-		auctionID, err := auction.NewIDFromString(strAuctionID)
+		auctionID, err := types.NewIDFromString(strAuctionID)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -81,8 +80,8 @@ func bidHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc 
 			return
 		}
 
-		msg := auction.NewMsgPlaceBid(auctionID, bidder, bid, lot)
-		clientrest.WriteGenerateStdTxResponse(w, cdc, cliCtx, req.BaseReq, []sdk.Msg{msg})
+		msg := types.NewMsgPlaceBid(auctionID, bidder, bid, lot)
+		utils.WriteGenerateStdTxResponse(w, cliCtx, req.BaseReq, []sdk.Msg{msg})
 
 	}
 }

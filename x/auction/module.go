@@ -5,12 +5,20 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/zar-network/zar-network/x/auction/internal/keeper"
+
+	"github.com/gorilla/mux"
+	"github.com/spf13/cobra"
+
+	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/zar-network/zar-network/x/auction/client/rest"
 )
 
 var (
-	_ sdk.AppModule      = AppModule{}
-	_ sdk.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule      = AppModule{}
+	_ module.AppModuleBasic = AppModuleBasic{}
 )
 
 //  ModuleName name of module
@@ -19,7 +27,7 @@ const ModuleName = "auction"
 // AppModuleBasic app module basics object
 type AppModuleBasic struct{}
 
-var _ sdk.AppModuleBasic = AppModuleBasic{}
+var _ module.AppModuleBasic = AppModuleBasic{}
 
 // Name get module name
 func (AppModuleBasic) Name() string {
@@ -41,10 +49,23 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 	return nil
 }
 
+// RegisterRESTRoutes registers the REST routes for the bank module.
+func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
+	rest.RegisterRoutes(ctx, rtr)
+}
+
+// GetTxCmd returns the root tx command for the bank module.
+func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
+	return cli.GetTxCmd(cdc)
+}
+
+// GetQueryCmd returns no root query command for the bank module.
+func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command { return nil }
+
 // AppModule app module type
 type AppModule struct {
 	AppModuleBasic
-	keeper Keeper
+	keeper keeper.Keeper
 }
 
 // NewAppModule creates a new AppModule object

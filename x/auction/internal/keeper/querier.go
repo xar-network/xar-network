@@ -1,4 +1,4 @@
-package auction
+package keeper
 
 import (
 	"strings"
@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/zar-network/zar-network/x/auction/internal/types"
 )
 
 const (
@@ -32,7 +33,7 @@ func queryAuctions(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res [
 
 	for ; iterator.Valid(); iterator.Next() {
 
-		var auction Auction
+		var auction types.Auction
 		keeper.cdc.MustUnmarshalBinaryBare(iterator.Value(), &auction)
 		AuctionsList = append(AuctionsList, auction.String())
 	}

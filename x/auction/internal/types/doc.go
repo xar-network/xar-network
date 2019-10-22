@@ -11,4 +11,4 @@ TODO
  - user facing things like cli, rest, querier, tags
  - custom error types, codespace
 */
-package auction
+package types

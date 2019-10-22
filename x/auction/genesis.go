@@ -2,6 +2,8 @@ package auction
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/zar-network/zar-network/x/auction/internal/keeper"
 )
 
 // GenesisState - crisis genesis state
@@ -24,6 +26,6 @@ func ValidateGenesis(data GenesisState) error {
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
-func ExportGenesis(ctx sdk.Context, keeper Keeper) GenesisState {
+func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) GenesisState {
 	return NewGenesisState()
 }

@@ -4,13 +4,15 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/zar-network/zar-network/x/auction/internal/keeper"
+	"github.com/zar-network/zar-network/x/auction/internal/types"
 )
 
 // NewHandler returns a function to handle all "auction" type messages.
-func NewHandler(keeper Keeper) sdk.Handler {
+func NewHandler(keeper keeper.Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 		switch msg := msg.(type) {
-		case MsgPlaceBid:
+		case types.MsgPlaceBid:
 			return handleMsgPlaceBid(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized auction msg type: %T", msg)
@@ -19,7 +21,7 @@ func NewHandler(keeper Keeper) sdk.Handler {
 	}
 }
 
-func handleMsgPlaceBid(ctx sdk.Context, keeper Keeper, msg MsgPlaceBid) sdk.Result {
+func handleMsgPlaceBid(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgPlaceBid) sdk.Result {
 
 	err := keeper.PlaceBid(ctx, msg.AuctionID, msg.Bidder, msg.Bid, msg.Lot)
 	if err != nil {

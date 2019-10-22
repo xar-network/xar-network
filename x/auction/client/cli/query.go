@@ -5,8 +5,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/kava-labs/kava-devnet/blockchain/x/auction"
 	"github.com/spf13/cobra"
+	"github.com/zar-network/zar-network/x/auction/internal/keeper"
 )
 
 // GetCmdGetAuctions queries the auctions in the store
@@ -16,12 +16,12 @@ func GetCmdGetAuctions(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		Short: "get a list of active auctions",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			res, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/getauctions", queryRoute), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/getauctions", queryRoute), nil)
 			if err != nil {
 				fmt.Printf("error when getting auctions - %s", err)
 				return nil
 			}
-			var out auction.QueryResAuctions
+			var out keeper.QueryResAuctions
 			cdc.MustUnmarshalJSON(res, &out)
 			if len(out) == 0 {
 				out = append(out, "There are currently no auctions")

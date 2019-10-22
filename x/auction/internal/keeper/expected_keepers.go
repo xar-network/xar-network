@@ -1,4 +1,4 @@
-package auction
+package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
