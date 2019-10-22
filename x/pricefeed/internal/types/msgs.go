@@ -40,7 +40,7 @@ func (msg MsgPostPrice) Type() string { return TypeMsgPostPrice }
 
 // GetSignBytes Implements Msg.
 func (msg MsgPostPrice) GetSignBytes() []byte {
-	bz := moduleCdc.MustMarshalJSON(msg)
+	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }
 

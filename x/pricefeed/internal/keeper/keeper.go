@@ -1,11 +1,11 @@
-package pricefeed
+package keeper
 
 import (
 	"sort"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/zar-network/x/pricefeed/internal/types"
+	"github.com/zar-network/zar-network/x/pricefeed/internal/types"
 )
 
 // Keeper struct for pricefeed module
@@ -28,10 +28,10 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, codespace sdk.CodespaceT
 func (k Keeper) AddOracle(ctx sdk.Context, address string) {
 
 	oracles := k.GetOracles(ctx)
-	oracles = append(oracles, Oracle{OracleAddress: address})
+	oracles = append(oracles, types.Oracle{OracleAddress: address})
 	store := ctx.KVStore(k.storeKey)
 	store.Set(
-		[]byte(OraclePrefix), k.cdc.MustMarshalBinaryBare(oracles),
+		[]byte(types.OraclePrefix), k.cdc.MustMarshalBinaryBare(oracles),
 	)
 }
 
@@ -42,10 +42,10 @@ func (k Keeper) AddAsset(
 	desc string,
 ) {
 	assets := k.GetAssets(ctx)
-	assets = append(assets, Asset{AssetCode: assetCode, Description: desc})
+	assets = append(assets, types.Asset{AssetCode: assetCode, Description: desc})
 	store := ctx.KVStore(k.storeKey)
 	store.Set(
-		[]byte(AssetPrefix), k.cdc.MustMarshalBinaryBare(assets),
+		[]byte(types.AssetPrefix), k.cdc.MustMarshalBinaryBare(assets),
 	)
 }
 
@@ -71,20 +71,20 @@ func (k Keeper) SetPrice(
 		}
 		// set the price for that particular oracle
 		if found {
-			prices[index] = PostedPrice{AssetCode: assetCode, OracleAddress: oracle.String(), Price: price, Expiry: expiry}
+			prices[index] = types.PostedPrice{AssetCode: assetCode, OracleAddress: oracle.String(), Price: price, Expiry: expiry}
 		} else {
-			prices = append(prices, PostedPrice{
+			prices = append(prices, types.PostedPrice{
 				assetCode, oracle.String(), price, expiry,
 			})
 			index = len(prices) - 1
 		}
 
 		store.Set(
-			[]byte(RawPriceFeedPrefix+assetCode), k.cdc.MustMarshalBinaryBare(prices),
+			[]byte(types.RawPriceFeedPrefix+assetCode), k.cdc.MustMarshalBinaryBare(prices),
 		)
 		return prices[index], nil
 	}
-	return PostedPrice{}, ErrExpired(k.codespace)
+	return types.PostedPrice{}, types.ErrExpired(k.codespace)
 
 }
 
@@ -94,11 +94,11 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 	for _, v := range assets {
 		assetCode := v.AssetCode
 		prices := k.GetRawPrices(ctx, assetCode)
-		var notExpiredPrices []CurrentPrice
+		var notExpiredPrices []types.CurrentPrice
 		// filter out expired prices
 		for _, v := range prices {
 			if v.Expiry.GTE(sdk.NewInt(ctx.BlockHeight())) {
-				notExpiredPrices = append(notExpiredPrices, CurrentPrice{
+				notExpiredPrices = append(notExpiredPrices, types.CurrentPrice{
 					AssetCode: v.AssetCode,
 					Price:     v.Price,
 					Expiry:    v.Expiry,
@@ -111,7 +111,7 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 		// TODO make threshold for acceptance (ie. require 51% of oracles to have posted valid prices
 		if l == 0 {
 			// Error if there are no valid prices in the raw pricefeed
-			return ErrNoValidPrice(k.codespace)
+			return types.ErrNoValidPrice(k.codespace)
 		} else if l == 1 {
 			// Return immediately if there's only one price
 			medianPrice = notExpiredPrices[0].Price
@@ -141,13 +141,13 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 		}
 
 		store := ctx.KVStore(k.storeKey)
-		currentPrice := CurrentPrice{
+		currentPrice := types.CurrentPrice{
 			AssetCode: assetCode,
 			Price:     medianPrice,
 			Expiry:    expiry,
 		}
 		store.Set(
-			[]byte(CurrentPricePrefix+assetCode), k.cdc.MustMarshalBinaryBare(currentPrice),
+			[]byte(types.CurrentPricePrefix+assetCode), k.cdc.MustMarshalBinaryBare(currentPrice),
 		)
 	}
 
@@ -155,25 +155,25 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 }
 
 // GetOracles returns the oracles in the pricefeed store
-func (k Keeper) GetOracles(ctx sdk.Context) []Oracle {
+func (k Keeper) GetOracles(ctx sdk.Context) []types.Oracle {
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get([]byte(OraclePrefix))
-	var oracles []Oracle
+	bz := store.Get([]byte(types.OraclePrefix))
+	var oracles []types.Oracle
 	k.cdc.MustUnmarshalBinaryBare(bz, &oracles)
 	return oracles
 }
 
 // GetAssets returns the assets in the pricefeed store
-func (k Keeper) GetAssets(ctx sdk.Context) []Asset {
+func (k Keeper) GetAssets(ctx sdk.Context) []types.Asset {
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get([]byte(AssetPrefix))
-	var assets []Asset
+	bz := store.Get([]byte(types.AssetPrefix))
+	var assets []types.Asset
 	k.cdc.MustUnmarshalBinaryBare(bz, &assets)
 	return assets
 }
 
 // GetAsset returns the asset if it is in the pricefeed system
-func (k Keeper) GetAsset(ctx sdk.Context, assetCode string) (Asset, bool) {
+func (k Keeper) GetAsset(ctx sdk.Context, assetCode string) (types.Asset, bool) {
 	assets := k.GetAssets(ctx)
 
 	for i := range assets {
@@ -181,12 +181,12 @@ func (k Keeper) GetAsset(ctx sdk.Context, assetCode string) (Asset, bool) {
 			return assets[i], true
 		}
 	}
-	return Asset{}, false
+	return types.Asset{}, false
 
 }
 
 // GetOracle returns the oracle address as a string if it is in the pricefeed store
-func (k Keeper) GetOracle(ctx sdk.Context, oracle string) (Oracle, bool) {
+func (k Keeper) GetOracle(ctx sdk.Context, oracle string) (types.Oracle, bool) {
 	oracles := k.GetOracles(ctx)
 
 	for i := range oracles {
@@ -194,40 +194,40 @@ func (k Keeper) GetOracle(ctx sdk.Context, oracle string) (Oracle, bool) {
 			return oracles[i], true
 		}
 	}
-	return Oracle{}, false
+	return types.Oracle{}, false
 
 }
 
 // GetCurrentPrice fetches the current median price of all oracles for a specific asset
-func (k Keeper) GetCurrentPrice(ctx sdk.Context, assetCode string) CurrentPrice {
+func (k Keeper) GetCurrentPrice(ctx sdk.Context, assetCode string) types.CurrentPrice {
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get([]byte(CurrentPricePrefix + assetCode))
+	bz := store.Get([]byte(types.CurrentPricePrefix + assetCode))
 	// TODO panic or return error if not found
-	var price CurrentPrice
+	var price types.CurrentPrice
 	k.cdc.MustUnmarshalBinaryBare(bz, &price)
 	return price
 }
 
 // GetRawPrices fetches the set of all prices posted by oracles for an asset
-func (k Keeper) GetRawPrices(ctx sdk.Context, assetCode string) []PostedPrice {
+func (k Keeper) GetRawPrices(ctx sdk.Context, assetCode string) []types.PostedPrice {
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get([]byte(RawPriceFeedPrefix + assetCode))
-	var prices []PostedPrice
+	bz := store.Get([]byte(types.RawPriceFeedPrefix + assetCode))
+	var prices []types.PostedPrice
 	k.cdc.MustUnmarshalBinaryBare(bz, &prices)
 	return prices
 }
 
 // ValidatePostPrice makes sure the person posting the price is an oracle
-func (k Keeper) ValidatePostPrice(ctx sdk.Context, msg MsgPostPrice) sdk.Error {
+func (k Keeper) ValidatePostPrice(ctx sdk.Context, msg types.MsgPostPrice) sdk.Error {
 	// TODO implement this
 
 	_, assetFound := k.GetAsset(ctx, msg.AssetCode)
 	if !assetFound {
-		return ErrInvalidAsset(k.codespace)
+		return types.ErrInvalidAsset(k.codespace)
 	}
 	_, oracleFound := k.GetOracle(ctx, msg.From.String())
 	if !oracleFound {
-		return ErrInvalidOracle(k.codespace)
+		return types.ErrInvalidOracle(k.codespace)
 	}
 
 	return nil

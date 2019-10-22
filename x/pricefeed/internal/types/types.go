@@ -1,8 +1,57 @@
 package types
 
 import (
+	"fmt"
+	"strings"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+const (
+	// QueryCurrentPrice command for current price queries
+	QueryCurrentPrice = "price"
+	// QueryRawPrices command for raw price queries
+	QueryRawPrices = "rawprices"
+	// QueryAssets command for assets query
+	QueryAssets = "assets"
+)
+
+// implement fmt.Stringer
+func (cp CurrentPrice) String() string {
+	return strings.TrimSpace(fmt.Sprintf(`AssetCode: %s
+Price: %s
+Expiry: %s`, cp.AssetCode, cp.Price, cp.Expiry))
+}
+
+// implement fmt.Stringer
+func (pp PostedPrice) String() string {
+	return strings.TrimSpace(fmt.Sprintf(`AssetCode: %s
+OracleAddress: %s
+Price: %s
+Expiry: %s`, pp.AssetCode, pp.OracleAddress, pp.Price, pp.Expiry))
+}
+
+// implement fmt.Stringer
+func (a Asset) String() string {
+	return strings.TrimSpace(fmt.Sprintf(`AssetCode: %s
+Description: %s`, a.AssetCode, a.Description))
+}
+
+// QueryRawPricesResp response to a rawprice query
+type QueryRawPricesResp []string
+
+// implement fmt.Stringer
+func (n QueryRawPricesResp) String() string {
+	return strings.Join(n[:], "\n")
+}
+
+// QueryAssetsResp response to a assets query
+type QueryAssetsResp []string
+
+// implement fmt.Stringer
+func (n QueryAssetsResp) String() string {
+	return strings.Join(n[:], "\n")
+}
 
 // Asset struct that represents an asset in the pricefeed
 type Asset struct {

@@ -1,11 +1,14 @@
 package pricefeed
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/zar-network/zar-network/x/pricefeed/internal/types"
+)
 
 // GenesisState state at gensis
 type GenesisState struct {
-	Assets  []Asset
-	Oracles []Oracle
+	Assets  []types.Asset
+	Oracles []types.Oracle
 }
 
 // InitGenesis sets distribution information for genesis.
@@ -22,8 +25,8 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, genState GenesisState) {
 // DefaultGenesisState returns a default genesis state
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		[]Asset{{"btc", "a description"}, {"xrp", "the standard"}},
-		[]Oracle{}}
+		[]types.Asset{{"btc", "a description"}, {"xrp", "the standard"}},
+		[]types.Oracle{}}
 }
 
 // ValidateGenesis performs basic validation of genesis data returning an

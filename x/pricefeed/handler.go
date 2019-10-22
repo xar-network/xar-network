@@ -4,13 +4,14 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/zar-network/zar-network/x/pricefeed/internal/types"
 )
 
 // NewHandler handles all pricefeed type messages
 func NewHandler(k Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 		switch msg := msg.(type) {
-		case MsgPostPrice:
+		case types.MsgPostPrice:
 			return HandleMsgPostPrice(ctx, k, msg)
 		default:
 			errMsg := fmt.Sprintf("unrecognized pricefeed message type: %T", msg)
@@ -26,7 +27,7 @@ func NewHandler(k Keeper) sdk.Handler {
 func HandleMsgPostPrice(
 	ctx sdk.Context,
 	k Keeper,
-	msg MsgPostPrice) sdk.Result {
+	msg types.MsgPostPrice) sdk.Result {
 
 	// TODO cleanup message validation and errors
 	err := k.ValidatePostPrice(ctx, msg)
@@ -38,7 +39,7 @@ func HandleMsgPostPrice(
 }
 
 // EndBlocker updates the current pricefeed
-func EndBlocker(ctx sdk.Context, k Keeper) sdk.Tags {
+func EndBlocker(ctx sdk.Context, k Keeper) sdk.Result {
 	// TODO val_state_change.go is relevant if we want to rotate the oracle set
 
 	// Running in the end blocker ensures that prices will update at most once per block,
@@ -46,5 +47,5 @@ func EndBlocker(ctx sdk.Context, k Keeper) sdk.Tags {
 	// which occur during a block
 	//TODO use an iterator and update the prices for all assets in the store
 	k.SetCurrentPrices(ctx)
-	return sdk.Tags{}
+	return sdk.Result{Events: ctx.EventManager().Events()}
 }
