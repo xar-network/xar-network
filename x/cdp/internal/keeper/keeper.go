@@ -418,7 +418,7 @@ func (k Keeper) GetLiquidatorAccountAddress() sdk.AccAddress {
 }
 
 type LiquidatorModuleAccount struct {
-	Coins sdk.Coins // keeps track of seized collateral, surplus usdx, and mints/burns gov coins
+	Coins sdk.Coins // keeps track of seized collateral, surplus ftg, and mints/burns gov coins
 }
 
 func (k Keeper) AddCoins(ctx sdk.Context, address sdk.AccAddress, amount sdk.Coins) (sdk.Coins, sdk.Error) {

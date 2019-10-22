@@ -3,7 +3,7 @@ Package Liquidator settles bad debt from undercollateralized CDPs by seizing the
 
 Notes
  - Missing the debt queue thing from Vow
- - seized collateral and usdx are stored in the module account, but debt (aka Sin) is stored in keeper
+ - seized collateral and ftg are stored in the module account, but debt (aka Sin) is stored in keeper
  - The boundary between the liquidator and the cdp modules is messy.
 	- The CDP type is used in liquidator
 	- cdp knows about seizing
