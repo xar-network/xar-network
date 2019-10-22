@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/zar-network/zar-network/x/auction/client/cli"
 	"github.com/zar-network/zar-network/x/auction/internal/keeper"
 
 	"github.com/gorilla/mux"
@@ -20,9 +21,6 @@ var (
 	_ module.AppModule      = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
 )
-
-//  ModuleName name of module
-const ModuleName = "auction"
 
 // AppModuleBasic app module basics object
 type AppModuleBasic struct{}
@@ -41,7 +39,7 @@ func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 
 // DefaultGenesis default genesis state
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
-	return moduleCdc.MustMarshalJSON(DefaultGenesisState())
+	return ModuleCdc.MustMarshalJSON(DefaultGenesisState())
 }
 
 // ValidateGenesis module validate genesis
@@ -82,7 +80,7 @@ func (AppModule) Name() string {
 }
 
 // RegisterInvariants register module invariants
-func (AppModule) RegisterInvariants(_ sdk.InvariantRouter) {}
+func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
 // Route module message route name
 func (AppModule) Route() string {
@@ -101,7 +99,7 @@ func (AppModule) QuerierRoute() string {
 
 // NewQuerierHandler module querier
 func (am AppModule) NewQuerierHandler() sdk.Querier {
-	return NewQuerier(am.keeper)
+	return keeper.NewQuerier(am.keeper)
 }
 
 // InitGenesis module init-genesis
@@ -112,16 +110,14 @@ func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Va
 // ExportGenesis module export genesis
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 	gs := ExportGenesis(ctx, am.keeper)
-	return moduleCdc.MustMarshalJSON(gs)
+	return ModuleCdc.MustMarshalJSON(gs)
 }
 
-// BeginBlock module begin-block
-func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) sdk.Tags {
-	return sdk.EmptyTags()
-}
+// BeginBlock performs a no-op.
+func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
-// EndBlock module end-block
-func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) ([]abci.ValidatorUpdate, sdk.Tags) {
-	tags := EndBlocker(ctx, am.keeper)
-	return []abci.ValidatorUpdate{}, tags
+// EndBlock returns the end blocker for the bank module. It returns no validator
+// updates.
+func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	return []abci.ValidatorUpdate{}
 }

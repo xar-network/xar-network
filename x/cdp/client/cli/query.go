@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 
-	"github.com/kava-labs/kava-devnet/blockchain/x/cdp"
+	"github.com/zar-network/zar-network/x/cdp"
 )
 
 // GetCmd_GetCdp queries the latest info about a particular cdp

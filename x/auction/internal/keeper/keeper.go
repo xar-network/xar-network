@@ -9,27 +9,11 @@ import (
 	"github.com/zar-network/zar-network/x/auction/internal/types"
 )
 
-var _ Keeper = (*BaseKeeper)(nil)
-
 type Keeper struct {
 	bankKeeper bankKeeper
 	storeKey   sdk.StoreKey
 	cdc        *codec.Codec
 	// TODO codespace
-}
-
-
-// Issue Keeper
-type BaseKeeper struct {
-	// The reference to the Paramstore to get and set issue specific params
-	paramSpace params.Subspace
-	// The (unexposed) keys used to access the stores from the Context.
-	storeKey sdk.StoreKey
-	// The reference to the CoinKeeper to modify balances
-	ck BankKeeper
-
-	// Reserved codespace
-	codespace sdk.CodespaceType
 }
 
 // NewKeeper returns a new auction keeper.

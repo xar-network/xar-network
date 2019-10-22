@@ -1,14 +1,12 @@
 package auction
 
 import (
-	"github.com/zar-network/zar-network/x/auction/client/cli"
 	"github.com/zar-network/zar-network/x/auction/internal/keeper"
 	"github.com/zar-network/zar-network/x/auction/internal/types"
 )
 
 type (
-	BaseKeeper = keeper.BaseKeeper // ibc module depends on this
-	Keeper     = keeper.Keeper
+	Keeper = keeper.Keeper
 )
 
 const (
@@ -20,10 +18,7 @@ const (
 )
 
 var (
-	ModuleCdc = types.ModuleCdc
-	NewKeeper = keeper.NewKeeper
-	//GetAccountCmd   = cli.GetAccountCmd
-	QueryCmd      = cli.QueryCmd
+	ModuleCdc     = types.ModuleCdc
+	NewKeeper     = keeper.NewKeeper
 	RegisterCodec = types.RegisterCodec
-	DefaultParams = types.DefaultParams
 )

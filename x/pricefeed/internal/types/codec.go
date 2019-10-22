@@ -1,4 +1,4 @@
-package pricefeed
+package types
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -10,7 +10,7 @@ func RegisterCodec(cdc *codec.Codec) {
 }
 
 // generic sealed codec to be used throughout module
-var moduleCdc *codec.Codec
+var ModuleCdc *codec.Codec
 
 func init() {
 	cdc := codec.New()

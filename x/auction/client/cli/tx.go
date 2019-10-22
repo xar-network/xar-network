@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -11,6 +12,22 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/zar-network/zar-network/x/auction/internal/types"
 )
+
+// GetTxCmd returns the transaction commands for this module
+func GetTxCmd(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:                        types.ModuleName,
+		Short:                      "Auction transaction subcommands",
+		DisableFlagParsing:         true,
+		SuggestionsMinimumDistance: 2,
+		RunE:                       client.ValidateCmd,
+	}
+	cmd.AddCommand(
+		GetCmdPlaceBid(cdc),
+	)
+
+	return cmd
+}
 
 // GetCmdPlaceBid cli command for creating and modifying cdps.
 func GetCmdPlaceBid(cdc *codec.Codec) *cobra.Command {

@@ -2,10 +2,11 @@ package pricefeed
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"strings"
 )
 
 // price Takes an [assetcode] and returns CurrentPrice for that asset
