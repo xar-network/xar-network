@@ -5,7 +5,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
 
-	"github.com/kava-labs/kava-devnet/blockchain/x/auction"
+	"github.com/zar-network/zar-network/x/auction"
+	"github.com/zar-network/zar-network/x/liquidator/internal/types"
 )
 
 type Keeper struct {
@@ -18,7 +19,7 @@ type Keeper struct {
 }
 
 func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace, cdpKeeper cdpKeeper, auctionKeeper auctionKeeper, bankKeeper bankKeeper) Keeper {
-	subspace = subspace.WithKeyTable(createParamsKeyTable())
+	subspace = subspace.WithKeyTable(types.CreateParamsKeyTable())
 	return Keeper{
 		cdc:            cdc,
 		paramsSubspace: subspace,
@@ -172,15 +173,15 @@ func (k Keeper) settleDebt(ctx sdk.Context) sdk.Error {
 
 // ---------- Module Parameters ----------
 
-func (k Keeper) GetParams(ctx sdk.Context) LiquidatorModuleParams {
-	var params LiquidatorModuleParams
-	k.paramsSubspace.Get(ctx, moduleParamsKey, &params)
+func (k Keeper) GetParams(ctx sdk.Context) types.LiquidatorModuleParams {
+	var params types.LiquidatorModuleParams
+	k.paramsSubspace.Get(ctx, types.ModuleParamsKey, &params)
 	return params
 }
 
 // This is only needed to be able to setup the store from the genesis file. The keeper should not change any of the params itself.
-func (k Keeper) setParams(ctx sdk.Context, params LiquidatorModuleParams) {
-	k.paramsSubspace.Set(ctx, moduleParamsKey, &params)
+func (k Keeper) setParams(ctx sdk.Context, params types.LiquidatorModuleParams) {
+	k.paramsSubspace.Set(ctx, types.ModuleParamsKey, &params)
 }
 
 // ---------- Store Wrappers ----------
@@ -188,18 +189,18 @@ func (k Keeper) setParams(ctx sdk.Context, params LiquidatorModuleParams) {
 func (k Keeper) getSeizedDebtKey() []byte {
 	return []byte("seizedDebt")
 }
-func (k Keeper) GetSeizedDebt(ctx sdk.Context) SeizedDebt {
+func (k Keeper) GetSeizedDebt(ctx sdk.Context) types.SeizedDebt {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(k.getSeizedDebtKey())
 	if bz == nil {
 		// TODO make initial seized debt and CDPs configurable at genesis, then panic here if not found
-		bz = k.cdc.MustMarshalBinaryLengthPrefixed(SeizedDebt{sdk.ZeroInt(), sdk.ZeroInt()})
+		bz = k.cdc.MustMarshalBinaryLengthPrefixed(types.SeizedDebt{sdk.ZeroInt(), sdk.ZeroInt()})
 	}
-	var seizedDebt SeizedDebt
+	var seizedDebt types.SeizedDebt
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &seizedDebt)
 	return seizedDebt
 }
-func (k Keeper) setSeizedDebt(ctx sdk.Context, debt SeizedDebt) {
+func (k Keeper) setSeizedDebt(ctx sdk.Context, debt types.SeizedDebt) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(debt)
 	store.Set(k.getSeizedDebtKey(), bz)

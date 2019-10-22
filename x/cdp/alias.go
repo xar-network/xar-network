@@ -7,6 +7,7 @@ import (
 
 type (
 	Keeper = keeper.Keeper
+	CDP    = types.CDP
 )
 
 const (

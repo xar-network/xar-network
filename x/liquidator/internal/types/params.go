@@ -26,11 +26,11 @@ type CollateralParams struct {
 	// LiquidationPenalty
 }
 
-var moduleParamsKey = []byte("LiquidatorModuleParams")
+var ModuleParamsKey = []byte("LiquidatorModuleParams")
 
-func createParamsKeyTable() params.KeyTable {
+func CreateParamsKeyTable() params.KeyTable {
 	return params.NewKeyTable(
-		moduleParamsKey, LiquidatorModuleParams{},
+		ModuleParamsKey, LiquidatorModuleParams{},
 	)
 }
 

@@ -7,6 +7,7 @@ import (
 
 type (
 	Keeper = keeper.Keeper
+	ID     = types.ID
 )
 
 const (
