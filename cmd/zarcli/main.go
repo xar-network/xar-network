@@ -22,14 +22,11 @@ import (
 	issuecmd "github.com/zar-network/zar-network/x/issue/client/cli"
 	issuerest "github.com/zar-network/zar-network/x/issue/client/rest"
 
-	auctionclient "github.com/zar-network/zar-network/x/auction/client"
-auctionrest "github.com/zar-network/zar-network/x/auction/client/rest"
-cdpclient "github.com/zar-network/zar-network/x/cdp/client"
-cdprest "github.com/zar-network/zar-network/x/cdp/client/rest"
-liquidatorclient "github.com/zar-network/zar-network/x/liquidator/client"
-liquidatorrest "github.com/zar-network/zar-network/x/liquidator/client/rest"
-priceclient "github.com/zar-network/zar-network/x/pricefeed/client"
-pricerest "github.com/zar-network/zar-network/x/pricefeed/client/rest"
+	auctionrest "github.com/zar-network/zar-network/x/auction/client/rest"
+	cdprest "github.com/zar-network/zar-network/x/cdp/client/rest"
+	liquidatorrest "github.com/zar-network/zar-network/x/liquidator/client/rest"
+	pricefeed "github.com/zar-network/zar-network/x/pricefeed"
+	pricerest "github.com/zar-network/zar-network/x/pricefeed/client/rest"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -181,10 +178,10 @@ func registerRoutes(rs *lcd.RestServer) {
 
 	issuerest.RegisterRoutes(rs.CliCtx, rs.Mux)
 	nftrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec, nft.StoreKey)
-	pricerest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec, pricefeed.StoreKey)
-auctionrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec)
-cdprest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec)
-liquidatorrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec)
+	pricerest.RegisterRoutes(rs.CliCtx, rs.Mux, pricefeed.StoreKey)
+	auctionrest.RegisterRoutes(rs.CliCtx, rs.Mux)
+	cdprest.RegisterRoutes(rs.CliCtx, rs.Mux)
+	liquidatorrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec)
 
 	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
