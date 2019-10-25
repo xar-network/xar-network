@@ -10,15 +10,17 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/zar-network/zar-network/x/liquidator/internal/keeper"
+	"github.com/zar-network/zar-network/x/liquidator/internal/types"
 )
 
 // Handle all liquidator messages.
-func NewHandler(keeper Keeper) sdk.Handler {
+func NewHandler(keeper keeper.Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 		switch msg := msg.(type) {
-		case MsgSeizeAndStartCollateralAuction:
+		case types.MsgSeizeAndStartCollateralAuction:
 			return handleMsgSeizeAndStartCollateralAuction(ctx, keeper, msg)
-		case MsgStartDebtAuction:
+		case types.MsgStartDebtAuction:
 			return handleMsgStartDebtAuction(ctx, keeper)
 		// case MsgStartSurplusAuction:
 		// 	return handleMsgStartSurplusAuction(ctx, keeper)
@@ -29,7 +31,7 @@ func NewHandler(keeper Keeper) sdk.Handler {
 	}
 }
 
-func handleMsgSeizeAndStartCollateralAuction(ctx sdk.Context, keeper Keeper, msg MsgSeizeAndStartCollateralAuction) sdk.Result {
+func handleMsgSeizeAndStartCollateralAuction(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSeizeAndStartCollateralAuction) sdk.Result {
 	_, err := keeper.SeizeAndStartCollateralAuction(ctx, msg.CdpOwner, msg.CollateralDenom)
 	if err != nil {
 		return err.Result()
@@ -37,9 +39,9 @@ func handleMsgSeizeAndStartCollateralAuction(ctx sdk.Context, keeper Keeper, msg
 	return sdk.Result{} // TODO tags, return auction ID
 }
 
-func handleMsgStartDebtAuction(ctx sdk.Context, keeper Keeper) sdk.Result {
+func handleMsgStartDebtAuction(ctx sdk.Context, keeper keeper.Keeper) sdk.Result {
 	// cancel out any debt and stable coins before trying to start auction
-	keeper.settleDebt(ctx)
+	keeper.SettleDebt(ctx)
 	// start an auction
 	_, err := keeper.StartDebtAuction(ctx)
 	if err != nil {

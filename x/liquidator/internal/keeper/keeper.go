@@ -147,7 +147,7 @@ func (k Keeper) partialSeizeCDP(ctx sdk.Context, owner sdk.AccAddress, collatera
 // SettleDebt removes equal amounts of debt and stable coin from the liquidator's reserves (and also updates the global debt in the cdp module).
 // This is called in the handler when a debt or surplus auction is started
 // TODO Should this be called with an amount, rather than annihilating the maximum?
-func (k Keeper) settleDebt(ctx sdk.Context) sdk.Error {
+func (k Keeper) SettleDebt(ctx sdk.Context) sdk.Error {
 	// Calculate max amount of debt and stable coins that can be settled (ie annihilated)
 	debt := k.GetSeizedDebt(ctx)
 	stableCoins := k.bankKeeper.GetCoins(ctx, k.cdpKeeper.GetLiquidatorAccountAddress()).AmountOf(k.cdpKeeper.GetStableDenom())
@@ -180,7 +180,7 @@ func (k Keeper) GetParams(ctx sdk.Context) types.LiquidatorModuleParams {
 }
 
 // This is only needed to be able to setup the store from the genesis file. The keeper should not change any of the params itself.
-func (k Keeper) setParams(ctx sdk.Context, params types.LiquidatorModuleParams) {
+func (k Keeper) SetParams(ctx sdk.Context, params types.LiquidatorModuleParams) {
 	k.paramsSubspace.Set(ctx, types.ModuleParamsKey, &params)
 }
 

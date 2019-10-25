@@ -1,10 +1,4 @@
-/**
-
-Baseline from Kava Cosmos Module
-
-**/
-
-package liquidator
+package compound
 
 import (
 	"encoding/json"
@@ -14,13 +8,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/zar-network/zar-network/x/cdp/client/cli"
-	"github.com/zar-network/zar-network/x/liquidator/internal/keeper"
+	"github.com/zar-network/zar-network/x/cdp/internal/keeper"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/zar-network/zar-network/x/cdp/client/rest"
+	"github.com/zar-network/zar-network/x/compound/client/rest"
 )
 
 var (
@@ -78,7 +72,7 @@ type AppModule struct {
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper keeper.Keeper) AppModule {
+func NewAppModule(keeper Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,

@@ -28,7 +28,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
+	"github.com/cosmos/modules/incubator/nft"
+	"github.com/zar-network/zar-network/x/auction"
+	"github.com/zar-network/zar-network/x/cdp"
 	"github.com/zar-network/zar-network/x/issue"
+	"github.com/zar-network/zar-network/x/liquidator"
+	"github.com/zar-network/zar-network/x/pricefeed"
 )
 
 const appName = "ZarApp"
@@ -56,6 +61,11 @@ var (
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		issue.AppModuleBasic{},
+		nft.AppModuleBasic{},
+		auction.AppModuleBasic{},
+		cdp.AppModuleBasic{},
+		liquidator.AppModuleBasic{},
+		pricefeed.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -104,7 +114,13 @@ type ZarApp struct {
 	govKeeper      gov.Keeper
 	crisisKeeper   crisis.Keeper
 	paramsKeeper   params.Keeper
-	issueKeeper    issue.Keeper
+
+	// app specific keepers
+	auctionKeeper    auction.Keeper
+	cdpKeeper        cdp.Keeper
+	liquidatorKeeper liquidator.Keeper
+	pricefeedKeeper  pricefeed.Keeper
+	issueKeeper      issue.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -113,7 +129,7 @@ type ZarApp struct {
 	sm *module.SimulationManager
 }
 
-// NewGaiaApp returns a reference to an initialized GaiaApp.
+// NewZarApp returns a reference to an initialized ZarApp.
 func NewZarApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
@@ -127,7 +143,9 @@ func NewZarApp(
 
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
 		supply.StoreKey, mint.StoreKey, distr.StoreKey, slashing.StoreKey,
-		gov.StoreKey, params.StoreKey, issue.StoreKey)
+		gov.StoreKey, params.StoreKey, issue.StoreKey, pricefeed.StoreKey,
+		auction.StoreKey, cdp.StoreKey, liquidator.StoreKey,
+	)
 
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
@@ -150,6 +168,8 @@ func NewZarApp(
 	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
 	issueSubspace := app.paramsKeeper.Subspace(issue.DefaultParamspace)
+	cdpSubspace := app.paramsKeeper.Subspace(cdp.DefaultParamspace)
+	liquidatorSubspace := app.paramsKeeper.Subspace(liquidator.DefaultParamspace)
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
@@ -165,7 +185,29 @@ func NewZarApp(
 		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace, slashing.DefaultCodespace,
 	)
 	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
+
 	app.issueKeeper = issue.NewKeeper(keys[issue.StoreKey], issueSubspace, app.bankKeeper, issue.DefaultCodespace)
+	app.pricefeedKeeper = pricefeed.NewKeeper(keys[pricefeed.StoreKey], app.cdc, pricefeed.DefaultCodeSpace)
+	app.cdpKeeper = cdp.NewKeeper(
+		app.cdc,
+		keys[cdp.StoreKey],
+		cdpSubspace,
+		app.pricefeedKeeper,
+		app.bankKeeper,
+	)
+	app.auctionKeeper = auction.NewKeeper(
+		app.cdc,
+		app.cdpKeeper, // CDP keeper standing in for bank
+		keys[auction.StoreKey],
+	)
+	app.liquidatorKeeper = liquidator.NewKeeper(
+		app.cdc,
+		keys[liquidator.StoreKey],
+		liquidatorSubspace,
+		app.cdpKeeper,
+		app.auctionKeeper,
+		app.cdpKeeper, // CDP keeper standing in for bank
+	)
 
 	// register the proposal types
 	govRouter := gov.NewRouter()
@@ -192,9 +234,14 @@ func NewZarApp(
 		distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
 		gov.NewAppModule(app.govKeeper, app.supplyKeeper),
 		mint.NewAppModule(app.mintKeeper),
-		issue.NewAppModule(app.issueKeeper, app.accountKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
+
+		issue.NewAppModule(app.issueKeeper, app.accountKeeper),
+		auction.NewAppModule(app.auctionKeeper),
+		cdp.NewAppModule(app.cdpKeeper),
+		liquidator.NewAppModule(app.liquidatorKeeper),
+		pricefeed.NewAppModule(app.pricefeedKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -202,7 +249,7 @@ func NewZarApp(
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
 
-	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName)
+	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName, pricefeed.ModuleName)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -210,6 +257,7 @@ func NewZarApp(
 		distr.ModuleName, staking.ModuleName, auth.ModuleName, bank.ModuleName,
 		slashing.ModuleName, gov.ModuleName, mint.ModuleName, supply.ModuleName,
 		crisis.ModuleName, issue.ModuleName, genutil.ModuleName,
+		auction.ModuleName, cdp.ModuleName, liquidator.ModuleName, pricefeed.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.crisisKeeper)
@@ -228,6 +276,14 @@ func NewZarApp(
 		distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
+
+		issue.NewAppModule(app.issueKeeper, app.accountKeeper),
+
+		// TODO: Add simulation keepers
+		/*auction.NewAppModule(app.auctionKeeper),
+		cdp.NewAppModule(app.cdpKeeper),
+		liquidator.NewAppModule(app.liquidatorKeeper),
+		pricefeed.NewAppModule(app.pricefeedKeeper),*/
 	)
 
 	app.sm.RegisterStoreDecoders()

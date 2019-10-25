@@ -4,21 +4,18 @@ Baseline from Kava Cosmos Module
 
 **/
 
-package pricefeed
+package liquidator
 
 import (
-	"github.com/zar-network/zar-network/x/pricefeed/internal/keeper"
-	"github.com/zar-network/zar-network/x/pricefeed/internal/types"
+	"github.com/zar-network/zar-network/x/liquidator/internal/keeper"
+	"github.com/zar-network/zar-network/x/liquidator/internal/types"
 )
 
 type (
-	Keeper       = keeper.Keeper
-	CurrentPrice = types.CurrentPrice
-	PostedPrice  = types.PostedPrice
+	Keeper = keeper.Keeper
 )
 
 const (
-	DefaultCodespace  = types.DefaultCodespace
 	ModuleName        = types.ModuleName
 	RouterKey         = types.RouterKey
 	QuerierRoute      = types.QuerierRoute

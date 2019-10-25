@@ -41,7 +41,7 @@ func (msg MsgSeizeAndStartCollateralAuction) ValidateBasic() sdk.Error {
 
 // GetSignBytes gets the canonical byte representation of the Msg.
 func (msg MsgSeizeAndStartCollateralAuction) GetSignBytes() []byte {
-	bz := moduleCdc.MustMarshalJSON(msg)
+	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }
 
@@ -63,7 +63,7 @@ func (msg MsgStartDebtAuction) ValidateBasic() sdk.Error {
 	return nil
 }
 func (msg MsgStartDebtAuction) GetSignBytes() []byte {
-	return sdk.MustSortJSON(moduleCdc.MustMarshalJSON(msg))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 func (msg MsgStartDebtAuction) GetSigners() []sdk.AccAddress { return []sdk.AccAddress{msg.Sender} }
 
