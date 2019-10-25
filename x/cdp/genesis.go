@@ -31,7 +31,17 @@ func DefaultGenesisState() GenesisState {
 					DebtLimit:        sdk.NewInt(500000),
 				},
 				{
-					Denom:            "xrp",
+					Denom:            "bnb",
+					LiquidationRatio: sdk.MustNewDecFromStr("2.0"),
+					DebtLimit:        sdk.NewInt(500000),
+				},
+				{
+					Denom:            "eth",
+					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
+					DebtLimit:        sdk.NewInt(500000),
+				},
+				{
+					Denom:            "ftm",
 					LiquidationRatio: sdk.MustNewDecFromStr("2.0"),
 					DebtLimit:        sdk.NewInt(500000),
 				},
