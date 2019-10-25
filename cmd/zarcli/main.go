@@ -22,6 +22,15 @@ import (
 	issuecmd "github.com/zar-network/zar-network/x/issue/client/cli"
 	issuerest "github.com/zar-network/zar-network/x/issue/client/rest"
 
+	auctionclient "github.com/zar-network/zar-network/x/auction/client"
+auctionrest "github.com/zar-network/zar-network/x/auction/client/rest"
+cdpclient "github.com/zar-network/zar-network/x/cdp/client"
+cdprest "github.com/zar-network/zar-network/x/cdp/client/rest"
+liquidatorclient "github.com/zar-network/zar-network/x/liquidator/client"
+liquidatorrest "github.com/zar-network/zar-network/x/liquidator/client/rest"
+priceclient "github.com/zar-network/zar-network/x/pricefeed/client"
+pricerest "github.com/zar-network/zar-network/x/pricefeed/client/rest"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -99,7 +108,9 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		rpc.BlockCommand(),
 		authcmd.QueryTxsByEventsCmd(cdc),
 		authcmd.QueryTxCmd(cdc),
+		client.LineBreak,
 		nftcmd.GetQueryCmd(nft.StoreKey, cdc),
+		client.LineBreak,
 		issuecmd.QueryCmd(cdc),
 		issuecmd.QueryIssueCmd(cdc),
 		issuecmd.QueryFreezeCmd(cdc),
@@ -167,8 +178,14 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
+
 	issuerest.RegisterRoutes(rs.CliCtx, rs.Mux)
 	nftrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec, nft.StoreKey)
+	pricerest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec, pricefeed.StoreKey)
+auctionrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec)
+cdprest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec)
+liquidatorrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec)
+
 	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
 

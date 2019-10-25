@@ -122,6 +122,8 @@ type ZarApp struct {
 	pricefeedKeeper  pricefeed.Keeper
 	issueKeeper      issue.Keeper
 
+	NFTKeeper nft.Keeper
+
 	// the module manager
 	mm *module.Manager
 
@@ -144,7 +146,7 @@ func NewZarApp(
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
 		supply.StoreKey, mint.StoreKey, distr.StoreKey, slashing.StoreKey,
 		gov.StoreKey, params.StoreKey, issue.StoreKey, pricefeed.StoreKey,
-		auction.StoreKey, cdp.StoreKey, liquidator.StoreKey,
+		auction.StoreKey, cdp.StoreKey, liquidator.StoreKey, nft.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -167,6 +169,7 @@ func NewZarApp(
 	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
+
 	issueSubspace := app.paramsKeeper.Subspace(issue.DefaultParamspace)
 	cdpSubspace := app.paramsKeeper.Subspace(cdp.DefaultParamspace)
 	liquidatorSubspace := app.paramsKeeper.Subspace(liquidator.DefaultParamspace)
@@ -186,8 +189,9 @@ func NewZarApp(
 	)
 	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
 
+	app.NFTKeeper = nft.NewKeeper(app.cdc, keys[nft.StoreKey])
 	app.issueKeeper = issue.NewKeeper(keys[issue.StoreKey], issueSubspace, app.bankKeeper, issue.DefaultCodespace)
-	app.pricefeedKeeper = pricefeed.NewKeeper(keys[pricefeed.StoreKey], app.cdc, pricefeed.DefaultCodeSpace)
+	app.pricefeedKeeper = pricefeed.NewKeeper(keys[pricefeed.StoreKey], app.cdc, pricefeed.DefaultCodespace)
 	app.cdpKeeper = cdp.NewKeeper(
 		app.cdc,
 		keys[cdp.StoreKey],
@@ -237,6 +241,7 @@ func NewZarApp(
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
 
+		nft.NewAppModule(app.NFTKeeper),
 		issue.NewAppModule(app.issueKeeper, app.accountKeeper),
 		auction.NewAppModule(app.auctionKeeper),
 		cdp.NewAppModule(app.cdpKeeper),
@@ -256,8 +261,9 @@ func NewZarApp(
 	app.mm.SetOrderInitGenesis(
 		distr.ModuleName, staking.ModuleName, auth.ModuleName, bank.ModuleName,
 		slashing.ModuleName, gov.ModuleName, mint.ModuleName, supply.ModuleName,
-		crisis.ModuleName, issue.ModuleName, genutil.ModuleName,
+		crisis.ModuleName, issue.ModuleName,
 		auction.ModuleName, cdp.ModuleName, liquidator.ModuleName, pricefeed.ModuleName,
+		nft.ModuleName, genutil.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.crisisKeeper)
@@ -280,10 +286,15 @@ func NewZarApp(
 		issue.NewAppModule(app.issueKeeper, app.accountKeeper),
 
 		// TODO: Add simulation keepers
-		/*auction.NewAppModule(app.auctionKeeper),
-		cdp.NewAppModule(app.cdpKeeper),
-		liquidator.NewAppModule(app.liquidatorKeeper),
-		pricefeed.NewAppModule(app.pricefeedKeeper),*/
+		/*
+
+			auction.NewAppModule(app.auctionKeeper),
+			cdp.NewAppModule(app.cdpKeeper),
+			liquidator.NewAppModule(app.liquidatorKeeper),
+			pricefeed.NewAppModule(app.pricefeedKeeper),
+			nft.NewAppModule(app.NFTKeeper),
+
+		*/
 	)
 
 	app.sm.RegisterStoreDecoders()
