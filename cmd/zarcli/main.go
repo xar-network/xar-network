@@ -28,6 +28,12 @@ import (
 	pricefeed "github.com/zar-network/zar-network/x/pricefeed"
 	pricerest "github.com/zar-network/zar-network/x/pricefeed/client/rest"
 
+	auctioncmd "github.com/zar-network/zar-network/x/auction/client/cli"
+	cdpcmd "github.com/zar-network/zar-network/x/cdp/client/cli"
+	liquidatorcmd "github.com/zar-network/zar-network/x/liquidator/client/cli"
+	pricefeedcmd "github.com/zar-network/zar-network/x/pricefeed/client/cli"
+	uniswapcmd "github.com/zar-network/zar-network/x/uniswap/client/cli"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -139,16 +145,15 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 		authcmd.GetBroadcastCommand(cdc),
 		authcmd.GetEncodeCommand(cdc),
-		nftcmd.GetTxCmd(nft.StoreKey, cdc),
-		issuecmd.GetCmdIssueBurn(cdc),
-		issuecmd.GetCmdIssueFreeze(cdc),
-		issuecmd.GetCmdIssueApprove(cdc),
-		issuecmd.GetCmdIssueBurnFrom(cdc),
-		issuecmd.GetCmdIssueSendFrom(cdc),
-		issuecmd.GetCmdIssueUnFreeze(cdc),
-		issuecmd.GetCmdIssueDecreaseApproval(cdc),
-		issuecmd.GetCmdIssueIncreaseApproval(cdc),
 		authcmd.GetDecodeCommand(cdc),
+		client.LineBreak,
+		nftcmd.GetTxCmd(nft.StoreKey, cdc),
+		issuecmd.GetTxCmd(cdc),
+		auctioncmd.GetTxCmd(cdc),
+		cdpcmd.GetTxCmd(cdc),
+		liquidatorcmd.GetTxCmd(cdc),
+		pricefeedcmd.GetTxCmd(cdc),
+		uniswapcmd.GetTxCmd(cdc),
 		client.LineBreak,
 	)
 

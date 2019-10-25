@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -10,6 +11,22 @@ import (
 
 	"github.com/spf13/cobra"
 )
+
+// GetTxCmd returns the transaction commands for this module
+func GetTxCmd(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:                        swap.ModuleName,
+		Short:                      "swap subcommands",
+		DisableFlagParsing:         true,
+		SuggestionsMinimumDistance: 2,
+		RunE:                       client.ValidateCmd,
+	}
+	cmd.AddCommand(
+		GetSwapTxCmd(cdc),
+	)
+
+	return cmd
+}
 
 func GetSwapTxCmd(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{

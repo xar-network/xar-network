@@ -35,12 +35,20 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 		IssueDescriptionCmd(cdc),
 		IssueMintCmd(cdc),
 		IssueDisableFeatureCmd(cdc),
+		IssueFreezeCmd(cdc),
+		IssueUnFreeCmd(cdc),
+		IssueBurnCmd(cdc),
+		IssueBurnFromCmd(cdc),
+		IssueSendFromCmd(cdc),
+		IssueApproveCmd(cdc),
+		IssueIncreaseApprovalCmd(cdc),
+		IssueDecreaseApprovalCmd(cdc),
 	)
 
 	return issueCmd
 }
 
-// GetIssueCreateCmd implements the issue a coin transaction command.
+// IssueCreateCmd implements the issue a coin transaction command.
 func IssueCreateCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create [from_key_or_address] [name] [symbol] [total_supply]",
@@ -282,8 +290,8 @@ func IssueDisableFeatureCmd(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-// GetCmdIssueUnFreeze implements freeze a token transaction command.
-func GetCmdIssueFreeze(cdc *codec.Codec) *cobra.Command {
+// IssueFreezeCmd implements freeze a token transaction command.
+func IssueFreezeCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "freeze [from_key_or_address] [freeze_type] [issue_id] [address]",
 		Args:  cobra.ExactArgs(4),
@@ -304,8 +312,8 @@ func GetCmdIssueFreeze(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-// GetCmdIssueUnFreeze implements un freeze  a token transaction command.
-func GetCmdIssueUnFreeze(cdc *codec.Codec) *cobra.Command {
+// IssueUnFreeCmd implements un freeze  a token transaction command.
+func IssueUnFreeCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "unfreeze [from_key_or_address] [freeze_type] [issue_id] [address]",
 		Args:  cobra.ExactArgs(4),
@@ -337,8 +345,8 @@ func issueFreeze(cdc *codec.Codec, args []string, freeze bool) error {
 	return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 }
 
-// GetCmdIssueBurnFrom implements burn a coinIssue transaction command.
-func GetCmdIssueBurn(cdc *codec.Codec) *cobra.Command {
+// IssueBurnCmd implements burn a coinIssue transaction command.
+func IssueBurnCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "burn [from_key_or_address] [issue_id] [amount]",
 		Args:    cobra.ExactArgs(3),
@@ -354,8 +362,8 @@ func GetCmdIssueBurn(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-// GetCmdIssueBurnFrom implements burn a coinIssue transaction command.
-func GetCmdIssueBurnFrom(cdc *codec.Codec) *cobra.Command {
+// IssueBurnFromCmd implements burn a coinIssue transaction command.
+func IssueBurnFromCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "burn-from [from_key_or_address] [issue_id] [from_address] [amount]",
 		Args:    cobra.ExactArgs(4),
@@ -404,8 +412,8 @@ func issueBurnFrom(cdc *codec.Codec, args []string, burnFromType string) error {
 	return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 }
 
-// GetCmdIssueSendFrom implements send from a token transaction command.
-func GetCmdIssueSendFrom(cdc *codec.Codec) *cobra.Command {
+// IssueSendFromCmd implements send from a token transaction command.
+func IssueSendFromCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "send-from [from_key_or_address] [issue_id] [from_address] [to_address] [amount]",
 		Args:    cobra.ExactArgs(5),
@@ -463,8 +471,8 @@ func GetCmdIssueSendFrom(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-// GetCmdIssueApprove implements approve a token transaction command.
-func GetCmdIssueApprove(cdc *codec.Codec) *cobra.Command {
+// IssueApproveCmd implements approve a token transaction command.
+func IssueApproveCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "approve [from_key_or_address] [issue-id] [address] [amount]",
 		Args:    cobra.ExactArgs(4),
@@ -480,8 +488,8 @@ func GetCmdIssueApprove(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-// GetCmdIssueIncreaseApproval implements increase approval a token transaction command.
-func GetCmdIssueIncreaseApproval(cdc *codec.Codec) *cobra.Command {
+// IssueIncreaseApprovalCmd implements increase approval a token transaction command.
+func IssueIncreaseApprovalCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "increase-approval [from_key_or_address] [issue_id] [address] [amount]",
 		Args:    cobra.ExactArgs(4),
@@ -497,8 +505,8 @@ func GetCmdIssueIncreaseApproval(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-// GetCmdIssueDecreaseApproval implements decrease approval a token transaction command.
-func GetCmdIssueDecreaseApproval(cdc *codec.Codec) *cobra.Command {
+// IssueDecreaseApprovalCmd implements decrease approval a token transaction command.
+func IssueDecreaseApprovalCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "decrease-approval [from_key_or_address] [issue_id] [address] [amount]",
 		Args:    cobra.ExactArgs(4),
