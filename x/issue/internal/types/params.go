@@ -76,14 +76,14 @@ func ValidateParams(params Params) error {
 // DefaultParams returns a default set of parameters.
 func DefaultParams(denom string) Params {
 	return Params{
-		IssueFee:         sdk.NewCoin(denom, sdk.NewIntWithDecimal(20000, 18)),
-		MintFee:          sdk.NewCoin(denom, sdk.NewIntWithDecimal(10000, 18)),
-		FreezeFee:        sdk.NewCoin(denom, sdk.NewIntWithDecimal(20000, 18)),
-		UnFreezeFee:      sdk.NewCoin(denom, sdk.NewIntWithDecimal(20000, 18)),
-		BurnFee:          sdk.NewCoin(denom, sdk.NewIntWithDecimal(10000, 18)),
-		BurnFromFee:      sdk.NewCoin(denom, sdk.NewIntWithDecimal(10000, 18)),
-		TransferOwnerFee: sdk.NewCoin(denom, sdk.NewIntWithDecimal(20000, 18)),
-		DescribeFee:      sdk.NewCoin(denom, sdk.NewIntWithDecimal(4000, 18)),
+		IssueFee:         sdk.NewCoin(denom, sdk.NewIntWithDecimal(10000000, 0)),
+		MintFee:          sdk.NewCoin(denom, sdk.NewIntWithDecimal(0, 0)),
+		FreezeFee:        sdk.NewCoin(denom, sdk.NewIntWithDecimal(0, 0)),
+		UnFreezeFee:      sdk.NewCoin(denom, sdk.NewIntWithDecimal(0, 0)),
+		BurnFee:          sdk.NewCoin(denom, sdk.NewIntWithDecimal(0, 0)),
+		BurnFromFee:      sdk.NewCoin(denom, sdk.NewIntWithDecimal(0, 0)),
+		TransferOwnerFee: sdk.NewCoin(denom, sdk.NewIntWithDecimal(10000000, 0)),
+		DescribeFee:      sdk.NewCoin(denom, sdk.NewIntWithDecimal(400000, 0)),
 	}
 }
 

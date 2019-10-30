@@ -31,7 +31,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 
 // GetCmdPostPrice cli command for posting prices.
 func GetCmdPostPrice(cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "postprice [from_key_or_address] [assetCode] [price] [expiry]",
 		Short: "post the latest price for a particular asset",
 		Args:  cobra.ExactArgs(4),
@@ -49,7 +49,7 @@ func GetCmdPostPrice(cdc *codec.Codec) *cobra.Command {
 				fmt.Printf("invalid expiry - %s \n", string(args[3]))
 				return nil
 			}
-			msg := types.NewMsgPostPrice(cliCtx.GetFromAddress(), args[10], price, expiry)
+			msg := types.NewMsgPostPrice(cliCtx.GetFromAddress(), args[1], price, expiry)
 			err = msg.ValidateBasic()
 			if err != nil {
 				return err
@@ -57,4 +57,8 @@ func GetCmdPostPrice(cdc *codec.Codec) *cobra.Command {
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
+
+	return cmd
 }

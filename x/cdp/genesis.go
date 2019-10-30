@@ -42,7 +42,7 @@ func DefaultGenesisState() GenesisState {
 				},
 				{
 					Denom:            "ftm",
-					LiquidationRatio: sdk.MustNewDecFromStr("2.0"),
+					LiquidationRatio: sdk.MustNewDecFromStr("3.0"),
 					DebtLimit:        sdk.NewInt(500000),
 				},
 			},

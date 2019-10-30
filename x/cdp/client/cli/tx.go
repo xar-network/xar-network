@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -28,7 +29,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 
 // GetCmdModifyCdp cli command for creating and modifying cdps.
 func GetCmdModifyCdp(cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "modifycdp [from_key_or_addres] [ownerAddress] [collateralType] [collateralChange] [debtChange]",
 		Short: "create or modify a cdp",
 		Args:  cobra.ExactArgs(5),
@@ -55,4 +56,8 @@ func GetCmdModifyCdp(cdc *codec.Codec) *cobra.Command {
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
+
+	cmd = client.PostCommands(cmd)[0]
+
+	return cmd
 }
