@@ -56,7 +56,7 @@ func (k Keeper) SetPrice(
 	assetCode string,
 	price sdk.Dec,
 	expiry sdk.Int) (types.PostedPrice, sdk.Error) {
-	// If the expiry is less than or equal to the current blockheight, we consider the price valid
+	// If the expiry is greater than or equal to the current blockheight, we consider the price valid
 	if expiry.GTE(sdk.NewInt(ctx.BlockHeight())) {
 		store := ctx.KVStore(k.storeKey)
 		prices := k.GetRawPrices(ctx, assetCode)
@@ -74,7 +74,8 @@ func (k Keeper) SetPrice(
 			prices[index] = types.PostedPrice{AssetCode: assetCode, OracleAddress: oracle.String(), Price: price, Expiry: expiry}
 		} else {
 			prices = append(prices, types.PostedPrice{
-				assetCode, oracle.String(), price, expiry,
+				AssetCode: assetCode, OracleAddress: oracle.String(),
+				Price: price, Expiry: expiry,
 			})
 			index = len(prices) - 1
 		}
@@ -88,7 +89,7 @@ func (k Keeper) SetPrice(
 
 }
 
-// SetCurrentPrices updates the price of an asset to the meadian of all valid oracle inputs
+// SetCurrentPrices updates the price of an asset to the median of all valid oracle inputs
 func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 	assets := k.GetAssets(ctx)
 	for _, v := range assets {
@@ -111,8 +112,10 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 		// TODO make threshold for acceptance (ie. require 51% of oracles to have posted valid prices
 		if l == 0 {
 			// Error if there are no valid prices in the raw pricefeed
-			return types.ErrNoValidPrice(k.codespace)
+
+			//return types.ErrNoValidPrice(k.codespace)
 		} else if l == 1 {
+
 			// Return immediately if there's only one price
 			medianPrice = notExpiredPrices[0].Price
 			expiry = notExpiredPrices[0].Expiry
@@ -146,6 +149,7 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 			Price:     medianPrice,
 			Expiry:    expiry,
 		}
+
 		store.Set(
 			[]byte(types.CurrentPricePrefix+assetCode), k.cdc.MustMarshalBinaryBare(currentPrice),
 		)

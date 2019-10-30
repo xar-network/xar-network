@@ -10,6 +10,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/zar-network/zar-network/x/pricefeed/internal/types"
 )
 
@@ -45,7 +46,7 @@ func HandleMsgPostPrice(
 }
 
 // EndBlocker updates the current pricefeed
-func EndBlocker(ctx sdk.Context, k Keeper) sdk.Result {
+func EndBlocker(ctx sdk.Context, k Keeper) []abci.ValidatorUpdate {
 	// TODO val_state_change.go is relevant if we want to rotate the oracle set
 
 	// Running in the end blocker ensures that prices will update at most once per block,
@@ -53,5 +54,5 @@ func EndBlocker(ctx sdk.Context, k Keeper) sdk.Result {
 	// which occur during a block
 	//TODO use an iterator and update the prices for all assets in the store
 	k.SetCurrentPrices(ctx)
-	return sdk.Result{Events: ctx.EventManager().Events()}
+	return []abci.ValidatorUpdate{}
 }
