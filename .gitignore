@@ -21,7 +21,7 @@ tools-stamp
 # Data - ideally these don't exist
 baseapp/data/*
 client/lcd/keys/*
-cmd/zarcli/statik/statik.go
+cmd/xarcli/statik/statik.go
 mytestnet
 
 # Testing

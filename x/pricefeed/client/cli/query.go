@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
-	"github.com/zar-network/zar-network/x/pricefeed/internal/types"
+	"github.com/xar-network/xar-network/x/pricefeed/internal/types"
 )
 
 // GetCmdCurrentPrice queries the current price of an asset

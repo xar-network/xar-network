@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
-	"github.com/zar-network/zar-network/x/cdp/internal/types"
+	"github.com/xar-network/xar-network/x/cdp/internal/types"
 )
 
 // GetTxCmd returns the transaction commands for this module

@@ -1,12 +1,12 @@
 ---
 
 - name: Stop service
-  service: name=zard state=stopped
+  service: name=xard state=stopped
 
 - name: Delete files
   file: "path={{item}} state=absent"
   with_items:
-  - /usr/bin/zard
-  - /home/zard/.zard
-  - /home/zard/.zarcli
+  - /usr/bin/xard
+  - /home/xard/.xard
+  - /home/xard/.xarcli
 

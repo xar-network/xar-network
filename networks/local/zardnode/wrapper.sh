@@ -3,15 +3,15 @@
 ##
 ## Input parameters
 ##
-BINARY=/zard/${BINARY:-zard}
+BINARY=/xard/${BINARY:-xard}
 ID=${ID:-0}
-LOG=${LOG:-zard.log}
+LOG=${LOG:-xard.log}
 
 ##
 ## Assert linux binary
 ##
 if ! [ -f "${BINARY}" ]; then
-	echo "The binary $(basename "${BINARY}") cannot be found. Please add the binary to the shared folder. Please use the BINARY environment variable if the name of the binary is not 'zard' E.g.: -e BINARY=zard_my_test_version"
+	echo "The binary $(basename "${BINARY}") cannot be found. Please add the binary to the shared folder. Please use the BINARY environment variable if the name of the binary is not 'xard' E.g.: -e BINARY=xard_my_test_version"
 	exit 1
 fi
 BINARY_CHECK="$(file "$BINARY" | grep 'ELF 64-bit LSB executable, x86-64')"
@@ -23,10 +23,10 @@ fi
 ##
 ## Run binary with all parameters
 ##
-export ZARDHOME="/zard/node${ID}/zard"
+export XARDHOME="/xard/node${ID}/xard"
 
-if [ -d "$(dirname "${ZARDHOME}"/"${LOG}")" ]; then
-  "${BINARY}" --home "${ZARDHOME}" "$@" | tee "${ZARDHOME}/${LOG}"
+if [ -d "$(dirname "${XARDHOME}"/"${LOG}")" ]; then
+  "${BINARY}" --home "${XARDHOME}" "$@" | tee "${XARDHOME}/${LOG}"
 else
-  "${BINARY}" --home "${ZARDHOME}" "$@"
+  "${BINARY}" --home "${XARDHOME}" "$@"
 fi

@@ -10,11 +10,11 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/zar-network/zar-network/x/issue/internal/types"
+	"github.com/xar-network/xar-network/x/issue/internal/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/zar-network/zar-network/x/issue/internal/keeper"
+	"github.com/xar-network/xar-network/x/issue/internal/keeper"
 )
 
 // GenesisState - all issue state that must be provided at genesis

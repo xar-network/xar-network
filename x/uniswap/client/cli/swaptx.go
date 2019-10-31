@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
-	swap "github.com/zar-network/zar-network/x/uniswap/internal/types"
+	swap "github.com/xar-network/xar-network/x/uniswap/internal/types"
 
 	"github.com/spf13/cobra"
 )

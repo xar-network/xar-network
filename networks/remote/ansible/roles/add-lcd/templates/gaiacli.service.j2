@@ -1,14 +1,14 @@
 [Unit]
-Description=zarcli
+Description=xarcli
 Requires=network-online.target
 After=network-online.target
 
 [Service]
 Restart=on-failure
-User=zard
-Group=zard
+User=xard
+Group=xard
 PermissionsStartOnly=true
-ExecStart=/usr/bin/zarcli rest-server --laddr {{ZARCLI_ADDRESS}}
+ExecStart=/usr/bin/xarcli rest-server --laddr {{XARCLI_ADDRESS}}
 ExecReload=/bin/kill -HUP $MAINPID
 KillSignal=SIGTERM
 

@@ -46,7 +46,7 @@ private_peer_ids = "ipaddress of validator nodes"
 
 기본적으로 다음 프리픽스(prefix)의 대문자 환경 변수(environment variables)는 소문자 커맨드라인 플래그를 대체하게 됩니다:
 
-- `GA` (for Zar 플래그)
+- `GA` (for Xar 플래그)
 - `TM` (for Tendermint 플래그)
 - `BC` (for democli 또는 basecli 플래그)
 

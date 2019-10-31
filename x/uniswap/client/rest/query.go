@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	swap "github.com/zar-network/zar-network/x/uniswap/internal/types"
+	swap "github.com/xar-network/xar-network/x/uniswap/internal/types"
 
 	"github.com/gorilla/mux"
 )

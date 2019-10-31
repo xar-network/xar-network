@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
-	"github.com/zar-network/zar-network/x/liquidator/internal/types"
+	"github.com/xar-network/xar-network/x/liquidator/internal/types"
 )
 
 // GetCmd_GetOutstandingDebt queries for the remaining available debt in the liquidator module after settlement with the module's stablecoin balance.

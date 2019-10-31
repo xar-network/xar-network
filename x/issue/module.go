@@ -21,10 +21,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/bank/simulation"
 	sim "github.com/cosmos/cosmos-sdk/x/simulation"
-	"github.com/zar-network/zar-network/x/issue/client/cli"
-	"github.com/zar-network/zar-network/x/issue/client/rest"
-	"github.com/zar-network/zar-network/x/issue/internal/keeper"
-	"github.com/zar-network/zar-network/x/issue/internal/types"
+	"github.com/xar-network/xar-network/x/issue/client/cli"
+	"github.com/xar-network/xar-network/x/issue/client/rest"
+	"github.com/xar-network/xar-network/x/issue/internal/keeper"
+	"github.com/xar-network/xar-network/x/issue/internal/types"
 )
 
 var (

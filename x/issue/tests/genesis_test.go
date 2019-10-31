@@ -3,9 +3,9 @@ package tests
 import (
 	"testing"
 
-	"github.com/zar-network/zar-network/x/issue"
+	"github.com/xar-network/xar-network/x/issue"
 
-	"github.com/zar-network/zar-network/x/issue/msgs"
+	"github.com/xar-network/xar-network/x/issue/msgs"
 
 	"github.com/stretchr/testify/require"
 

@@ -1,14 +1,14 @@
 [Unit]
-Description=zard
+Description=xard
 Requires=network-online.target
 After=network-online.target
 
 [Service]
 Restart=on-failure
-User=zard
-Group=zard
+User=xard
+Group=xard
 PermissionsStartOnly=true
-ExecStart=/usr/bin/zard start
+ExecStart=/usr/bin/xard start
 ExecReload=/bin/kill -HUP $MAINPID
 KillSignal=SIGTERM
 

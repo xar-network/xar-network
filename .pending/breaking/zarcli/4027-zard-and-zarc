@@ -1,1 +1,1 @@
-#4027 zarcli version command dooes not return the checksum of the go.sum file anymore.
+#4027 xarcli version command dooes not return the checksum of the go.sum file anymore.

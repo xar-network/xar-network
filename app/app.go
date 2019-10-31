@@ -29,21 +29,21 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	"github.com/cosmos/modules/incubator/nft"
-	"github.com/zar-network/zar-network/x/auction"
-	"github.com/zar-network/zar-network/x/cdp"
-	"github.com/zar-network/zar-network/x/issue"
-	"github.com/zar-network/zar-network/x/liquidator"
-	"github.com/zar-network/zar-network/x/pricefeed"
+	"github.com/xar-network/xar-network/x/auction"
+	"github.com/xar-network/xar-network/x/cdp"
+	"github.com/xar-network/xar-network/x/issue"
+	"github.com/xar-network/xar-network/x/liquidator"
+	"github.com/xar-network/xar-network/x/pricefeed"
 )
 
-const appName = "ZarApp"
+const appName = "XarApp"
 
 var (
-	// default home directories for zarcli
-	DefaultCLIHome = os.ExpandEnv("$HOME/.zarcli")
+	// default home directories for xarcli
+	DefaultCLIHome = os.ExpandEnv("$HOME/.xarcli")
 
-	// default home directories for zard
-	DefaultNodeHome = os.ExpandEnv("$HOME/.zard")
+	// default home directories for xard
+	DefaultNodeHome = os.ExpandEnv("$HOME/.xard")
 
 	// The module BasicManager is in charge of setting up basic,
 	// non-dependant module elements, such as codec registration
@@ -93,7 +93,7 @@ func MakeCodec() *codec.Codec {
 }
 
 // GaiaApp extended ABCI application
-type ZarApp struct {
+type XarApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
 
@@ -131,11 +131,11 @@ type ZarApp struct {
 	sm *module.SimulationManager
 }
 
-// NewZarApp returns a reference to an initialized ZarApp.
-func NewZarApp(
+// NewXarApp returns a reference to an initialized XarApp.
+func NewXarApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
-) *ZarApp {
+) *XarApp {
 
 	cdc := MakeCodec()
 
@@ -151,7 +151,7 @@ func NewZarApp(
 
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
-	app := &ZarApp{
+	app := &XarApp{
 		BaseApp:        bApp,
 		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
@@ -319,29 +319,29 @@ func NewZarApp(
 }
 
 // application updates every begin block
-func (app *ZarApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+func (app *XarApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
 
 // application updates every end block
-func (app *ZarApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+func (app *XarApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
 }
 
 // application update at chain initialization
-func (app *ZarApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *XarApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 
 // load a particular height
-func (app *ZarApp) LoadHeight(height int64) error {
+func (app *XarApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
 
 // ModuleAccountAddrs returns all the app's module account addresses.
-func (app *ZarApp) ModuleAccountAddrs() map[string]bool {
+func (app *XarApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
@@ -351,7 +351,7 @@ func (app *ZarApp) ModuleAccountAddrs() map[string]bool {
 }
 
 // Codec returns the application's sealed codec.
-func (app *ZarApp) Codec() *codec.Codec {
+func (app *XarApp) Codec() *codec.Codec {
 	return app.cdc
 }
 

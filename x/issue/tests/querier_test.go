@@ -4,20 +4,20 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/zar-network/zar-network/x/issue/utils"
+	"github.com/xar-network/xar-network/x/issue/utils"
 	"github.com/tendermint/tendermint/crypto"
 
-	"github.com/zar-network/zar-network/x/issue/params"
+	"github.com/xar-network/xar-network/x/issue/params"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/zar-network/zar-network/x/issue"
-	queriers2 "github.com/zar-network/zar-network/x/issue/client/queriers"
-	"github.com/zar-network/zar-network/x/issue/msgs"
-	"github.com/zar-network/zar-network/x/issue/types"
+	"github.com/xar-network/xar-network/x/issue"
+	queriers2 "github.com/xar-network/xar-network/x/issue/client/queriers"
+	"github.com/xar-network/xar-network/x/issue/msgs"
+	"github.com/xar-network/xar-network/x/issue/types"
 )
 
 func TestQueryIssue(t *testing.T) {

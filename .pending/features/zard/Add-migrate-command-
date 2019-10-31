@@ -1,2 +1,2 @@
-Add `migrate` command to `zard` to provide the ability to migrate exported
+Add `migrate` command to `xard` to provide the ability to migrate exported
 genesis state from one version to another.

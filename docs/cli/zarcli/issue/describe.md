@@ -1,26 +1,26 @@
-# zarcli issue describe
+# xarcli issue describe
 
 ## Description
 Owner Describes the issue token，Must be json file no larger than 1024 bytes.
 ## Usage
 ```shell
- zarcli issue describe [issue-id] [description-file] [flags]
+ xarcli issue describe [issue-id] [description-file] [flags]
 ```
 ## Flags
 
-**Global flags, query command flags** [zarcli](../README.md)
+**Global flags, query command flags** [xarcli](../README.md)
 
 ## Example
 ### Set a description for the token
 ```shell
-zarcli issue describe coin174876e802 /description.json --from $you_wallet_name
+xarcli issue describe coin174876e802 /description.json --from $you_wallet_name
 ```
 #### Template
 ```shell
 {
     "organization":"Hashgard",
-    "website":"https://www.zar.com",
-    "logo":"https://cdn.zar.com/static/logo.2d949f3d.png",
+    "website":"https://www.xar.com",
+    "logo":"https://cdn.xar.com/static/logo.2d949f3d.png",
     "intro":"This is a good project"
 }
 ```
@@ -43,7 +43,7 @@ The result is as follows：
 ```
 ### Query issue information
 ```shell
-zarcli issue query-issue coin174876e802
+xarcli issue query-issue coin174876e802
 ```
 The result is as follows：
 ```shell
@@ -57,7 +57,7 @@ Issue:
   TotalSupply:      			9999999991024
   Decimals:         			18
   IssueTime:					1558179518
-  Description:	    			{"org":"Hashgard","website":"https://www.zar.com","logo":"https://cdn.zar.com/static/logo.2d949f3d.png","intro":"This is a description of the project"}
+  Description:	    			{"org":"Hashgard","website":"https://www.xar.com","logo":"https://cdn.xar.com/static/logo.2d949f3d.png","intro":"This is a description of the project"}
   BurnOwnerDisabled:  			false
   BurnHolderDisabled:  			false
   BurnFromDisabled:  			false

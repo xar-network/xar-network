@@ -47,9 +47,9 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 # process linker flags
 
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=zar \
-		  -X github.com/cosmos/cosmos-sdk/version.ServerName=zar \
-		  -X github.com/cosmos/cosmos-sdk/version.ClientName=zarcli \
+ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=xar \
+		  -X github.com/cosmos/cosmos-sdk/version.ServerName=xar \
+		  -X github.com/cosmos/cosmos-sdk/version.ClientName=xarcli \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
@@ -69,11 +69,11 @@ all: install lint check
 
 build: go.sum
 ifeq ($(OS),Windows_NT)
-	go build -mod=readonly $(BUILD_FLAGS) -o build/zard.exe ./cmd/zard
-	go build -mod=readonly $(BUILD_FLAGS) -o build/zarcli.exe ./cmd/zarcli
+	go build -mod=readonly $(BUILD_FLAGS) -o build/xard.exe ./cmd/xard
+	go build -mod=readonly $(BUILD_FLAGS) -o build/xarcli.exe ./cmd/xarcli
 else
-	go build -mod=readonly $(BUILD_FLAGS) -o build/zard ./cmd/zard
-	go build -mod=readonly $(BUILD_FLAGS) -o build/zarcli ./cmd/zarcli
+	go build -mod=readonly $(BUILD_FLAGS) -o build/xard ./cmd/xard
+	go build -mod=readonly $(BUILD_FLAGS) -o build/xarcli ./cmd/xarcli
 endif
 
 build-linux: go.sum
@@ -87,11 +87,11 @@ else
 endif
 
 install: go.sum
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/zard
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/zarcli
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/xard
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/xarcli
 
 install-debug: go.sum
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/zardebug
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/xardebug
 
 ########################################
 ### Tools & dependencies
@@ -107,7 +107,7 @@ go.sum: go.mod
 draw-deps:
 	@# requires brew install graphviz or apt-get install graphviz
 	go get github.com/RobotsAndPencils/goviz
-	@goviz -i ./cmd/zard -d 2 | dot -Tpng -o dependency-graph.png
+	@goviz -i ./cmd/xard -d 2 | dot -Tpng -o dependency-graph.png
 
 clean:
 	rm -rf snapcraft-local.yaml build/
@@ -152,12 +152,12 @@ benchmark:
 ########################################
 ### Local validator nodes using docker and docker-compose
 
-build-docker-zardnode:
+build-docker-xardnode:
 	$(MAKE) -C networks/local
 
 # Run a 4-node testnet locally
 localnet-start: localnet-stop
-	@if ! [ -f build/node0/zard/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/zard:Z tendermint/zardnode testnet --v 4 -o . --starting-ip-address 192.168.10.2 ; fi
+	@if ! [ -f build/node0/xard/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/xard:Z tendermint/xardnode testnet --v 4 -o . --starting-ip-address 192.168.10.2 ; fi
 	docker-compose up -d
 
 # Stop testnet
@@ -169,28 +169,28 @@ setup-contract-tests-data:
 	rm -rf /tmp/contract_tests ; \
 	mkdir /tmp/contract_tests ; \
 	cp "${GOPATH}/pkg/mod/${SDK_PACK}/client/lcd/swagger-ui/swagger.yaml" /tmp/contract_tests/swagger.yaml ; \
-	./build/zard init --home /tmp/contract_tests/.zard --chain-id lcd contract-tests ; \
+	./build/xard init --home /tmp/contract_tests/.xard --chain-id lcd contract-tests ; \
 	tar -xzf lcd_test/testdata/state.tar.gz -C /tmp/contract_tests/
 
-start-zar: setup-contract-tests-data
-	./build/zard --home /tmp/contract_tests/.zard start &
+start-xar: setup-contract-tests-data
+	./build/xard --home /tmp/contract_tests/.xard start &
 	@sleep 2s
 
-setup-transactions: start-zar
+setup-transactions: start-xar
 	@bash ./lcd_test/testdata/setup.sh
 
 run-lcd-contract-tests:
-	@echo "Running zar LCD for contract tests"
-	./build/zarcli rest-server --laddr tcp://0.0.0.0:8080 --home /tmp/contract_tests/.zarcli --node http://localhost:26657 --chain-id lcd --trust-node true
+	@echo "Running xar LCD for contract tests"
+	./build/xarcli rest-server --laddr tcp://0.0.0.0:8080 --home /tmp/contract_tests/.xarcli --node http://localhost:26657 --chain-id lcd --trust-node true
 
 contract-tests: setup-transactions
-	@echo "Running zar LCD for contract tests"
-	dredd && pkill zard
+	@echo "Running xar LCD for contract tests"
+	dredd && pkill xard
 
 # include simulations
 include sims.mk
 
 .PHONY: all build-linux install install-debug \
 	go-mod-cache draw-deps clean build \
-	setup-transactions setup-contract-tests-data start-zar run-lcd-contract-tests contract-tests \
+	setup-transactions setup-contract-tests-data start-xar run-lcd-contract-tests contract-tests \
 	test test-all test-build test-cover test-unit test-race

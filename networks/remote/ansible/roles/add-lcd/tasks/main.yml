@@ -2,14 +2,14 @@
 
 - name: Copy binary
   copy:
-    src: "{{ZARCLI_BINARY}}"
-    dest: /usr/bin/zarcli
+    src: "{{XARCLI_BINARY}}"
+    dest: /usr/bin/xarcli
     mode: 0755
-  notify: restart zarcli
+  notify: restart xarcli
 
 - name: Copy service
   template:
-    src: zarcli.service.j2
-    dest: /etc/systemd/system/zarcli.service
+    src: xarcli.service.j2
+    dest: /etc/systemd/system/xarcli.service
   notify: systemctl
 

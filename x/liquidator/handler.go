@@ -10,8 +10,8 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/zar-network/zar-network/x/liquidator/internal/keeper"
-	"github.com/zar-network/zar-network/x/liquidator/internal/types"
+	"github.com/xar-network/xar-network/x/liquidator/internal/keeper"
+	"github.com/xar-network/xar-network/x/liquidator/internal/types"
 )
 
 // Handle all liquidator messages.

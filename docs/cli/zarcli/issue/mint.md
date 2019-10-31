@@ -1,11 +1,11 @@
-# zarcli issue mint
+# xarcli issue mint
 
 ## Description
 With the additional switch turned on，Owner Add tokens for yourself or add tokens to others。
 
 ## Usage
 ```shell
- zarcli issue mint [issue-id] [amount] [flags]
+ xarcli issue mint [issue-id] [amount] [flags]
 ```
 | Name   | Type    | Required   | Default   | Description      |
 | --------  | ------------------- | ----- | ------ | -------- |
@@ -13,13 +13,13 @@ With the additional switch turned on，Owner Add tokens for yourself or add toke
 
 ## Flags
 
-**Global flags, query command flags** [zarcli](../README.md)
+**Global flags, query command flags** [xarcli](../README.md)
 
 ## Example
 
 ### Add tokens to the specified address
 ```shell
-zarcli issue mint coin174876e802 9999 --to=gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7 --from $you_wallet_name
+xarcli issue mint coin174876e802 9999 --to=gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7 --from $you_wallet_name
 ```
 The result is as follows：
 ```txt

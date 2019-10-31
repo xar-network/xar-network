@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/zar-network/zar-network/x/issue/internal/types"
+	"github.com/xar-network/xar-network/x/issue/internal/types"
 )
 
 // RegisterInvariants registers the bank module invariants

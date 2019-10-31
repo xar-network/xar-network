@@ -6,8 +6,8 @@
   run_once: true
   become: no
 
-- name: Create zard user
-  user: name=zard home=/home/zard shell=/bin/bash
+- name: Create xard user
+  user: name=xard home=/home/xard shell=/bin/bash
 
 - name: Copy binary
   copy:
@@ -16,7 +16,7 @@
     mode: 0755
 
 - name: Copy service file
-  copy: src=zard.service dest=/etc/systemd/system/zard.service mode=0755
+  copy: src=xard.service dest=/etc/systemd/system/xard.service mode=0755
   notify: reload systemd
 
 - name: Get node ID
@@ -24,13 +24,13 @@
   changed_when: false
   register: nodeid
 
-- name: zard init
-  command: "/usr/bin/zard init --chain-id={{TESTNET_NAME}} --name=fullnode{{nodeid.stdout_lines[0]}}"
+- name: xard init
+  command: "/usr/bin/xard init --chain-id={{TESTNET_NAME}} --name=fullnode{{nodeid.stdout_lines[0]}}"
   become: yes
-  become_user: zard
+  become_user: xard
   register: initresult
   args:
-    creates: /home/zard/.zard/config
+    creates: /home/xard/.xard/config
 
 - name: Get wallet word seed from result of initial transaction locally
   when: initresult["changed"]
@@ -48,14 +48,14 @@
 - name: Copy genesis file
   copy:
     src: "{{GENESISFILE}}"
-    dest: /home/zard/.zard/config/genesis.json
+    dest: /home/xard/.xard/config/genesis.json
   become: yes
-  become_user: zard
+  become_user: xard
 
 - name: Copy config.toml file
   copy:
     src: "{{CONFIGFILE}}"
-    dest: /home/zard/.zard/config/config.toml
+    dest: /home/xard/.xard/config/config.toml
   become: yes
-  become_user: zard
+  become_user: xard
 

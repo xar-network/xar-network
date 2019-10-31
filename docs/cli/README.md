@@ -1,33 +1,33 @@
-# zarcli
+# xarcli
 
-1. [bank command](./zarcli/bank/README.md)
-2. [distribution command](./zarcli/distribution/README.md)
-3. [gov command](./zarcli/gov/README.md)
-4. [keys command](./zarcli/keys/README.md)
-5. [stake command](./zarcli/stake/README.md)
-6. [status command](./zarcli/status.md)
-7. [tendermint command](./zarcli/tendermint/README.md)
-8. [slashing command](./zarcli/slashing/README.md)
-9. [issue command](./zarcli/issue/README.md)
-10. [lock command](./zarcli/lock/README.md)
-11. [deposit command](./zarcli/deposit/README.md)
-12. [future command](./zarcli/future/README.md)
-13. [faucet command](./zarcli/faucet/send.md)
-14. [record command](./zarcli/record/README.md)
+1. [bank command](./xarcli/bank/README.md)
+2. [distribution command](./xarcli/distribution/README.md)
+3. [gov command](./xarcli/gov/README.md)
+4. [keys command](./xarcli/keys/README.md)
+5. [stake command](./xarcli/stake/README.md)
+6. [status command](./xarcli/status.md)
+7. [tendermint command](./xarcli/tendermint/README.md)
+8. [slashing command](./xarcli/slashing/README.md)
+9. [issue command](./xarcli/issue/README.md)
+10. [lock command](./xarcli/lock/README.md)
+11. [deposit command](./xarcli/deposit/README.md)
+12. [future command](./xarcli/future/README.md)
+13. [faucet command](./xarcli/faucet/send.md)
+14. [record command](./xarcli/record/README.md)
 
-# zar
+# xar
 
-1. [init command](./zar/init.md)
-2. [add-genesis-account command](./zar/add-genesis-account.md)
-3. [gentx command](./zar/gentx.md)
-4. [collect-gentxs command](./zar/collect-gentxs.md)
-5. [validate-genesis command](./zar/validate-genesis.md)
-6. [start command](./zar/start.md)
-7. [testnet command](./zar/testnet.md)
-8. [unsafe-reset-all command](./zar/unsafe-reset-all.md)
-9. [export command](./zar/export.md)
-10. [tendermint command](./zar/tendermint.md)
+1. [init command](./xar/init.md)
+2. [add-genesis-account command](./xar/add-genesis-account.md)
+3. [gentx command](./xar/gentx.md)
+4. [collect-gentxs command](./xar/collect-gentxs.md)
+5. [validate-genesis command](./xar/validate-genesis.md)
+6. [start command](./xar/start.md)
+7. [testnet command](./xar/testnet.md)
+8. [unsafe-reset-all command](./xar/unsafe-reset-all.md)
+9. [export command](./xar/export.md)
+10. [tendermint command](./xar/tendermint.md)
 
-# zarlcd
+# xarlcd
 
-1.[zarlcd](./zarlcd/README.md)
+1.[xarlcd](./xarlcd/README.md)

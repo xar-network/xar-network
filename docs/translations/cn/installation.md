@@ -1,6 +1,6 @@
-## 安装Zar
+## 安装Xar
 
-本教程将详细说明如何在你的系统上安装`zard`和`zarcli`。安装后，你可以作为[全节点](./join-mainnet.md)或是[验证人节点](./validators/validator-setup.md)加入到主网。
+本教程将详细说明如何在你的系统上安装`xard`和`xarcli`。安装后，你可以作为[全节点](./join-mainnet.md)或是[验证人节点](./validators/validator-setup.md)加入到主网。
 
 ### 安装Go
 
@@ -20,27 +20,27 @@ Cosmos SDK需要安装**Go 1.12+**
 
 ### 安装二进制执行程序
 
-接下来，安装最新版本的Zar。需要确认您 `git checkout 了正确的[发布版本](https://github.com/cosmos/cosmos-sdk/releases)。
+接下来，安装最新版本的Xar。需要确认您 `git checkout 了正确的[发布版本](https://github.com/cosmos/cosmos-sdk/releases)。
 
 ::: warning
 对于主网，请确保你的版本大于或等于`v0.33.0`
 :::
 
 ```bash
-git clone -b <latest-release-tag> https://github.com/zar-network/zar-network
-cd zar && make install
+git clone -b <latest-release-tag> https://github.com/xar-network/xar-network
+cd xar && make install
 ```
 
 > *注意*: 如果在这一步中出现问题，请检查你是否安装的是Go的最新稳定版本。
 
-等`zard`和`zarcli`可执行程序安装完之后，请检查:
+等`xard`和`xarcli`可执行程序安装完之后，请检查:
 
 ```bash
-$ zard version --long
-$ zarcli version --long
+$ xard version --long
+$ xarcli version --long
 ```
 
-`zarcli`的返回应该类似于：
+`xarcli`的返回应该类似于：
 
 ```
 cosmos-sdk: 0.33.0

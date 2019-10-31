@@ -13,7 +13,7 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/zar-network/zar-network/app"
+	"github.com/xar-network/xar-network/app"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -33,7 +33,7 @@ func main() {
 	cdc := app.MakeCodec()
 
 	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount("zar", "zarp")
+	config.SetBech32PrefixForAccount("xar", "xarp")
 	config.SetBech32PrefixForValidator("zva", "zvap")
 	config.SetBech32PrefixForConsensusNode("zca", "zcap")
 	config.Seal()
@@ -41,8 +41,8 @@ func main() {
 	ctx := server.NewDefaultContext()
 	cobra.EnableCommandSorting = false
 	rootCmd := &cobra.Command{
-		Use:               "zard",
-		Short:             "Zar Daemon (server)",
+		Use:               "xard",
+		Short:             "Xar Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(ctx),
 	}
 
@@ -80,7 +80,7 @@ func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application
 		cache = store.NewCommitKVStoreCacheManager()
 	}
 
-	return app.NewZarApp(
+	return app.NewXarApp(
 		logger, db, traceStore, true, invCheckPeriod,
 		baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))),
 		baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
@@ -95,7 +95,7 @@ func exportAppStateAndTMValidators(
 ) (json.RawMessage, []tmtypes.GenesisValidator, error) {
 
 	if height != -1 {
-		gapp := app.NewZarApp(logger, db, traceStore, false, uint(1))
+		gapp := app.NewXarApp(logger, db, traceStore, false, uint(1))
 		err := gapp.LoadHeight(height)
 		if err != nil {
 			return nil, nil, err
@@ -103,6 +103,6 @@ func exportAppStateAndTMValidators(
 		return gapp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 	}
 
-	gapp := app.NewZarApp(logger, db, traceStore, true, uint(1))
+	gapp := app.NewXarApp(logger, db, traceStore, true, uint(1))
 	return gapp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 }

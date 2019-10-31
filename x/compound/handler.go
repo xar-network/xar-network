@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/zar-network/zar-network/x/compound/internal/keeper"
-	"github.com/zar-network/zar-network/x/compound/internal/types"
+	"github.com/xar-network/xar-network/x/compound/internal/keeper"
+	"github.com/xar-network/xar-network/x/compound/internal/types"
 )
 
 // Handle all compound messages.

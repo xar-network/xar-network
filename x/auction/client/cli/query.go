@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
-	"github.com/zar-network/zar-network/x/auction/internal/keeper"
+	"github.com/xar-network/xar-network/x/auction/internal/keeper"
 )
 
 // GetCmdGetAuctions queries the auctions in the store

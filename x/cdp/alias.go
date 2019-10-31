@@ -7,8 +7,8 @@ Baseline from Kava Cosmos Module
 package cdp
 
 import (
-	"github.com/zar-network/zar-network/x/cdp/internal/keeper"
-	"github.com/zar-network/zar-network/x/cdp/internal/types"
+	"github.com/xar-network/xar-network/x/cdp/internal/keeper"
+	"github.com/xar-network/xar-network/x/cdp/internal/types"
 )
 
 type (

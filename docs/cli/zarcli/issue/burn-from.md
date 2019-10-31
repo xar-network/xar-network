@@ -1,4 +1,4 @@
-# zarcli issue burn-from
+# xarcli issue burn-from
 
 ## Description
 
@@ -6,15 +6,15 @@
 
 ## Usage
 ```shell
- zarcli issue burn-from [issue-id] [acc-address][amount] [flags]
+ xarcli issue burn-from [issue-id] [acc-address][amount] [flags]
 ```
 ## Flags
-**Global flags, query command flags** [zarcli](../README.md)
+**Global flags, query command flags** [xarcli](../README.md)
 
 ## Example
 ### burn token
 ```shell
-zarcli issue burn-from coin174876e801 gard1lgs73mwr56u2f4z4yz36w8mf7ym50e7myrqn65 88 --from $you_wallet_name
+xarcli issue burn-from coin174876e801 gard1lgs73mwr56u2f4z4yz36w8mf7ym50e7myrqn65 88 --from $you_wallet_name
 ```
 输入正确的密码之后，你就销毁了其他人账户里的代币。
 ```txt

@@ -10,8 +10,8 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/zar-network/zar-network/x/cdp/internal/keeper"
-	"github.com/zar-network/zar-network/x/cdp/internal/types"
+	"github.com/xar-network/xar-network/x/cdp/internal/keeper"
+	"github.com/xar-network/xar-network/x/cdp/internal/types"
 )
 
 // Handle all cdp messages.

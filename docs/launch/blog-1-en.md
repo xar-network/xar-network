@@ -18,7 +18,7 @@ Atoms. Please read through the entire guide first to familiarize yourself
 before you actually do anything: [CLI guide][cli]
 
 The process outlined in the guide is currently the only verified and secure way
-to delegate Atoms at launch. This is because the zarcli tool used in the guide
+to delegate Atoms at launch. This is because the xarcli tool used in the guide
 is the only wallet software undergoing third-party security audits right now.
 No other wallet providers have begun security audits yet.
 
@@ -65,7 +65,7 @@ launch RC][rc]. Once this RC is completed, the Cosmos-SDK team will engage in a
 round of internal bug hunting to further ensure sufficient pre-launch security
 due diligence.
 
-Right after Cosmos-SDK v0.31.0 is released, a Zar testnet will be released in
+Right after Cosmos-SDK v0.31.0 is released, a Xar testnet will be released in
 an effort to flush out any hard to find bugs.
 
 ### 3 Game of Stakes Completed
@@ -138,9 +138,9 @@ reduce or eliminate the risk of key or credential theft.
 Cosmos mainnet launch:**
 
 - Download software directly from official sources, and make sure that you’re
-  always using the latest, most secure version of zarcli when you’re doing
+  always using the latest, most secure version of xarcli when you’re doing
   anything that involves your 12 words. The latest versions of Tendermint, the
-  Cosmos-SDK, and zarcli will always be available from our official GitHub
+  Cosmos-SDK, and xarcli will always be available from our official GitHub
   repositories, and downloading them from there ensures that you will not be
   tricked into using a maliciously modified version of software.
 
@@ -206,7 +206,7 @@ accounts to communicate important news directly to the Cosmos community.*
 [spearphishing]: https://en.wikipedia.org/wiki/Phishing#Spear_phishing
 [inbox]: https://www.umass.edu/it/security/phishing-fraudulent-emails-text-messages-phone-calls
 [opportunities]: https://jia.sipa.columbia.edu/weaponization-social-media-spear-phishing-and-cyberattacks-democracy
-[cli]: https://github.com/cosmos/cosmos-sdk/blob/develop/docs/zar/delegator-guide-cli.md
+[cli]: https://github.com/cosmos/cosmos-sdk/blob/develop/docs/xar/delegator-guide-cli.md
 [webinar]: https://register.gotowebinar.com/register/5028753165739687691
 [terms]: https://github.com/cosmos/cosmos/blob/master/fundraiser/Interchain%20Cosmos%20Contribution%20Terms%20-%20FINAL.pdf
 [apache]: https://www.apache.org/licenses/LICENSE-2.0

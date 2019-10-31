@@ -1,20 +1,20 @@
-# zarcli issue query
+# xarcli issue query
 
 ## Description
 Query information about the release of the specified issue-id .
 
 ## Usage
 ```shell
-zarcli issue query-issue [issue-id] [flags]
+xarcli issue query-issue [issue-id] [flags]
 ```
 ## Flags
 
-**Global flags, query command flags** [zarcli](../README.md)
+**Global flags, query command flags** [xarcli](../README.md)
 
 ## Example
 ### Query issue information
 ```shell
-zarcli issue query-issue coin174876e800
+xarcli issue query-issue coin174876e800
 ```
 ```txt
 {
@@ -27,7 +27,7 @@ Issue:
   TotalSupply:      			10000000001023
   Decimals:         			18
   IssueTime:					1558179518
-  Description:	    			{"org":"Hashgard","website":"https://www.zar.com","logo":"https://cdn.zar.com/static/logo.2d949f3d.png","intro":"a good project"}
+  Description:	    			{"org":"Hashgard","website":"https://www.xar.com","logo":"https://cdn.xar.com/static/logo.2d949f3d.png","intro":"a good project"}
   BurnOwnerDisabled:  			false
   BurnHolderDisabled:  			false
   BurnFromDisabled:  			false

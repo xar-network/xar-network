@@ -1,8 +1,8 @@
 package compound
 
 import (
-	"github.com/zar-network/zar-network/x/compound/internal/keeper"
-	"github.com/zar-network/zar-network/x/compound/internal/types"
+	"github.com/xar-network/xar-network/x/compound/internal/keeper"
+	"github.com/xar-network/xar-network/x/compound/internal/types"
 )
 
 type (

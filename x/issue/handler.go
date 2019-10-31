@@ -12,8 +12,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/zar-network/zar-network/x/issue/internal/keeper"
-	"github.com/zar-network/zar-network/x/issue/internal/types"
+	"github.com/xar-network/xar-network/x/issue/internal/keeper"
+	"github.com/xar-network/xar-network/x/issue/internal/types"
 )
 
 // NewHandler creates an sdk.Handler for all the issue type messages

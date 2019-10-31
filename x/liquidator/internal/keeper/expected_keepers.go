@@ -3,8 +3,8 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/zar-network/zar-network/x/auction"
-	"github.com/zar-network/zar-network/x/cdp"
+	"github.com/xar-network/xar-network/x/auction"
+	"github.com/xar-network/xar-network/x/cdp"
 )
 
 type cdpKeeper interface {

@@ -1,14 +1,14 @@
 # Genesis File
 
-This document explains how the genesis file of the Cosmos Hub mainnet is structured. It also explains how you can build a genesis file for your own `zar` testnet.
+This document explains how the genesis file of the Cosmos Hub mainnet is structured. It also explains how you can build a genesis file for your own `xar` testnet.
 
 Note that you can generate a default genesis file for your own testnet by running the following command:
 
 ```bash
-zard init <moniker> --chain-id <chain-id>
+xard init <moniker> --chain-id <chain-id>
 ```
 
-The genesis file is stored in `~/.zard/config/genesis.toml`.
+The genesis file is stored in `~/.xard/config/genesis.toml`.
 
 ## What is a Genesis File
 
@@ -32,7 +32,7 @@ The `chain_id` is a unique identifier for your chain. It helps differentiate bet
 
 ## Consensus Parameters
 
-Next, the genesis file defines consensus parameters. Consensus parameters regroup all the parameters that are related to the consensus layer, which is `Tendermint` in the case of `zar`. Let us look at these parameters:
+Next, the genesis file defines consensus parameters. Consensus parameters regroup all the parameters that are related to the consensus layer, which is `Tendermint` in the case of `xar`. Let us look at these parameters:
 
 - `block`
     + `max_bytes`: Maximum number of bytes per block. 
@@ -68,9 +68,9 @@ The application state defines the initial state of the state-machine.
 In this section, initial allocation of tokens is defined. It is possible to add accounts manually by directly editing the genesis file, but it is also possible to use the following command:
 
 ```bash
-// Example: zard add-genesis-account cosmos1qs8tnw2t8l6amtzvdemnnsq9dzk0ag0z37gh3h 10000000uftm
+// Example: xard add-genesis-account cosmos1qs8tnw2t8l6amtzvdemnnsq9dzk0ag0z37gh3h 10000000uftm
 
-zard add-genesis-account <account-address> <amount><denom>
+xard add-genesis-account <account-address> <amount><denom>
 ```
 
 This command creates an item in the `accounts` list, under the `app_state` section.
@@ -105,7 +105,7 @@ Let us break down the parameters:
 
 - `sequence_number`: This number is used to count the number of transactions sent by this account. It is incremented each time a transaction is included in a block, and used to prevent replay attacks. Initial value is `0`.
 - `account_number`: Unique identifier for the account. It is generated the first time a transaction including this account is included in a block.
-- `original_vesting`: Vesting is natively supported by `zar`. You can define an amount of token owned by the account that needs to be vested for a period of time before they can be transferred. Vested tokens can be delegated. Default value is `null`.
+- `original_vesting`: Vesting is natively supported by `xar`. You can define an amount of token owned by the account that needs to be vested for a period of time before they can be transferred. Vested tokens can be delegated. Default value is `null`.
 - `delegated_free`: Amount of delegated tokens that can be transferred after they've been vested. Most of the time, will be `null` in genesis. 
 - `delegated_vesting`: Amount of delegated tokens that are still vesting. Most of the time, will be `null` in genesis.
 - `start_time`: Block at which the vesting period starts. `0` most of the time in genesis.
@@ -326,7 +326,7 @@ By default, the genesis file do not contain any `gentxs`. A `gentx` is a transac
 A `gentx` can be added manually to the genesis file, or via the following command:
 
 ```bash
-zard collect-gentxs
+xard collect-gentxs
 ```
 
-This command will add all the `gentxs` stored in `~/.zard/config/gentx` to the genesis file. In order to create a genesis transaction, click [here](./validators/validator-setup.md#participate-in-genesis-as-a-validator).
+This command will add all the `gentxs` stored in `~/.xard/config/gentx` to the genesis file. In order to create a genesis transaction, click [here](./validators/validator-setup.md#participate-in-genesis-as-a-validator).

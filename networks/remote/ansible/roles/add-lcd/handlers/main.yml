@@ -1,9 +1,9 @@
 ---
 
 - name: systemctl
-  systemd: name=zarcli enabled=yes daemon_reload=yes
+  systemd: name=xarcli enabled=yes daemon_reload=yes
 
-- name: restart zarcli
-  service: name=zarcli state=restarted
+- name: restart xarcli
+  service: name=xarcli state=restarted
 
 

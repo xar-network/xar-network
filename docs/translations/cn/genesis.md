@@ -1,14 +1,14 @@
 # 创世（Genesis）文件
 
-本文档解释了 Cosmos Hub 主网的 genesis 文件是如何构建的。 它还解释了如何为自己的`zar` testnet 创建一个 genesis 文件。
+本文档解释了 Cosmos Hub 主网的 genesis 文件是如何构建的。 它还解释了如何为自己的`xar` testnet 创建一个 genesis 文件。
 
 请注意，您可以通过运行以下命令为您自己的 testnet 生成默认的 genesis 文件：
 
 ```bash
-zard init <moniker> --chain-id <chain-id>
+xard init <moniker> --chain-id <chain-id>
 ```
 
-genesis 文件存储在 `~/.zard/config/genesis.toml`.
+genesis 文件存储在 `~/.xard/config/genesis.toml`.
 
 ## 什么是创世文件
 
@@ -32,7 +32,7 @@ genesis 文件中定义的状态包含所有必要的信息，如初始令牌分
 
 ## 共识参数
 
-接下来，创世文件定义共识参数。 共识参数覆盖与共识层相关的所有参数，`zar` 的共识层是 `Tendermint`。 我们来看看这些参数：
+接下来，创世文件定义共识参数。 共识参数覆盖与共识层相关的所有参数，`xar` 的共识层是 `Tendermint`。 我们来看看这些参数：
 
 - `block`
   - `max_bytes`: 每个块的最大字节数。
@@ -68,9 +68,9 @@ genesis 文件中定义的状态包含所有必要的信息，如初始令牌分
 在本节中，定义了初始分配的 Token。 可以通过直接编辑 genesis 文件手动添加帐户，但也可以使用以下命令：
 
 ```bash
-// Example: zard add-genesis-account cosmos1qs8tnw2t8l6amtzvdemnnsq9dzk0ag0z37gh3h 10000000uftm
+// Example: xard add-genesis-account cosmos1qs8tnw2t8l6amtzvdemnnsq9dzk0ag0z37gh3h 10000000uftm
 
-zard add-genesis-account <account-address> <amount><denom>
+xard add-genesis-account <account-address> <amount><denom>
 ```
 
 这个命令在 `app_state.accounts` 下创建一个条目。
@@ -105,7 +105,7 @@ zard add-genesis-account <account-address> <amount><denom>
 
 - `sequence_number`: 此编号用于计算此帐户发送的交易数。 每次事务包含在块中时它都会递增，并用于防止重放攻击，初始值为“0”。
 - `account_number`: 帐户的唯一标识符，它在包含此帐户的首次被打包到块的交易中生成。
-- `original_vesting`: 锁仓（Vesting） 由`zar`原生支持。 您可以定义帐户需要锁仓 token 数量，这些 token 在一定时间之后才能流通。 锁仓中的 token 可用于委托。 默认值为“null”。
+- `original_vesting`: 锁仓（Vesting） 由`xar`原生支持。 您可以定义帐户需要锁仓 token 数量，这些 token 在一定时间之后才能流通。 锁仓中的 token 可用于委托。 默认值为“null”。
 - `delegated_free`: 在 vest 过期后可转让的委托 token 数量。在创世文件中，大部分情况是 `null`。
 - `delegated_vesting`: 锁仓中的 token 数量。在创世文件中，大部分情况是 `null`。
 - `start_time`: vesting 期开始区块高度。创世文件中，大部分情况是`0`。
@@ -328,7 +328,7 @@ The `slashing` module handles the logic to slash delegators if their validator m
 可以手动将`gentx`添加到genesis文件，或通过以下命令：
 
 ```bash
-zard collect-gentxs
+xard collect-gentxs
 ```
 
-此命令将存储在`~/.zard/config/gentx`中的所有`gentxs`添加到genesis文件中。 要创建创世纪交易，请单击[此处](./validators/validator-setup.md#participation-in-genesis-as-a-validator)。
+此命令将存储在`~/.xard/config/gentx`中的所有`gentxs`添加到genesis文件中。 要创建创世纪交易，请单击[此处](./validators/validator-setup.md#participation-in-genesis-as-a-validator)。

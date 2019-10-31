@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/zar-network/zar-network/x/issue/internal/types"
+	"github.com/xar-network/xar-network/x/issue/internal/types"
 )
 
 // QueryParamsCmd implements the query params command.
@@ -17,7 +17,7 @@ func QueryParamsCmd(cdc *codec.Codec) *cobra.Command {
 		Use:     "params",
 		Short:   "Query the parameters of the lock process",
 		Long:    "Query all the parameters",
-		Example: "$ zarcli lock params",
+		Example: "$ xarcli lock params",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -39,7 +39,7 @@ func QueryCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		Short:   "Query the details of the account coin",
 		Long:    "Query the details of the account issue coin",
-		Example: "$ zar-networkcli bank issue coin174876e800",
+		Example: "$ xar-networkcli bank issue coin174876e800",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return processQuery(cdc, args)
 		},
@@ -52,8 +52,8 @@ func QueryIssueCmd(cdc *codec.Codec) *cobra.Command {
 		Use:     "query [issue-id]",
 		Args:    cobra.ExactArgs(1),
 		Short:   "Query a single issue",
-		Long:    "Query details for a issue. You can find the issue-id by running zar-networkcli issue list-issues",
-		Example: "$ zar-networkcli issue query-issue coin174876e800",
+		Long:    "Query details for a issue. You can find the issue-id by running xar-networkcli issue list-issues",
+		Example: "$ xar-networkcli issue query-issue coin174876e800",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return processQuery(cdc, args)
 		},
@@ -83,7 +83,7 @@ func QueryAllowanceCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(3),
 		Short:   "Query allowance",
 		Long:    "Query the amount of tokens that an owner allowed to a spender",
-		Example: "$ zar-networkcli issue query-allowance coin174876e800 gard1zu85q8a7wev675k527y7keyrea7wu7crr9vdrs gard1vud9ptwagudgq7yht53cwuf8qfmgkd0qcej0ah",
+		Example: "$ xar-networkcli issue query-allowance coin174876e800 gard1zu85q8a7wev675k527y7keyrea7wu7crr9vdrs gard1vud9ptwagudgq7yht53cwuf8qfmgkd0qcej0ah",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			issueID := args[0]
@@ -117,7 +117,7 @@ func QueryFreezeCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(2),
 		Short:   "Query freeze",
 		Long:    "Query freeze the transfer from a address",
-		Example: "$ zar-networkcli issue query-freeze coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
+		Example: "$ xar-networkcli issue query-freeze coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			issueID := args[0]
@@ -146,7 +146,7 @@ func QueryIssuesCmd(cdc *codec.Codec) *cobra.Command {
 		Use:     "list",
 		Short:   "Query issue list",
 		Long:    "Query all or one of the account issue list, the limit default is 30",
-		Example: "$ zar-networkcli issue list-issues",
+		Example: "$ xar-networkcli issue list-issues",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
@@ -187,7 +187,7 @@ func QueryFreezesCmd(cdc *codec.Codec) *cobra.Command {
 		Use:     "list-freeze",
 		Short:   "Query freeze list",
 		Long:    "Query all or one of the issue freeze list",
-		Example: "$ zar-networkcli issue list-freeze",
+		Example: "$ xar-networkcli issue list-freeze",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			issueID := args[0]
@@ -213,7 +213,7 @@ func QuerySearchIssuesCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		Short:   "Search issues",
 		Long:    "Search issues based on symbol",
-		Example: "$ zar-networkcli issue search fo",
+		Example: "$ xar-networkcli issue search fo",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			// Query the issue

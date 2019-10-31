@@ -1,8 +1,8 @@
 package uniswap
 
 import (
-	"github.com/zar-network/zar-network/x/uniswap/internal/keeper"
-	"github.com/zar-network/zar-network/x/uniswap/internal/types"
+	"github.com/xar-network/xar-network/x/uniswap/internal/keeper"
+	"github.com/xar-network/xar-network/x/uniswap/internal/types"
 )
 
 type (

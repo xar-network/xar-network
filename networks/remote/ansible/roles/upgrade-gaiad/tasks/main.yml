@@ -3,27 +3,27 @@
 - name: Copy binary
   copy:
     src: "{{BINARY}}"
-    dest: /usr/bin/zard
+    dest: /usr/bin/xard
     mode: 0755
-  notify: restart zard
+  notify: restart xard
 
 - name: Copy new genesis.json file, if available
   when: "GENESISFILE is defined and GENESISFILE != ''" 
   copy:
     src: "{{GENESISFILE}}"
-    dest: /home/zard/.zard/config/genesis.json
-  notify: restart zard
+    dest: /home/xard/.xard/config/genesis.json
+  notify: restart xard
 
 - name: Download genesis.json URL, if available
   when: "GENESISURL is defined and GENESISURL != ''"
   get_url:
     url: "{{GENESISURL}}"
-    dest: /home/zard/.zard/config/genesis.json
+    dest: /home/xard/.xard/config/genesis.json
     force: yes
-  notify: restart zard
+  notify: restart xard
 
 - name: Reset network
   when: UNSAFE_RESET_ALL | default(false) | bool
-  command: "sudo -u zard zard unsafe-reset-all"
-  notify: restart zard
+  command: "sudo -u xard xard unsafe-reset-all"
+  notify: restart xard
 

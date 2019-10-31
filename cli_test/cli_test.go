@@ -19,7 +19,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/zar-network/zar-network/app"
+	"github.com/xar-network/xar-network/app"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/tests"
@@ -29,7 +29,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/mint"
 )
 
-func TestZarCLIKeysAddMultisig(t *testing.T) {
+func TestXarCLIKeysAddMultisig(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
@@ -52,7 +52,7 @@ func TestZarCLIKeysAddMultisig(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIKeysAddRecover(t *testing.T) {
+func TestXarCLIKeysAddRecover(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
@@ -67,7 +67,7 @@ func TestZarCLIKeysAddRecover(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIKeysAddRecoverHDPath(t *testing.T) {
+func TestXarCLIKeysAddRecoverHDPath(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
@@ -87,11 +87,11 @@ func TestZarCLIKeysAddRecoverHDPath(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIMinimumFees(t *testing.T) {
+func TestXarCLIMinimumFees(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server with minimum fees
+	// start xard server with minimum fees
 	minGasPrice, _ := sdk.NewDecFromStr("0.000006")
 	fees := fmt.Sprintf(
 		"--minimum-gas-prices=%s,%s",
@@ -125,11 +125,11 @@ func TestZarCLIMinimumFees(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIGasPrices(t *testing.T) {
+func TestXarCLIGasPrices(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server with minimum fees
+	// start xard server with minimum fees
 	minGasPrice, _ := sdk.NewDecFromStr("0.000006")
 	proc := f.GDStart(fmt.Sprintf("--minimum-gas-prices=%s", sdk.NewDecCoinFromDec(feeDenom, minGasPrice)))
 	defer proc.Stop(false)
@@ -159,11 +159,11 @@ func TestZarCLIGasPrices(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIFeesDeduction(t *testing.T) {
+func TestXarCLIFeesDeduction(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server with minimum fees
+	// start xard server with minimum fees
 	minGasPrice, _ := sdk.NewDecFromStr("0.000006")
 	proc := f.GDStart(fmt.Sprintf("--minimum-gas-prices=%s", sdk.NewDecCoinFromDec(feeDenom, minGasPrice)))
 	defer proc.Stop(false)
@@ -212,11 +212,11 @@ func TestZarCLIFeesDeduction(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLISend(t *testing.T) {
+func TestXarCLISend(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server
+	// start xard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -281,11 +281,11 @@ func TestZarCLISend(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIGasAuto(t *testing.T) {
+func TestXarCLIGasAuto(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server
+	// start xard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -341,11 +341,11 @@ func TestZarCLIGasAuto(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLICreateValidator(t *testing.T) {
+func TestXarCLICreateValidator(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server
+	// start xard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -414,7 +414,7 @@ func TestZarCLICreateValidator(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIQueryRewards(t *testing.T) {
+func TestXarCLIQueryRewards(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 	cdc := app.MakeCodec()
@@ -430,13 +430,13 @@ func TestZarCLIQueryRewards(t *testing.T) {
 	require.NoError(t, err)
 	genesisState[mint.ModuleName] = mintDataBz
 
-	genFile := filepath.Join(f.ZardHome, "config", "genesis.json")
+	genFile := filepath.Join(f.XardHome, "config", "genesis.json")
 	genDoc, err := tmtypes.GenesisDocFromFile(genFile)
 	require.NoError(t, err)
 	genDoc.AppState, err = cdc.MarshalJSON(genesisState)
 	require.NoError(t, genDoc.SaveAs(genFile))
 
-	// start zard server
+	// start xard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -447,11 +447,11 @@ func TestZarCLIQueryRewards(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIQuerySupply(t *testing.T) {
+func TestXarCLIQuerySupply(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server
+	// start xard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -464,11 +464,11 @@ func TestZarCLIQuerySupply(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLISubmitProposal(t *testing.T) {
+func TestXarCLISubmitProposal(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server
+	// start xard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -608,7 +608,7 @@ func TestZarCLISubmitProposal(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLISubmitParamChangeProposal(t *testing.T) {
+func TestXarCLISubmitParamChangeProposal(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
@@ -672,7 +672,7 @@ func TestZarCLISubmitParamChangeProposal(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLISubmitCommunityPoolSpendProposal(t *testing.T) {
+func TestXarCLISubmitCommunityPoolSpendProposal(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
@@ -689,7 +689,7 @@ func TestZarCLISubmitCommunityPoolSpendProposal(t *testing.T) {
 	require.NoError(t, err)
 	genesisState[mint.ModuleName] = mintDataBz
 
-	genFile := filepath.Join(f.ZardHome, "config", "genesis.json")
+	genFile := filepath.Join(f.XardHome, "config", "genesis.json")
 	genDoc, err := tmtypes.GenesisDocFromFile(genFile)
 	require.NoError(t, err)
 	genDoc.AppState, err = cdc.MarshalJSON(genesisState)
@@ -756,11 +756,11 @@ func TestZarCLISubmitCommunityPoolSpendProposal(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIQueryTxPagination(t *testing.T) {
+func TestXarCLIQueryTxPagination(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server
+	// start xard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -806,11 +806,11 @@ func TestZarCLIQueryTxPagination(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIValidateSignatures(t *testing.T) {
+func TestXarCLIValidateSignatures(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server
+	// start xard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -856,11 +856,11 @@ func TestZarCLIValidateSignatures(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLISendGenerateSignAndBroadcast(t *testing.T) {
+func TestXarCLISendGenerateSignAndBroadcast(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server
+	// start xard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -940,11 +940,11 @@ func TestZarCLISendGenerateSignAndBroadcast(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIMultisignInsufficientCosigners(t *testing.T) {
+func TestXarCLIMultisignInsufficientCosigners(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server with minimum fees
+	// start xard server with minimum fees
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -993,11 +993,11 @@ func TestZarCLIMultisignInsufficientCosigners(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIEncode(t *testing.T) {
+func TestXarCLIEncode(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server
+	// start xard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -1031,11 +1031,11 @@ func TestZarCLIEncode(t *testing.T) {
 	require.Equal(t, "deadbeef", decodedTx.Memo)
 }
 
-func TestZarCLIMultisignSortSignatures(t *testing.T) {
+func TestXarCLIMultisignSortSignatures(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server with minimum fees
+	// start xard server with minimum fees
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -1096,11 +1096,11 @@ func TestZarCLIMultisignSortSignatures(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIMultisign(t *testing.T) {
+func TestXarCLIMultisign(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server with minimum fees
+	// start xard server with minimum fees
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -1162,7 +1162,7 @@ func TestZarCLIMultisign(t *testing.T) {
 	f.Cleanup()
 }
 
-func TestZarCLIConfig(t *testing.T) {
+func TestXarCLIConfig(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 	node := fmt.Sprintf("%s:%s", f.RPCAddr, f.Port)
@@ -1176,7 +1176,7 @@ func TestZarCLIConfig(t *testing.T) {
 	f.CLIConfig("trace", "false")
 	f.CLIConfig("indent", "true")
 
-	config, err := ioutil.ReadFile(path.Join(f.ZarcliHome, "config", "config.toml"))
+	config, err := ioutil.ReadFile(path.Join(f.XarcliHome, "config", "config.toml"))
 	require.NoError(t, err)
 	expectedConfig := fmt.Sprintf(`broadcast-mode = "block"
 chain-id = "%s"
@@ -1191,7 +1191,7 @@ trust-node = true
 	f.Cleanup()
 }
 
-func TestZardCollectGentxs(t *testing.T) {
+func TestXardCollectGentxs(t *testing.T) {
 	t.Parallel()
 	var customMaxBytes, customMaxGas int64 = 99999999, 1234567
 	f := NewFixtures(t)
@@ -1239,7 +1239,7 @@ func TestZardCollectGentxs(t *testing.T) {
 	f.Cleanup(gentxDir)
 }
 
-func TestZardAddGenesisAccount(t *testing.T) {
+func TestXardAddGenesisAccount(t *testing.T) {
 	t.Parallel()
 	f := NewFixtures(t)
 
@@ -1286,7 +1286,7 @@ func TestSlashingGetParams(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server
+	// start xard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 
@@ -1307,7 +1307,7 @@ func TestValidateGenesis(t *testing.T) {
 	t.Parallel()
 	f := InitFixtures(t)
 
-	// start zard server
+	// start xard server
 	proc := f.GDStart()
 	defer proc.Stop(false)
 

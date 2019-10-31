@@ -1,2 +1,2 @@
-#4142 Turn zarcli tx send's --from into a required argument.
-New shorter syntax: `zarcli tx send FROM TO AMOUNT`
+#4142 Turn xarcli tx send's --from into a required argument.
+New shorter syntax: `xarcli tx send FROM TO AMOUNT`

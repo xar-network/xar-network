@@ -4,7 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/spf13/cobra"
 	amino "github.com/tendermint/go-amino"
-	pricefeedcmd "github.com/zar-network/zar-network/x/pricefeed/client/cli"
+	pricefeedcmd "github.com/xar-network/xar-network/x/pricefeed/client/cli"
 )
 
 // ModuleClient exports all client functionality from this module

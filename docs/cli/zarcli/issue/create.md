@@ -1,4 +1,4 @@
-# zarcli issue create
+# xarcli issue create
 
 ## Description
 
@@ -7,7 +7,7 @@ Issue a new token
 ## Usage
 
 ```shell
-zarcli issue create [name] [symbol] [total-supply] [flags]
+xarcli issue create [name] [symbol] [total-supply] [flags]
 ```
 
 ## Flags
@@ -21,14 +21,14 @@ zarcli issue create [name] [symbol] [total-supply] [flags]
 | --minting     | bool | false   | false  | Disable the mint              |
 | --freeze      | bool | false | false  | Disable freeze          |
 
-**Global flags, query command flags** [zarcli](../README.md)
+**Global flags, query command flags** [xarcli](../README.md)
 
 ## Example
 
 ### Issue a new coin
 
 ```shell
-zarcli issue create issuename AAA 10000000000000 --from $you_wallet_name
+xarcli issue create issuename AAA 10000000000000 --from $you_wallet_name
 ```
 
 The result is as follows：
@@ -53,7 +53,7 @@ The result is as follows：
 Query account
 
 ```shell
-zarcli bank account gard1f203m5q7hr4tkf0vredrn4wpxkx7zngn4pntye
+xarcli bank account gard1f203m5q7hr4tkf0vredrn4wpxkx7zngn4pntye
 ```
 
 There is a `coin (issue-id)` token in your token list.

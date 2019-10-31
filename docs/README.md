@@ -1,14 +1,14 @@
 # Cosmos Hub Documentation
 
-Welcome to the documentation of the **Cosmos Hub application: `zar`**.
+Welcome to the documentation of the **Cosmos Hub application: `xar`**.
 
-## What is Zar?
+## What is Xar?
 
-- [Zar](./what-is-zar.md)
+- [Xar](./what-is-xar.md)
 
 ## Join the Cosmos Hub Mainnet
 
-- [Install the `zar` application](./installation.md)
+- [Install the `xar` application](./installation.md)
 - [Set up a full node and join the mainnet](./join-mainnet.md)
 - [Upgrade to a validator node](./validators/validator-setup.md)
 
@@ -16,9 +16,9 @@ Welcome to the documentation of the **Cosmos Hub application: `zar`**.
 
 - [Join the testnet](./join-testnet.md)
 
-## Setup Your Own `zar` Testnet
+## Setup Your Own `xar` Testnet
 
-- [Setup your own `zar` testnet](./deploy-testnet.md)
+- [Setup your own `xar` testnet](./deploy-testnet.md)
 
 ## Additional Resources
 
@@ -29,7 +29,7 @@ Welcome to the documentation of the **Cosmos Hub application: `zar`**.
 
 # Contribute
 
-See [this file](https://github.com/zar-network/zar-network/blob/master/docs/DOCS_README.md) for details of the build process and
+See [this file](https://github.com/xar-network/xar-network/blob/master/docs/DOCS_README.md) for details of the build process and
 considerations when making changes.
 
 # Version

@@ -1,19 +1,19 @@
-# zarcli issue burn
+# xarcli issue burn
 
 ## Description
 Token holder or the Owner burn the token he holds
 ## Usage
 ```shell
- zarcli issue burn [issue-id] [amount] [flags]
+ xarcli issue burn [issue-id] [amount] [flags]
 ```
 ## Flags
 
-**Global flags, query command flags** [zarcli](../README.md)
+**Global flags, query command flags** [xarcli](../README.md)
 
 ## Example
 ### burn coin
 ```shell
-zarcli issue burn coin174876e800 88888 --from $you_wallet_name
+xarcli issue burn coin174876e800 88888 --from $you_wallet_name
 ```
 The result is as follows：
 ```txt

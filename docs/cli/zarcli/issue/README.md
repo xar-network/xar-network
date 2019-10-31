@@ -1,4 +1,4 @@
-# zarcli issue
+# xarcli issue
 
 ## Description
 
@@ -9,13 +9,13 @@ Issue your own tokens and have the functions of issuing, freezing, burn and tran
 ## Usage
 
 ```shell
-zarcli issue [command]
+xarcli issue [command]
 ```
 
 Print subcommands and parameters
 
 ```shell
-zarcli issue --help
+xarcli issue --help
 ```
 
 ## Available Commands

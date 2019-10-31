@@ -1,4 +1,4 @@
-module github.com/zar-network/zar-network
+module github.com/xar-network/xar-network
 
 go 1.13
 

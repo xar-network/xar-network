@@ -4,7 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/go-amino"
-	"github.com/zar-network/zar-network/x/pool/client/cli"
+	"github.com/xar-network/xar-network/x/pool/client/cli"
 )
 
 // ModuleClient exports all client functionality from this module

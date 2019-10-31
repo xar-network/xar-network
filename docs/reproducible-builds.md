@@ -1,12 +1,12 @@
-## Build Zar Deterministically
+## Build Xar Deterministically
 
-Gitian is the deterministic build process that is used to build the Zar executables. It provides a way to be reasonably sure that the executables are really built from the git source. It also makes sure that the same, tested dependencies are used and statically built into the executable.
+Gitian is the deterministic build process that is used to build the Xar executables. It provides a way to be reasonably sure that the executables are really built from the git source. It also makes sure that the same, tested dependencies are used and statically built into the executable.
 
 Multiple developers build the source code by following a specific descriptor ("recipe"), cryptographically sign the result, and upload the resulting signature. These results are compared and only if they match, the build is accepted and provided for download.
 
 More independent Gitian builders are needed, which is why this guide exists. It is preferred you follow these steps yourself instead of using someone else's VM image to avoid 'contaminating' the build.
 
-This page contains all instructions required to build and sign reproducible Zar binaries for Linux, Mac OS X, and Windows.
+This page contains all instructions required to build and sign reproducible Xar binaries for Linux, Mac OS X, and Windows.
 
 ## Prerequisites
 
@@ -25,13 +25,13 @@ export PATH=/usr/local/opt/coreutils/libexec/gnubin/:$PATH
 Clone cosmos-sdk:
 
 ```
-git clone git@github.com:zar-network/zar-network
+git clone git@github.com:xar-network/xar-network
 ```
 
 Checkout the commit, branch, or release tag you want to build:
 
 ```
-cd zar/
+cd xar/
 git checkout v0.35.0
 ```
 
@@ -44,13 +44,13 @@ report (replace `user@example.com` with the GPG identity you want to sign the re
 
 The above command generates two directories in the current working directory:
 * `gitian-build-linux` containing the `gitian-builder` clone used to drive the build process.
-* `zar.sigs` containing the signed build report.
+* `xar.sigs` containing the signed build report.
 
 Replace `linux` in the above command with `darwin` or `windows` to run builds for Mac OS X and Windows respectively.
 Run the following command to build binaries for all platforms (`darwin`, `linux`, and `windows`):
 
 ```
-cd zar/ && ./contrib/gitian-build.sh -s user@example.com all
+cd xar/ && ./contrib/gitian-build.sh -s user@example.com all
 ```
 
 If you want to generate unsigned builds, just remove the option `-s` from the command line:
@@ -59,13 +59,13 @@ If you want to generate unsigned builds, just remove the option `-s` from the co
 ./contrib/gitian-build.sh linux
 ```
 
-At the end of the procedure, build results can be found in the `./zar.sigs` directory:
+At the end of the procedure, build results can be found in the `./xar.sigs` directory:
 
 Please refer to the `contrib/gitian-build.sh`'s help screen for further information on its usage.
 
 ## Signatures upload
 
-Once signatures are generated, they could be uploaded to zar's dedicated repository: https://github.com/zar-network/zar-network.sigs.
+Once signatures are generated, they could be uploaded to xar's dedicated repository: https://github.com/xar-network/xar-network.sigs.
 The build script can take care of cloning the signatures repository and commit the signed result too:
 
 ```

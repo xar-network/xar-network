@@ -1,4 +1,4 @@
-# zar tendermint
+# xar tendermint
 
 ## Description
 
@@ -7,7 +7,7 @@ Tendermint subcommands
 ## Usage
 
 ```shell
-zar tendermint [subcommand] [flags]
+xar tendermint [subcommand] [flags]
 ```
 
 ## Subcommands
@@ -23,13 +23,13 @@ zar tendermint [subcommand] [flags]
 | Name, shorthand|Type  | Default     | description              | Required  |
 | ---------- | ------ | ----------- | ------------------------ | -------- |
 | -h, --help |        |             | help for tendermint       | false  |
-| --home     | string | ~/.zar | directory for config and data         | false  |
+| --home     | string | ~/.xar | directory for config and data         | false  |
 | --trace    | bool   |             | print out full stack trace on errors | false  |
 
 ## Example
 
 ```shell
-zar tendermint show-node-id
-zar tendermint show-validator
-zar tendermint show-address
+xar tendermint show-node-id
+xar tendermint show-validator
+xar tendermint show-address
 ```

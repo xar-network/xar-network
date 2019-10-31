@@ -1,7 +1,7 @@
 
-## Install Zar
+## Install Xar
 
-This guide will explain how to install the `zard` and `zarcli` entrypoints onto your system. With these installed on a server, you can participate in the mainnet as either a [Full Node](./join-mainnet.md) or a [Validator](./validators/validator-setup.md).
+This guide will explain how to install the `xard` and `xarcli` entrypoints onto your system. With these installed on a server, you can participate in the mainnet as either a [Full Node](./join-mainnet.md) or a [Validator](./validators/validator-setup.md).
 
 ## Install Go
 
@@ -21,11 +21,11 @@ source ~/.bash_profile
 
 ## Install the binaries
 
-Next, let's install the latest version of Zar. Make sure you `git checkout` the correct [released version](https://github.com/zar-network/zar-network/releases).
+Next, let's install the latest version of Xar. Make sure you `git checkout` the correct [released version](https://github.com/xar-network/xar-network/releases).
 
 ```bash
-git clone -b <latest-release-tag> https://github.com/zar-network/zar-network
-cd zar && make install
+git clone -b <latest-release-tag> https://github.com/xar-network/xar-network
+cd xar && make install
 ```
 
 If this command fails due to the following error message, you might have already set `LDFLAGS` prior to running this step.
@@ -46,14 +46,14 @@ LDFLAGS="" make install
 
 > _NOTE_: If you still have issues at this step, please check that you have the latest stable version of GO installed.
 
-That will install the `zard` and `zarcli` binaries. Verify that everything is OK:
+That will install the `xard` and `xarcli` binaries. Verify that everything is OK:
 
 ```bash
-$ zard version --long
-$ zarcli version --long
+$ xard version --long
+$ xarcli version --long
 ```
 
-`zarcli` for instance should output something similar to:
+`xarcli` for instance should output something similar to:
 
 ```shell
 name: gaia

@@ -1,11 +1,11 @@
-# Zar是什么
+# Xar是什么
 
-`zar`是作为Cosmos SDK应用程序的Cosmos Hub的名称。它有两个主要的入口：
+`xar`是作为Cosmos SDK应用程序的Cosmos Hub的名称。它有两个主要的入口：
 
-+ `zard` : Zar的服务进程，运行着`zar`程序的全节点。
-+ `zarcli` : Zar的命令行界面，用于同一个Zar的全节点交互。
++ `xard` : Xar的服务进程，运行着`xar`程序的全节点。
++ `xarcli` : Xar的命令行界面，用于同一个Xar的全节点交互。
 
-`zar`基于Cosmos SDK构建，使用了如下模块:
+`xar`基于Cosmos SDK构建，使用了如下模块:
 
 + `x/auth` : 账户和签名
 + `x/bank` : token转账
@@ -19,4 +19,4 @@
 
 > 关于Cosmos Hub : Cosmos Hub是第一个在Cosmos Network中上线的枢纽。枢纽的作用是用以跨链转账。如果区块链通过IBC协议连接到枢纽，它会自动获得对其它连接至枢纽的区块链的访问能力。Cosmos Hub是一个公开的PoS区块链。它的权益代币称为Atom。
 
-接着，学习如何[安装Zar](./installation.md)
+接着，学习如何[安装Xar](./installation.md)

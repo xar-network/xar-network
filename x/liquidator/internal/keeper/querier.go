@@ -4,7 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/zar-network/zar-network/x/liquidator/internal/types"
+	"github.com/xar-network/xar-network/x/liquidator/internal/types"
 )
 
 func NewQuerier(keeper Keeper) sdk.Querier {

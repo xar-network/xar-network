@@ -1,6 +1,6 @@
 # 자체 테스트넷 구축하기
 
-해당 문서는 `zard` 노드 네트워크를 구축하는 세가지 방법을 제시합니다. 각 모델은 다른 이용 사례에 특화되어 있습니다.
+해당 문서는 `xard` 노드 네트워크를 구축하는 세가지 방법을 제시합니다. 각 모델은 다른 이용 사례에 특화되어 있습니다.
 
 1. 싱글-노드, 로컬, 수동 테스트넷
 2. 멀티-노드, 로컬, 자동 테스트넷
@@ -16,7 +16,7 @@
 
 ### 필수 사항
 
-- [zar 설치](./installation.md)
+- [xar 설치](./installation.md)
 - [`jq` 설치](https://stedolan.github.io/jq/download/) (선택 사항)
 
 ### 제네시스 파일 만들기, 네트워크 시작하기
@@ -26,27 +26,27 @@
 cd $HOME
 
 # Initialize the genesis.json file that will help you to bootstrap the network
-zard init --chain-id=testing testing
+xard init --chain-id=testing testing
 
 # Create a key to hold your validator account
-zarcli keys add validator
+xarcli keys add validator
 
 # Add that key into the genesis.app_state.accounts array in the genesis file
 # NOTE: this command lets you set the number of coins. Make sure this account has some coins
 # with the genesis.app_state.staking.params.bond_denom denom, the default is staking
-zard add-genesis-account $(zarcli keys show validator -a) 1000stake,1000validatortoken
+xard add-genesis-account $(xarcli keys show validator -a) 1000stake,1000validatortoken
 
 # Generate the transaction that creates your validator
-zard gentx --name validator
+xard gentx --name validator
 
 # Add the generated bonding transaction to the genesis file
-zard collect-gentxs
+xard collect-gentxs
 
-# Now its safe to start `zard`
-zard start
+# Now its safe to start `xard`
+xard start
 ```
 
-이 셋업은 모든 `zard` 정보를  `~/.zard`에 저장힙니다. 생성하신 제네시스 파일을 확인하고 싶으시다면 `~/.zard/config/genesis.json`에서 확인이 가능합니다. 위의 세팅으로 `zarcli`가 이용이 가능하며, 토큰(스테이킹/커스텀)이 있는 계정 또한 함께 생성됩니다.
+이 셋업은 모든 `xard` 정보를  `~/.xard`에 저장힙니다. 생성하신 제네시스 파일을 확인하고 싶으시다면 `~/.xard/config/genesis.json`에서 확인이 가능합니다. 위의 세팅으로 `xarcli`가 이용이 가능하며, 토큰(스테이킹/커스텀)이 있는 계정 또한 함께 생성됩니다.
 
 ## 멀티 노드, 로컬, 자동 테스트넷
 
@@ -54,15 +54,15 @@ zard start
 
 ### 필수 사항
 
-- [zar 설치](./installation.md)
+- [xar 설치](./installation.md)
 - [docker 설치](https://docs.docker.com/engine/installation/)
 - [docker-compose 설치](https://docs.docker.com/compose/install/)
 
 ### 빌드
 
-`localnet` 커맨드를 운영하기 위한 `zard` 바이너리(리눅스)와 `tendermint/zardnode` docker 이미지를 생성합니다. 해당 바이너리는 컨테이너에 마운팅 되며 업데이트를 통해 이미지를 리빌드 하실 수 있습니다.
+`localnet` 커맨드를 운영하기 위한 `xard` 바이너리(리눅스)와 `tendermint/xardnode` docker 이미지를 생성합니다. 해당 바이너리는 컨테이너에 마운팅 되며 업데이트를 통해 이미지를 리빌드 하실 수 있습니다.
 
-Build the `zard` binary (linux) and the `tendermint/zardnode` docker image required for running the `localnet` commands. This binary will be mounted into the container and can be updated rebuilding the image, so you only need to build the image once.
+Build the `xard` binary (linux) and the `tendermint/xardnode` docker image required for running the `localnet` commands. This binary will be mounted into the container and can be updated rebuilding the image, so you only need to build the image once.
 
 ```bash
 # Work from the SDK repo
@@ -71,8 +71,8 @@ cd $GOPATH/src/github.com/cosmos/cosmos-sdk
 # Build the linux binary in ./build
 make build-linux
 
-# Build tendermint/zardnode image
-make build-docker-zardnode
+# Build tendermint/xardnode image
+make build-docker-xardnode
 ```
 
 ### 테스트넷 실행하기
@@ -83,15 +83,15 @@ make build-docker-zardnode
 make localnet-start
 ```
 
-이 커맨드는 4개 노드로 구성되어있는 네트워크를 zardnode 이미지를 기반으로 생성합니다. 각 노드의 포트는 하단 테이블에서 확인하실 수 있습니다:
+이 커맨드는 4개 노드로 구성되어있는 네트워크를 xardnode 이미지를 기반으로 생성합니다. 각 노드의 포트는 하단 테이블에서 확인하실 수 있습니다:
 
 
 | 노드 ID | P2P 포트 | RPC 포트 |
 | --------|-------|------|
-| `zarnode0` | `26656` | `26657` |
-| `zarnode1` | `26659` | `26660` |
-| `zarnode2` | `26661` | `26662` |
-| `zarnode3` | `26663` | `26664` |
+| `xarnode0` | `26656` | `26657` |
+| `xarnode1` | `26659` | `26660` |
+| `xarnode2` | `26661` | `26662` |
+| `xarnode3` | `26663` | `26664` |
 
 바이너리를 업데이트 하기 위해서는 리빌드를 하신 후 노드를 재시작 하시면 됩니다:
 
@@ -101,72 +101,72 @@ make build-linux localnet-start
 
 ### 설정
 
-`make localnet-start`는 `zard testnet` 명령을 호출하여 4개 노드로 구성된 테스트넷에 필요한 파일을 `./build`에 저장합니다. 이 명령은 `./build` 디렉토리에 다수의 파일을 내보냅니다.
+`make localnet-start`는 `xard testnet` 명령을 호출하여 4개 노드로 구성된 테스트넷에 필요한 파일을 `./build`에 저장합니다. 이 명령은 `./build` 디렉토리에 다수의 파일을 내보냅니다.
 
 
 ```bash
 $ tree -L 2 build/
 build/
-├── zarcli
-├── zard
+├── xarcli
+├── xard
 ├── gentxs
 │   ├── node0.json
 │   ├── node1.json
 │   ├── node2.json
 │   └── node3.json
 ├── node0
-│   ├── zarcli
+│   ├── xarcli
 │   │   ├── key_seed.json
 │   │   └── keys
-│   └── zard
-│       ├── ${LOG:-zard.log}
+│   └── xard
+│       ├── ${LOG:-xard.log}
 │       ├── config
 │       └── data
 ├── node1
-│   ├── zarcli
+│   ├── xarcli
 │   │   └── key_seed.json
-│   └── zard
-│       ├── ${LOG:-zard.log}
+│   └── xard
+│       ├── ${LOG:-xard.log}
 │       ├── config
 │       └── data
 ├── node2
-│   ├── zarcli
+│   ├── xarcli
 │   │   └── key_seed.json
-│   └── zard
-│       ├── ${LOG:-zard.log}
+│   └── xard
+│       ├── ${LOG:-xard.log}
 │       ├── config
 │       └── data
 └── node3
-    ├── zarcli
+    ├── xarcli
     │   └── key_seed.json
-    └── zard
-        ├── ${LOG:-zard.log}
+    └── xard
+        ├── ${LOG:-xard.log}
         ├── config
         └── data
 ```
 
-각 `./build/nodeN` 디렉토리는 각자 컨테이너 안에 있는 `/zard`에 마운팅 됩니다.
+각 `./build/nodeN` 디렉토리는 각자 컨테이너 안에 있는 `/xard`에 마운팅 됩니다.
 
 ### 로깅
 
-로그는 각 `./build/nodeN/zard/zar.log`에 저장됩니다. 로그는 docker를 통해서 바로 확인하실 수도 있습니다:
+로그는 각 `./build/nodeN/xard/xar.log`에 저장됩니다. 로그는 docker를 통해서 바로 확인하실 수도 있습니다:
 
 ```
-docker logs -f zardnode0
+docker logs -f xardnode0
 ```
 
 ### 키와 계정
 
-`zarcli`를 이용해 tx를 생성하거나 상태를 쿼리 하시려면, 특정 노드의 `zarcli` 디렉토리를 `home`처럼 이용하시면 됩니다. 예를들어: 
+`xarcli`를 이용해 tx를 생성하거나 상태를 쿼리 하시려면, 특정 노드의 `xarcli` 디렉토리를 `home`처럼 이용하시면 됩니다. 예를들어: 
 
 
 ```shell
-zarcli keys list --home ./build/node0/zarcli
+xarcli keys list --home ./build/node0/xarcli
 ```
 이제 계정이 존재하니 추가로 새로운 계정을 만들고 계정들에게 토큰을 전송할 수 있습니다.
 
 ::: tip
-**참고**: 각 노드의 시드는 `./build/nodeN/zarcli/key_seed.json`에서 확인이 가능하며 `zarcli keys add --restore` 명령을 통해 CLI로 복원될 수 있습니다.
+**참고**: 각 노드의 시드는 `./build/nodeN/xarcli/key_seed.json`에서 확인이 가능하며 `xarcli keys add --restore` 명령을 통해 CLI로 복원될 수 있습니다.
 :::
 
 ### 특수 바이너리
@@ -174,7 +174,7 @@ zarcli keys list --home ./build/node0/zarcli
 다수의 이름을 가진 다수의 바이너리를 소유하신 경우, 어떤 바이너리의 환경 변수(environment variable)를 기준으로 실행할지 선택할 수 있습니다. 바이너리의 패스(path)는 관련 볼륨(volume)에 따라 달라집니다. 예시:
 ```
 # Run with custom binary
-BINARY=zarfoo make localnet-start
+BINARY=xarfoo make localnet-start
 ```
 
 ## 멀티 노드, 리모트, 자동 테스트넷

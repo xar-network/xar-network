@@ -8,8 +8,8 @@ package cdp
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/zar-network/zar-network/x/cdp/internal/keeper"
-	"github.com/zar-network/zar-network/x/cdp/internal/types"
+	"github.com/xar-network/xar-network/x/cdp/internal/keeper"
+	"github.com/xar-network/xar-network/x/cdp/internal/types"
 )
 
 // GenesisState is the state that must be provided at genesis.

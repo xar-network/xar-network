@@ -98,35 +98,35 @@ jobs:
     steps:
       - make:
           target: test-sim-nondeterminism
-          description: "Test Zar non-determinism simulations"
+          description: "Test Xar non-determinism simulations"
 
   test-sim-import-export:
     executor: golang
     steps:
       - make:
           target: test-sim-import-export
-          description: "Test Zar import/export simulation"
+          description: "Test Xar import/export simulation"
 
   test-sim-after-import:
     executor: golang
     steps:
       - make:
           target: test-sim-after-import
-          description: "Test Zar simulation after importing state"
+          description: "Test Xar simulation after importing state"
 
   test-sim-multi-seed-short:
     executor: golang
     steps:
       - make:
           target: test-sim-multi-seed-short
-          description: "Test Zar multi-seed simulation (short-lived)"
+          description: "Test Xar multi-seed simulation (short-lived)"
 
   test-sim-multi-seed-long:
     executor: golang
     steps:
       - make:
           target: test-sim-multi-seed-long
-          description: "Test Zar multi-seed simulation (long-lived)"
+          description: "Test Xar multi-seed simulation (long-lived)"
 
   integration-tests:
     executor: golang
@@ -155,7 +155,7 @@ jobs:
             export VERSION="$(git describe --tags --long | sed 's/v\(.*\)/\1/')"
             export GO111MODULE=on
 <<<<<<< HEAD
-            for pkg in $(go list ./... | grep -v github.com/zar-network/zar-network/cli_test | grep -v '/simulation' | circleci tests split --split-by=timings); do
+            for pkg in $(go list ./... | grep -v github.com/xar-network/xar-network/cli_test | grep -v '/simulation' | circleci tests split --split-by=timings); do
 =======
             mkdir -p /tmp/logs /tmp/workspace/profiles
             for pkg in $(go list ./... | grep -v '/simulation' | circleci tests split); do
@@ -192,7 +192,7 @@ jobs:
           command: |
             excludelist="$(find . -type f -name '*.go' | xargs grep -l 'DONTCOVER')"
             for filename in ${excludelist}; do
-              filename=$(echo $filename | sed 's/^./github.com\/zar-network\/zar-network/g')
+              filename=$(echo $filename | sed 's/^./github.com\/xar-network\/xar-network/g')
               echo "Excluding ${filename} from coverage report..."
               sed -i.bak "/$(echo $filename | sed 's/\//\\\//g')/d" coverage.txt
             done
@@ -201,7 +201,7 @@ jobs:
           command: bash <(curl -s https://codecov.io/bash) -f coverage.txt
 
   localnet:
-    working_directory: /home/circleci/.go_workspace/src/github.com/zar-network/zar-network
+    working_directory: /home/circleci/.go_workspace/src/github.com/xar-network/xar-network
     machine:
       image: circleci/classic:latest
     environment:
@@ -273,10 +273,10 @@ jobs:
           command: source $BASH_ENV
             make test-build
       - run:
-          name: Test full zar simulation
+          name: Test full xar simulation
           command: |
             source $BASH_ENV
-            make sim-zar-fast
+            make sim-xar-fast
 
   docker-image:
     executor: golang
@@ -287,18 +287,18 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - run: |
-          ZARD_VERSION=''
+          XARD_VERSION=''
           if [ "${CIRCLE_BRANCH}" = "master" ]; then
-            ZARD_VERSION="stable"
+            XARD_VERSION="stable"
           elif [ "${CIRCLE_BRANCH}" = "develop" ]; then
-            ZARD_VERSION="develop"
+            XARD_VERSION="develop"
           fi
-          if [ -z "${ZARD_VERSION}" ]; then
+          if [ -z "${XARD_VERSION}" ]; then
             docker build .
           else
-            docker build -t tendermint/zar:$ZARD_VERSION .
+            docker build -t tendermint/xar:$XARD_VERSION .
             docker login --password-stdin -u $DOCKER_USER \<<<$DOCKER_PASS
-            docker push tendermint/zar:$ZARD_VERSION
+            docker push tendermint/xar:$XARD_VERSION
           fi
 
   docker-tagged:
@@ -310,9 +310,9 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - run: |
-          docker build -t tendermint/zar:$CIRCLE_TAG .
+          docker build -t tendermint/xar:$CIRCLE_TAG .
           docker login --password-stdin -u $DOCKER_USER \<<$DOCKER_PASS
-          docker push tendermint/zar:$CIRCLE_TAG
+          docker push tendermint/xar:$CIRCLE_TAG
 
   reproducible-builds:
     executor: golang
@@ -323,24 +323,24 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
-          name: Build zar
+          name: Build xar
           no_output_timeout: 20m
           command: |
             sudo apt-get install -y ruby
             bash -x ./contrib/gitian-build.sh all
             for os in darwin linux windows; do
-              cp gitian-build-${os}/result/zar-${os}-res.yml .
+              cp gitian-build-${os}/result/xar-${os}-res.yml .
               rm -rf gitian-build-${os}/
             done
       - store_artifacts:
-          path: /go/src/github.com/zar-network/zar-network/zar-darwin-res.yml
+          path: /go/src/github.com/xar-network/xar-network/xar-darwin-res.yml
       - store_artifacts:
-          path: /go/src/github.com/zar-network/zar-network/zar-linux-res.yml
+          path: /go/src/github.com/xar-network/xar-network/xar-linux-res.yml
       - store_artifacts:
-          path: /go/src/github.com/zar-network/zar-network/zar-windows-res.yml
+          path: /go/src/github.com/xar-network/xar-network/xar-windows-res.yml
 
 # FIXME: The `setup-contract-tests-data` make target is broken as it completely
-# overrides the .zard directory.
+# overrides the .xard directory.
 #
 #  contract_tests:
 #    executor: golang

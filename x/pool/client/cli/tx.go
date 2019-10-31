@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtxb "github.com/cosmos/cosmos-sdk/x/auth/client/txbuilder"
 	"github.com/spf13/cobra"
-	"github.com/zar-network/zar-network/x/pool/internal/types"
+	"github.com/xar-network/xar-network/x/pool/internal/types"
 )
 
 func GetCmdDepositFunds(cdc *codec.Codec) *cobra.Command {

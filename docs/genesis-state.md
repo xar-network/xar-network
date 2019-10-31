@@ -1,11 +1,11 @@
-# Zar Genesis State
+# Xar Genesis State
 
-Zar genesis state, `GenesisState`, is composed of accounts, various module
+Xar genesis state, `GenesisState`, is composed of accounts, various module
 states and metadata such as genesis transactions. Each module may specify its
 own `GenesisState`. In addition, each module may specify its own genesis state
 validation, import and export functionality.
 
-The Zar genesis state is defined as follows:
+The Xar genesis state is defined as follows:
 
 ```go
 type GenesisState struct {
@@ -20,7 +20,7 @@ type GenesisState struct {
 }
 ```
 
-In the ABCI `initChainer` definition of Zar the `initFromGenesisState` is called
+In the ABCI `initChainer` definition of Xar the `initFromGenesisState` is called
 which internally calls each module's `InitGenesis` providing its own respective
 `GenesisState` as a parameter.
 

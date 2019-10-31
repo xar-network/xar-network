@@ -1,4 +1,4 @@
-# zarcli issue disable
+# xarcli issue disable
 
 ## Description
 
@@ -7,7 +7,7 @@ Non-reversible function setting of token
 ## Usage
 
 ```shell
-zarcli issue disable [issue-id][flags]
+xarcli issue disable [issue-id][flags]
 ```
 
 ## Flags
@@ -20,14 +20,14 @@ zarcli issue disable [issue-id][flags]
 | minting     | bool | false   | false  | Disable the mint              |
 | freeze      | bool | false | false  | Disable freeze          |
 
-**Global flags, query command flags** [zarcli](../README.md)
+**Global flags, query command flags** [xarcli](../README.md)
 
 ## Example
 
 ### disable mint of coin
 
 ```shell
-zarcli issue disable coin174876e800 minting --from $you_wallet_name
+xarcli issue disable coin174876e800 minting --from $you_wallet_name
 ```
 
 After entering the correct password，Disable token minting
@@ -53,7 +53,7 @@ After entering the correct password，Disable token minting
 Query the token
 
 ```shell
-zarcli issue query-issue coin174876e800
+xarcli issue query-issue coin174876e800
 ```
 
 The result is as follows：
@@ -69,7 +69,7 @@ The result is as follows：
   TotalSupply:      			1000000
   Decimals:         			18
   IssueTime:					1558163118
-  Description:	    			{"org":"Hashgard","website":"https://www.zar.com","logo":"https://cdn.zar.com/static/logo.2d949f3d.png","intro":"This is a description of the project"}
+  Description:	    			{"org":"Hashgard","website":"https://www.xar.com","logo":"https://cdn.xar.com/static/logo.2d949f3d.png","intro":"This is a description of the project"}
   BurnOwnerDisabled:  			false
   BurnHolderDisabled:  			false
   BurnFromDisabled:  			false

@@ -14,13 +14,13 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-func TestZardExport(t *testing.T) {
+func TestXardExport(t *testing.T) {
 	db := db.NewMemDB()
-	gapp := NewZarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
 	setGenesis(gapp)
 
 	// Making a new app object with the db, so that initchain hasn't been called
-	newGapp := NewZarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
+	newGapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
 	_, _, err := newGapp.ExportAppStateAndValidators(false, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 }
@@ -28,14 +28,14 @@ func TestZardExport(t *testing.T) {
 // ensure that black listed addresses are properly set in bank keeper
 func TestBlackListedAddrs(t *testing.T) {
 	db := db.NewMemDB()
-	gapp := NewZarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
 
 	for acc := range maccPerms {
 		require.True(t, gapp.bankKeeper.BlacklistedAddr(gapp.supplyKeeper.GetModuleAddress(acc)))
 	}
 }
 
-func setGenesis(gapp *ZarApp) error {
+func setGenesis(gapp *XarApp) error {
 	genesisState := simapp.NewDefaultGenesisState()
 	stateBytes, err := codec.MarshalJSONIndent(gapp.cdc, genesisState)
 	if err != nil {

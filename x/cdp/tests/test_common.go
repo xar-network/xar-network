@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/zar-network/zar-network/x/pricefeed"
+	"github.com/xar-network/xar-network/x/pricefeed"
 )
 
 // Mock app is an ABCI app with an in memory database.

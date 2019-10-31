@@ -1,10 +1,10 @@
-# zarcli issue freeze
+# xarcli issue freeze
 
 ## Description
 When the freeze function is turned on，Owenr freezes the transfer of the specified address.
 ## Usage
 ```shell
- zarcli issue freeze [freeze-Type] [issue-id][acc-address][end-time] [flags]
+ xarcli issue freeze [freeze-Type] [issue-id][acc-address][end-time] [flags]
 ```
 ### freeze-type
 
@@ -18,13 +18,13 @@ When the freeze function is turned on，Owenr freezes the transfer of the specif
 
 ## Flags
 
-**Global flags, query command flags** [zarcli](../README.md)
+**Global flags, query command flags** [xarcli](../README.md)
 
 ## Example
 
 ### Freeze specified account transfer
 ```shell
-zarcli issue freeze in coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\ 253382641454 --from $you_wallet_name
+xarcli issue freeze in coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\ 253382641454 --from $you_wallet_name
 ```
 The result is as follows：
 ```txt

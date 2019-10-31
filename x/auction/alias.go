@@ -7,8 +7,8 @@ Baseline from Kava Cosmos Module
 package auction
 
 import (
-	"github.com/zar-network/zar-network/x/auction/internal/keeper"
-	"github.com/zar-network/zar-network/x/auction/internal/types"
+	"github.com/xar-network/xar-network/x/auction/internal/keeper"
+	"github.com/xar-network/xar-network/x/auction/internal/types"
 )
 
 type (

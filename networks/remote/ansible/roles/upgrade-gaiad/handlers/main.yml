@@ -1,5 +1,5 @@
 ---
 
-- name: restart zard
-  service: name=zard state=restarted
+- name: restart xard
+  service: name=xard state=restarted
 

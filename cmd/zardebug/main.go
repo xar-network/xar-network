@@ -14,7 +14,7 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 
-	zar "github.com/zar-network/zar-network/app"
+	xar "github.com/xar-network/xar-network/app"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -23,9 +23,9 @@ import (
 func init() {
 
 	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount("zar", "zarpub")
-	config.SetBech32PrefixForValidator("zarvaloper", "zarvaloperpub")
-	config.SetBech32PrefixForConsensusNode("zarvalcons", "zarvalconspub")
+	config.SetBech32PrefixForAccount("xar", "xarpub")
+	config.SetBech32PrefixForValidator("xarvaloper", "xarvaloperpub")
+	config.SetBech32PrefixForConsensusNode("xarvalcons", "xarvalconspub")
 	config.Seal()
 
 	rootCmd.AddCommand(txCmd)
@@ -36,14 +36,14 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:          "zardebug",
-	Short:        "Zar debug tool",
+	Use:          "xardebug",
+	Short:        "Xar debug tool",
 	SilenceUsage: true,
 }
 
 var txCmd = &cobra.Command{
 	Use:   "tx",
-	Short: "Decode a zar tx from hex or base64",
+	Short: "Decode a xar tx from hex or base64",
 	RunE:  runTxCmd,
 }
 
@@ -139,7 +139,7 @@ func runPubKeyCmd(cmd *cobra.Command, args []string) error {
 		pubkeyBytes = pubKey[:]
 	}
 
-	cdc := zar.MakeCodec()
+	cdc := xar.MakeCodec()
 	pubKeyJSONBytes, err := cdc.MarshalJSON(pubKey)
 	if err != nil {
 		return err
@@ -226,7 +226,7 @@ func runTxCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	var tx = auth.StdTx{}
-	cdc := zar.MakeCodec()
+	cdc := xar.MakeCodec()
 
 	err = cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx)
 	if err != nil {

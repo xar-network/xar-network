@@ -7,8 +7,8 @@ Baseline from Kava Cosmos Module
 package pricefeed
 
 import (
-	"github.com/zar-network/zar-network/x/pricefeed/internal/keeper"
-	"github.com/zar-network/zar-network/x/pricefeed/internal/types"
+	"github.com/xar-network/xar-network/x/pricefeed/internal/keeper"
+	"github.com/xar-network/xar-network/x/pricefeed/internal/types"
 )
 
 type (

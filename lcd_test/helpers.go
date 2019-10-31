@@ -47,7 +47,7 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/zar-network/zar-network/app"
+	"github.com/xar-network/xar-network/app"
 )
 
 // TODO: Make InitializeTestLCD safe to call in multiple tests at the same time
@@ -70,7 +70,7 @@ func InitializeLCD(nValidators int, initAddrs []sdk.AccAddress, minting bool, po
 	logger = log.NewFilter(logger, log.AllowError())
 
 	db := dbm.NewMemDB()
-	gapp := app.NewZarApp(logger, db, nil, true, 0, baseapp.SetPruning(store.PruneNothing))
+	gapp := app.NewXarApp(logger, db, nil, true, 0, baseapp.SetPruning(store.PruneNothing))
 	cdc = app.MakeCodec()
 
 	genDoc, valConsPubKeys, valOperAddrs, privVal, err := defaultGenesis(config, nValidators, initAddrs, minting)
@@ -308,7 +308,7 @@ func defaultGenesis(config *tmcfg.Config, nValidators int, initAddrs []sdk.AccAd
 // TODO: Clean up the WAL dir or enable it to be not persistent!
 func startTM(
 	tmcfg *tmcfg.Config, logger log.Logger, genDoc *tmtypes.GenesisDoc,
-	privVal tmtypes.PrivValidator, app *app.ZarApp,
+	privVal tmtypes.PrivValidator, app *app.XarApp,
 ) (*nm.Node, error) {
 
 	genDocProvider := func() (*tmtypes.GenesisDoc, error) { return genDoc, nil }
@@ -354,7 +354,7 @@ func startLCD(logger log.Logger, listenAddr string, cdc *codec.Codec) (net.Liste
 	return listener, nil
 }
 
-// NOTE: If making updates here also update cmd/zar/cmd/zarcli/main.go
+// NOTE: If making updates here also update cmd/xar/cmd/xarcli/main.go
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)

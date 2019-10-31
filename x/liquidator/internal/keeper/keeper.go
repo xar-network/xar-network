@@ -5,8 +5,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
 
-	"github.com/zar-network/zar-network/x/auction"
-	"github.com/zar-network/zar-network/x/liquidator/internal/types"
+	"github.com/xar-network/xar-network/x/auction"
+	"github.com/xar-network/xar-network/x/liquidator/internal/types"
 )
 
 type Keeper struct {

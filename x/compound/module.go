@@ -7,14 +7,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/zar-network/zar-network/x/cdp/client/cli"
-	"github.com/zar-network/zar-network/x/cdp/internal/keeper"
+	"github.com/xar-network/xar-network/x/cdp/client/cli"
+	"github.com/xar-network/xar-network/x/cdp/internal/keeper"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/zar-network/zar-network/x/compound/client/rest"
+	"github.com/xar-network/xar-network/x/compound/client/rest"
 )
 
 var (

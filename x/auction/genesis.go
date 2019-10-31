@@ -9,7 +9,7 @@ package auction
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/zar-network/zar-network/x/auction/internal/keeper"
+	"github.com/xar-network/xar-network/x/auction/internal/keeper"
 )
 
 // GenesisState - crisis genesis state

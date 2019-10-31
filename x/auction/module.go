@@ -13,14 +13,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/zar-network/zar-network/x/auction/client/cli"
-	"github.com/zar-network/zar-network/x/auction/internal/keeper"
+	"github.com/xar-network/xar-network/x/auction/client/cli"
+	"github.com/xar-network/xar-network/x/auction/internal/keeper"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/zar-network/zar-network/x/auction/client/rest"
+	"github.com/xar-network/xar-network/x/auction/client/rest"
 )
 
 var (

@@ -6,8 +6,8 @@
   run_once: true
   become: no
 
-- name: Create zard user
-  user: name=zard home=/home/zard shell=/bin/bash
+- name: Create xard user
+  user: name=xard home=/home/xard shell=/bin/bash
 
 - name: Copy binary
   copy:
@@ -16,7 +16,7 @@
     mode: 0755
 
 - name: Copy service file
-  copy: src=zard.service dest=/etc/systemd/system/zard.service mode=0755
+  copy: src=xard.service dest=/etc/systemd/system/xard.service mode=0755
   notify: reload systemd
 
 - name: Get node ID
@@ -25,12 +25,12 @@
   register: nodeid
 
 - name: Create initial transaction
-  command: "/usr/bin/zard init gen-tx --name=node{{nodeid.stdout_lines[0]}} --ip={{inventory_hostname}}"
+  command: "/usr/bin/xard init gen-tx --name=node{{nodeid.stdout_lines[0]}} --ip={{inventory_hostname}}"
   register: gentxresult
   become: yes
-  become_user: zard
+  become_user: xard
   args:
-    creates: /home/zard/.zard/config/gentx
+    creates: /home/xard/.xard/config/gentx
 
 - name: Get wallet word seed from result of initial transaction locally
   when: gentxresult["changed"]
@@ -46,7 +46,7 @@
   connection: local
 
 - name: Find gentx file
-  command: "ls /home/zard/.zard/config/gentx"
+  command: "ls /home/xard/.xard/config/gentx"
   changed_when: false
   register: gentxfile
 
@@ -58,7 +58,7 @@
 - name: Get gen-tx file
   fetch:
     dest: files/
-    src: "/home/zard/.zard/config/gentx/{{gentxfile.stdout_lines[0]}}"
+    src: "/home/xard/.xard/config/gentx/{{gentxfile.stdout_lines[0]}}"
     flat: yes
 
 - name: Compress gathered gen-tx files locally
@@ -67,12 +67,12 @@
   connection: local
 
 - name: Unpack gen-tx archive
-  unarchive: src=files/gen-tx.tgz dest=/home/zard/.zard/config/gentx owner=zard
+  unarchive: src=files/gen-tx.tgz dest=/home/xard/.xard/config/gentx owner=xard
 
 - name: Generate genesis.json
-  command: "/usr/bin/zard init --with-txs --name=node{{nodeid.stdout_lines[0]}} --chain-id={{TESTNET_NAME}}"
+  command: "/usr/bin/xard init --with-txs --name=node{{nodeid.stdout_lines[0]}} --chain-id={{TESTNET_NAME}}"
   become: yes
-  become_user: zard
+  become_user: xard
   args:
-    creates: /home/zard/.zard/config/genesis.json
+    creates: /home/xard/.xard/config/genesis.json
 

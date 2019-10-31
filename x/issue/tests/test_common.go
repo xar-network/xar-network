@@ -18,9 +18,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/mock"
 
-	"github.com/zar-network/zar-network/x/issue"
-	"github.com/zar-network/zar-network/x/issue/internal/keeper"
-	"github.com/zar-network/zar-network/x/issue/internal/types"
+	"github.com/xar-network/xar-network/x/issue"
+	"github.com/xar-network/xar-network/x/issue/internal/keeper"
+	"github.com/xar-network/xar-network/x/issue/internal/types"
 )
 
 var (

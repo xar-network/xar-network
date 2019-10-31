@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 
-	"github.com/zar-network/zar-network/x/pool/internal/types"
+	"github.com/xar-network/xar-network/x/pool/internal/types"
 )
 
 func GetCmdGetFunds(queryRoute string, cdc *codec.Codec) *cobra.Command {

@@ -70,17 +70,17 @@
 
 ### 어떻게 테스트넷에 참여할 수 있나요?
 
-테스트넷은 로치 전에 검증인 세팅을 확인할 수 있는 좋은 환경입니다. 테스트넷에 참가함으로 본인이 검증인 운영을 위해 준비해왔다는 것을 보여주는 기회가 될 수도 있습니다. 테스트넷에 관련된 정보는 [여기](https://github.com/cosmos/cosmos-sdk/tree/develop/cmd/zar/testnets) 와 [여기](https://github.com/cosmos/testnets)에서 확인하실 수 있습니다.
+테스트넷은 로치 전에 검증인 세팅을 확인할 수 있는 좋은 환경입니다. 테스트넷에 참가함으로 본인이 검증인 운영을 위해 준비해왔다는 것을 보여주는 기회가 될 수도 있습니다. 테스트넷에 관련된 정보는 [여기](https://github.com/cosmos/cosmos-sdk/tree/develop/cmd/xar/testnets) 와 [여기](https://github.com/cosmos/testnets)에서 확인하실 수 있습니다.
 
 ### 어떤 종류들의 '키'가 있나요?
 
 간략하게 설명하면 두가지 종류의 키가 있습니다:
 
 * **텐더민트 키**: 이 키는 블록 해시를 서명할때 이용되는 고유 키입니다. 해당 키는 `cosmosvalconspub` 퍼블릭키와 연관되어 있습니다.
-  * zard init으로 노드가 생성될때 키가 생성되며
-  * 해당 키 정보는 `zard tendermint show-validator` 명령어로 확인하실 수 있습니다. 예) `cosmosvalconspub1zcjduc3qcyj09qc03elte23zwshdx92jm6ce88fgc90rtqhjx8v0608qh5ssp0w94c`
+  * xard init으로 노드가 생성될때 키가 생성되며
+  * 해당 키 정보는 `xard tendermint show-validator` 명령어로 확인하실 수 있습니다. 예) `cosmosvalconspub1zcjduc3qcyj09qc03elte23zwshdx92jm6ce88fgc90rtqhjx8v0608qh5ssp0w94c`
 
-* **애플리케이션 키**: 이 키는 애플리케이션에 의하여 생성되고 트랜잭션을 서명할때 이용됩니다. 검증인으로써는 이 키를 스테이킹 관련 트랜잭션과 거버넌스 관련 트랜잭션을 서명할때 이용하시게 됩니다. 애플리케이션 키는 `cosmospub` 퍼블릭키와 `cosmos` 주소와 연관되어있습니다. 두 키 모두 `zarcli keys add` 명령으로 생성됩니다.
+* **애플리케이션 키**: 이 키는 애플리케이션에 의하여 생성되고 트랜잭션을 서명할때 이용됩니다. 검증인으로써는 이 키를 스테이킹 관련 트랜잭션과 거버넌스 관련 트랜잭션을 서명할때 이용하시게 됩니다. 애플리케이션 키는 `cosmospub` 퍼블릭키와 `cosmos` 주소와 연관되어있습니다. 두 키 모두 `xarcli keys add` 명령으로 생성됩니다.
   * 참고: 특정 검증인의 운영키는 애플리케이션키와 연관이 있으나 `cosmosvaloper`와 `cosmosvaloperpub`같은 특정 용도에만 맞는 사전 정의된 prefix를 이용합니다.
 
 ### 밸리데이터들의 '상태(state)'에는 어떤 것들이 있나요?
@@ -100,7 +100,7 @@
 
 ### 테스트넷 토큰은 어떻게 받을 수 있나요?
 
-테스트넷 토큰을 받고 싶으시다면 [faucet](https://zar.faucetcosmos.network/)을 통해서 받으실 수 있습니다.
+테스트넷 토큰을 받고 싶으시다면 [faucet](https://xar.faucetcosmos.network/)을 통해서 받으실 수 있습니다.
 
 ### 활성화된 검증인이 되기 위해서 최소 필요한 아톰 수량이 있나요?
 

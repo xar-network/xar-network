@@ -1,19 +1,19 @@
-# zarcli issue transfer-ownership
+# xarcli issue transfer-ownership
 
 ## Description
 Token owner transfer the ownership to new account
 ## Usage
 ```shell
- zarcli issue transfer-ownership [issue-id] [to_address] [flags]
+ xarcli issue transfer-ownership [issue-id] [to_address] [flags]
 ```
 ## Flags
 
-**Global flags, query command flags** [zarcli](../README.md)
+**Global flags, query command flags** [xarcli](../README.md)
 
 ## Example
 ### transfer ownership
 ```shell
- zarcli issue transfer-ownership coin174876e802 gard1lgs73mwr56u2f4z4yz36w8mf7ym50e7myrqn65 --from $you_wallet_name
+ xarcli issue transfer-ownership coin174876e802 gard1lgs73mwr56u2f4z4yz36w8mf7ym50e7myrqn65 --from $you_wallet_name
 ```
 The result is as follows：
 ```txt

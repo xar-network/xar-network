@@ -4,14 +4,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zar-network/zar-network/x/issue/types"
+	"github.com/xar-network/xar-network/x/issue/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/zar-network/zar-network/x/issue"
+	"github.com/xar-network/xar-network/x/issue"
 )
 
 func TestCreateIssue(t *testing.T) {

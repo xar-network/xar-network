@@ -2,7 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/zar-network/zar-network/x/auction/internal/types"
+	"github.com/xar-network/xar-network/x/auction/internal/types"
 )
 
 // EndBlocker runs at the end of every block.

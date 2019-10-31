@@ -1,58 +1,58 @@
 version: '3'
 
 services:
-  zardnode0:
-    container_name: zardnode0
-    image: "tendermint/zardnode"
+  xardnode0:
+    container_name: xardnode0
+    image: "tendermint/xardnode"
     ports:
       - "26656-26657:26656-26657"
     environment:
       - ID=0
-      - LOG=${LOG:-zard.log}
+      - LOG=${LOG:-xard.log}
     volumes:
-      - ./build:/zard:Z
+      - ./build:/xard:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.2
 
-  zardnode1:
-    container_name: zardnode1
-    image: "tendermint/zardnode"
+  xardnode1:
+    container_name: xardnode1
+    image: "tendermint/xardnode"
     ports:
       - "26659-26660:26656-26657"
     environment:
       - ID=1
-      - LOG=${LOG:-zard.log}
+      - LOG=${LOG:-xard.log}
     volumes:
-      - ./build:/zard:Z
+      - ./build:/xard:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.3
 
-  zardnode2:
-    container_name: zardnode2
-    image: "tendermint/zardnode"
+  xardnode2:
+    container_name: xardnode2
+    image: "tendermint/xardnode"
     environment:
       - ID=2
-      - LOG=${LOG:-zard.log}
+      - LOG=${LOG:-xard.log}
     ports:
       - "26661-26662:26656-26657"
     volumes:
-      - ./build:/zard:Z
+      - ./build:/xard:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.4
 
-  zardnode3:
-    container_name: zardnode3
-    image: "tendermint/zardnode"
+  xardnode3:
+    container_name: xardnode3
+    image: "tendermint/xardnode"
     environment:
       - ID=3
-      - LOG=${LOG:-zard.log}
+      - LOG=${LOG:-xard.log}
     ports:
       - "26663-26664:26656-26657"
     volumes:
-      - ./build:/zard:Z
+      - ./build:/xard:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.5

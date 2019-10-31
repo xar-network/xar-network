@@ -2,7 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/zar-network/zar-network/x/pricefeed"
+	"github.com/xar-network/xar-network/x/pricefeed"
 )
 
 type bankKeeper interface {

@@ -1,6 +1,6 @@
-# Zar 创世状态（Genesis State）
+# Xar 创世状态（Genesis State）
 
-Zar 创世状态`GenesisState`由账户、各种模块状态和元数据组成，例如创世交易。 每个模块可以指定自己的`GenesisState`。 此外，每个模块可以指定自己的创世状态有效性验证、导入和导出功能。
+Xar 创世状态`GenesisState`由账户、各种模块状态和元数据组成，例如创世交易。 每个模块可以指定自己的`GenesisState`。 此外，每个模块可以指定自己的创世状态有效性验证、导入和导出功能。
 
 在 Gaia 的 ABCI`initChainer`定义中调用`initFromGenesisState`，它在内部调用每个模块的`InitGenesis`，提供它自己的`GenesisState`作为参数。
 

@@ -4,7 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/zar-network/zar-network/x/pricefeed/internal/types"
+	"github.com/xar-network/xar-network/x/pricefeed/internal/types"
 )
 
 // price Takes an [assetcode] and returns CurrentPrice for that asset

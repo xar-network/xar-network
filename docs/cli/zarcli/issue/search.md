@@ -1,21 +1,21 @@
-# zarcli issue search
+# xarcli issue search
 
 ## Description
 Search issues based on symbol
 
 ## Usage
 ```shell
-zarcli issue search [symbol] [flags]
+xarcli issue search [symbol] [flags]
 ```
 ## Flags
 
-**Global flags, query command flags** [zarcli](../README.md)
+**Global flags, query command flags** [xarcli](../README.md)
 
 ## Example
 
 ### Search
 ```shell
-zarcli issue search AAA
+xarcli issue search AAA
 ```
 ```txt
  [
@@ -28,7 +28,7 @@ zarcli issue search AAA
         "symbol":"AAA",
         "total_supply":"10000000001023",
         "decimals":"18",
-        "description":"{"org":"Hashgard","website":"https://www.zar.com","logo":"https://cdn.zar.com/static/logo.2d949f3d.png","intro":"This is a description of the project"}",
+        "description":"{"org":"Hashgard","website":"https://www.xar.com","logo":"https://cdn.xar.com/static/logo.2d949f3d.png","intro":"This is a description of the project"}",
         "burn_owner_disabled":false,
         "burn_holder_disabled":false,
         "burn_from_disabled":false,

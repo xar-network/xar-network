@@ -20,20 +20,20 @@ import (
 	"github.com/cosmos/modules/incubator/nft"
 
 	nftrest "github.com/cosmos/modules/incubator/nft/client/rest"
-	auctionrest "github.com/zar-network/zar-network/x/auction/client/rest"
-	cdprest "github.com/zar-network/zar-network/x/cdp/client/rest"
-	issuerest "github.com/zar-network/zar-network/x/issue/client/rest"
-	liquidatorrest "github.com/zar-network/zar-network/x/liquidator/client/rest"
-	"github.com/zar-network/zar-network/x/pricefeed"
-	pricerest "github.com/zar-network/zar-network/x/pricefeed/client/rest"
+	auctionrest "github.com/xar-network/xar-network/x/auction/client/rest"
+	cdprest "github.com/xar-network/xar-network/x/cdp/client/rest"
+	issuerest "github.com/xar-network/xar-network/x/issue/client/rest"
+	liquidatorrest "github.com/xar-network/xar-network/x/liquidator/client/rest"
+	"github.com/xar-network/xar-network/x/pricefeed"
+	pricerest "github.com/xar-network/xar-network/x/pricefeed/client/rest"
 
 	nftcmd "github.com/cosmos/modules/incubator/nft/client/cli"
-	auctioncmd "github.com/zar-network/zar-network/x/auction/client/cli"
-	cdpcmd "github.com/zar-network/zar-network/x/cdp/client/cli"
-	issuecmd "github.com/zar-network/zar-network/x/issue/client/cli"
-	liquidatorcmd "github.com/zar-network/zar-network/x/liquidator/client/cli"
-	pricefeedcmd "github.com/zar-network/zar-network/x/pricefeed/client/cli"
-	uniswapcmd "github.com/zar-network/zar-network/x/uniswap/client/cli"
+	auctioncmd "github.com/xar-network/xar-network/x/auction/client/cli"
+	cdpcmd "github.com/xar-network/xar-network/x/cdp/client/cli"
+	issuecmd "github.com/xar-network/xar-network/x/issue/client/cli"
+	liquidatorcmd "github.com/xar-network/xar-network/x/liquidator/client/cli"
+	pricefeedcmd "github.com/xar-network/xar-network/x/pricefeed/client/cli"
+	uniswapcmd "github.com/xar-network/xar-network/x/uniswap/client/cli"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -41,7 +41,7 @@ import (
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/cli"
 
-	"github.com/zar-network/zar-network/app"
+	"github.com/xar-network/xar-network/app"
 )
 
 func main() {
@@ -53,7 +53,7 @@ func main() {
 
 	// Read in the configuration file for the sdk
 	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount("zar", "zarp")
+	config.SetBech32PrefixForAccount("xar", "xarp")
 	config.SetBech32PrefixForValidator("zva", "zvap")
 	config.SetBech32PrefixForConsensusNode("zca", "zcap")
 	config.Seal()
@@ -63,8 +63,8 @@ func main() {
 	// with the cdc
 
 	rootCmd := &cobra.Command{
-		Use:   "zarcli",
-		Short: "Command line interface for interacting with zard",
+		Use:   "xarcli",
+		Short: "Command line interface for interacting with xard",
 	}
 
 	// Add --chain-id to persistent flags and mark it required

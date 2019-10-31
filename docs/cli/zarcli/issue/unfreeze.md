@@ -1,10 +1,10 @@
-# zarcli issue unfreeze
+# xarcli issue unfreeze
 
 ## Description
 Token owner unFreeze the transfer from a address
 ## Usage
 ```shell
- zarcli issue unfreeze [unfreeze-type] [issue-id][address][flags]
+ xarcli issue unfreeze [unfreeze-type] [issue-id][address][flags]
 ```
 ### unfreeze-Type
 
@@ -14,12 +14,12 @@ Token owner unFreeze the transfer from a address
 | out    | Transfer out|
 | In-out | Transfer in and Transfer out|
 
-**Global flags, query command flags** [zarcli](../README.md)
+**Global flags, query command flags** [xarcli](../README.md)
 
 ## Example
 ### Unfreeze the transfer  of an address
 ```shell
-zarcli issue unfreeze in coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n --from $you_wallet_name
+xarcli issue unfreeze in coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n --from $you_wallet_name
 ```
 The result is as follows：
 ```txt

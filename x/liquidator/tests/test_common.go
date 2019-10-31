@@ -11,9 +11,9 @@ import (
 	dbm "github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/zar-network/zar-network/x/auction"
-	"github.com/zar-network/zar-network/x/cdp"
-	"github.com/zar-network/zar-network/x/pricefeed"
+	"github.com/xar-network/xar-network/x/auction"
+	"github.com/xar-network/xar-network/x/cdp"
+	"github.com/xar-network/xar-network/x/pricefeed"
 )
 
 // Avoid cluttering test cases with long function name

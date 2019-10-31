@@ -1,4 +1,4 @@
-# zar command
+# xar command
 
 ## Description
 

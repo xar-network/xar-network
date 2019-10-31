@@ -16,7 +16,7 @@ v    Please also ensure that this is not a duplicate issue :)
 
 ## Version
 
-<!-- git commit hash, output of `zarcli --version`, output of `zard --version` -->
+<!-- git commit hash, output of `xarcli --version`, output of `xard --version` -->
 
 ## Steps to Reproduce
 

@@ -1,13 +1,13 @@
-# zar export
+# xar export
 
 ## Description
 
-zar can export blockchain state at any height and output json format string.
+xar can export blockchain state at any height and output json format string.
 
 ## Usage
 
 ```shell
-zar export [flags]
+xar export [flags]
 ```
 
 ## Flags
@@ -21,4 +21,4 @@ zar export [flags]
 
 ## Example
 
-`zar export`
+`xar export`

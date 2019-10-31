@@ -1,4 +1,4 @@
-# zarlcd User documentation
+# xarlcd User documentation
 
 ## Basic function introduction
 
@@ -6,15 +6,15 @@
 2. Verify query proof
 
 
-## zarlcd Usage
+## xarlcd Usage
 
-zarlcd has three subcommands:
+xarlcd has three subcommands:
 
 | subcommand  | Description           | Example command                           |
 | ------- | ------------------------- | ----------------------------------------- |
-| help    | Print the zarlcd help           | zarlcd help               |
-| version | Print the zarlcd version        | zarlcd version            |
-| start   | Start zarLCD node | zarlcd start --chain-id=`<chain-id>` |
+| help    | Print the xarlcd help           | xarlcd help               |
+| version | Print the xarlcd version        | xarlcd version            |
+| start   | Start xarLCD node | xarlcd start --chain-id=`<chain-id>` |
 
 ### start subcommands
 
@@ -44,27 +44,27 @@ zarlcd has three subcommands:
 | -------- | ------ | --------------------- | -------- | ----------------------------------------------- |
 | chain-id | string | null                  | true     | Chain ID of tendermint node                      |
 | encoding | string | "hex"                 | false    | Binary encoding (hex|b64|btc)|
-| home     | string | "\$HOME/.zarlcd" | false    | directory for config and data|
+| home     | string | "\$HOME/.xarlcd" | false    | directory for config and data|
 | output   | string | text                  | false    | Output format (text|json)  |
 | trace    | bool   | false                 | false    | print out full stack trace on errors                     |
 
 ## Example Commands
 
-1. By default, zarLCD doesn't trust the connected full node. But if you are sure about that the connected full node is trustable, then you should run zarLCD with --trust-node option:
+1. By default, xarLCD doesn't trust the connected full node. But if you are sure about that the connected full node is trustable, then you should run xarLCD with --trust-node option:
 
 ```shell
-zarlcd start --chain-id=<chain-id> --trust-node
+xarlcd start --chain-id=<chain-id> --trust-node
 ```
 
-2. If you want to access your zarlcd in another machine, you have to specify --laddr, for instance:
+2. If you want to access your xarlcd in another machine, you have to specify --laddr, for instance:
 
 ```shell
-zarlcd start --chain-id=<chain-id> --laddr=tcp://0.0.0.0:1317
+xarlcd start --chain-id=<chain-id> --laddr=tcp://0.0.0.0:1317
 ```
 
 ## REST APIs
 
-Once zarlcd is started,  you can open localhost:1317/swagger-ui/ in your explorer and all restful APIs will be shown. The swagger-ui page has detailed description about APIs' functionality and required parameters. Here we just list all APIs and introduce their functionality briefly.
+Once xarlcd is started,  you can open localhost:1317/swagger-ui/ in your explorer and all restful APIs will be shown. The swagger-ui page has detailed description about APIs' functionality and required parameters. Here we just list all APIs and introduce their functionality briefly.
 
 1. Tendermint APIs, such as query blocks, transactions and validator set
     1. `GET /node_info`: The properties of the connected node
@@ -133,7 +133,7 @@ Once zarlcd is started,  you can open localhost:1317/swagger-ui/ in your explore
     5. `GET /distribution/{delegatorAddr}/distrInfos`: Query the entrusted income distribution information of all the principals
     6. `GET /distribution/{validatorAddr}/valDistrInfo`: Query the validator revenue distribution information
 8. Query app version
-    1. `GET /version`: Version of zarHUB
+    1. `GET /version`: Version of xarHUB
     2. `GET /node_version`: Version of the connected node
 
 ## Special Parameters

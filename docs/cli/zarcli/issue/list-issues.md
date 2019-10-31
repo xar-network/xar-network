@@ -1,4 +1,4 @@
-# zarcli issue list-issues
+# xarcli issue list-issues
 
 ## Description
 
@@ -7,7 +7,7 @@ Query the list of issuing tokens
 ## Usage
 
 ```shell
-zarcli issue list-issues [flags]
+xarcli issue list-issues [flags]
 ```
 
 ## Flags
@@ -18,14 +18,14 @@ zarcli issue list-issues [flags]
 | --limit          | int    | false    | 30     | Number of returns per time|
 | --start-issue-id | string | false    |    | Starting issue-id|
 
-**Global flags, query command flags** [zarcli](../README.md)
+**Global flags, query command flags** [xarcli](../README.md)
 
 ## Example
 
 ### Query the list of issuing tokens
 
 ```shell
-zarcli issue list-issues
+xarcli issue list-issues
 ```
 ```txt
 [
@@ -63,7 +63,7 @@ zarcli issue list-issues
 ```
 
 ```shell
-zarcli issue list-issues --limit 1 --start-issue-id coin174876e801
+xarcli issue list-issues --limit 1 --start-issue-id coin174876e801
 ```
 ```txt
 [
@@ -86,7 +86,7 @@ zarcli issue list-issues --limit 1 --start-issue-id coin174876e801
 ```
 
 ```shell
-zarcli issue list-issues --address=gard1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx
+xarcli issue list-issues --address=gard1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx
 ```
 ```txt
 [

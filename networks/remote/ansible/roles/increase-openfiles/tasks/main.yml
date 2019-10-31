@@ -11,12 +11,12 @@
     src: 91-nofiles.conf
     dest: /etc/security/limits.d
 
-- name: Set zar filehandle Limits
+- name: Set xar filehandle Limits
   copy:
     src: limits.conf
     dest: "/lib/systemd/system/{{item}}.service.d"
   notify: reload systemctl
   with_items:
-    - zard
-    - zarcli
+    - xard
+    - xarcli
 

@@ -1,4 +1,4 @@
-# zar start
+# xar start
 
 ## Description
 
@@ -7,7 +7,7 @@ Run the full node
 ## Usage
 
 ```shell
-zar start [flags]
+xar start [flags]
 ```
 
 ## Flags
@@ -41,5 +41,5 @@ zar start [flags]
 ## Example
 
 ```shell
-zar start --home=/root/.zar
+xar start --home=/root/.xar
 ```

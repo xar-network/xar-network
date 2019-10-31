@@ -1,7 +1,7 @@
-# Makefile for the "zardnode" docker image.
+# Makefile for the "xardnode" docker image.
 
 all:
-	docker build --tag tendermint/zardnode zardnode
+	docker build --tag tendermint/xardnode xardnode
 
 .PHONY: all
 

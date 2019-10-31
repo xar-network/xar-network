@@ -1,4 +1,4 @@
-# zar unsafe-reset-all
+# xar unsafe-reset-all
 
 ## Description
 
@@ -7,7 +7,7 @@ Resets the blockchain database, removes address book files, and resets priv_vali
 ## Usage
 
 ```shell
-zar unsafe-reset-all [flags]
+xar unsafe-reset-all [flags]
 ```
 
 ## Flags
@@ -15,10 +15,10 @@ zar unsafe-reset-all [flags]
 | Name, shorthand|Default     | description               | Required  |
 | ---------- | ----------- | ------------------------- | -------- |
 | -h, --help |             | help for unsafe-reset-all| false  |
-| --home     | ~/.zar | directory for config and data  | false    |
+| --home     | ~/.xar | directory for config and data  | false    |
 
 ## Example
 
 ``` shell
-zar unsafe-reset-all
+xar unsafe-reset-all
 ```

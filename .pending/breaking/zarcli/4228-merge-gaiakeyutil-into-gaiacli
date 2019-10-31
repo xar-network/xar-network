@@ -1,2 +1,2 @@
-#4228 Merge zarkeyutil functionality into zarcli keys.
-Drop `zarkeyutil` in favor of new `zarcli keys parse` command. Syntax and semantic are preserved.
+#4228 Merge xarkeyutil functionality into xarcli keys.
+Drop `xarkeyutil` in favor of new `xarcli keys parse` command. Syntax and semantic are preserved.

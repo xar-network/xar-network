@@ -5,11 +5,11 @@ instances:
   search_string: ['ssh', 'sshd']
   thresholds:
     critical: [1, 5]
-- name: zard
-  search_string: ['zard']
+- name: xard
+  search_string: ['xard']
   thresholds:
     critical: [1, 1]
-- name: zarcli
-  search_string: ['zarcli']
+- name: xarcli
+  search_string: ['xarcli']
   thresholds:
     critical: [1, 1]
