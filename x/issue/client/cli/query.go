@@ -83,7 +83,7 @@ func QueryAllowanceCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(3),
 		Short:   "Query allowance",
 		Long:    "Query the amount of tokens that an owner allowed to a spender",
-		Example: "$ xar-networkcli issue query-allowance coin174876e800 gard1zu85q8a7wev675k527y7keyrea7wu7crr9vdrs gard1vud9ptwagudgq7yht53cwuf8qfmgkd0qcej0ah",
+		Example: "$ xar-networkcli issue query-allowance coin174876e800 xar1zu85q8a7wev675k527y7keyrea7wu7crr9vdrs xar1vud9ptwagudgq7yht53cwuf8qfmgkd0qcej0ah",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			issueID := args[0]
@@ -117,7 +117,7 @@ func QueryFreezeCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(2),
 		Short:   "Query freeze",
 		Long:    "Query freeze the transfer from a address",
-		Example: "$ xar-networkcli issue query-freeze coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
+		Example: "$ xar-networkcli issue query-freeze coin174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			issueID := args[0]

@@ -46,14 +46,14 @@ The result is as follows：
     - action = issue
     - category = issue
     - issue-id = coin174876e802
-    - sender = gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
+    - sender = xar1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
 }
 ```
 
 Query account
 
 ```shell
-xarcli bank account gard1f203m5q7hr4tkf0vredrn4wpxkx7zngn4pntye
+xarcli bank account xar1f203m5q7hr4tkf0vredrn4wpxkx7zngn4pntye
 ```
 
 There is a `coin (issue-id)` token in your token list.
@@ -61,7 +61,7 @@ There is a `coin (issue-id)` token in your token list.
 ```shell
 {
  Account:
-  Address:       gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
+  Address:       xar1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
   Pubkey:        gardpub1addwnpepqfpd8mkl3jg43fw7y02fe99cgaxutf5npv9y9gx9dvrrcdwl36shv694apw
   Coins:         9999999990001issuename(coin174876e802)
   AccountNumber: 0

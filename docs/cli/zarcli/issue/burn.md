@@ -29,6 +29,6 @@ The result is as follows：
     - action = issue_burn_holder
     - category = issue
     - issue-id = coin174876e802
-    - sender = gard1lgs73mwr56u2f4z4yz36w8mf7ym50e7myrqn65
+    - sender = xar1lgs73mwr56u2f4z4yz36w8mf7ym50e7myrqn65
 }
 ```

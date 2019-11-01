@@ -38,7 +38,7 @@ The result is as follows：
     - action = issue_description
     - category = issue
     - issue-id = coin174876e802
-    - sender = gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
+    - sender = xar1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
 }
 ```
 ### Query issue information
@@ -50,8 +50,8 @@ The result is as follows：
 {
 Issue:
   IssueId:          			coin174876e802
-  Issuer:           			gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
-  Owner:           				gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
+  Issuer:           			xar1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
+  Owner:           				xar1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
   Name:             			issuename
   Symbol:    	    			AAA
   TotalSupply:      			9999999991024

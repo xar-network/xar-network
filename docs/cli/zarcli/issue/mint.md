@@ -19,7 +19,7 @@ With the additional switch turned on，Owner Add tokens for yourself or add toke
 
 ### Add tokens to the specified address
 ```shell
-xarcli issue mint coin174876e802 9999 --to=gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7 --from $you_wallet_name
+xarcli issue mint coin174876e802 9999 --to=xar1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7 --from $you_wallet_name
 ```
 The result is as follows：
 ```txt
@@ -35,6 +35,6 @@ The result is as follows：
     - action = issue_mint
     - category = issue
     - issue-id = coin174876e802
-    - sender = gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
+    - sender = xar1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
 }
 ```

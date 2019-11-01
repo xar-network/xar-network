@@ -20,8 +20,8 @@ xarcli issue query-issue coin174876e800
 {
 Issue:
   IssueId:          			coin174876e802
-  Issuer:           			gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
-  Owner:           				gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
+  Issuer:           			xar1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
+  Owner:           				xar1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
   Name:             			issuename
   Symbol:    	    			AAA
   TotalSupply:      			10000000001023

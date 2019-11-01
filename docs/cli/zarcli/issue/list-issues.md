@@ -31,8 +31,8 @@ xarcli issue list-issues
 [
  {
   "issue_id": "coin174876e801",
-  "issuer": "gard1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
-  "owner": "gard1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
+  "issuer": "xar1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
+  "owner": "xar1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
   "issue_time": "2019-04-19T06:23:00.748062914Z",
   "name": "joe234234",
   "symbol": "AAA",
@@ -46,8 +46,8 @@ xarcli issue list-issues
  },
  {
   "issue_id": "coin174876e800",
-  "issuer": "gard1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
-  "owner": "gard1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
+  "issuer": "xar1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
+  "owner": "xar1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
   "issue_time": "2019-04-19T06:21:12.475597314Z",
   "name": "joe2342342344444",
   "symbol": "JOE",
@@ -69,8 +69,8 @@ xarcli issue list-issues --limit 1 --start-issue-id coin174876e801
 [
  {
   "issue_id": "coin174876e800",
-  "issuer": "gard1vf7pnhwh5v4lmdp59dms2andn2hhperghppkxc",
-  "owner": "gard1vf7pnhwh5v4lmdp59dms2andn2hhperghppkxc",
+  "issuer": "xar1vf7pnhwh5v4lmdp59dms2andn2hhperghppkxc",
+  "owner": "xar1vf7pnhwh5v4lmdp59dms2andn2hhperghppkxc",
   "issue_time": "2019-04-18T06:05:01.378656183Z",
   "name": "foocoin",
   "symbol": "FOO",
@@ -86,14 +86,14 @@ xarcli issue list-issues --limit 1 --start-issue-id coin174876e801
 ```
 
 ```shell
-xarcli issue list-issues --address=gard1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx
+xarcli issue list-issues --address=xar1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx
 ```
 ```txt
 [
  {
   "issue_id": "coin174876e801",
-  "issuer": "gard1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
-  "owner": "gard1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
+  "issuer": "xar1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
+  "owner": "xar1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
   "issue_time": "2019-04-19T06:23:00.748062914Z",
   "name": "joe234234",
   "symbol": "AAA",
@@ -107,8 +107,8 @@ xarcli issue list-issues --address=gard1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx
  },
  {
   "issue_id": "coin174876e800",
-  "issuer": "gard1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
-  "owner": "gard1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
+  "issuer": "xar1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
+  "owner": "xar1sepa9tuxt238xj3jmvf98k6uk5z7wuwmm4f4mx",
   "issue_time": "2019-04-19T06:21:12.475597314Z",
   "name": "joe2342342344444",
   "symbol": "JOE",

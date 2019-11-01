@@ -322,9 +322,9 @@ func IssueUnFreeCmd(cdc *codec.Codec) *cobra.Command {
 			"%s:The address can transfer in\n"+
 			"%s:The address can transfer out\n"+
 			"%s:The address can transfer in and out", types.FreezeIn, types.FreezeOut, types.FreezeInAndOut),
-		Example: "$ xarcli issue unfreeze coin_key in coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
-			"$ xarcli issue unfreeze coin_key out coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
-			"$ xarcli issue unfreeze coin_key in-out coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
+		Example: "$ xarcli issue unfreeze coin_key in coin174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
+			"$ xarcli issue unfreeze coin_key out coin174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
+			"$ xarcli issue unfreeze coin_key in-out coin174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return issueFreeze(cdc, args, false)
 		},

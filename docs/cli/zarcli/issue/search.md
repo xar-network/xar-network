@@ -21,8 +21,8 @@ xarcli issue search AAA
  [
     {
         "issue_id":"coin174876e802",
-        "issuer":"gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7",
-        "owner":"gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7",
+        "issuer":"xar1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7",
+        "owner":"xar1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7",
         "issue_time":"1558179518",
         "name":"issuename",
         "symbol":"AAA",

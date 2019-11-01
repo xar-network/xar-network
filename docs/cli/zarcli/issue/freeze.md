@@ -24,7 +24,7 @@ When the freeze function is turned on，Owenr freezes the transfer of the specif
 
 ### Freeze specified account transfer
 ```shell
-xarcli issue freeze in coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\ 253382641454 --from $you_wallet_name
+xarcli issue freeze in coin174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\ 253382641454 --from $you_wallet_name
 ```
 The result is as follows：
 ```txt
@@ -40,7 +40,7 @@ Height: 2570
     - action = issue_freeze
     - category = issue
     - issue-id = coin174876e800
-    - sender = gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
+    - sender = xar1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
     - freeze-type = in
 
 }

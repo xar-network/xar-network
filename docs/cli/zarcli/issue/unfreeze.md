@@ -19,7 +19,7 @@ Token owner unFreeze the transfer from a address
 ## Example
 ### Unfreeze the transfer  of an address
 ```shell
-xarcli issue unfreeze in coin174876e800 gard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n --from $you_wallet_name
+xarcli issue unfreeze in coin174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n --from $you_wallet_name
 ```
 The result is as follows：
 ```txt
@@ -35,7 +35,7 @@ The result is as follows：
     - action = issue_unfreeze
     - category = issue
     - issue-id = coin174876e800
-    - sender = gard1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
+    - sender = xar1f76ncl7d9aeq2thj98pyveee8twplfqy3q4yv7
     - freeze-type = in
 }
 ```
