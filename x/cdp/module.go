@@ -133,6 +133,8 @@ func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
 // EndBlock returns the end blocker for the bank module. It returns no validator
 // updates.
+
+// Fees should be accrued here, need a global fee that can be used for buybacks or liquidation
 func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
