@@ -29,6 +29,7 @@ const (
 	CodeFreezeEndTimeNotValid     sdk.CodeType = 3517
 	CodeNotTransferIn             sdk.CodeType = 3518
 	CodeNotTransferOut            sdk.CodeType = 3519
+	CodeNegativeInflation         sdk.CodeType = 3520
 )
 
 //convert sdk.Error to error
@@ -96,4 +97,8 @@ func ErrCanNotTransferIn() sdk.Error {
 }
 func ErrCanNotTransferOut() sdk.Error {
 	return sdk.NewError(DefaultCodespace, CodeNotTransferOut, "can not transfer out of account")
+}
+
+func ErrNegativeInterest() sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeNegativeInflation, "cannot set negative interest")
 }

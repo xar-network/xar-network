@@ -7,6 +7,36 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+type MsgSetInterest struct {
+	Denom        string
+	InterestRate sdk.Dec
+	Issuer       sdk.AccAddress
+}
+
+func (msg MsgSetInterest) Route() string { return ModuleName }
+
+func (msg MsgSetInterest) Type() string { return "setInterest" }
+
+func (msg MsgSetInterest) ValidateBasic() sdk.Error {
+	if msg.InterestRate.IsNegative() {
+		return ErrNegativeInterest()
+	}
+
+	if msg.Issuer.Empty() {
+		return sdk.ErrInvalidAddress("missing issuer address")
+	}
+
+	return nil
+}
+
+func (msg MsgSetInterest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+func (msg MsgSetInterest) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.Issuer}
+}
+
 //Issue interface
 type Issue interface {
 	GetIssueId() string
@@ -184,10 +214,10 @@ func (ci CoinIssueInfo) String() string {
   Decimals:         			%d
   IssueTime:					%d
   Description:	    			%s
-  BurnOwnerDisabled:  			%t 
-  BurnHolderDisabled:  			%t 
-  BurnFromDisabled:  			%t 
-  FreezeDisabled:  				%t 
+  BurnOwnerDisabled:  			%t
+  BurnHolderDisabled:  			%t
+  BurnFromDisabled:  			%t
+  FreezeDisabled:  				%t
   MintingFinished:  			%t `,
 		ci.IssueId, ci.Issuer.String(), ci.Owner.String(), ci.Name, ci.Symbol, ci.TotalSupply.String(),
 		ci.Decimals, ci.IssueTime, ci.Description, ci.BurnOwnerDisabled, ci.BurnHolderDisabled,
@@ -203,4 +233,73 @@ func (coinIssues CoinIssues) String() string {
 			issue.IssueId, issue.GetOwner().String(), issue.Name, issue.Symbol, issue.TotalSupply.String(), issue.Decimals, issue.IssueTime)
 	}
 	return strings.TrimSpace(out)
+}
+
+const (
+	FreezeIn       = "in"
+	FreezeOut      = "out"
+	FreezeInAndOut = "in-out"
+)
+
+var FreezeTypes = map[string]int{FreezeIn: 1, FreezeOut: 1, FreezeInAndOut: 1}
+
+type IssueFreeze struct {
+	Frozen bool `json:"frozen"`
+}
+
+func (ci IssueFreeze) String() string {
+	return fmt.Sprintf(`Frozen:\n
+	Frozen:			%t`,
+		ci.Frozen)
+}
+
+type IssueAddressFreeze struct {
+	Address string `json:"address"`
+}
+
+type IssueAddressFreezeList []IssueAddressFreeze
+
+func (ci IssueAddressFreeze) String() string {
+	return fmt.Sprintf(`FreezeList:\n
+	Address:			%s`,
+		ci.Address)
+}
+
+//nolint
+func (ci IssueAddressFreezeList) String() string {
+	out := fmt.Sprintf("%-44s\n",
+		"Address")
+	for _, v := range ci {
+		out += fmt.Sprintf("%-44s\n",
+			v.Address)
+	}
+	return strings.TrimSpace(out)
+}
+
+const (
+	BurnOwner  = "burn-owner"
+	BurnHolder = "burn-holder"
+	BurnFrom   = "burn-from"
+	Freeze     = "freeze"
+	Minting    = "minting"
+)
+
+var Features = map[string]int{BurnOwner: 1, BurnHolder: 1, BurnFrom: 1, Freeze: 1, Minting: 1}
+
+const (
+	Approve          = "approve"
+	IncreaseApproval = "increaseApproval"
+	DecreaseApproval = "decreaseApproval"
+)
+
+type Approval struct {
+	Amount sdk.Int `json:"amount"`
+}
+
+func NewApproval(amount sdk.Int) Approval {
+	return Approval{amount}
+}
+
+func (ci Approval) String() string {
+	return fmt.Sprintf(`Amount:%s`, ci.Amount)
 }

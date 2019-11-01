@@ -72,11 +72,7 @@ type BaseKeeper struct {
 
 	// Reserved codespace
 	codespace sdk.CodespaceType
-}
-
-//Get box bankKeeper
-func (keeper BaseKeeper) GetBankKeeper() BankKeeper {
-	return keeper.ck
+	ik        InterestKeeper
 }
 
 //New issue keeper Instance
@@ -98,12 +94,26 @@ func (k BaseKeeper) setIssue(ctx sdk.Context, coinIssueInfo *types.CoinIssueInfo
 	return nil
 }
 
+func (k BaseKeeper) SetInterestRate(ctx sdk.Context, sender sdk.AccAddress, interestRate sdk.Dec, issueID string) sdk.Result {
+	_, err := k.getIssueByOwner(ctx, sender, issueID)
+	if err != nil {
+		return sdk.ErrUnknownRequest(err.Error()).Result()
+	}
+	return k.ik.SetInterest(ctx, interestRate, issueID)
+}
+
+//Get box bankKeeper
+func (keeper BaseKeeper) GetBankKeeper() BankKeeper {
+	return keeper.ck
+}
+
 //Set address
 func (k BaseKeeper) setAddressIssues(ctx sdk.Context, accAddress string, issueIDs []string) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.ModuleCdc.MustMarshalBinaryLengthPrefixed(issueIDs)
 	store.Set(KeyAddressIssues(accAddress), bz)
 }
+
 func (k BaseKeeper) deleteAddressIssues(ctx sdk.Context, accAddress string) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(KeyAddressIssues(accAddress))

@@ -1,4 +1,4 @@
-package types
+package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -15,4 +15,8 @@ type AccountKeeper interface {
 	SetAccount(ctx sdk.Context, acc exported.Account)
 
 	IterateAccounts(ctx sdk.Context, process func(exported.Account) bool)
+}
+
+type InterestKeeper interface {
+	SetInterest(sdk.Context, sdk.Dec, string) sdk.Result
 }
