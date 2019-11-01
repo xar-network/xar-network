@@ -19,7 +19,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/x/bank/simulation"
 	sim "github.com/cosmos/cosmos-sdk/x/simulation"
 	"github.com/xar-network/xar-network/x/issue/client/cli"
 	"github.com/xar-network/xar-network/x/issue/client/rest"
@@ -80,12 +79,12 @@ func (AppModuleSimulation) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {}
 
 // GenerateGenesisState creates a randomized GenState of the bank module.
 func (AppModuleSimulation) GenerateGenesisState(simState *module.SimulationState) {
-	simulation.RandomizedGenState(simState)
+	sim.RandomizedGenState(simState)
 }
 
 // RandomizedParams creates randomized bank param changes for the simulator.
 func (AppModuleSimulation) RandomizedParams(r *rand.Rand) []sim.ParamChange {
-	return simulation.ParamChanges(r)
+	return sim.ParamChanges(r)
 }
 
 //____________________________________________________________________________

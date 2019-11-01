@@ -15,7 +15,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	authvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
@@ -89,7 +88,6 @@ func MakeCodec() *codec.Codec {
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 	codec.RegisterEvidences(cdc)
-	authvesting.RegisterCodec(cdc)
 
 	return cdc.Seal()
 }
@@ -119,7 +117,7 @@ type XarApp struct {
 
 	// app specific keepers
 	auctionKeeper    auction.Keeper
-	csdtKeeper        csdt.Keeper
+	csdtKeeper       csdt.Keeper
 	liquidatorKeeper liquidator.Keeper
 	pricefeedKeeper  pricefeed.Keeper
 	issueKeeper      issue.Keeper
