@@ -52,5 +52,5 @@ func GetRecordTags(info *RecordInfo) sdk.Events {
 	if len(info.Author) > 0 {
 		res.AppendAttributes(sdk.NewAttribute("tags.Author", info.Author))
 	}
-	return res
+	return sdk.Events{res}
 }

@@ -4,7 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
-var MsgCdc = codec.New()
+var ModuleCdc = codec.New()
 
 // Register concrete types on codec codec
 func RegisterCodec(cdc *codec.Codec) {
@@ -16,5 +16,5 @@ func RegisterCodec(cdc *codec.Codec) {
 
 //nolint
 func init() {
-	RegisterCodec(MsgCdc)
+	RegisterCodec(ModuleCdc)
 }

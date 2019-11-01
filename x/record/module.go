@@ -15,6 +15,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/xar-network/xar-network/x/record/client/rest"
+	"github.com/xar-network/xar-network/x/record/internal/types"
 )
 
 var (
@@ -29,7 +30,7 @@ var _ module.AppModuleBasic = AppModuleBasic{}
 
 // Name get module name
 func (AppModuleBasic) Name() string {
-	return ModuleName
+	return types.ModuleName
 }
 
 // RegisterCodec register module codec
@@ -54,7 +55,7 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 
 // RegisterRESTRoutes registers the REST routes for the bank module.
 func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
-	rest.RegisterRoutes(ctx, rtr, StoreKey)
+	rest.RegisterRoutes(ctx, rtr)
 }
 
 // GetTxCmd returns the root tx command for the bank module.
@@ -81,7 +82,7 @@ func NewAppModule(keeper Keeper) AppModule {
 
 // Name module name
 func (AppModule) Name() string {
-	return ModuleName
+	return types.ModuleName
 }
 
 // RegisterInvariants register module invariants
@@ -89,7 +90,7 @@ func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
 // Route module message route name
 func (AppModule) Route() string {
-	return ModuleName
+	return types.ModuleName
 }
 
 // NewHandler module handler
@@ -99,7 +100,7 @@ func (am AppModule) NewHandler() sdk.Handler {
 
 // QuerierRoute module querier route name
 func (AppModule) QuerierRoute() string {
-	return ModuleName
+	return types.ModuleName
 }
 
 // NewQuerierHandler module querier

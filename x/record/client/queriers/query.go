@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/xar-network/xar-network/x/record/internal/types"
 )
 
@@ -24,8 +23,8 @@ func QueryParams(cliCtx context.CLIContext) ([]byte, int64, error) {
 func QueryRecord(hash string, cliCtx context.CLIContext) ([]byte, int64, error) {
 	return cliCtx.QueryWithData(GetQueryRecordPath(hash), nil)
 }
-func QueryRecords(params types.RecordQueryParams, cdc *codec.Codec, cliCtx context.CLIContext) ([]byte, int64, error) {
-	bz, err := cdc.MarshalJSON(params)
+func QueryRecords(params types.RecordQueryParams, cliCtx context.CLIContext) ([]byte, int64, error) {
+	bz, err := cliCtx.Codec.MarshalJSON(params)
 	if err != nil {
 		return nil, -1, err
 	}

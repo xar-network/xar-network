@@ -3,6 +3,7 @@ package cli
 import (
 	"github.com/xar-network/xar-network/x/record/internal/types"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,6 +22,22 @@ const (
 	flagStartRecordId = "start-record-id"
 	flagLimit         = "limit"
 )
+
+// GetTxCmd returns the transaction commands for this module
+func GetTxCmd(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:                        types.ModuleName,
+		Short:                      "record transaction subcommands",
+		DisableFlagParsing:         true,
+		SuggestionsMinimumDistance: 2,
+		RunE:                       client.ValidateCmd,
+	}
+	cmd.AddCommand(
+		GetCmdRecordCreate(cdc),
+	)
+
+	return cmd
+}
 
 // GetCmdIssue implements record a coin transaction command.
 func GetCmdRecordCreate(cdc *codec.Codec) *cobra.Command {

@@ -77,7 +77,7 @@ func GetCmdQueryList(cdc *codec.Codec) *cobra.Command {
 				recordQueryParams.Limit = limit
 			}
 			// Query the record
-			res, _, err := recordqueriers.QueryRecords(recordQueryParams, cdc, cliCtx)
+			res, _, err := recordqueriers.QueryRecords(recordQueryParams, cliCtx)
 			if err != nil {
 				return err
 			}

@@ -9,7 +9,7 @@ import (
 	"github.com/xar-network/xar-network/x/record/internal/types"
 )
 
-// Handle all "record" type messages.
+// NewHandler all "record" type messages.
 func NewHandler(keeper keeper.Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 		switch msg := msg.(type) {

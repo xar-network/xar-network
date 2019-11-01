@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
@@ -16,11 +15,11 @@ import (
 )
 
 // RegisterRoutes - Central function to define routes that get registered by the main application
-func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *codec.Codec) {
-	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}", types.QuerierRoute, types.QueryRecord, Hash), queryRecordHandlerFn(cdc, cliCtx)).Methods("GET")
-	r.HandleFunc(fmt.Sprintf("/%s/%s", types.QuerierRoute, types.QueryRecords), queryRecordsHandlerFn(cdc, cliCtx)).Methods("GET")
+func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
+	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}", types.QuerierRoute, types.QueryRecord, Hash), queryRecordHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc(fmt.Sprintf("/%s/%s", types.QuerierRoute, types.QueryRecords), queryRecordsHandlerFn(cliCtx)).Methods("GET")
 }
-func queryRecordHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
+func queryRecordHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		hash := vars[Hash]
@@ -36,7 +35,7 @@ func queryRecordHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.Hand
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }
-func queryRecordsHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFunc {
+func queryRecordsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		sender, err := sdk.AccAddressFromBech32(r.URL.Query().Get(Sender))
@@ -66,7 +65,7 @@ func queryRecordsHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.Han
 			recordQueryParams.Limit = limit
 		}
 
-		res, _, err := queriers.QueryRecords(recordQueryParams, cdc, cliCtx)
+		res, _, err := queriers.QueryRecords(recordQueryParams, cliCtx)
 
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
