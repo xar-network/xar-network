@@ -1,4 +1,4 @@
-package cdp
+package csdt
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -26,30 +26,30 @@ func setUpMockAppWithoutGenesis() (*mock.App, Keeper) {
 	RegisterCodec(mapp.Cdc)
 
 	// Create keepers
-	keyCDP := sdk.NewKVStoreKey("cdp")
+	keyCSDT := sdk.NewKVStoreKey("csdt")
 	keyPriceFeed := sdk.NewKVStoreKey(pricefeed.StoreKey)
 	priceFeedKeeper := pricefeed.NewKeeper(keyPriceFeed, mapp.Cdc, pricefeed.DefaultCodespace)
 	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace)
-	cdpKeeper := NewKeeper(mapp.Cdc, keyCDP, mapp.ParamsKeeper.Subspace("cdpSubspace"), priceFeedKeeper, bankKeeper)
+	csdtKeeper := NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace("csdtSubspace"), priceFeedKeeper, bankKeeper)
 
 	// Register routes
-	mapp.Router().AddRoute("cdp", NewHandler(cdpKeeper))
+	mapp.Router().AddRoute("csdt", NewHandler(csdtKeeper))
 
 	mapp.SetInitChainer(
 		func(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 			res := mapp.InitChainer(ctx, req)
-			InitGenesis(ctx, cdpKeeper, DefaultGenesisState()) // Create a default genesis state, then set the keeper store to it
+			InitGenesis(ctx, csdtKeeper, DefaultGenesisState()) // Create a default genesis state, then set the keeper store to it
 			return res
 		},
 	)
 
 	// Mount and load the stores
-	err := mapp.CompleteSetup(keyPriceFeed, keyCDP)
+	err := mapp.CompleteSetup(keyPriceFeed, keyCSDT)
 	if err != nil {
 		panic("mock app setup failed")
 	}
 
-	return mapp, cdpKeeper
+	return mapp, csdtKeeper
 }
 
 // Avoid cluttering test cases with long function name

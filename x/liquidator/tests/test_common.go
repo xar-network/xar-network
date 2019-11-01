@@ -12,7 +12,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/xar-network/xar-network/x/auction"
-	"github.com/xar-network/xar-network/x/cdp"
+	"github.com/xar-network/xar-network/x/csdt"
 	"github.com/xar-network/xar-network/x/pricefeed"
 )
 
@@ -27,7 +27,7 @@ type keepers struct {
 	bankKeeper       bank.Keeper
 	pricefeedKeeper  pricefeed.Keeper
 	auctionKeeper    auction.Keeper
-	cdpKeeper        cdp.Keeper
+	csdtKeeper        csdt.Keeper
 	liquidatorKeeper Keeper
 }
 
@@ -38,7 +38,7 @@ func setupTestKeepers() (sdk.Context, keepers) {
 	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyPriceFeed := sdk.NewKVStoreKey(pricefeed.StoreKey)
-	keyCDP := sdk.NewKVStoreKey("cdp")
+	keyCSDT := sdk.NewKVStoreKey("csdt")
 	keyAuction := sdk.NewKVStoreKey("auction")
 	keyLiquidator := sdk.NewKVStoreKey("liquidator")
 
@@ -48,7 +48,7 @@ func setupTestKeepers() (sdk.Context, keepers) {
 	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyPriceFeed, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyCDP, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyCSDT, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyAuction, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyLiquidator, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()
@@ -73,22 +73,22 @@ func setupTestKeepers() (sdk.Context, keepers) {
 		bank.DefaultCodespace,
 	)
 	pricefeedKeeper := pricefeed.NewKeeper(keyPriceFeed, cdc, pricefeed.DefaultCodespace)
-	cdpKeeper := cdp.NewKeeper(
+	csdtKeeper := csdt.NewKeeper(
 		cdc,
-		keyCDP,
-		paramsKeeper.Subspace("cdpSubspace"),
+		keyCSDT,
+		paramsKeeper.Subspace("csdtSubspace"),
 		pricefeedKeeper,
 		bankKeeper,
 	)
-	auctionKeeper := auction.NewKeeper(cdc, cdpKeeper, keyAuction) // Note: cdp keeper stands in for bank keeper
+	auctionKeeper := auction.NewKeeper(cdc, csdtKeeper, keyAuction) // Note: csdt keeper stands in for bank keeper
 	liquidatorKeeper := NewKeeper(
 		cdc,
 		keyLiquidator,
 		paramsKeeper.Subspace("liquidatorSubspace"),
-		cdpKeeper,
+		csdtKeeper,
 		auctionKeeper,
-		cdpKeeper,
-	) // Note: cdp keeper stands in for bank keeper
+		csdtKeeper,
+	) // Note: csdt keeper stands in for bank keeper
 
 	// Create context
 	ctx := sdk.NewContext(ms, abci.Header{ChainID: "testchain"}, false, log.NewNopLogger())
@@ -99,7 +99,7 @@ func setupTestKeepers() (sdk.Context, keepers) {
 		bankKeeper,
 		pricefeedKeeper,
 		auctionKeeper,
-		cdpKeeper,
+		csdtKeeper,
 		liquidatorKeeper,
 	}
 }
@@ -110,7 +110,7 @@ func makeTestCodec() *codec.Codec {
 	bank.RegisterCodec(cdc)
 	pricefeed.RegisterCodec(cdc)
 	auction.RegisterCodec(cdc)
-	cdp.RegisterCodec(cdc)
+	csdt.RegisterCodec(cdc)
 	RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)

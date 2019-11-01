@@ -4,7 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/spf13/cobra"
 	amino "github.com/tendermint/go-amino"
-	cdpcmd "github.com/xar-network/xar-network/x/cdp/client/cli"
+	csdtcmd "github.com/xar-network/xar-network/x/csdt/client/cli"
 )
 
 // ModuleClient exports all client functionality from this module
@@ -21,31 +21,31 @@ func NewModuleClient(storeKey string, cdc *amino.Codec) ModuleClient {
 // GetQueryCmd returns the cli query commands for this module
 func (mc ModuleClient) GetQueryCmd() *cobra.Command {
 	// Group nameservice queries under a subcommand
-	cdpQueryCmd := &cobra.Command{
-		Use:   "cdp",
-		Short: "Querying commands for the cdp module",
+	csdtQueryCmd := &cobra.Command{
+		Use:   "csdt",
+		Short: "Querying commands for the csdt module",
 	}
 
-	cdpQueryCmd.AddCommand(client.GetCommands(
-		cdpcmd.GetCmd_GetCdp(mc.storeKey, mc.cdc),
-		cdpcmd.GetCmd_GetCdps(mc.storeKey, mc.cdc),
-		cdpcmd.GetCmd_GetUnderCollateralizedCdps(mc.storeKey, mc.cdc),
-		cdpcmd.GetCmd_GetParams(mc.storeKey, mc.cdc),
+	csdtQueryCmd.AddCommand(client.GetCommands(
+		csdtcmd.GetCmd_GetCsdt(mc.storeKey, mc.cdc),
+		csdtcmd.GetCmd_GetCsdts(mc.storeKey, mc.cdc),
+		csdtcmd.GetCmd_GetUnderCollateralizedCsdts(mc.storeKey, mc.cdc),
+		csdtcmd.GetCmd_GetParams(mc.storeKey, mc.cdc),
 	)...)
 
-	return cdpQueryCmd
+	return csdtQueryCmd
 }
 
 // GetTxCmd returns the transaction commands for this module
 func (mc ModuleClient) GetTxCmd() *cobra.Command {
-	cdpTxCmd := &cobra.Command{
-		Use:   "cdp",
-		Short: "cdp transactions subcommands",
+	csdtTxCmd := &cobra.Command{
+		Use:   "csdt",
+		Short: "csdt transactions subcommands",
 	}
 
-	cdpTxCmd.AddCommand(client.PostCommands(
-		cdpcmd.GetCmdModifyCdp(mc.cdc),
+	csdtTxCmd.AddCommand(client.PostCommands(
+		csdtcmd.GetCmdModifyCsdt(mc.cdc),
 	)...)
 
-	return cdpTxCmd
+	return csdtTxCmd
 }

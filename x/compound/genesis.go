@@ -47,7 +47,7 @@ func DefaultGenesisState() GenesisState {
 
 // InitGenesis sets the genesis state in the keeper.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, data GenesisState) {
-	k.SetParams(ctx, data.CdpModuleParams)
+	k.SetParams(ctx, data.CsdtModuleParams)
 	k.SetGlobalDebt(ctx, data.GlobalDebt)
 }
 

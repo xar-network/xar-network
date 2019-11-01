@@ -29,7 +29,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-// GetCmdPlaceBid cli command for creating and modifying cdps.
+// GetCmdPlaceBid cli command for creating and modifying csdts.
 func GetCmdPlaceBid(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "placebid [from_key_or_address] [AuctionID] [Bidder] [Bid] [Lot]",

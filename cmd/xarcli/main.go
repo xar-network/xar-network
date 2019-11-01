@@ -21,7 +21,7 @@ import (
 
 	nftrest "github.com/cosmos/modules/incubator/nft/client/rest"
 	auctionrest "github.com/xar-network/xar-network/x/auction/client/rest"
-	cdprest "github.com/xar-network/xar-network/x/cdp/client/rest"
+	csdtrest "github.com/xar-network/xar-network/x/csdt/client/rest"
 	issuerest "github.com/xar-network/xar-network/x/issue/client/rest"
 	liquidatorrest "github.com/xar-network/xar-network/x/liquidator/client/rest"
 	"github.com/xar-network/xar-network/x/pricefeed"
@@ -30,7 +30,7 @@ import (
 
 	nftcmd "github.com/cosmos/modules/incubator/nft/client/cli"
 	auctioncmd "github.com/xar-network/xar-network/x/auction/client/cli"
-	cdpcmd "github.com/xar-network/xar-network/x/cdp/client/cli"
+	csdtcmd "github.com/xar-network/xar-network/x/csdt/client/cli"
 	issuecmd "github.com/xar-network/xar-network/x/issue/client/cli"
 	liquidatorcmd "github.com/xar-network/xar-network/x/liquidator/client/cli"
 	pricefeedcmd "github.com/xar-network/xar-network/x/pricefeed/client/cli"
@@ -154,7 +154,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		issuecmd.GetTxCmd(cdc),
 		recordcmd.GetTxCmd(cdc),
 		auctioncmd.GetTxCmd(cdc),
-		cdpcmd.GetTxCmd(cdc),
+		csdtcmd.GetTxCmd(cdc),
 		liquidatorcmd.GetTxCmd(cdc),
 		pricefeedcmd.GetTxCmd(cdc),
 		uniswapcmd.GetTxCmd(cdc),
@@ -189,7 +189,7 @@ func registerRoutes(rs *lcd.RestServer) {
 	nftrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec, nft.StoreKey)
 	pricerest.RegisterRoutes(rs.CliCtx, rs.Mux, pricefeed.StoreKey)
 	auctionrest.RegisterRoutes(rs.CliCtx, rs.Mux)
-	cdprest.RegisterRoutes(rs.CliCtx, rs.Mux)
+	csdtrest.RegisterRoutes(rs.CliCtx, rs.Mux)
 	liquidatorrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec)
 	recordrest.RegisterRoutes(rs.CliCtx, rs.Mux)
 

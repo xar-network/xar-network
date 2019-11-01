@@ -184,7 +184,7 @@ func (a *ReverseAuction) PlaceBid(currentBlockHeight EndTime, bidder sdk.AccAddr
 type ForwardReverseAuction struct {
 	BaseAuction
 	MaxBid      sdk.Coin
-	OtherPerson sdk.AccAddress // TODO rename, this is normally the original CDP owner
+	OtherPerson sdk.AccAddress // TODO rename, this is normally the original CSDT owner
 }
 
 func (a ForwardReverseAuction) String() string {
@@ -246,7 +246,7 @@ func (a *ForwardReverseAuction) PlaceBid(currentBlockHeight EndTime, bidder sdk.
 		inputs = []bankInput{
 			{a.Bidder, a.Bid},               // old bidder is paid back
 			{a.Initiator, bid.Sub(a.Bid)},   // extra goes to seller
-			{a.OtherPerson, a.Lot.Sub(lot)}, //decrease in price for goes to original CDP owner
+			{a.OtherPerson, a.Lot.Sub(lot)}, //decrease in price for goes to original CSDT owner
 		}
 
 	case a.Bid.IsEqual(a.MaxBid):
@@ -255,7 +255,7 @@ func (a *ForwardReverseAuction) PlaceBid(currentBlockHeight EndTime, bidder sdk.
 			return []BankOutput{}, []bankInput{}, sdk.ErrInternal("lot not smaller than last lot")
 		}
 		outputs = []BankOutput{{bidder, a.Bid}}                                  // new bidder pays bid now
-		inputs = []bankInput{{a.Bidder, a.Bid}, {a.OtherPerson, a.Lot.Sub(lot)}} // old bidder is paid back, decrease in price for goes to original CDP owner
+		inputs = []bankInput{{a.Bidder, a.Bid}, {a.OtherPerson, a.Lot.Sub(lot)}} // old bidder is paid back, decrease in price for goes to original CSDT owner
 	default:
 		panic("should never be reached") // TODO
 	}

@@ -7,8 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/xar-network/xar-network/x/cdp/client/cli"
-	"github.com/xar-network/xar-network/x/cdp/internal/keeper"
+	"github.com/xar-network/xar-network/x/csdt/client/cli"
+	"github.com/xar-network/xar-network/x/csdt/internal/keeper"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"

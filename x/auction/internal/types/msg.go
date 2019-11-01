@@ -52,7 +52,7 @@ func (msg MsgPlaceBid) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Bidder}
 }
 
-// The CDP system doesn't need Msgs for starting auctions. But they could be added to allow people to create random auctions of their own, and to make this module more general purpose.
+// The CSDT system doesn't need Msgs for starting auctions. But they could be added to allow people to create random auctions of their own, and to make this module more general purpose.
 
 // type MsgStartForwardAuction struct {
 // 	Seller sdk.AccAddress

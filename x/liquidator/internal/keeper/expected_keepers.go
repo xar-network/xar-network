@@ -4,16 +4,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/xar-network/xar-network/x/auction"
-	"github.com/xar-network/xar-network/x/cdp"
+	"github.com/xar-network/xar-network/x/csdt"
 )
 
-type cdpKeeper interface {
-	GetCDP(sdk.Context, sdk.AccAddress, string) (cdp.CDP, bool)
-	PartialSeizeCDP(sdk.Context, sdk.AccAddress, string, sdk.Int, sdk.Int) sdk.Error
+type csdtKeeper interface {
+	GetCSDT(sdk.Context, sdk.AccAddress, string) (csdt.CSDT, bool)
+	PartialSeizeCSDT(sdk.Context, sdk.AccAddress, string, sdk.Int, sdk.Int) sdk.Error
 	ReduceGlobalDebt(sdk.Context, sdk.Int) sdk.Error
 	GetStableDenom() string // TODO can this be removed somehow?
 	GetGovDenom() string
-	GetLiquidatorAccountAddress() sdk.AccAddress // This won't need to exist once the module account is defined in this module (instead of in the cdp module)
+	GetLiquidatorAccountAddress() sdk.AccAddress // This won't need to exist once the module account is defined in this module (instead of in the csdt module)
 }
 
 type bankKeeper interface {

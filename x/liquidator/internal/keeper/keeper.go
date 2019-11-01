@@ -13,51 +13,51 @@ type Keeper struct {
 	cdc            *codec.Codec
 	paramsSubspace params.Subspace
 	storeKey       sdk.StoreKey
-	cdpKeeper      cdpKeeper
+	csdtKeeper      csdtKeeper
 	auctionKeeper  auctionKeeper
 	bankKeeper     bankKeeper
 }
 
-func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace, cdpKeeper cdpKeeper, auctionKeeper auctionKeeper, bankKeeper bankKeeper) Keeper {
+func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace, csdtKeeper csdtKeeper, auctionKeeper auctionKeeper, bankKeeper bankKeeper) Keeper {
 	subspace = subspace.WithKeyTable(types.CreateParamsKeyTable())
 	return Keeper{
 		cdc:            cdc,
 		paramsSubspace: subspace,
 		storeKey:       storeKey,
-		cdpKeeper:      cdpKeeper,
+		csdtKeeper:      csdtKeeper,
 		auctionKeeper:  auctionKeeper,
 		bankKeeper:     bankKeeper,
 	}
 }
 
-// SeizeAndStartCollateralAuction pulls collateral out of a CDP and sells it in an auction for stable coin. Excess collateral goes to the original CDP owner.
+// SeizeAndStartCollateralAuction pulls collateral out of a CSDT and sells it in an auction for stable coin. Excess collateral goes to the original CSDT owner.
 // Known as Cat.bite in maker
-// result: stable coin is transferred to module account, collateral is transferred from module account to buyer, (and any excess collateral is transferred to original CDP owner)
+// result: stable coin is transferred to module account, collateral is transferred from module account to buyer, (and any excess collateral is transferred to original CSDT owner)
 func (k Keeper) SeizeAndStartCollateralAuction(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string) (auction.ID, sdk.Error) {
-	// Get CDP
-	cdp, found := k.cdpKeeper.GetCDP(ctx, owner, collateralDenom)
+	// Get CSDT
+	csdt, found := k.csdtKeeper.GetCSDT(ctx, owner, collateralDenom)
 	if !found {
-		return 0, sdk.ErrInternal("CDP not found")
+		return 0, sdk.ErrInternal("CSDT not found")
 	}
 
 	// Calculate amount of collateral to sell in this auction
-	params := k.GetParams(ctx).GetCollateralParams(cdp.CollateralDenom)
-	collateralToSell := sdk.MinInt(cdp.CollateralAmount, params.AuctionSize)
+	params := k.GetParams(ctx).GetCollateralParams(csdt.CollateralDenom)
+	collateralToSell := sdk.MinInt(csdt.CollateralAmount, params.AuctionSize)
 	// Calculate the corresponding maximum amount of stable coin to raise TODO test maths
-	stableToRaise := sdk.NewDecFromInt(collateralToSell).Quo(sdk.NewDecFromInt(cdp.CollateralAmount)).Mul(sdk.NewDecFromInt(cdp.Debt)).RoundInt()
+	stableToRaise := sdk.NewDecFromInt(collateralToSell).Quo(sdk.NewDecFromInt(csdt.CollateralAmount)).Mul(sdk.NewDecFromInt(csdt.Debt)).RoundInt()
 
-	// Seize the collateral and debt from the CDP
-	err := k.partialSeizeCDP(ctx, owner, collateralDenom, collateralToSell, stableToRaise)
+	// Seize the collateral and debt from the CSDT
+	err := k.partialSeizeCSDT(ctx, owner, collateralDenom, collateralToSell, stableToRaise)
 	if err != nil {
 		return 0, err
 	}
 
 	// Start "forward reverse" auction type
-	lot := sdk.NewCoin(cdp.CollateralDenom, collateralToSell)
-	maxBid := sdk.NewCoin(k.cdpKeeper.GetStableDenom(), stableToRaise)
-	auctionID, err := k.auctionKeeper.StartForwardReverseAuction(ctx, k.cdpKeeper.GetLiquidatorAccountAddress(), lot, maxBid, owner)
+	lot := sdk.NewCoin(csdt.CollateralDenom, collateralToSell)
+	maxBid := sdk.NewCoin(k.csdtKeeper.GetStableDenom(), stableToRaise)
+	auctionID, err := k.auctionKeeper.StartForwardReverseAuction(ctx, k.csdtKeeper.GetLiquidatorAccountAddress(), lot, maxBid, owner)
 	if err != nil {
-		panic(err) // TODO how can errors here be handled to be safe with the state update in PartialSeizeCDP?
+		panic(err) // TODO how can errors here be handled to be safe with the state update in PartialSeizeCSDT?
 	}
 	return auctionID, nil
 }
@@ -68,7 +68,7 @@ func (k Keeper) SeizeAndStartCollateralAuction(ctx sdk.Context, owner sdk.AccAdd
 func (k Keeper) StartDebtAuction(ctx sdk.Context) (auction.ID, sdk.Error) {
 
 	// Ensure amount of seized stable coin is 0 (ie Joy = 0)
-	stableCoins := k.bankKeeper.GetCoins(ctx, k.cdpKeeper.GetLiquidatorAccountAddress()).AmountOf(k.cdpKeeper.GetStableDenom())
+	stableCoins := k.bankKeeper.GetCoins(ctx, k.csdtKeeper.GetLiquidatorAccountAddress()).AmountOf(k.csdtKeeper.GetStableDenom())
 	if !stableCoins.IsZero() {
 		return 0, sdk.ErrInternal("debt auction cannot be started as there is outstanding stable coins")
 	}
@@ -82,9 +82,9 @@ func (k Keeper) StartDebtAuction(ctx sdk.Context) (auction.ID, sdk.Error) {
 	// start reverse auction, selling minted gov coin for stable coin
 	auctionID, err := k.auctionKeeper.StartReverseAuction(
 		ctx,
-		k.cdpKeeper.GetLiquidatorAccountAddress(),
-		sdk.NewCoin(k.cdpKeeper.GetStableDenom(), params.DebtAuctionSize),
-		sdk.NewInt64Coin(k.cdpKeeper.GetGovDenom(), 2^255-1), // TODO is there a way to avoid potentially minting infinite gov coin?
+		k.csdtKeeper.GetLiquidatorAccountAddress(),
+		sdk.NewCoin(k.csdtKeeper.GetStableDenom(), params.DebtAuctionSize),
+		sdk.NewInt64Coin(k.csdtKeeper.GetGovDenom(), 2^255-1), // TODO is there a way to avoid potentially minting infinite gov coin?
 	)
 	if err != nil {
 		return 0, err
@@ -104,16 +104,16 @@ func (k Keeper) StartDebtAuction(ctx sdk.Context) (auction.ID, sdk.Error) {
 // 	// TODO ensure seized debt is 0
 
 // 	// check there is enough surplus to be sold
-// 	surplus := k.bankKeeper.GetCoins(ctx, k.cdpKeeper.GetLiquidatorAccountAddress()).AmountOf(k.cdpKeeper.GetStableDenom())
+// 	surplus := k.bankKeeper.GetCoins(ctx, k.csdtKeeper.GetLiquidatorAccountAddress()).AmountOf(k.csdtKeeper.GetStableDenom())
 // 	if surplus.LT(SurplusAuctionSize) {
 // 		return 0, sdk.ErrInternal("not enough surplus stable coin to start an auction")
 // 	}
 // 	// start normal auction, selling stable coin
 // 	auctionID, err := k.auctionKeeper.StartForwardAuction(
 // 		ctx,
-// 		k.cdpKeeper.GetLiquidatorAccountAddress(),
-// 		sdk.NewCoin(k.cdpKeeper.GetStableDenom(), SurplusAuctionSize),
-// 		sdk.NewInt64Coin(k.cdpKeeper.GetGovDenom(), 0),
+// 		k.csdtKeeper.GetLiquidatorAccountAddress(),
+// 		sdk.NewCoin(k.csdtKeeper.GetStableDenom(), SurplusAuctionSize),
+// 		sdk.NewInt64Coin(k.csdtKeeper.GetGovDenom(), 0),
 // 	)
 // 	if err != nil {
 // 		return 0, err
@@ -122,39 +122,39 @@ func (k Keeper) StartDebtAuction(ctx sdk.Context) (auction.ID, sdk.Error) {
 // 	return auctionID, nil
 // }
 
-// PartialSeizeCDP seizes some collateral and debt from an under-collateralized CDP.
-func (k Keeper) partialSeizeCDP(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, collateralToSeize sdk.Int, debtToSeize sdk.Int) sdk.Error { // aka Cat.bite
-	// Seize debt and collateral in the cdp module. This also validates the inputs.
-	err := k.cdpKeeper.PartialSeizeCDP(ctx, owner, collateralDenom, collateralToSeize, debtToSeize)
+// PartialSeizeCSDT seizes some collateral and debt from an under-collateralized CSDT.
+func (k Keeper) partialSeizeCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, collateralToSeize sdk.Int, debtToSeize sdk.Int) sdk.Error { // aka Cat.bite
+	// Seize debt and collateral in the csdt module. This also validates the inputs.
+	err := k.csdtKeeper.PartialSeizeCSDT(ctx, owner, collateralDenom, collateralToSeize, debtToSeize)
 	if err != nil {
-		return err // cdp could be not found, or not under collateralized, or inputs invalid
+		return err // csdt could be not found, or not under collateralized, or inputs invalid
 	}
 
-	// increment the total seized debt (Awe) by cdp.debt
+	// increment the total seized debt (Awe) by csdt.debt
 	seizedDebt := k.GetSeizedDebt(ctx)
 	seizedDebt.Total = seizedDebt.Total.Add(debtToSeize)
 	k.setSeizedDebt(ctx, seizedDebt)
 
-	// add cdp.collateral amount of coins to the moduleAccount (so they can be transferred to the auction later)
+	// add csdt.collateral amount of coins to the moduleAccount (so they can be transferred to the auction later)
 	coins := sdk.NewCoins(sdk.NewCoin(collateralDenom, collateralToSeize))
-	_, err = k.bankKeeper.AddCoins(ctx, k.cdpKeeper.GetLiquidatorAccountAddress(), coins)
+	_, err = k.bankKeeper.AddCoins(ctx, k.csdtKeeper.GetLiquidatorAccountAddress(), coins)
 	if err != nil {
 		panic(err) // TODO this shouldn't happen?
 	}
 	return nil
 }
 
-// SettleDebt removes equal amounts of debt and stable coin from the liquidator's reserves (and also updates the global debt in the cdp module).
+// SettleDebt removes equal amounts of debt and stable coin from the liquidator's reserves (and also updates the global debt in the csdt module).
 // This is called in the handler when a debt or surplus auction is started
 // TODO Should this be called with an amount, rather than annihilating the maximum?
 func (k Keeper) SettleDebt(ctx sdk.Context) sdk.Error {
 	// Calculate max amount of debt and stable coins that can be settled (ie annihilated)
 	debt := k.GetSeizedDebt(ctx)
-	stableCoins := k.bankKeeper.GetCoins(ctx, k.cdpKeeper.GetLiquidatorAccountAddress()).AmountOf(k.cdpKeeper.GetStableDenom())
+	stableCoins := k.bankKeeper.GetCoins(ctx, k.csdtKeeper.GetLiquidatorAccountAddress()).AmountOf(k.csdtKeeper.GetStableDenom())
 	settleAmount := sdk.MinInt(debt.Total, stableCoins)
 
-	// Call cdp module to reduce GlobalDebt. This can fail if genesis not set
-	err := k.cdpKeeper.ReduceGlobalDebt(ctx, settleAmount)
+	// Call csdt module to reduce GlobalDebt. This can fail if genesis not set
+	err := k.csdtKeeper.ReduceGlobalDebt(ctx, settleAmount)
 	if err != nil {
 		return err
 	}
@@ -167,7 +167,7 @@ func (k Keeper) SettleDebt(ctx sdk.Context) sdk.Error {
 	k.setSeizedDebt(ctx, updatedDebt)
 
 	// Subtract stable coin from moduleAccout
-	k.bankKeeper.SubtractCoins(ctx, k.cdpKeeper.GetLiquidatorAccountAddress(), sdk.Coins{sdk.NewCoin(k.cdpKeeper.GetStableDenom(), settleAmount)})
+	k.bankKeeper.SubtractCoins(ctx, k.csdtKeeper.GetLiquidatorAccountAddress(), sdk.Coins{sdk.NewCoin(k.csdtKeeper.GetStableDenom(), settleAmount)})
 	return nil
 }
 
@@ -193,7 +193,7 @@ func (k Keeper) GetSeizedDebt(ctx sdk.Context) types.SeizedDebt {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(k.getSeizedDebtKey())
 	if bz == nil {
-		// TODO make initial seized debt and CDPs configurable at genesis, then panic here if not found
+		// TODO make initial seized debt and CSDTs configurable at genesis, then panic here if not found
 		bz = k.cdc.MustMarshalBinaryLengthPrefixed(types.SeizedDebt{sdk.ZeroInt(), sdk.ZeroInt()})
 	}
 	var seizedDebt types.SeizedDebt

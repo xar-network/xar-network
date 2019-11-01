@@ -1,5 +1,5 @@
 /*
-Package CSDT manages the storage of Collateralized Debt Positions. It handles their creation, modification, and stores the global state of all CSDTs.
+Package CSDT manages the storage of Collateralized Stable Debt Tokens. It handles their creation, modification, and stores the global state of all CSDTs.
 
 Notes
  - sdk.Int is used for all the number types to maintain compatibility with internal type of sdk.Coin - saves type conversion when doing maths.

@@ -4,26 +4,26 @@ Baseline from Kava Cosmos Module
 
 **/
 
-package cdp
+package csdt
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/xar-network/xar-network/x/cdp/internal/keeper"
-	"github.com/xar-network/xar-network/x/cdp/internal/types"
+	"github.com/xar-network/xar-network/x/csdt/internal/keeper"
+	"github.com/xar-network/xar-network/x/csdt/internal/types"
 )
 
 // GenesisState is the state that must be provided at genesis.
 type GenesisState struct {
-	CdpModuleParams types.CdpModuleParams `json:"params"`
-	GlobalDebt      sdk.Int               `json:"global_debt"`
+	CsdtModuleParams types.CsdtModuleParams `json:"params"`
+	GlobalDebt       sdk.Int                `json:"global_debt"`
 	// don't need to setup CollateralStates as they are created as needed
 }
 
 // DefaultGenesisState returns a default genesis state
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		types.CdpModuleParams{
-			GlobalDebtLimit: sdk.NewInt(1000000),
+		types.CsdtModuleParams{
+			GlobalDebtLimit: sdk.NewInt(20000000),
 			CollateralParams: []types.CollateralParams{
 				{
 					Denom:            "btc",
@@ -53,7 +53,7 @@ func DefaultGenesisState() GenesisState {
 
 // InitGenesis sets the genesis state in the keeper.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, data GenesisState) {
-	k.SetParams(ctx, data.CdpModuleParams)
+	k.SetParams(ctx, data.CsdtModuleParams)
 	k.SetGlobalDebt(ctx, data.GlobalDebt)
 }
 

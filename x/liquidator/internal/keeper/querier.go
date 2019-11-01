@@ -24,8 +24,8 @@ func queryGetOutstandingDebt(ctx sdk.Context, path []string, req abci.RequestQue
 	// Calculate the remaining seized debt after settling with the liquidator's stable coins.
 	stableCoins := keeper.bankKeeper.GetCoins(
 		ctx,
-		keeper.cdpKeeper.GetLiquidatorAccountAddress(),
-	).AmountOf(keeper.cdpKeeper.GetStableDenom())
+		keeper.csdtKeeper.GetLiquidatorAccountAddress(),
+	).AmountOf(keeper.csdtKeeper.GetStableDenom())
 	seizedDebt := keeper.GetSeizedDebt(ctx)
 	settleAmount := sdk.MinInt(seizedDebt.Total, stableCoins)
 	seizedDebt, err := seizedDebt.Settle(settleAmount)

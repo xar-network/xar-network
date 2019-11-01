@@ -17,21 +17,21 @@ import (
 /*
 API Design:
 
-Currently CDPs do not have IDs so standard REST uri conventions (ie GET /cdps/{cdp-id}) don't work too well.
+Currently CSDTs do not have IDs so standard REST uri conventions (ie GET /csdts/{csdt-id}) don't work too well.
 
-Get one or more cdps
-	GET /cdps?collateralDenom={denom}&owner={address}&underCollateralizedAt={price}
-Modify a CDP (idempotent). Create is not separated out because conceptually all CDPs already exist (just with zero collateral and debt). // TODO is making this idempotent actually useful?
-	PUT /cdps
+Get one or more csdts
+	GET /csdts?collateralDenom={denom}&owner={address}&underCollateralizedAt={price}
+Modify a CSDT (idempotent). Create is not separated out because conceptually all CSDTs already exist (just with zero collateral and debt). // TODO is making this idempotent actually useful?
+	PUT /csdts
 Get the module params, including authorized collateral denoms.
 	GET /params
 */
 
 // RegisterRoutes - Central function to define routes that get registered by the main application
 func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	r.HandleFunc("/cdps", getCdpsHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc("/cdps", modifyCdpHandlerFn(cliCtx)).Methods("PUT")
-	r.HandleFunc("/cdps/params", getParamsHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc("/csdts", getCsdtsHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc("/csdts", modifyCsdtHandlerFn(cliCtx)).Methods("PUT")
+	r.HandleFunc("/csdts/params", getParamsHandlerFn(cliCtx)).Methods("GET")
 }
 
 const (
@@ -40,7 +40,7 @@ const (
 	RestUnderCollateralizedAt = "underCollateralizedAt"
 )
 
-func getCdpsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+func getCsdtsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// get parameters from the URL
 		ownerBech32 := r.URL.Query().Get(RestOwner)
@@ -48,7 +48,7 @@ func getCdpsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 		priceString := r.URL.Query().Get(RestUnderCollateralizedAt)
 
 		// Construct querier params
-		querierParams := types.QueryCdpsParams{}
+		querierParams := types.QueryCsdtsParams{}
 
 		if len(ownerBech32) != 0 {
 			owner, err := sdk.AccAddressFromBech32(ownerBech32)
@@ -79,28 +79,28 @@ func getCdpsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		// Get the CDPs
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/cdp/%s", types.QueryGetCdps), querierParamsBz)
+		// Get the CSDTs
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetCsdts), querierParamsBz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}
 
-		// Return the CDPs
+		// Return the CSDTs
 		rest.PostProcessResponse(w, cliCtx, res)
 
 	}
 }
 
-type ModifyCdpRequestBody struct {
+type ModifyCsdtRequestBody struct {
 	BaseReq rest.BaseReq `json:"base_req"`
-	Cdp     types.CDP    `json:"cdp"`
+	Csdt     types.CSDT    `json:"csdt"`
 }
 
-func modifyCdpHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+func modifyCsdtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode PUT request body
-		var requestBody ModifyCdpRequestBody
+		var requestBody ModifyCsdtRequestBody
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &requestBody) {
 			return
 		}
@@ -109,36 +109,36 @@ func modifyCdpHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		// Get the stored CDP
-		querierParams := types.QueryCdpsParams{
-			Owner:           requestBody.Cdp.Owner,
-			CollateralDenom: requestBody.Cdp.CollateralDenom,
+		// Get the stored CSDT
+		querierParams := types.QueryCsdtsParams{
+			Owner:           requestBody.Csdt.Owner,
+			CollateralDenom: requestBody.Csdt.CollateralDenom,
 		}
 		querierParamsBz, err := cliCtx.Codec.MarshalJSON(querierParams)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/cdp/%s", types.QueryGetCdps), querierParamsBz)
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetCsdts), querierParamsBz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		var cdps types.CDPs
-		err = cliCtx.Codec.UnmarshalJSON(res, &cdps)
-		if len(cdps) != 1 || err != nil {
+		var csdts types.CSDTs
+		err = cliCtx.Codec.UnmarshalJSON(res, &csdts)
+		if len(csdts) != 1 || err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
-		// Calculate CDP updates
-		collateralDelta := requestBody.Cdp.CollateralAmount.Sub(cdps[0].CollateralAmount)
-		debtDelta := requestBody.Cdp.Debt.Sub(cdps[0].Debt)
+		// Calculate CSDT updates
+		collateralDelta := requestBody.Csdt.CollateralAmount.Sub(csdts[0].CollateralAmount)
+		debtDelta := requestBody.Csdt.Debt.Sub(csdts[0].Debt)
 
 		// Create and return msg
-		msg := types.NewMsgCreateOrModifyCDP(
-			requestBody.Cdp.Owner,
-			requestBody.Cdp.CollateralDenom,
+		msg := types.NewMsgCreateOrModifyCSDT(
+			requestBody.Csdt.Owner,
+			requestBody.Csdt.CollateralDenom,
 			collateralDelta,
 			debtDelta,
 		)
@@ -149,7 +149,7 @@ func modifyCdpHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 func getParamsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Get the params
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/cdp/%s", types.QueryGetParams), nil)
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetParams), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return

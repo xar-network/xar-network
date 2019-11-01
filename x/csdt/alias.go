@@ -4,16 +4,16 @@ Baseline from Kava Cosmos Module
 
 **/
 
-package cdp
+package csdt
 
 import (
-	"github.com/xar-network/xar-network/x/cdp/internal/keeper"
-	"github.com/xar-network/xar-network/x/cdp/internal/types"
+	"github.com/xar-network/xar-network/x/csdt/internal/keeper"
+	"github.com/xar-network/xar-network/x/csdt/internal/types"
 )
 
 type (
 	Keeper = keeper.Keeper
-	CDP    = types.CDP
+	CSDT    = types.CSDT
 )
 
 const (

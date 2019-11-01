@@ -24,7 +24,7 @@ func DefaultGenesisState() GenesisState {
 		"ftm", []Pool{
 			Pool{
 				BalanceCoin:  sdk.NewCoin("ftm", sdk.NewInt(1)),
-				BalanceToken: sdk.NewCoin("ftg", sdk.NewInt(1)),
+				BalanceToken: sdk.NewCoin("csdt", sdk.NewInt(1)),
 			},
 		},
 	)

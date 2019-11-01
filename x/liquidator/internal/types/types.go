@@ -5,7 +5,7 @@ import (
 )
 
 type SeizedDebt struct {
-	Total         sdk.Int // Total debt seized from CDPs. Known as Awe in maker.
+	Total         sdk.Int // Total debt seized from CSDTs. Known as Awe in maker.
 	SentToAuction sdk.Int // Portion of seized debt that has had a (reverse) auction was started for it. Known as Ash in maker.
 	// SentToAuction should always be < Total
 }

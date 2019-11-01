@@ -13,12 +13,12 @@ import (
 
 // How could one reduce the number of params in the test cases. Create a table driven test for each of the 4 add/withdraw collateral/debt?
 
-func TestKeeper_ModifyCDP(t *testing.T) {
+func TestKeeper_ModifyCSDT(t *testing.T) {
 	_, addrs := mock.GeneratePrivKeyAddressPairs(1)
 	ownerAddr := addrs[0]
 
 	type state struct { // TODO this allows invalid state to be set up, should it?
-		CDP             CDP
+		CSDT             CSDT
 		OwnerCoins      sdk.Coins
 		GlobalDebt      sdk.Int
 		CollateralState CollateralState
@@ -34,65 +34,65 @@ func TestKeeper_ModifyCDP(t *testing.T) {
 		name       string
 		priorState state
 		price      string
-		// also missing CDPModuleParams
+		// also missing CSDTModuleParams
 		args          args
 		expectPass    bool
 		expectedState state
 	}{
 		{
 			"addCollateralAndDecreaseDebt",
-			state{CDP{ownerAddr, "xrp", i(100), i(2)}, cs(c("xrp", 10), c(StableDenom, 2)), i(2), CollateralState{"xrp", i(2)}},
+			state{CSDT{ownerAddr, "xrp", i(100), i(2)}, cs(c("xrp", 10), c(StableDenom, 2)), i(2), CollateralState{"xrp", i(2)}},
 			"10.345",
 			args{ownerAddr, "xrp", i(10), i(-1)},
 			true,
-			state{CDP{ownerAddr, "xrp", i(110), i(1)}, cs( /*  0xrp  */ c(StableDenom, 1)), i(1), CollateralState{"xrp", i(1)}},
+			state{CSDT{ownerAddr, "xrp", i(110), i(1)}, cs( /*  0xrp  */ c(StableDenom, 1)), i(1), CollateralState{"xrp", i(1)}},
 		},
 		{
 			"removeTooMuchCollateral",
-			state{CDP{ownerAddr, "xrp", i(1000), i(200)}, cs(c("xrp", 10), c(StableDenom, 10)), i(200), CollateralState{"xrp", i(200)}},
+			state{CSDT{ownerAddr, "xrp", i(1000), i(200)}, cs(c("xrp", 10), c(StableDenom, 10)), i(200), CollateralState{"xrp", i(200)}},
 			"1.00",
 			args{ownerAddr, "xrp", i(-601), i(0)},
 			false,
-			state{CDP{ownerAddr, "xrp", i(1000), i(200)}, cs(c("xrp", 10), c(StableDenom, 10)), i(200), CollateralState{"xrp", i(200)}},
+			state{CSDT{ownerAddr, "xrp", i(1000), i(200)}, cs(c("xrp", 10), c(StableDenom, 10)), i(200), CollateralState{"xrp", i(200)}},
 		},
 		{
 			"withdrawTooMuchStableCoin",
-			state{CDP{ownerAddr, "xrp", i(1000), i(200)}, cs(c("xrp", 10), c(StableDenom, 10)), i(200), CollateralState{"xrp", i(200)}},
+			state{CSDT{ownerAddr, "xrp", i(1000), i(200)}, cs(c("xrp", 10), c(StableDenom, 10)), i(200), CollateralState{"xrp", i(200)}},
 			"1.00",
 			args{ownerAddr, "xrp", i(0), i(301)},
 			false,
-			state{CDP{ownerAddr, "xrp", i(1000), i(200)}, cs(c("xrp", 10), c(StableDenom, 10)), i(200), CollateralState{"xrp", i(200)}},
+			state{CSDT{ownerAddr, "xrp", i(1000), i(200)}, cs(c("xrp", 10), c(StableDenom, 10)), i(200), CollateralState{"xrp", i(200)}},
 		},
 		{
-			"createCDPAndWithdrawStable",
-			state{CDP{}, cs(c("xrp", 10), c(StableDenom, 10)), i(0), CollateralState{"xrp", i(0)}},
+			"createCSDTAndWithdrawStable",
+			state{CSDT{}, cs(c("xrp", 10), c(StableDenom, 10)), i(0), CollateralState{"xrp", i(0)}},
 			"1.00",
 			args{ownerAddr, "xrp", i(5), i(2)},
 			true,
-			state{CDP{ownerAddr, "xrp", i(5), i(2)}, cs(c("xrp", 5), c(StableDenom, 12)), i(2), CollateralState{"xrp", i(2)}},
+			state{CSDT{ownerAddr, "xrp", i(5), i(2)}, cs(c("xrp", 5), c(StableDenom, 12)), i(2), CollateralState{"xrp", i(2)}},
 		},
 		{
-			"emptyCDP",
-			state{CDP{ownerAddr, "xrp", i(1000), i(200)}, cs(c("xrp", 10), c(StableDenom, 201)), i(200), CollateralState{"xrp", i(200)}},
+			"emptyCSDT",
+			state{CSDT{ownerAddr, "xrp", i(1000), i(200)}, cs(c("xrp", 10), c(StableDenom, 201)), i(200), CollateralState{"xrp", i(200)}},
 			"1.00",
 			args{ownerAddr, "xrp", i(-1000), i(-200)},
 			true,
-			state{CDP{}, cs(c("xrp", 1010), c(StableDenom, 1)), i(0), CollateralState{"xrp", i(0)}},
+			state{CSDT{}, cs(c("xrp", 1010), c(StableDenom, 1)), i(0), CollateralState{"xrp", i(0)}},
 		},
 		{
 			"invalidCollateralType",
-			state{CDP{}, cs(c("shitcoin", 5000000)), i(0), CollateralState{}},
+			state{CSDT{}, cs(c("shitcoin", 5000000)), i(0), CollateralState{}},
 			"0.000001",
 			args{ownerAddr, "shitcoin", i(5000000), i(1)}, // ratio of 5:1
 			false,
-			state{CDP{}, cs(c("shitcoin", 5000000)), i(0), CollateralState{}},
+			state{CSDT{}, cs(c("shitcoin", 5000000)), i(0), CollateralState{}},
 		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			// setup keeper
 			mapp, keeper := setUpMockAppWithoutGenesis()
-			// initialize cdp owner account with coins
+			// initialize csdt owner account with coins
 			genAcc := auth.BaseAccount{
 				Address: ownerAddr,
 				Coins:   tc.priorState.OwnerCoins,
@@ -109,8 +109,8 @@ func TestKeeper_ModifyCDP(t *testing.T) {
 				sdk.MustNewDecFromStr(tc.price),
 				i(10))
 			keeper.pricefeed.SetCurrentPrices(ctx)
-			if tc.priorState.CDP.CollateralDenom != "" { // check if the prior CDP should be created or not (see if an empty one was specified)
-				keeper.setCDP(ctx, tc.priorState.CDP)
+			if tc.priorState.CSDT.CollateralDenom != "" { // check if the prior CSDT should be created or not (see if an empty one was specified)
+				keeper.setCSDT(ctx, tc.priorState.CSDT)
 			}
 			keeper.setGlobalDebt(ctx, tc.priorState.GlobalDebt)
 			if tc.priorState.CollateralState.Denom != "" {
@@ -118,7 +118,7 @@ func TestKeeper_ModifyCDP(t *testing.T) {
 			}
 
 			// call func under test
-			err := keeper.ModifyCDP(ctx, tc.args.owner, tc.args.collateralDenom, tc.args.changeInCollateral, tc.args.changeInDebt)
+			err := keeper.ModifyCSDT(ctx, tc.args.owner, tc.args.collateralDenom, tc.args.changeInCollateral, tc.args.changeInDebt)
 			mapp.EndBlock(abci.RequestEndBlock{})
 			mapp.Commit()
 
@@ -129,12 +129,12 @@ func TestKeeper_ModifyCDP(t *testing.T) {
 				require.Error(t, err)
 			}
 			// get new state for verification
-			actualCDP, found := keeper.GetCDP(ctx, tc.args.owner, tc.args.collateralDenom)
+			actualCSDT, found := keeper.GetCSDT(ctx, tc.args.owner, tc.args.collateralDenom)
 			actualGDebt := keeper.GetGlobalDebt(ctx)
 			actualCstate, _ := keeper.GetCollateralState(ctx, tc.args.collateralDenom)
 			// check state
-			require.Equal(t, tc.expectedState.CDP, actualCDP)
-			if tc.expectedState.CDP.CollateralDenom == "" { // if the expected CDP is blank, then expect the CDP to have been deleted (hence not found)
+			require.Equal(t, tc.expectedState.CSDT, actualCSDT)
+			if tc.expectedState.CSDT.CollateralDenom == "" { // if the expected CSDT is blank, then expect the CSDT to have been deleted (hence not found)
 				require.False(t, found)
 			} else {
 				require.True(t, found)
@@ -148,7 +148,7 @@ func TestKeeper_ModifyCDP(t *testing.T) {
 }
 
 // TODO change to table driven test to test more test cases
-func TestKeeper_PartialSeizeCDP(t *testing.T) {
+func TestKeeper_PartialSeizeCSDT(t *testing.T) {
 	// Setup
 	const collateral = "xrp"
 	mapp, keeper := setUpMockAppWithoutGenesis()
@@ -165,8 +165,8 @@ func TestKeeper_PartialSeizeCDP(t *testing.T) {
 		sdk.MustNewDecFromStr("1.00"),
 		i(10))
 	keeper.pricefeed.SetCurrentPrices(ctx)
-	// Create CDP
-	err := keeper.ModifyCDP(ctx, testAddr, collateral, i(10), i(5))
+	// Create CSDT
+	err := keeper.ModifyCSDT(ctx, testAddr, collateral, i(10), i(5))
 	require.NoError(t, err)
 	// Reduce price
 	keeper.pricefeed.SetPrice(
@@ -175,116 +175,116 @@ func TestKeeper_PartialSeizeCDP(t *testing.T) {
 		i(10))
 	keeper.pricefeed.SetCurrentPrices(ctx)
 
-	// Seize entire CDP
-	err = keeper.PartialSeizeCDP(ctx, testAddr, collateral, i(10), i(5))
+	// Seize entire CSDT
+	err = keeper.PartialSeizeCSDT(ctx, testAddr, collateral, i(10), i(5))
 
 	// Check
 	require.NoError(t, err)
-	_, found := keeper.GetCDP(ctx, testAddr, collateral)
+	_, found := keeper.GetCSDT(ctx, testAddr, collateral)
 	require.False(t, found)
 	collateralState, found := keeper.GetCollateralState(ctx, collateral)
 	require.True(t, found)
 	require.Equal(t, sdk.ZeroInt(), collateralState.TotalDebt)
 }
 
-func TestKeeper_GetCDPs(t *testing.T) {
+func TestKeeper_GetCSDTs(t *testing.T) {
 	// setup keeper
 	mapp, keeper := setUpMockAppWithoutGenesis()
 	mock.SetGenesis(mapp, []auth.Account(nil))
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
-	// setup CDPs
+	// setup CSDTs
 	_, addrs := mock.GeneratePrivKeyAddressPairs(2)
-	cdps := CDPs{
+	csdts := CSDTs{
 		{addrs[0], "xrp", i(4000), i(5)},
 		{addrs[1], "xrp", i(4000), i(2000)},
 		{addrs[0], "btc", i(10), i(20)},
 	}
-	for _, cdp := range cdps {
-		keeper.setCDP(ctx, cdp)
+	for _, csdt := range csdts {
+		keeper.setCSDT(ctx, csdt)
 	}
 
-	// Check nil params returns all CDPs
-	returnedCdps, err := keeper.GetCDPs(ctx, "", sdk.Dec{})
+	// Check nil params returns all CSDTs
+	returnedCsdts, err := keeper.GetCSDTs(ctx, "", sdk.Dec{})
 	require.NoError(t, err)
 	require.Equal(t,
-		CDPs{
+		CSDTs{
 			{addrs[0], "btc", i(10), i(20)},
 			{addrs[1], "xrp", i(4000), i(2000)},
 			{addrs[0], "xrp", i(4000), i(5)}},
-		returnedCdps,
+		returnedCsdts,
 	)
-	// Check correct CDPs filtered by collateral and sorted
-	returnedCdps, err = keeper.GetCDPs(ctx, "xrp", d("0.00000001"))
+	// Check correct CSDTs filtered by collateral and sorted
+	returnedCsdts, err = keeper.GetCSDTs(ctx, "xrp", d("0.00000001"))
 	require.NoError(t, err)
 	require.Equal(t,
-		CDPs{
+		CSDTs{
 			{addrs[1], "xrp", i(4000), i(2000)},
 			{addrs[0], "xrp", i(4000), i(5)}},
-		returnedCdps,
+		returnedCsdts,
 	)
-	returnedCdps, err = keeper.GetCDPs(ctx, "xrp", sdk.Dec{})
+	returnedCsdts, err = keeper.GetCSDTs(ctx, "xrp", sdk.Dec{})
 	require.NoError(t, err)
 	require.Equal(t,
-		CDPs{
+		CSDTs{
 			{addrs[1], "xrp", i(4000), i(2000)},
 			{addrs[0], "xrp", i(4000), i(5)}},
-		returnedCdps,
+		returnedCsdts,
 	)
-	returnedCdps, err = keeper.GetCDPs(ctx, "xrp", d("0.9"))
+	returnedCsdts, err = keeper.GetCSDTs(ctx, "xrp", d("0.9"))
 	require.NoError(t, err)
 	require.Equal(t,
-		CDPs{
+		CSDTs{
 			{addrs[1], "xrp", i(4000), i(2000)}},
-		returnedCdps,
+		returnedCsdts,
 	)
-	// Check high price returns no CDPs
-	returnedCdps, err = keeper.GetCDPs(ctx, "xrp", d("999999999.99"))
+	// Check high price returns no CSDTs
+	returnedCsdts, err = keeper.GetCSDTs(ctx, "xrp", d("999999999.99"))
 	require.NoError(t, err)
 	require.Equal(t,
-		CDPs(nil),
-		returnedCdps,
+		CSDTs(nil),
+		returnedCsdts,
 	)
 	// Check unauthorized collateral denom returns error
-	_, err = keeper.GetCDPs(ctx, "a non existent coin", d("0.34023"))
+	_, err = keeper.GetCSDTs(ctx, "a non existent coin", d("0.34023"))
 	require.Error(t, err)
 	// Check price without collateral returns error
-	_, err = keeper.GetCDPs(ctx, "", d("0.34023"))
+	_, err = keeper.GetCSDTs(ctx, "", d("0.34023"))
 	require.Error(t, err)
-	// Check deleting a CDP removes it
-	keeper.deleteCDP(ctx, cdps[0])
-	returnedCdps, err = keeper.GetCDPs(ctx, "", sdk.Dec{})
+	// Check deleting a CSDT removes it
+	keeper.deleteCSDT(ctx, csdts[0])
+	returnedCsdts, err = keeper.GetCSDTs(ctx, "", sdk.Dec{})
 	require.NoError(t, err)
 	require.Equal(t,
-		CDPs{
+		CSDTs{
 			{addrs[0], "btc", i(10), i(20)},
 			{addrs[1], "xrp", i(4000), i(2000)}},
-		returnedCdps,
+		returnedCsdts,
 	)
 }
-func TestKeeper_GetSetDeleteCDP(t *testing.T) {
-	// setup keeper, create CDP
+func TestKeeper_GetSetDeleteCSDT(t *testing.T) {
+	// setup keeper, create CSDT
 	mapp, keeper := setUpMockAppWithoutGenesis()
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
 	_, addrs := mock.GeneratePrivKeyAddressPairs(1)
-	cdp := CDP{addrs[0], "xrp", i(412), i(56)}
+	csdt := CSDT{addrs[0], "xrp", i(412), i(56)}
 
 	// write and read from store
-	keeper.setCDP(ctx, cdp)
-	readCDP, found := keeper.GetCDP(ctx, cdp.Owner, cdp.CollateralDenom)
+	keeper.setCSDT(ctx, csdt)
+	readCSDT, found := keeper.GetCSDT(ctx, csdt.Owner, csdt.CollateralDenom)
 
 	// check before and after match
 	require.True(t, found)
-	require.Equal(t, cdp, readCDP)
+	require.Equal(t, csdt, readCSDT)
 
 	// delete auction
-	keeper.deleteCDP(ctx, cdp)
+	keeper.deleteCSDT(ctx, csdt)
 
 	// check auction does not exist
-	_, found = keeper.GetCDP(ctx, cdp.Owner, cdp.CollateralDenom)
+	_, found = keeper.GetCSDT(ctx, csdt.Owner, csdt.CollateralDenom)
 	require.False(t, found)
 }
 func TestKeeper_GetSetGDebt(t *testing.T) {

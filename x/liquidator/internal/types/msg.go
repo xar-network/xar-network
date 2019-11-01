@@ -17,7 +17,7 @@ Design options and problems:
 
 type MsgSeizeAndStartCollateralAuction struct {
 	Sender          sdk.AccAddress // only needed to pay the tx fees
-	CdpOwner        sdk.AccAddress
+	CsdtOwner        sdk.AccAddress
 	CollateralDenom string
 }
 
@@ -32,8 +32,8 @@ func (msg MsgSeizeAndStartCollateralAuction) ValidateBasic() sdk.Error {
 	if msg.Sender.Empty() {
 		return sdk.ErrInternal("invalid (empty) sender address")
 	}
-	if msg.CdpOwner.Empty() {
-		return sdk.ErrInternal("invalid (empty) CDP owner address")
+	if msg.CsdtOwner.Empty() {
+		return sdk.ErrInternal("invalid (empty) CSDT owner address")
 	}
 	// TODO check coin denoms
 	return nil

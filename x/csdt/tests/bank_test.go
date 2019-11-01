@@ -1,4 +1,4 @@
-package cdp
+package csdt
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-// Test the bank functionality of the CDP keeper
+// Test the bank functionality of the CSDT keeper
 func TestKeeper_AddSubtractGetCoins(t *testing.T) {
 	_, addrs := mock.GeneratePrivKeyAddressPairs(1)
 	normalAddr := addrs[0]

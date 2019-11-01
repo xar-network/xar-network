@@ -14,23 +14,23 @@ import (
 
 // GetTxCmd returns the transaction commands for this module
 func GetTxCmd(cdc *codec.Codec) *cobra.Command {
-	cdpTxCmd := &cobra.Command{
+	csdtTxCmd := &cobra.Command{
 		Use:   "compound",
 		Short: "compound transactions subcommands",
 	}
 
-	cdpTxCmd.AddCommand(
-		GetCmdModifyCdp(cdc),
+	csdtTxCmd.AddCommand(
+		GetCmdModifyCsdt(cdc),
 	)
 
-	return cdpTxCmd
+	return csdtTxCmd
 }
 
-// GetCmdModifyCdp cli command for creating and modifying cdps.
-func GetCmdModifyCdp(cdc *codec.Codec) *cobra.Command {
+// GetCmdModifyCsdt cli command for creating and modifying csdts.
+func GetCmdModifyCsdt(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "modifycdp [from_key_or_addres] [ownerAddress] [collateralType] [collateralChange] [debtChange]",
-		Short: "create or modify a cdp",
+		Use:   "modifycsdt [from_key_or_addres] [ownerAddress] [collateralType] [collateralChange] [debtChange]",
+		Short: "create or modify a csdt",
 		Args:  cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -47,7 +47,7 @@ func GetCmdModifyCdp(cdc *codec.Codec) *cobra.Command {
 				fmt.Printf("invalid debt amount - %s \n", string(args[4]))
 				return nil
 			}
-			msg := types.NewMsgCreateOrModifyCDP(cliCtx.GetFromAddress(), args[2], collateralChange, debtChange)
+			msg := types.NewMsgCreateOrModifyCSDT(cliCtx.GetFromAddress(), args[2], collateralChange, debtChange)
 			err := msg.ValidateBasic()
 			if err != nil {
 				return err

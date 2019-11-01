@@ -30,7 +30,7 @@ import (
 
 	"github.com/cosmos/modules/incubator/nft"
 	"github.com/xar-network/xar-network/x/auction"
-	"github.com/xar-network/xar-network/x/cdp"
+	"github.com/xar-network/xar-network/x/csdt"
 	"github.com/xar-network/xar-network/x/issue"
 	"github.com/xar-network/xar-network/x/liquidator"
 	"github.com/xar-network/xar-network/x/pricefeed"
@@ -64,7 +64,7 @@ var (
 		issue.AppModuleBasic{},
 		nft.AppModuleBasic{},
 		auction.AppModuleBasic{},
-		cdp.AppModuleBasic{},
+		csdt.AppModuleBasic{},
 		liquidator.AppModuleBasic{},
 		pricefeed.AppModuleBasic{},
 		record.AppModuleBasic{},
@@ -119,7 +119,7 @@ type XarApp struct {
 
 	// app specific keepers
 	auctionKeeper    auction.Keeper
-	cdpKeeper        cdp.Keeper
+	csdtKeeper        csdt.Keeper
 	liquidatorKeeper liquidator.Keeper
 	pricefeedKeeper  pricefeed.Keeper
 	issueKeeper      issue.Keeper
@@ -149,7 +149,7 @@ func NewXarApp(
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
 		supply.StoreKey, mint.StoreKey, distr.StoreKey, slashing.StoreKey,
 		gov.StoreKey, params.StoreKey, issue.StoreKey, pricefeed.StoreKey,
-		auction.StoreKey, cdp.StoreKey, liquidator.StoreKey, nft.StoreKey,
+		auction.StoreKey, csdt.StoreKey, liquidator.StoreKey, nft.StoreKey,
 		record.StoreKey,
 	)
 
@@ -175,7 +175,7 @@ func NewXarApp(
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
 
 	issueSubspace := app.paramsKeeper.Subspace(issue.DefaultParamspace)
-	cdpSubspace := app.paramsKeeper.Subspace(cdp.DefaultParamspace)
+	csdtSubspace := app.paramsKeeper.Subspace(csdt.DefaultParamspace)
 	liquidatorSubspace := app.paramsKeeper.Subspace(liquidator.DefaultParamspace)
 	recordSubspace := app.paramsKeeper.Subspace(record.DefaultParamspace)
 
@@ -198,25 +198,25 @@ func NewXarApp(
 	app.issueKeeper = issue.NewKeeper(keys[issue.StoreKey], issueSubspace, app.bankKeeper, issue.DefaultCodespace)
 	app.pricefeedKeeper = pricefeed.NewKeeper(keys[pricefeed.StoreKey], app.cdc, pricefeed.DefaultCodespace)
 	app.recordKeeper = record.NewKeeper(app.cdc, keys[record.StoreKey], recordSubspace, record.DefaultCodespace)
-	app.cdpKeeper = cdp.NewKeeper(
+	app.csdtKeeper = csdt.NewKeeper(
 		app.cdc,
-		keys[cdp.StoreKey],
-		cdpSubspace,
+		keys[csdt.StoreKey],
+		csdtSubspace,
 		app.pricefeedKeeper,
 		app.bankKeeper,
 	)
 	app.auctionKeeper = auction.NewKeeper(
 		app.cdc,
-		app.cdpKeeper, // CDP keeper standing in for bank
+		app.csdtKeeper, // CSDT keeper standing in for bank
 		keys[auction.StoreKey],
 	)
 	app.liquidatorKeeper = liquidator.NewKeeper(
 		app.cdc,
 		keys[liquidator.StoreKey],
 		liquidatorSubspace,
-		app.cdpKeeper,
+		app.csdtKeeper,
 		app.auctionKeeper,
-		app.cdpKeeper, // CDP keeper standing in for bank
+		app.csdtKeeper, // CSDT keeper standing in for bank
 	)
 
 	// register the proposal types
@@ -250,7 +250,7 @@ func NewXarApp(
 		nft.NewAppModule(app.NFTKeeper),
 		issue.NewAppModule(app.issueKeeper, app.accountKeeper),
 		auction.NewAppModule(app.auctionKeeper),
-		cdp.NewAppModule(app.cdpKeeper),
+		csdt.NewAppModule(app.csdtKeeper),
 		liquidator.NewAppModule(app.liquidatorKeeper),
 		pricefeed.NewAppModule(app.pricefeedKeeper),
 		record.NewAppModule(app.recordKeeper),
@@ -269,7 +269,7 @@ func NewXarApp(
 		distr.ModuleName, staking.ModuleName, auth.ModuleName, bank.ModuleName,
 		slashing.ModuleName, gov.ModuleName, mint.ModuleName, supply.ModuleName,
 		crisis.ModuleName, issue.ModuleName,
-		auction.ModuleName, cdp.ModuleName, liquidator.ModuleName, pricefeed.ModuleName,
+		auction.ModuleName, csdt.ModuleName, liquidator.ModuleName, pricefeed.ModuleName,
 		nft.ModuleName, record.ModuleName, genutil.ModuleName,
 	)
 
@@ -297,7 +297,7 @@ func NewXarApp(
 
 			record.NewAppModule(app.recordKeeper),
 			auction.NewAppModule(app.auctionKeeper),
-			cdp.NewAppModule(app.cdpKeeper),
+			csdt.NewAppModule(app.csdtKeeper),
 			liquidator.NewAppModule(app.liquidatorKeeper),
 			pricefeed.NewAppModule(app.pricefeedKeeper),
 			nft.NewAppModule(app.NFTKeeper),

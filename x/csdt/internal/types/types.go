@@ -8,50 +8,47 @@ import (
 )
 
 const (
-	QueryGetCompounds = "compounds"
-	QueryGetParams    = "params"
+	QueryGetCsdts   = "csdts"
+	QueryGetParams = "params"
 )
 
 // StableDenom asset code of the dollar-denominated debt coin
-// Everything is denominated to this coin via oralces, even if this is not the underlying asset
 const StableDenom = "csdt" // TODO allow to be changed
 // GovDenom asset code of the governance coin
 const GovDenom = "ftm"
 
-// Compound is the state of a single Collateralized Debt Position.
-type Compound struct {
+// CSDT is the state of a single Collateralized Debt Position.
+type CSDT struct {
 	//ID             []byte                                    // removing IDs for now to make things simpler
 	Owner            sdk.AccAddress `json:"owner"`             // Account that authorizes changes to the CSDT
 	CollateralDenom  string         `json:"collateral_denom"`  // Type of collateral stored in this CSDT
 	CollateralAmount sdk.Int        `json:"collateral_amount"` // Amount of collateral stored in this CSDT
-	DebtDenom        string         `json:"debt_denom"`        //Denomination of the debt asset withdrawn
-	DebtAmount       sdk.Int        `json:"debt_amount"`       // Amount of debt denom withdrawn
 	Debt             sdk.Int        `json:"debt"`              // Amount of stable coin drawn from this CSDT
 }
 
-func (c Compound) IsUnderCollateralized(price sdk.Dec, liquidationRatio sdk.Dec) bool {
-	collateralValue := sdk.NewDecFromInt(chan c.CollateralAmount).Mul(price)
+func (csdt CSDT) IsUnderCollateralized(price sdk.Dec, liquidationRatio sdk.Dec) bool {
+	collateralValue := sdk.NewDecFromInt(csdt.CollateralAmount).Mul(price)
 	minCollateralValue := liquidationRatio.Mul(sdk.NewDecFromInt(csdt.Debt))
 	return collateralValue.LT(minCollateralValue) // TODO LT or LTE?
 }
 
-func (csdt Compound) String() string {
-	return strings.TrimSpace(fmt.Sprintf(`Compound:
+func (csdt CSDT) String() string {
+	return strings.TrimSpace(fmt.Sprintf(`CSDT:
   Owner:      %s
   Collateral: %s
   Debt:       %s`,
 		csdt.Owner,
-		sdk.NewCoin(c.CollateralDenom, c.CollateralAmount),
-		sdk.NewCoin(StableDenom, c.Debt),
+		sdk.NewCoin(csdt.CollateralDenom, csdt.CollateralAmount),
+		sdk.NewCoin(StableDenom, csdt.Debt),
 	))
 }
 
-type Compounds []Compound
+type CSDTs []CSDT
 
-func (cs Compounds) String() string {
+func (csdts CSDTs) String() string {
 	out := ""
-	for _, c := range cs {
-		out += c.String() + "\n"
+	for _, csdt := range csdts {
+		out += csdt.String() + "\n"
 	}
 	return out
 }

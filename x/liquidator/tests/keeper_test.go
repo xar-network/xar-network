@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/xar-network/xar-network/x/cdp"
+	"github.com/xar-network/xar-network/x/csdt"
 	"github.com/xar-network/xar-network/x/pricefeed"
 )
 
@@ -17,14 +17,14 @@ func TestKeeper_SeizeAndStartCollateralAuction(t *testing.T) {
 
 	_, addrs := mock.GeneratePrivKeyAddressPairs(1)
 
-	cdp.InitGenesis(ctx, k.cdpKeeper, cdp.DefaultGenesisState())
+	csdt.InitGenesis(ctx, k.csdtKeeper, csdt.DefaultGenesisState())
 	InitGenesis(ctx, k.liquidatorKeeper, DefaultGenesisState())
 	pricefeed.InitGenesis(ctx, k.pricefeedKeeper, pricefeed.GenesisState{Assets: []pricefeed.Asset{{"btc", "a description"}}})
 	k.pricefeedKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("8000.00"), i(999999999))
 	k.pricefeedKeeper.SetCurrentPrices(ctx)
 	k.bankKeeper.AddCoins(ctx, addrs[0], cs(c("btc", 100)))
 
-	k.cdpKeeper.ModifyCDP(ctx, addrs[0], "btc", i(3), i(16000))
+	k.csdtKeeper.ModifyCSDT(ctx, addrs[0], "btc", i(3), i(16000))
 
 	k.pricefeedKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("7999.99"), i(999999999))
 	k.pricefeedKeeper.SetCurrentPrices(ctx)
@@ -32,12 +32,12 @@ func TestKeeper_SeizeAndStartCollateralAuction(t *testing.T) {
 	// Run test function
 	auctionID, err := k.liquidatorKeeper.SeizeAndStartCollateralAuction(ctx, addrs[0], "btc")
 
-	// Check CDP
+	// Check CSDT
 	require.NoError(t, err)
-	cdp, found := k.cdpKeeper.GetCDP(ctx, addrs[0], "btc")
+	csdt, found := k.csdtKeeper.GetCSDT(ctx, addrs[0], "btc")
 	require.True(t, found)
-	require.Equal(t, cdp.CollateralAmount, i(2)) // original amount - params.CollateralAuctionSize
-	require.Equal(t, cdp.Debt, i(10667))         // original debt scaled by amount of collateral removed
+	require.Equal(t, csdt.CollateralAmount, i(2)) // original amount - params.CollateralAuctionSize
+	require.Equal(t, csdt.Debt, i(10667))         // original debt scaled by amount of collateral removed
 	// Check auction exists
 	_, found = k.auctionKeeper.GetAuction(ctx, auctionID)
 	require.True(t, found)
@@ -72,7 +72,7 @@ func TestKeeper_StartDebtAuction(t *testing.T) {
 // 	// Setup
 // 	ctx, k := setupTestKeepers()
 // 	initSurplus := i(2000)
-// 	k.liquidatorKeeper.bankKeeper.AddCoins(ctx, k.cdpKeeper.GetLiquidatorAccountAddress(), cs(sdk.NewCoin(k.cdpKeeper.GetStableDenom(), initSurplus)))
+// 	k.liquidatorKeeper.bankKeeper.AddCoins(ctx, k.csdtKeeper.GetLiquidatorAccountAddress(), cs(sdk.NewCoin(k.csdtKeeper.GetStableDenom(), initSurplus)))
 // 	k.liquidatorKeeper.setSeizedDebt(ctx, i(0))
 
 // 	// Execute
@@ -83,40 +83,40 @@ func TestKeeper_StartDebtAuction(t *testing.T) {
 // 	require.Equal(t,
 // 		initSurplus.Sub(SurplusAuctionSize),
 // 		k.liquidatorKeeper.bankKeeper.GetCoins(ctx,
-// 			k.cdpKeeper.GetLiquidatorAccountAddress(),
-// 		).AmountOf(k.cdpKeeper.GetStableDenom()),
+// 			k.csdtKeeper.GetLiquidatorAccountAddress(),
+// 		).AmountOf(k.csdtKeeper.GetStableDenom()),
 // 	)
 // 	_, found := k.auctionKeeper.GetAuction(ctx, auctionID)
 // 	require.True(t, found)
 // }
 
-func TestKeeper_partialSeizeCDP(t *testing.T) {
+func TestKeeper_partialSeizeCSDT(t *testing.T) {
 	// Setup
 	ctx, k := setupTestKeepers()
 
 	_, addrs := mock.GeneratePrivKeyAddressPairs(1)
 
-	cdp.InitGenesis(ctx, k.cdpKeeper, cdp.DefaultGenesisState())
+	csdt.InitGenesis(ctx, k.csdtKeeper, csdt.DefaultGenesisState())
 	InitGenesis(ctx, k.liquidatorKeeper, DefaultGenesisState())
 	pricefeed.InitGenesis(ctx, k.pricefeedKeeper, pricefeed.GenesisState{Assets: []pricefeed.Asset{{"btc", "a description"}}})
 	k.pricefeedKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("8000.00"), i(999999999))
 	k.pricefeedKeeper.SetCurrentPrices(ctx)
 	k.bankKeeper.AddCoins(ctx, addrs[0], cs(c("btc", 100)))
 
-	k.cdpKeeper.ModifyCDP(ctx, addrs[0], "btc", i(3), i(16000))
+	k.csdtKeeper.ModifyCSDT(ctx, addrs[0], "btc", i(3), i(16000))
 
 	k.pricefeedKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("7999.99"), i(999999999))
 	k.pricefeedKeeper.SetCurrentPrices(ctx)
 
 	// Run test function
-	err := k.liquidatorKeeper.partialSeizeCDP(ctx, addrs[0], "btc", i(2), i(10000))
+	err := k.liquidatorKeeper.partialSeizeCSDT(ctx, addrs[0], "btc", i(2), i(10000))
 
 	// Check
 	require.NoError(t, err)
-	cdp, found := k.cdpKeeper.GetCDP(ctx, addrs[0], "btc")
+	csdt, found := k.csdtKeeper.GetCSDT(ctx, addrs[0], "btc")
 	require.True(t, found)
-	require.Equal(t, i(1), cdp.CollateralAmount)
-	require.Equal(t, i(6000), cdp.Debt)
+	require.Equal(t, i(1), csdt.CollateralAmount)
+	require.Equal(t, i(6000), csdt.Debt)
 }
 
 func TestKeeper_GetSetSeizedDebt(t *testing.T) {
