@@ -46,6 +46,7 @@ type Keeper interface {
 	SetInitialIssueStartingIssueId(ctx sdk.Context, issueID uint64) sdk.Error
 	GetLastIssueID(ctx sdk.Context) (issueID uint64)
 	PeekCurrentIssueID(ctx sdk.Context) (issueID uint64, err sdk.Error)
+	SetInterestRate(ctx sdk.Context, sender sdk.AccAddress, interestRate sdk.Dec, issueID string) sdk.Result
 }
 
 // expected bank keeper
