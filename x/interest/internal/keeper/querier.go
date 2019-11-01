@@ -24,10 +24,10 @@ func NewQuerier(k Keeper) sdk.Querier {
 }
 
 func queryInterest(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
-	inflationState := k.GetState(ctx)
+	interestState := k.GetState(ctx)
 
 	// TODO Introduce a more presentation-friendly response type
-	res, err := types.ModuleCdc.MarshalJSON(inflationState)
+	res, err := types.ModuleCdc.MarshalJSON(interestState)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to marshal JSON", err.Error()))
 	}
