@@ -4,11 +4,11 @@ executors:
   golang:
     docker:
       - image: circleci/golang:1.13
-    working_directory: /go/src/github.com/cosmos/gaia
+    working_directory: /go/src/github.com/xar-network/xar-network
   mac:
     macos:
       xcode: "10.3.0"
-    working_directory: /Users/distiller/project/src/github.com/cosmos/gaia
+    working_directory: /root/go/src/github.com/xar-network/xar-network
     environment:
       GO_VERSION: "1.13"
   docs:
@@ -154,12 +154,8 @@ jobs:
           command: |
             export VERSION="$(git describe --tags --long | sed 's/v\(.*\)/\1/')"
             export GO111MODULE=on
-<<<<<<< HEAD
-            for pkg in $(go list ./... | grep -v github.com/xar-network/xar-network/cli_test | grep -v '/simulation' | circleci tests split --split-by=timings); do
-=======
             mkdir -p /tmp/logs /tmp/workspace/profiles
             for pkg in $(go list ./... | grep -v '/simulation' | circleci tests split); do
->>>>>>> 3e3fae888d394d2d55ec7146984707aecdda4497
               id=$(echo "$pkg" | sed 's|[/.]|_|g')
               go test -mod=readonly -timeout 8m -race -coverprofile=/tmp/workspace/profiles/$id.out -covermode=ftmic -tags='ledger test_ledger_mock' "$pkg" | tee "/tmp/logs/$id-$RANDOM.log"
             done
@@ -276,7 +272,7 @@ jobs:
           name: Test full xar simulation
           command: |
             source $BASH_ENV
-            make sim-xar-fast
+            make test-sim-xar-fast
 
   docker-image:
     executor: golang

@@ -31,7 +31,7 @@ cd xar && make install
 If this command fails due to the following error message, you might have already set `LDFLAGS` prior to running this step.
 
 ```
-# github.com/cosmos/gaia/cmd/gaiad
+# github.com/cosmos/xar/cmd/xard
 flag provided but not defined: -L
 usage: link [options] main.o
 ...
@@ -56,9 +56,9 @@ $ xarcli version --long
 `xarcli` for instance should output something similar to:
 
 ```shell
-name: gaia
-server_name: gaiad
-client_name: gaiacli
+name: xar
+server_name: xard
+client_name: xarcli
 version: 1.0.0
 commit: 89e6316a27343304d332aadfe2869847bf52331c
 build_tags: netgo,ledger

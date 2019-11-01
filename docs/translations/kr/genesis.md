@@ -2,7 +2,7 @@
 
 Xar의 제네시스 스테이트인 `GenesisState`는 계정 정보, 모듈 스테이트 그리고 제네시스 트랜잭션 같은 메타데이터 등으로 구성됩니다. 각 모듈은 각자의 `GenesisState`를 지정할 수 있습니다. 또한, 각 모듈은 각자의 제네시스 스테이트 검증, 임포트, 엑스포트 기능 등을 지정할 수 있습니다.
 
-ABCI `initChainer`에서는 Gaia의 `initFromGenesisState`를 기반으로 각 모듈의 `InitGenesis`를 호출해 각 모듈들의 `GenesisState`를 파라미터 값으로 불러옵니다.
+ABCI `initChainer`에서는 Xar의 `initFromGenesisState`를 기반으로 각 모듈의 `InitGenesis`를 호출해 각 모듈들의 `GenesisState`를 파라미터 값으로 불러옵니다.
 
 ## 계정
 

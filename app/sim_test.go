@@ -248,7 +248,7 @@ func interBlockCacheOpt() func(*baseapp.BaseApp) {
 }
 
 // Profile with:
-// /usr/local/go/bin/go test -benchmem -run=^$ github.com/cosmos/cosmos-sdk/GaiaApp -bench ^BenchmarkFullAppSimulation$ -Commit=true -cpuprofile cpu.out
+// /usr/local/go/bin/go test -benchmem -run=^$ github.com/cosmos/cosmos-sdk/XarApp -bench ^BenchmarkFullAppSimulation$ -Commit=true -cpuprofile cpu.out
 func BenchmarkFullAppSimulation(b *testing.B) {
 	logger := log.NewNopLogger()
 	config := simapp.NewConfigFromFlags()
@@ -321,7 +321,7 @@ func TestFullAppSimulation(t *testing.T) {
 	}()
 
 	gapp := NewXarApp(logger, db, nil, true, simapp.FlagPeriodValue, fauxMerkleModeOpt)
-	require.Equal(t, "GaiaApp", gapp.Name())
+	require.Equal(t, "XarApp", gapp.Name())
 
 	// Run randomized simulation
 	_, simParams, simErr := simulation.SimulateFromSeed(
@@ -491,7 +491,7 @@ func TestAppSimulationAfterImport(t *testing.T) {
 	}()
 
 	gapp := NewXarApp(logger, db, nil, true, simapp.FlagPeriodValue, fauxMerkleModeOpt)
-	require.Equal(t, "GaiaApp", gapp.Name())
+	require.Equal(t, "XarApp", gapp.Name())
 
 	// Run randomized simulation
 	// Run randomized simulation
@@ -545,7 +545,7 @@ func TestAppSimulationAfterImport(t *testing.T) {
 	}()
 
 	newApp := NewXarApp(log.NewNopLogger(), newDB, nil, true, 0, fauxMerkleModeOpt)
-	require.Equal(t, "GaiaApp", newApp.Name())
+	require.Equal(t, "XarApp", newApp.Name())
 
 	newApp.InitChain(abci.RequestInitChain{
 		AppStateBytes: appState,

@@ -10,7 +10,7 @@
 
 This repository hosts `Xar`.
 
-`Xar` is a Fantom compatible stable coin issuance platform for the South African Rand. `Xar` is based off of Gaia wrapped around the Cosmos SDK which is wrapped around Fantom's TxFlow consensus.
+`Xar` is a Fantom compatible stable coin issuance platform for the South African Rand. `Xar` is based off of Xar wrapped around the Cosmos SDK which is wrapped around Fantom's TxFlow consensus.
 
 **Note**: Requires [Go 1.13+](https://golang.org/dl/)
 

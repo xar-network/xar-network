@@ -92,7 +92,7 @@ func MakeCodec() *codec.Codec {
 	return cdc.Seal()
 }
 
-// GaiaApp extended ABCI application
+// XarApp extended ABCI application
 type XarApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
