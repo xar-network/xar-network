@@ -16,6 +16,7 @@ var (
 	NewModuleClient = client.NewModuleClient
 	RegisterCodec   = types.RegisterCodec
 	ModuleCdc       = types.ModuleCdc
+	ModuleName      = types.ModuleName
 )
 
 const (

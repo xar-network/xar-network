@@ -34,6 +34,7 @@ import (
 	"github.com/xar-network/xar-network/x/issue"
 	"github.com/xar-network/xar-network/x/liquidator"
 	"github.com/xar-network/xar-network/x/pricefeed"
+	"github.com/xar-network/xar-network/x/record"
 )
 
 const appName = "XarApp"
@@ -66,6 +67,7 @@ var (
 		cdp.AppModuleBasic{},
 		liquidator.AppModuleBasic{},
 		pricefeed.AppModuleBasic{},
+		record.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -121,6 +123,7 @@ type XarApp struct {
 	liquidatorKeeper liquidator.Keeper
 	pricefeedKeeper  pricefeed.Keeper
 	issueKeeper      issue.Keeper
+	recordKeeper     record.Keeper
 
 	NFTKeeper nft.Keeper
 
@@ -147,6 +150,7 @@ func NewXarApp(
 		supply.StoreKey, mint.StoreKey, distr.StoreKey, slashing.StoreKey,
 		gov.StoreKey, params.StoreKey, issue.StoreKey, pricefeed.StoreKey,
 		auction.StoreKey, cdp.StoreKey, liquidator.StoreKey, nft.StoreKey,
+		record.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -173,6 +177,7 @@ func NewXarApp(
 	issueSubspace := app.paramsKeeper.Subspace(issue.DefaultParamspace)
 	cdpSubspace := app.paramsKeeper.Subspace(cdp.DefaultParamspace)
 	liquidatorSubspace := app.paramsKeeper.Subspace(liquidator.DefaultParamspace)
+	recordSubspace := app.paramsKeeper.Subspace(record.DefaultParamspace)
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
@@ -192,6 +197,7 @@ func NewXarApp(
 	app.NFTKeeper = nft.NewKeeper(app.cdc, keys[nft.StoreKey])
 	app.issueKeeper = issue.NewKeeper(keys[issue.StoreKey], issueSubspace, app.bankKeeper, issue.DefaultCodespace)
 	app.pricefeedKeeper = pricefeed.NewKeeper(keys[pricefeed.StoreKey], app.cdc, pricefeed.DefaultCodespace)
+	app.recordKeeper = record.NewKeeper(app.cdc, keys[record.StoreKey], recordSubspace, record.DefaultCodespace)
 	app.cdpKeeper = cdp.NewKeeper(
 		app.cdc,
 		keys[cdp.StoreKey],
@@ -247,6 +253,7 @@ func NewXarApp(
 		cdp.NewAppModule(app.cdpKeeper),
 		liquidator.NewAppModule(app.liquidatorKeeper),
 		pricefeed.NewAppModule(app.pricefeedKeeper),
+		record.NewAppModule(app.recordKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -263,7 +270,7 @@ func NewXarApp(
 		slashing.ModuleName, gov.ModuleName, mint.ModuleName, supply.ModuleName,
 		crisis.ModuleName, issue.ModuleName,
 		auction.ModuleName, cdp.ModuleName, liquidator.ModuleName, pricefeed.ModuleName,
-		nft.ModuleName, genutil.ModuleName,
+		nft.ModuleName, record.ModuleName, genutil.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.crisisKeeper)
@@ -288,6 +295,7 @@ func NewXarApp(
 		// TODO: Add simulation keepers
 		/*
 
+			record.NewAppModule(app.recordKeeper),
 			auction.NewAppModule(app.auctionKeeper),
 			cdp.NewAppModule(app.cdpKeeper),
 			liquidator.NewAppModule(app.liquidatorKeeper),

@@ -21,8 +21,6 @@ func ParamKeyTable() params.KeyTable {
 
 // Issue Keeper
 type Keeper struct {
-	// The reference to the Param Keeper to get and set Global Params
-	paramsKeeper params.Keeper
 	// The reference to the Paramstore to get and set issue specific params
 	paramSpace params.Subspace
 	// The (unexposed) keys used to access the stores from the Context.
@@ -38,15 +36,14 @@ func (keeper Keeper) Getcdc() *codec.Codec {
 	return keeper.cdc
 }
 
-//New record keeper Instance
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, paramsKeeper params.Keeper,
+//NewKeeper keeper Instance
+func NewKeeper(cdc *codec.Codec, key sdk.StoreKey,
 	paramSpace params.Subspace, codespace sdk.CodespaceType) Keeper {
 	return Keeper{
-		storeKey:     key,
-		paramsKeeper: paramsKeeper,
-		paramSpace:   paramSpace.WithKeyTable(ParamKeyTable()),
-		cdc:          cdc,
-		codespace:    codespace,
+		storeKey:   key,
+		paramSpace: paramSpace.WithKeyTable(ParamKeyTable()),
+		cdc:        cdc,
+		codespace:  codespace,
 	}
 }
 
