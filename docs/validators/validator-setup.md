@@ -1,7 +1,7 @@
-# Run a Validator on the Cosmos Hub Mainnet
+# Run a Validator on the Xar Hub Mainnet
 
 ::: tip
-Information on how to join the mainnet (`genesis.json` file and seeds) is held [in our `launch` repo](https://github.com/cosmos/launch/tree/master/latest). 
+Information on how to join the mainnet (`genesis.json` file and seeds) is held [in our `launch` repo](https://github.com/xar-network/launch/tree/master/latest). 
 :::
 
 Before setting up your validator node, make sure you've already gone through the [Full Node Setup](../join-mainnet.md) guide.
@@ -20,7 +20,7 @@ You may want to skip the next section if you have already [set up a full-node](.
 
 ## Create Your Validator
 
-Your `cosmosvalconspub` can be used to create a new validator by staking tokens. You can find your validator pubkey by running:
+Your `xarvalconspub` can be used to create a new validator by staking tokens. You can find your validator pubkey by running:
 
 ```bash
 xard tendermint show-validator
@@ -66,7 +66,7 @@ The genesis ceremony for the Cosmos Hub mainnet is closed. Please skip to the ne
 If you want to participate in genesis as a validator, you need to justify that
 you have some stake at genesis, create one (or multiple) transactions to bond this stake to your validator address, and include this transaction in the genesis file.
 
-Your `cosmosvalconspub` can be used to create a new validator by staking tokens. You can find your validator pubkey by running:
+Your `xarvalconspub` can be used to create a new validator by staking tokens. You can find your validator pubkey by running:
 
 ```bash
 xard tendermint show-validator
@@ -96,7 +96,7 @@ xard gentx \
 When specifying commission parameters, the `commission-max-change-rate` is used to measure % _point_ change over the `commission-rate`. E.g. 1% to 2% is a 100% rate increase, but only 1 percentage point.
 :::
 
-You can then submit your `gentx` on the [launch repository](https://github.com/cosmos/launch). These `gentx` will be used to form the final genesis file. 
+You can then submit your `gentx` on the [launch repository](https://github.com/xar-network/launch). These `gentx` will be used to form the final genesis file. 
 
 ## Edit Validator Description
 
@@ -205,7 +205,7 @@ The default number of files Linux can open (per-process) is `1024`. `xard` is kn
 ```toml
 # /etc/systemd/system/xard.service
 [Unit]
-Description=Cosmos Xar Node
+Description=Xar Node
 After=network.target
 
 [Service]
