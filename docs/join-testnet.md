@@ -1,7 +1,7 @@
 # Join the Public Testnet 
 
 ::: tip Current Testnet
-See the [testnet repo](https://github.com/cosmos/testnets) for
+See the [testnet repo](https://github.com/xar-network/testnets) for
 information on the latest testnet, including the correct version
 of Xar to use and details about the genesis file.
 :::
@@ -12,14 +12,12 @@ of Xar to use and details about the genesis file.
 
 ## Starting a New Node
 
-> NOTE: If you ran a full node on a previous testnet, please skip to [Upgrading From Previous Testnet](#upgrading-from-previous-testnet).
-
 To start a new node, the mainnet instructions apply:
 
 - [Join the mainnet](./join-mainnet.md)
 - [Deploy a validator](./validators/validator-setup.md)
 
-The only difference is the SDK version and genesis file. See the [testnet repo](https://github.com/cosmos/testnets) for information on testnets, including the correct version of the Cosmos-SDK to use and details about the genesis file.
+The only difference is the SDK version and genesis file. See the [testnet repo](https://github.com/xar-network/testnets) for information on testnets, including the correct version of the Xar-SDK to use and details about the genesis file.
 
 ## Upgrading Your Node
 
@@ -57,6 +55,6 @@ make update_tools install
 :::
 
 Note we use `master` here since it contains the latest stable release.
-See the [testnet repo](https://github.com/cosmos/testnets) for details on which version is needed for which testnet, and the [Xar release page](https://github.com/xar-network/xar-network/releases) for details on each release.
+See the [testnet repo](https://github.com/xar-network/testnets) for details on which version is needed for which testnet, and the [Xar release page](https://github.com/xar-network/xar-network/releases) for details on each release.
 
 Your full node has been cleanly upgraded!
