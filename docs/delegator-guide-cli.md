@@ -416,7 +416,7 @@ To confirm that your transaction went through, you can use the following queries
 // your balance should change after you bond CSDT or withdraw rewards
 xarcli query account
 
-// you should have delegations after you bond Atom
+// you should have delegations after you bond CSDT
 xarcli query staking delegations <delegatorAddress>
 
 // this returns your tx if it has been included
@@ -431,15 +431,15 @@ Double check with a block explorer if you interact with the network through a tr
 
 #### Primer on Governance
 
-The  Hub has a built-in governance system that lets bonded Atom holders vote on proposals. There are three types of proposal:
+The  Hub has a built-in governance system that lets bonded CSDT holders vote on proposals. There are three types of proposal:
 
 - `Text Proposals`: These are the most basic type of proposals. They can be used to get the opinion of the network on a given topic. 
 - `Parameter Proposals`: These are used to update the value of an existing parameter.
 - `Software Upgrade Proposal`: These are used to propose an upgrade of the Hub's software.
 
-Any Atom holder can submit a proposal. In order for the proposal to be open for voting, it needs to come with a `deposit` that is greater than a parameter called `minDeposit`. The `deposit` need not be provided in its entirety by the submitter. If the initial proposer's `deposit` is not sufficient, the proposal enters the `deposit_period` status. Then, any Atom holder can increase the deposit by sending a `depositTx`. 
+Any CSDT holder can submit a proposal. In order for the proposal to be open for voting, it needs to come with a `deposit` that is greater than a parameter called `minDeposit`. The `deposit` need not be provided in its entirety by the submitter. If the initial proposer's `deposit` is not sufficient, the proposal enters the `deposit_period` status. Then, any CSDT holder can increase the deposit by sending a `depositTx`. 
 
-Once the `deposit` reaches `minDeposit`, the proposal enters the `voting_period`, which lasts 2 weeks. Any **bonded** Atom holder can then cast a vote on this proposal. The options are `Yes`, `No`, `NoWithVeto` and `Abstain`. The weight of the vote is based on the amount of bonded CSDT of the sender. If they don't vote, delegator inherit the vote of their validator. However, delegators can override their validator's vote by sending a vote themselves. 
+Once the `deposit` reaches `minDeposit`, the proposal enters the `voting_period`, which lasts 2 weeks. Any **bonded** CSDT holder can then cast a vote on this proposal. The options are `Yes`, `No`, `NoWithVeto` and `Abstain`. The weight of the vote is based on the amount of bonded CSDT of the sender. If they don't vote, delegator inherit the vote of their validator. However, delegators can override their validator's vote by sending a vote themselves. 
 
 At the end of the voting period, the proposal is accepted if there are more than 50% `Yes` votes (excluding `Abstain ` votes) and less than 33.33% of `NoWithVeto` votes (excluding `Abstain` votes).
 
