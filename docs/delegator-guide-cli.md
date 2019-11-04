@@ -7,7 +7,7 @@ It also contains instructions on how to manage accounts, restore accounts from t
 ::: danger
 **Very Important**: Please assure that you follow the steps described hereinafter
 carefully, as negligence in this significant process could lead to an indefinite
-loss of your Atoms. Therefore, read through the following instructions in their 
+loss of your CSDT. Therefore, read through the following instructions in their 
 entirety prior to proceeding and reach out to us in case you need support.
 
 Please also note that you are about to interact with the Hub, a
@@ -62,7 +62,7 @@ Not available yet.
 
 ## Accounts
 
-At the core of every Cosmos account, there is a seed, which takes the form of a 12 or 24-words mnemonic. From this mnemonic, it is possible to create any number of Cosmos accounts, i.e. pairs of private key/public key. This is called an HD wallet (see [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki) for more information on the HD wallet specification).
+At the core of every  account, there is a seed, which takes the form of a 12 or 24-words mnemonic. From this mnemonic, it is possible to create any number of  accounts, i.e. pairs of private key/public key. This is called an HD wallet (see [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki) for more information on the HD wallet specification).
 
 ```
      Account 0                         Account 1                         Account 2
@@ -153,12 +153,12 @@ To create an account, you just need to have `xarcli` installed. Before creating 
 **Only use Ledger devices that you bought factory new or trust fully**
 :::
 
-When you initialize your ledger, a 24-word mnemonic is generated and stored in the device. This mnemonic is compatible with Cosmos and Cosmos accounts can be derived from it. Therefore, all you have to do is make your ledger compatible with `xarcli`. To do so, you need to go through the following steps:
+When you initialize your ledger, a 24-word mnemonic is generated and stored in the device. This mnemonic is compatible with  and  accounts can be derived from it. Therefore, all you have to do is make your ledger compatible with `xarcli`. To do so, you need to go through the following steps:
 
 1. Download the Ledger Live app [here](https://www.ledger.com/pages/ledger-live). 
 2. Connect your ledger via USB and update to the latest firmware
-3. Go to the ledger live app store, and download the "Cosmos" application (this can take a while). **Note: You may have to enable `Dev Mode` in the `Settings` of Ledger Live to be able to download the "Cosmos" application**. 
-4. Navigate to the Cosmos app on your ledger device
+3. Go to the ledger live app store, and download the "" application (this can take a while). **Note: You may have to enable `Dev Mode` in the `Settings` of Ledger Live to be able to download the "" application**. 
+4. Navigate to the  app on your ledger device
 
 Then, to create an account, use the following command:
 
@@ -218,7 +218,7 @@ This command will prompt you to input a passphrase as well as your mnemonic. Cha
 In order to query the state and send transactions, you need a way to access the network. To do so, you can either run your own full-node, or connect to someone else's.
 
 ::: danger
-**NOTE: Do not share your mnemonic (12 or 24 words) with anyone. The only person who should ever need to know it is you. This is especially important if you are ever approached via email or direct message by someone requesting that you share your mnemonic for any kind of blockchain services or support. No one from Cosmos, the Tendermint team or the Interchain Foundation will ever send an email that asks for you to share any kind of account credentials or your mnemonic."**.
+**NOTE: Do not share your mnemonic (12 or 24 words) with anyone. The only person who should ever need to know it is you. This is especially important if you are ever approached via email or direct message by someone requesting that you share your mnemonic for any kind of blockchain services or support. No one from , the Tendermint team or the Interchain Foundation will ever send an email that asks for you to share any kind of account credentials or your mnemonic."**.
 ::: 
 
 ### Running Your Own Full-Node
@@ -236,14 +236,14 @@ In order to connect to the full-node, you will need an address of the following 
 ## Setting Up `xarcli`
 
 ::: tip
-**Before setting up `xarcli`, make sure you have set up a way to [access the Cosmos Hub network](#accessing-the-cosmos-hub-network)**
+**Before setting up `xarcli`, make sure you have set up a way to [access the  Hub network](#accessing-the--hub-network)**
 :::
 
 ::: warning
 **Please check that you are always using the latest stable release of `xarcli`**
 :::
 
-`xarcli` is the tool that enables you to interact with the node that runs on the Cosmos Hub network, whether you run it yourself or not. Let us set it up properly.
+`xarcli` is the tool that enables you to interact with the node that runs on the  Hub network, whether you run it yourself or not. Let us set it up properly.
 
 In order to set up `xarcli`, use the following command:
 
@@ -274,7 +274,7 @@ xarcli config trust-node false
 Finally, let us set the `chain-id` of the blockchain we want to interact with:
 
 ```bash
-xarcli config chain-id cosmoshub-2
+xarcli config chain-id hub-2
 ```
 
 ## Querying the State
@@ -292,16 +292,16 @@ xarcli query account <yourAddress>
 // query the list of validators
 xarcli query staking validators
 
-// query the information of a validator given their address (e.g. cosmosvaloper1n5pepvmgsfd3p2tqqgvt505jvymmstf6s9gw27)
+// query the information of a validator given their address (e.g. valoper1n5pepvmgsfd3p2tqqgvt505jvymmstf6s9gw27)
 xarcli query staking validator <validatorAddress>
 
-// query all delegations made from a delegator given their address (e.g. cosmos10snjt8dmpr5my0h76xj48ty80uzwhraqalu4eg)
+// query all delegations made from a delegator given their address (e.g. 10snjt8dmpr5my0h76xj48ty80uzwhraqalu4eg)
 xarcli query staking delegations <delegatorAddress>
 
-// query a specific delegation made from a delegator (e.g. cosmos10snjt8dmpr5my0h76xj48ty80uzwhraqalu4eg) to a validator (e.g. cosmosvaloper1n5pepvmgsfd3p2tqqgvt505jvymmstf6s9gw27) given their addresses
+// query a specific delegation made from a delegator (e.g. 10snjt8dmpr5my0h76xj48ty80uzwhraqalu4eg) to a validator (e.g. valoper1n5pepvmgsfd3p2tqqgvt505jvymmstf6s9gw27) given their addresses
 xarcli query staking delegation <delegatorAddress> <validatorAddress>
 
-// query the rewards of a delegator given a delegator address (e.g. cosmos10snjt8dmpr5my0h76xj48ty80uzwhraqalu4eg)
+// query the rewards of a delegator given a delegator address (e.g. 10snjt8dmpr5my0h76xj48ty80uzwhraqalu4eg)
 xarcli query distribution rewards <delegatorAddress> 
 
 // query all proposals currently open for depositing
@@ -330,7 +330,7 @@ On Hub mainnet, the accepted denom is `uftm`, where `1ftm = 1,000,000uftm`
 
 ### A Note on Gas and Fees
 
-Transactions on the Cosmos Hub network need to include a transaction fee in order to be processed. This fee pays for the gas required to run the transaction. The formula is the following:
+Transactions on the  Hub network need to include a transaction fee in order to be processed. This fee pays for the gas required to run the transaction. The formula is the following:
 
 ```
 fees = ceil(gas * gasPrices)
@@ -358,20 +358,20 @@ For mainnet, the recommended `gas-prices` is `0.025uftm`.
 
 ```bash
 // Send a certain amount of tokens to an address
-// Ex value for parameters (do not actually use these values in your tx!!): <to_address>=cosmos16m93fezfiezhvnjajzrfyszml8qm92a0w67ntjhd3d0 <amount>=1000000uftm 
+// Ex value for parameters (do not actually use these values in your tx!!): <to_address>=16m93fezfiezhvnjajzrfyszml8qm92a0w67ntjhd3d0 <amount>=1000000uftm 
 // Ex value for flags: <gasPrice>=0.025uftm
 
 xarcli tx send <to_address> <amount> --from <yourKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
 ```
 
-### Bonding Atoms and Withdrawing Rewards
+### Bonding CSDT and Withdrawing Rewards
 
 ::: tip
 **Before you can bond ftms and withdraw rewards, you need to [set up `xarcli`](#setting-up-xarcli) and [create an account](#creating-an-account)**
 :::
 
 ::: warning
-**Before bonding Atoms, please read the [delegator faq](https://cosmos.network/resources/delegators) to understand the risk and responsibilities involved with delegating**
+**Before bonding CSDT, please read the [delegator faq](https://.network/resources/delegators) to understand the risk and responsibilities involved with delegating**
 :::
 
 ::: warning
@@ -379,17 +379,17 @@ xarcli tx send <to_address> <amount> --from <yourKeyName> --gas auto --gas-adjus
 ::: 
 
 ```bash
-// Bond a certain amount of Atoms to a given validator
-// ex value for flags: <validatorAddress>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToBound>=10000000uftm, <gasPrice>=0.025uftm
+// Bond a certain amount of CSDT to a given validator
+// ex value for flags: <validatorAddress>=valoper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToBound>=10000000uftm, <gasPrice>=0.025uftm
 
 xarcli tx staking delegate <validatorAddress> <amountToBond> --from <delegatorKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
 
 
-// Redelegate a certain amount of Atoms from a validator to another
+// Redelegate a certain amount of CSDT from a validator to another
 // Can only be used if already bonded to a validator
 // Redelegation takes effect immediately, there is no waiting period to redelegate
 // After a redelegation, no other redelegation can be made from the account for the next 3 weeks
-// ex value for flags: <stcValidatorAddress>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToRedelegate>=100000000uftm, <gasPrice>=0.025uftm
+// ex value for flags: <stcValidatorAddress>=valoper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToRedelegate>=100000000uftm, <gasPrice>=0.025uftm
 
 xarcli tx staking redelegate <srcValidatorAddress> <destValidatorAddress> <amountToRedelegate> --from <delegatorKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
 
@@ -399,9 +399,9 @@ xarcli tx staking redelegate <srcValidatorAddress> <destValidatorAddress> <amoun
 xarcli tx distribution withdraw-all-rewards --from <delegatorKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
 
 
-// Unbond a certain amount of Atoms from a given validator 
-// You will have to wait 3 weeks before your Atoms are fully unbonded and transferrable 
-// ex value for flags: <validatorAddress>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToUnbound>=10000000uftm, <gasPrice>=0.025uftm
+// Unbond a certain amount of CSDT from a given validator 
+// You will have to wait 3 weeks before your CSDT are fully unbonded and transferrable 
+// ex value for flags: <validatorAddress>=valoper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToUnbound>=10000000uftm, <gasPrice>=0.025uftm
 
 xarcli tx staking unbond <validatorAddress> <amountToUnbond> --from <delegatorKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
 ```
@@ -413,7 +413,7 @@ xarcli tx staking unbond <validatorAddress> <amountToUnbond> --from <delegatorKe
 To confirm that your transaction went through, you can use the following queries:
 
 ```bash
-// your balance should change after you bond Atoms or withdraw rewards
+// your balance should change after you bond CSDT or withdraw rewards
 xarcli query account
 
 // you should have delegations after you bond Atom
@@ -431,7 +431,7 @@ Double check with a block explorer if you interact with the network through a tr
 
 #### Primer on Governance
 
-The Cosmos Hub has a built-in governance system that lets bonded Atom holders vote on proposals. There are three types of proposal:
+The  Hub has a built-in governance system that lets bonded Atom holders vote on proposals. There are three types of proposal:
 
 - `Text Proposals`: These are the most basic type of proposals. They can be used to get the opinion of the network on a given topic. 
 - `Parameter Proposals`: These are used to update the value of an existing parameter.
@@ -439,14 +439,14 @@ The Cosmos Hub has a built-in governance system that lets bonded Atom holders vo
 
 Any Atom holder can submit a proposal. In order for the proposal to be open for voting, it needs to come with a `deposit` that is greater than a parameter called `minDeposit`. The `deposit` need not be provided in its entirety by the submitter. If the initial proposer's `deposit` is not sufficient, the proposal enters the `deposit_period` status. Then, any Atom holder can increase the deposit by sending a `depositTx`. 
 
-Once the `deposit` reaches `minDeposit`, the proposal enters the `voting_period`, which lasts 2 weeks. Any **bonded** Atom holder can then cast a vote on this proposal. The options are `Yes`, `No`, `NoWithVeto` and `Abstain`. The weight of the vote is based on the amount of bonded Atoms of the sender. If they don't vote, delegator inherit the vote of their validator. However, delegators can override their validator's vote by sending a vote themselves. 
+Once the `deposit` reaches `minDeposit`, the proposal enters the `voting_period`, which lasts 2 weeks. Any **bonded** Atom holder can then cast a vote on this proposal. The options are `Yes`, `No`, `NoWithVeto` and `Abstain`. The weight of the vote is based on the amount of bonded CSDT of the sender. If they don't vote, delegator inherit the vote of their validator. However, delegators can override their validator's vote by sending a vote themselves. 
 
 At the end of the voting period, the proposal is accepted if there are more than 50% `Yes` votes (excluding `Abstain ` votes) and less than 33.33% of `NoWithVeto` votes (excluding `Abstain` votes).
 
 #### In Practice
 
 ::: tip
-**Before you can bond ftms and withdraw rewards, you need to [bond Atoms](#bonding-ftms-and-withdrawing-rewards)**
+**Before you can bond ftms and withdraw rewards, you need to [bond CSDT](#bonding-ftms-and-withdrawing-rewards)**
 :::
 
 ::: warning
@@ -478,18 +478,18 @@ xarcli tx gov vote <proposalID> <option> --gas auto --gas-adjustment 1.5 --gas-p
 If you do not have a ledger device and want to interact with your private key on an offline computer, you can use the following procedure. First, generate an unsigned transaction on an **online computer** with the following command (example with a bonding transaction):
 
 ```bash
-// Bond Atoms 
-// ex value for flags: <amountToBound>=10000000uftm, <bech32AddressOfValidator>=cosmosvaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <gasPrice>=0.025uftm, <delegatorAddress>=cosmos10snjt8dmpr5my0h76xj48ty80uzwhraqalu4eg
+// Bond CSDT 
+// ex value for flags: <amountToBound>=10000000uftm, <bech32AddressOfValidator>=valoper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <gasPrice>=0.025uftm, <delegatorAddress>=10snjt8dmpr5my0h76xj48ty80uzwhraqalu4eg
 
 xarcli tx staking delegate <validatorAddress> <amountToBond> --from <delegatorAddress> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice> --generate-only > unsignedTX.json
 ```
 
 In order to sign, you will also need the `chain-id`, `account-number` and `sequence`. The `chain-id` is a unique identifier for the blockchain on which you are submitting the transaction. The `account-number` is an identifier generated when your account first receives funds. The `sequence` number is used to keep track of the number of transactions you have sent and prevent replay attacks.
 
-Get the chain-id from the genesis file (`cosmoshub-2`), and the two other fields using the account query:
+Get the chain-id from the genesis file (`hub-2`), and the two other fields using the account query:
 
 ```bash
-xarcli query account <yourAddress> --chain-id cosmoshub-2
+xarcli query account <yourAddress> --chain-id hub-2
 ```
 
 Then, copy `unsignedTx.json` and transfer it (e.g. via USB) to the offline computer. If it is not done already, [create an account on the offline computer](#using-a-computer). For additional security, you can double check the parameters of your transaction before signing it using the following command:
@@ -501,7 +501,7 @@ cat unsignedTx.json
 Now, sign the transaction using the following command. You will need the `chain-id`, `sequence` and `account-number` obtained earlier:
 
 ```bash
-xarcli tx sign unsignedTx.json --from <delegatorKeyName> --offline --chain-id cosmoshub-2 --sequence <sequence> --account-number <account-number> > signedTx.json
+xarcli tx sign unsignedTx.json --from <delegatorKeyName> --offline --chain-id hub-2 --sequence <sequence> --account-number <account-number> > signedTx.json
 ```
 
 Copy `signedTx.json` and transfer it back to the online computer. Finally, use the following command to broadcast the transaction:
