@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
-	"github.com/xar-network/xar-network/x/issuer/types"
+	"github.com/xar-network/xar-network/x/issuer/internal/types"
 )
 
 func GetTxCmd(cdc *codec.Codec) *cobra.Command {

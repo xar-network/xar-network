@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/xar-network/xar-network/x/issuer/types"
+	"github.com/xar-network/xar-network/x/issuer/internal/types"
 	lp "github.com/xar-network/xar-network/x/liquidityprovider"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -18,10 +18,10 @@ const (
 type Keeper struct {
 	storeKey sdk.StoreKey
 	lpKeeper lp.Keeper
-	ik       types.InflationKeeper
+	ik       types.InterestKeeper
 }
 
-func NewKeeper(storeKey sdk.StoreKey, lpk lp.Keeper, ik types.InflationKeeper) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, lpk lp.Keeper, ik types.InterestKeeper) Keeper {
 	return Keeper{
 		storeKey: storeKey,
 		lpKeeper: lpk,
@@ -96,10 +96,10 @@ func (k Keeper) RevokeLiquidityProvider(ctx sdk.Context, liquidityProvider sdk.A
 	return types.ErrNotLiquidityProvider(liquidityProvider).Result()
 }
 
-func (k Keeper) SetInflationRate(ctx sdk.Context, issuer sdk.AccAddress, inflationRate sdk.Dec, denom string) sdk.Result {
+func (k Keeper) SetInflationRate(ctx sdk.Context, issuer sdk.AccAddress, interestRate sdk.Dec, denom string) sdk.Result {
 	k.mustBeIssuer(ctx, issuer)
 
-	return k.ik.SetInflation(ctx, inflationRate, denom)
+	return k.ik.SetInterest(ctx, interestRate, denom)
 }
 
 func (k Keeper) logger(ctx sdk.Context) log.Logger {

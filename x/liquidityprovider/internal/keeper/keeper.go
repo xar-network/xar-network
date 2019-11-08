@@ -5,9 +5,10 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/tendermint/tendermint/libs/log"
-	"github.com/xar-network/xar-network/x/liquidityprovider/types"
+	"github.com/xar-network/xar-network/x/liquidityprovider/internal/types"
 )
 
 type Keeper struct {
@@ -99,7 +100,7 @@ func (k Keeper) SetLiquidityProviderAccount(ctx sdk.Context, account *types.Liqu
 	k.authKeeper.SetAccount(ctx, account)
 }
 
-func (k Keeper) RevokeLiquidityProviderAccount(ctx sdk.Context, account auth.Account) bool {
+func (k Keeper) RevokeLiquidityProviderAccount(ctx sdk.Context, account exported.Account) bool {
 	if lpAcc, isLpAcc := account.(*types.LiquidityProviderAccount); isLpAcc {
 		account = lpAcc.Account
 		k.authKeeper.SetAccount(ctx, account)

@@ -19,8 +19,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	authsimops "github.com/cosmos/cosmos-sdk/x/auth/simulation/operations"
-	banksimops "github.com/cosmos/cosmos-sdk/x/bank/simulation/operations"
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	distrsimops "github.com/cosmos/cosmos-sdk/x/distribution/simulation/operations"
 	"github.com/cosmos/cosmos-sdk/x/gov"

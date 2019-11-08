@@ -28,20 +28,28 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	"github.com/cosmos/modules/incubator/nft"
+
+	//Public issuance
+	"github.com/xar-network/xar-network/x/authority"
+	"github.com/xar-network/xar-network/x/interest"
+	"github.com/xar-network/xar-network/x/issue"
+	"github.com/xar-network/xar-network/x/issuer"
+	"github.com/xar-network/xar-network/x/liquidityprovider"
+
 	"github.com/xar-network/xar-network/x/auction"
 	"github.com/xar-network/xar-network/x/csdt"
-	"github.com/xar-network/xar-network/x/issue"
 	"github.com/xar-network/xar-network/x/liquidator"
 	"github.com/xar-network/xar-network/x/pricefeed"
+
+	//Proof of existence
 	"github.com/xar-network/xar-network/x/record"
 )
 
-const appName = "XarApp"
+const appName = "xar"
 
 var (
 	// default home directories for xarcli
 	DefaultCLIHome = os.ExpandEnv("$HOME/.xarcli")
-
 	// default home directories for xard
 	DefaultNodeHome = os.ExpandEnv("$HOME/.xard")
 
@@ -67,16 +75,22 @@ var (
 		liquidator.AppModuleBasic{},
 		pricefeed.AppModuleBasic{},
 		record.AppModuleBasic{},
+		interest.AppModuleBasic{},
+		liquidityprovider.AppModuleBasic{},
+		issuer.AppModuleBasic{},
+		authority.AppModule{},
 	)
 
 	// module account permissions
 	maccPerms = map[string][]string{
-		auth.FeeCollectorName:     nil,
-		distr.ModuleName:          nil,
-		mint.ModuleName:           {supply.Minter},
-		staking.BondedPoolName:    {supply.Burner, supply.Staking},
-		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
-		gov.ModuleName:            {supply.Burner},
+		auth.FeeCollectorName:        nil,
+		distr.ModuleName:             nil,
+		mint.ModuleName:              {supply.Minter},
+		staking.BondedPoolName:       {supply.Burner, supply.Staking},
+		staking.NotBondedPoolName:    {supply.Burner, supply.Staking},
+		gov.ModuleName:               {supply.Burner},
+		liquidityprovider.ModuleName: {supply.Minter, supply.Burner},
+		interest.ModuleName:          {supply.Minter},
 	}
 )
 
@@ -92,8 +106,8 @@ func MakeCodec() *codec.Codec {
 	return cdc.Seal()
 }
 
-// XarApp extended ABCI application
-type XarApp struct {
+// xarApp extended ABCI application
+type xarApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
 
@@ -125,6 +139,11 @@ type XarApp struct {
 
 	NFTKeeper nft.Keeper
 
+	interestKeeper  interest.Keeper
+	lpKeeper        liquidityprovider.Keeper
+	issuerKeeper    issuer.Keeper
+	authorityKeeper authority.Keeper
+
 	// the module manager
 	mm *module.Manager
 
@@ -132,11 +151,11 @@ type XarApp struct {
 	sm *module.SimulationManager
 }
 
-// NewXarApp returns a reference to an initialized XarApp.
-func NewXarApp(
+// NewxarApp returns a reference to an initialized xarApp.
+func NewxarApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
-) *XarApp {
+) *xarApp {
 
 	cdc := MakeCodec()
 
@@ -153,7 +172,7 @@ func NewXarApp(
 
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
-	app := &XarApp{
+	app := &xarApp{
 		BaseApp:        bApp,
 		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
@@ -176,46 +195,31 @@ func NewXarApp(
 	csdtSubspace := app.paramsKeeper.Subspace(csdt.DefaultParamspace)
 	liquidatorSubspace := app.paramsKeeper.Subspace(liquidator.DefaultParamspace)
 	recordSubspace := app.paramsKeeper.Subspace(record.DefaultParamspace)
+	interestSubspace := app.paramsKeeper.Subspace(interest.DefaultParamspace)
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
 	app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper, bankSubspace, bank.DefaultCodespace, app.ModuleAccountAddrs())
 	app.supplyKeeper = supply.NewKeeper(app.cdc, keys[supply.StoreKey], app.accountKeeper, app.bankKeeper, maccPerms)
-	stakingKeeper := staking.NewKeeper(
-		app.cdc, keys[staking.StoreKey], app.supplyKeeper, stakingSubspace, staking.DefaultCodespace,
-	)
+	stakingKeeper := staking.NewKeeper(app.cdc, keys[staking.StoreKey], app.supplyKeeper, stakingSubspace, staking.DefaultCodespace)
 	app.mintKeeper = mint.NewKeeper(app.cdc, keys[mint.StoreKey], mintSubspace, &stakingKeeper, app.supplyKeeper, auth.FeeCollectorName)
 	app.distrKeeper = distr.NewKeeper(app.cdc, keys[distr.StoreKey], distrSubspace, &stakingKeeper,
 		app.supplyKeeper, distr.DefaultCodespace, auth.FeeCollectorName, app.ModuleAccountAddrs())
-	app.slashingKeeper = slashing.NewKeeper(
-		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace, slashing.DefaultCodespace,
-	)
+	app.slashingKeeper = slashing.NewKeeper(app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace, slashing.DefaultCodespace)
 	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
 
 	app.NFTKeeper = nft.NewKeeper(app.cdc, keys[nft.StoreKey])
 	app.issueKeeper = issue.NewKeeper(keys[issue.StoreKey], issueSubspace, app.bankKeeper, issue.DefaultCodespace)
 	app.pricefeedKeeper = pricefeed.NewKeeper(keys[pricefeed.StoreKey], app.cdc, pricefeed.DefaultCodespace)
 	app.recordKeeper = record.NewKeeper(app.cdc, keys[record.StoreKey], recordSubspace, record.DefaultCodespace)
-	app.csdtKeeper = csdt.NewKeeper(
-		app.cdc,
-		keys[csdt.StoreKey],
-		csdtSubspace,
-		app.pricefeedKeeper,
-		app.bankKeeper,
-	)
-	app.auctionKeeper = auction.NewKeeper(
-		app.cdc,
-		app.csdtKeeper, // CSDT keeper standing in for bank
-		keys[auction.StoreKey],
-	)
-	app.liquidatorKeeper = liquidator.NewKeeper(
-		app.cdc,
-		keys[liquidator.StoreKey],
-		liquidatorSubspace,
-		app.csdtKeeper,
-		app.auctionKeeper,
-		app.csdtKeeper, // CSDT keeper standing in for bank
-	)
+	app.csdtKeeper = csdt.NewKeeper(app.cdc, keys[csdt.StoreKey], csdtSubspace, app.pricefeedKeeper, app.bankKeeper)
+	app.auctionKeeper = auction.NewKeeper(app.cdc, app.csdtKeeper, keys[auction.StoreKey])
+	app.liquidatorKeeper = liquidator.NewKeeper(app.cdc, keys[liquidator.StoreKey], liquidatorSubspace, app.csdtKeeper, app.auctionKeeper, app.csdtKeeper)
+
+	app.interestKeeper = interest.NewKeeper(app.cdc, keys[interest.StoreKey], interestSubspace, app.supplyKeeper, auth.FeeCollectorName)
+	app.lpKeeper = liquidityprovider.NewKeeper(app.accountKeeper, app.supplyKeeper)
+	app.issuerKeeper = issuer.NewKeeper(keys[issuer.StoreKey], app.lpKeeper, app.interestKeeper)
+	app.authorityKeeper = authority.NewKeeper(keys[authority.StoreKey], app.issuerKeeper)
 
 	// register the proposal types
 	govRouter := gov.NewRouter()
@@ -252,14 +256,35 @@ func NewXarApp(
 		liquidator.NewAppModule(app.liquidatorKeeper),
 		pricefeed.NewAppModule(app.pricefeedKeeper),
 		record.NewAppModule(app.recordKeeper),
+
+		interest.NewAppModule(app.interestKeeper),
+		liquidityprovider.NewAppModule(app.lpKeeper),
+		issuer.NewAppModule(app.issuerKeeper),
+		authority.NewAppModule(app.authorityKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
-	app.mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
+	app.mm.SetOrderBeginBlockers(
+		interest.ModuleName,
+		mint.ModuleName,
+		distr.ModuleName,
+		slashing.ModuleName,
+	)
 
-	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName, pricefeed.ModuleName)
+	app.mm.SetOrderEndBlockers(
+		crisis.ModuleName,
+		gov.ModuleName,
+		staking.ModuleName,
+		pricefeed.ModuleName,
+		interest.ModuleName,
+		issuer.ModuleName,
+		authority.ModuleName,
+		interest.ModuleName,
+		issuer.ModuleName,
+		authority.ModuleName,
+	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -325,29 +350,29 @@ func NewXarApp(
 }
 
 // application updates every begin block
-func (app *XarApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+func (app *xarApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
 
 // application updates every end block
-func (app *XarApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+func (app *xarApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
 }
 
 // application update at chain initialization
-func (app *XarApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *xarApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 
 // load a particular height
-func (app *XarApp) LoadHeight(height int64) error {
+func (app *xarApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
 
 // ModuleAccountAddrs returns all the app's module account addresses.
-func (app *XarApp) ModuleAccountAddrs() map[string]bool {
+func (app *xarApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
@@ -357,7 +382,7 @@ func (app *XarApp) ModuleAccountAddrs() map[string]bool {
 }
 
 // Codec returns the application's sealed codec.
-func (app *XarApp) Codec() *codec.Codec {
+func (app *xarApp) Codec() *codec.Codec {
 	return app.cdc
 }
 

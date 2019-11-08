@@ -3,11 +3,12 @@ package keeper
 import (
 	"sort"
 	"testing"
-	apptypes "xar/types"
+
+	apptypes "github.com/xar-network/xar-network/types"
 
 	"github.com/xar-network/xar-network/x/liquidityprovider"
 
-	"github.com/xar-network/xar-network/x/issuer/types"
+	"github.com/xar-network/xar-network/x/issuer/internal/types"
 
 	"github.com/stretchr/testify/require"
 
@@ -237,13 +238,13 @@ func createTestComponents(t *testing.T) (sdk.Context, auth.AccountKeeper, liquid
 
 	lpk := liquidityprovider.NewKeeper(ak, sk)
 
-	keeper := NewKeeper(keySupply, lpk, mockInflationKeeper{})
+	keeper := NewKeeper(keySupply, lpk, mockInterestKeeper{})
 	return ctx, ak, lpk, keeper
 }
 
-type mockInflationKeeper struct{}
+type mockInterestKeeper struct{}
 
-func (m mockInflationKeeper) SetInflation(ctx sdk.Context, inflation sdk.Dec, denom string) (_ sdk.Result) {
+func (m mockInterestKeeper) SetInterest(ctx sdk.Context, inflation sdk.Dec, denom string) (_ sdk.Result) {
 	return
 }
 

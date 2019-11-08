@@ -1,8 +1,8 @@
 package issuer
 
 import (
-	"github.com/xar-network/xar-network/x/issuer/keeper"
-	types "github.com/xar-network/xar-network/x/issuer/types"
+	"github.com/xar-network/xar-network/x/issuer/internal/keeper"
+	"github.com/xar-network/xar-network/x/issuer/internal/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
