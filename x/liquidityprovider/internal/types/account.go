@@ -4,18 +4,18 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 )
 
-var _ auth.Account = LiquidityProviderAccount{}
+var _ exported.Account = LiquidityProviderAccount{}
 
 type LiquidityProviderAccount struct {
-	auth.Account
+	exported.Account
 
 	Credit sdk.Coins
 }
 
-func NewLiquidityProviderAccount(baseAccount auth.Account, credit sdk.Coins) *LiquidityProviderAccount {
+func NewLiquidityProviderAccount(baseAccount exported.Account, credit sdk.Coins) *LiquidityProviderAccount {
 	return &LiquidityProviderAccount{
 		Account: baseAccount,
 		Credit:  credit,

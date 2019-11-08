@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	"github.com/xar-network/xar-network/x/liquidityprovider/client/cli"
-	"github.com/xar-network/xar-network/x/liquidityprovider/types"
+	"github.com/xar-network/xar-network/x/liquidityprovider/internal/types"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -15,7 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/xar-network/xar-network/x/liquidityprovider/keeper"
+	"github.com/xar-network/xar-network/x/liquidityprovider/internal/keeper"
 )
 
 var (

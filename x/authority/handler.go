@@ -3,12 +3,12 @@ package authority
 import (
 	"fmt"
 
-	"xar/x/authority/types"
+	"github.com/xar-network/xar-network/x/authority/internal/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func newHandler(keeper Keeper) sdk.Handler {
+func newHandler(k Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (result sdk.Result) {
 		defer func() {
 			if r := recover(); r != nil {
@@ -25,9 +25,9 @@ func newHandler(keeper Keeper) sdk.Handler {
 
 		switch msg := msg.(type) {
 		case types.MsgCreateIssuer:
-			return keeper.CreateIssuer(ctx, msg.Authority, msg.Issuer, msg.Denominations)
+			return k.CreateIssuer(ctx, msg.Authority, msg.Issuer, msg.Denominations)
 		case types.MsgDestroyIssuer:
-			return keeper.DestroyIssuer(ctx, msg.Authority, msg.Issuer)
+			return k.DestroyIssuer(ctx, msg.Authority, msg.Issuer)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized inflation Msg type: %v", msg.Type())
 			return sdk.ErrUnknownRequest(errMsg).Result()

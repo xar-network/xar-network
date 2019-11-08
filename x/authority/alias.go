@@ -1,8 +1,8 @@
 package authority
 
 import (
-	"github.com/xar-network/xar-network/x/authority/keeper"
-	"github.com/xar-network/xar-network/x/authority/types"
+	"github.com/xar-network/xar-network/x/authority/internal/keeper"
+	"github.com/xar-network/xar-network/x/authority/internal/types"
 )
 
 const (

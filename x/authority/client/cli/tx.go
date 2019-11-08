@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/xar-network/xar-network/x/authority/types"
+	"github.com/xar-network/xar-network/x/authority/internal/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"

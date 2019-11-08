@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	apptypes "github.com/xar-network/xar-network/types"
-	"github.com/xar-network/xar-network/x/authority/types"
+	"github.com/xar-network/xar-network/x/authority/internal/types"
 	"github.com/xar-network/xar-network/x/issuer"
 	"github.com/xar-network/xar-network/x/liquidityprovider"
 

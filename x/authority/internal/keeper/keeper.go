@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/xar-network/xar-network/x/authority/types"
+	"github.com/xar-network/xar-network/x/authority/internal/types"
 	"github.com/xar-network/xar-network/x/issuer"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

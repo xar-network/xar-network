@@ -6,8 +6,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	"github.com/xar-network/xar-network/x/issuer/client/cli"
-	"github.com/xar-network/xar-network/x/issuer/keeper"
-	"github.com/xar-network/xar-network/x/issuer/types"
+	"github.com/xar-network/xar-network/x/issuer/internal/keeper"
+	"github.com/xar-network/xar-network/x/issuer/internal/types"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 

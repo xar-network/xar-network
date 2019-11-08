@@ -44,6 +44,7 @@ github.com/cosmos/cosmos-sdk v0.34.4-0.20191031200835-02c6c9fafd58 h1:B3fXc6Y9zt
 github.com/cosmos/cosmos-sdk v0.34.4-0.20191031200835-02c6c9fafd58/go.mod h1:PuN72vbZxlorpnHmoIl6RjzVMXEOMejmwORJlZ74K7Q=
 github.com/cosmos/cosmos-sdk v0.37.3 h1:v4IQIPq3zFB95ibAS7zqsnkZ/8SE3er16Og45EGHggo=
 github.com/cosmos/cosmos-sdk v0.37.3/go.mod h1:dAwYeOJ5ybRZg/OdRfiDy8q/cZq/GXQp9ZHAtz0E74I=
+github.com/cosmos/cosmos-sdk v0.37.4 h1:1ioXxkpiS+wOgaUbROeDIyuF7hciU5nti0TSyBmV2Ok=
 github.com/cosmos/go-bip39 v0.0.0-20180618194314-52158e4697b8 h1:Iwin12wRQtyZhH6FV3ykFcdGNlYEzoeR0jN8Vn+JWsI=
 github.com/cosmos/go-bip39 v0.0.0-20180618194314-52158e4697b8/go.mod h1:tSxLoYXyBmiFeKpvmq4dzayMdCjCnu8uqmCysIGBT2Y=
 github.com/cosmos/ledger-cosmos-go v0.10.3/go.mod h1:J8//BsAGTo3OC/vDLjMRFLW6q0WAaXvHnVc7ZmE8iUY=
@@ -114,6 +115,7 @@ github.com/grpc-ecosystem/go-grpc-middleware v1.0.0/go.mod h1:FiyG127CGDf3tlThmg
 github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0/go.mod h1:8NvIoxWQoOIhqOTXgfV/d3M/q6VIi02HzZEHgUlZvzk=
 github.com/grpc-ecosystem/grpc-gateway v1.9.0/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
 github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c/go.mod h1:NMPJylDgVpX0MLRlPy15sqSwOFv/U1GZ2m21JhFfek0=
+github.com/hashgard/hashgard v0.8.0 h1:JrVzUuNBQK5KW27d23izE6K48bvo0zMwLxMLEi/WaZY=
 github.com/hashicorp/golang-lru v0.5.3 h1:YPkqC67at8FYaadspW/6uE0COsBxS2656RLEr8Bppgk=
 github.com/hashicorp/golang-lru v0.5.3/go.mod h1:iADmTwqILo4mZ8BN3D2Q6+9jd8WM5uGBxy+E8yxSoD4=
 github.com/hashicorp/hcl v1.0.0 h1:0Anlzjpi4vEasTeNFn2mLJgTSwt0+6sfsiTG8qcWGx4=

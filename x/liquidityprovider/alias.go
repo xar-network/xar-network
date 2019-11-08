@@ -1,8 +1,8 @@
 package liquidityprovider
 
 import (
-	"github.com/xar-network/xar-network/x/liquidityprovider/keeper"
-	"github.com/xar-network/xar-network/x/liquidityprovider/types"
+	"github.com/xar-network/xar-network/x/liquidityprovider/internal/keeper"
+	"github.com/xar-network/xar-network/x/liquidityprovider/internal/types"
 )
 
 const (

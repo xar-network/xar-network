@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/xar-network/xar-network/x/liquidityprovider/keeper"
-	types "github.com/xar-network/xar-network/x/liquidityprovider/types"
+	"github.com/xar-network/xar-network/x/liquidityprovider/internal/keeper"
+	"github.com/xar-network/xar-network/x/liquidityprovider/internal/types"
 )
 
 // TODO Accept Keeper argument
