@@ -16,8 +16,17 @@ source ~/.bash_profile
 ```
 
 ::: tip
-**Go 1.12+** is required for the Cosmos SDK.
+**Go 1.13+** is required for the Xar SDK.
 :::
+
+## Building from source
+
+```bash
+git clone https://github.com/xar-network/xar-network
+cd xar-network
+go build ./cmd/xarcli
+go build ./cmd/xard
+```
 
 ## Install the binaries
 
@@ -25,13 +34,13 @@ Next, let's install the latest version of Xar. Make sure you `git checkout` the 
 
 ```bash
 git clone -b <latest-release-tag> https://github.com/xar-network/xar-network
-cd xar && make install
+cd xar-network && make install
 ```
 
 If this command fails due to the following error message, you might have already set `LDFLAGS` prior to running this step.
 
 ```
-# github.com/cosmos/xar/cmd/xard
+# github.com/xar-network/xar-network/cmd/xard
 flag provided but not defined: -L
 usage: link [options] main.o
 ...
@@ -83,7 +92,7 @@ Build tags indicate special features that have been enabled in the binary.
 To test any changes made in the SDK or Tendermint, a `replace` clause needs to be added to `go.mod` providing the correct import path.
 
 - Make appropriate changes
-- Add `replace github.com/cosmos/cosmos-sdk => /path/to/clone/cosmos-sdk` to `go.mod`
+- Add `replace github.com/xar-network/xar-network => /path/to/clone/xar-network` to `go.mod`
 - Run `make clean install` or `make clean build`
 - Test changes
 

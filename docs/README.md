@@ -1,18 +1,18 @@
-# Cosmos Hub Documentation
+# Hub Documentation
 
-Welcome to the documentation of the **Cosmos Hub application: `xar`**.
+Welcome to the documentation of the **Hub application: `xar`**.
 
 ## What is Xar?
 
 - [Xar](./what-is-xar.md)
 
-## Join the Cosmos Hub Mainnet
+## Join the Hub Mainnet
 
 - [Install the `xar` application](./installation.md)
 - [Set up a full node and join the mainnet](./join-mainnet.md)
 - [Upgrade to a validator node](./validators/validator-setup.md)
 
-## Join the Cosmos Hub Public Testnet
+## Join the Hub Public Testnet
 
 - [Join the testnet](./join-testnet.md)
 

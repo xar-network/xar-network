@@ -1,9 +1,9 @@
 # Join the mainnet
 
 ::: tip 
-See the [launch repo](https://github.com/cosmos/launch) for
+See the [genesis repo](https://github.com/xar-network/genesis) for
 information on the mainnet, including the correct version
-of the Cosmos-SDK to use and details about the genesis file.
+of the Xar-SDK to use and details about the genesis file.
 :::
 
 ::: warning
@@ -41,7 +41,7 @@ You can edit the `~/.xard/config/xard.toml` file in order to enable the anti spa
 
 # The minimum gas prices a validator is willing to accept for processing a
 # transaction. A transaction's fees must meet the minimum of any denomination
-# specified in this config (e.g. 10uftm).
+# specified in this config (e.g. 10ftm).
 
 minimum-gas-prices = ""
 ```
@@ -56,10 +56,10 @@ Fetch the testnet's `genesis.json` file into `xard`'s config directory.
 
 ```bash
 mkdir -p $HOME/.xard/config
-curl https://raw.githubusercontent.com/cosmos/launch/master/genesis.json > $HOME/.xard/config/genesis.json
+curl https://raw.githubusercontent.com/xar-network/genesis/master/genesis.json > $HOME/.xard/config/genesis.json
 ```
 
-Note we use the `latest` directory in the [launch repo](https://github.com/cosmos/launch) which contains details for the mainnet like the latest version and the genesis file. 
+Note we use the `latest` directory in the [launch repo](https://github.com/xar-network/launch) which contains details for the mainnet like the latest version and the genesis file. 
 
 ::: tip
 If you want to connect to the public testnet instead, click [here](./join-testnet.md)
@@ -73,18 +73,14 @@ xard start
 
 ### Add Seed Nodes
 
-Your node needs to know how to find peers. You'll need to add healthy seed nodes to `$HOME/.xard/config/config.toml`. The [`launch`](https://github.com/cosmos/launch) repo contains links to some seed nodes.
-
-If those seeds aren't working, you can find more seeds and persistent peers on a Cosmos Hub explorer (a list can be found on the [launch page](https://cosmos.network/launch)). 
-
-You can also ask for peers on the [Validators Riot Room](https://riot.im/app/#/room/#cosmos-validators:matrix.org)
+Your node needs to know how to find peers. You'll need to add healthy seed nodes to `$HOME/.xard/config/config.toml`. The [`launch`](https://github.com/xar-network/launch) repo contains links to some seed nodes.
 
 For more information on seeds and peers, you can [read this](https://github.com/tendermint/tendermint/blob/develop/docs/tendermint-core/using-tendermint.md#peers).
 
 ## A Note on Gas and Fees
 
 ::: warning
-On Cosmos Hub mainnet, the accepted denom is `uftm`, where `1ftm = 1.000.000uftm`
+On Xar Hub mainnet, the accepted denom is `uftm`, where `1ftm = 1.000.000uftm`
 :::
 
 Transactions on the Cosmos Hub network need to include a transaction fee in order to be processed. This fee pays for the gas required to run the transaction. The formula is the following:
@@ -122,8 +118,6 @@ Check that everything is running smoothly:
 ```bash
 xarcli status
 ```
-
-View the status of the network with the [Cosmos Explorer](https://cosmos.network/launch). 
 
 ## Export State
 
