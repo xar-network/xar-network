@@ -39,7 +39,7 @@ func QueryCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		Short:   "Query the details of the account coin",
 		Long:    "Query the details of the account issue coin",
-		Example: "$ xar-networkcli bank issue coin174876e800",
+		Example: "$ xarcli bank issue xar174876e800",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return processQuery(cdc, args)
 		},
@@ -150,14 +150,14 @@ func QueryIssuesCmd(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			address, err := sdk.AccAddressFromBech32(viper.GetString(flagAddress))
+			address, err := sdk.AccAddressFromBech32(viper.GetString("address"))
 			if err != nil {
 				return err
 			}
 			issueQueryParams := types.IssueQueryParams{
-				StartIssueId: viper.GetString(flagStartIssueId),
+				StartIssueId: viper.GetString("start-issue-id"),
 				Owner:        address,
-				Limit:        viper.GetInt(flagLimit),
+				Limit:        viper.GetInt("limit"),
 			}
 			// Query the issue
 			bz, err := cliCtx.Codec.MarshalJSON(issueQueryParams)
@@ -175,9 +175,9 @@ func QueryIssuesCmd(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String(flagAddress, "", "Token owner address")
-	cmd.Flags().String(flagStartIssueId, "", "Start issueId of issues")
-	cmd.Flags().Int32(flagLimit, 30, "Query number of issue results per page returned")
+	cmd.Flags().String("address", "", "Token owner address")
+	cmd.Flags().String("start-issue-id", "", "Start issueId of issues")
+	cmd.Flags().Int32("limit", 30, "Query number of issue results per page returned")
 	return cmd
 }
 
@@ -213,7 +213,7 @@ func QuerySearchIssuesCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		Short:   "Search issues",
 		Long:    "Search issues based on symbol",
-		Example: "$ xar-networkcli issue search fo",
+		Example: "$ xarcli issue search fo",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			// Query the issue

@@ -63,7 +63,6 @@ func handleMsgSetInterest(ctx sdk.Context, msg types.MsgSetInterest, k keeper.Ke
 	return k.SetInterestRate(ctx, msg.Issuer, msg.InterestRate, msg.Denom)
 }
 
-//Handle handleMsgIssueDecreaseApproval
 func handleMsgIssueDecreaseApproval(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueDecreaseApproval) sdk.Result {
 
 	if err := k.DecreaseApproval(ctx, msg.FromAddress, msg.ToAddress, msg.IssueId, msg.Amount); err != nil {
@@ -321,7 +320,6 @@ func handleMsgIssue(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssue) sdk.Re
 		Name:               msg.Name,
 		Symbol:             strings.ToUpper(msg.Symbol),
 		TotalSupply:        msg.TotalSupply,
-		Decimals:           msg.Decimals,
 		Description:        msg.Description,
 		BurnOwnerDisabled:  msg.BurnOwnerDisabled,
 		BurnHolderDisabled: msg.BurnHolderDisabled,

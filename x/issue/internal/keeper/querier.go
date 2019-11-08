@@ -66,11 +66,6 @@ func queryAllowance(
 	toAddress, _ := sdk.AccAddressFromBech32(toAddr)
 	amount := k.Allowance(ctx, fromAddress, toAddress, issueID)
 
-	if amount.GT(sdk.ZeroInt()) {
-		coinIssueInfo := k.GetIssue(ctx, issueID)
-		amount = types.QuoDecimals(amount, coinIssueInfo.GetDecimals())
-	}
-
 	bz, err := codec.MarshalJSONIndent(types.ModuleCdc, types.NewApproval(amount))
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))

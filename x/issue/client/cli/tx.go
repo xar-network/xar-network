@@ -20,7 +20,7 @@ import (
 	"github.com/xar-network/xar-network/x/issue/internal/types"
 )
 
-// GetIssueCmd returns the transaction commands for this module
+// GetTxCmd returns the transaction commands for this module
 func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	issueCmd := &cobra.Command{
 		Use:                        types.ModuleName,
@@ -68,15 +68,13 @@ func IssueCreateCmd(cdc *codec.Codec) *cobra.Command {
 			coinIssueInfo := types.IssueParams{
 				Name:               args[1],
 				Symbol:             strings.ToUpper(args[2]),
-				BurnOwnerDisabled:  viper.GetBool(flagBurnOwnerDisabled),
-				BurnHolderDisabled: viper.GetBool(flagBurnHolderDisabled),
-				BurnFromDisabled:   viper.GetBool(flagBurnFromDisabled),
-				MintingFinished:    viper.GetBool(flagMintingFinished),
-				FreezeDisabled:     viper.GetBool(flagFreezeDisabled),
+				BurnOwnerDisabled:  viper.GetBool("burn-owner"),
+				BurnHolderDisabled: viper.GetBool("burn-holder"),
+				BurnFromDisabled:   viper.GetBool("burn-from"),
+				MintingFinished:    viper.GetBool("minting-finished"),
+				FreezeDisabled:     viper.GetBool("freeze"),
 				TotalSupply:        totalSupply,
-				Decimals:           uint(viper.GetInt(flagDecimals)),
 			}
-			coinIssueInfo.TotalSupply = types.MulDecimals(coinIssueInfo.TotalSupply, coinIssueInfo.Decimals)
 			msg := types.NewMsgIssue(cliCtx.GetFromAddress(), &coinIssueInfo)
 
 			validateErr := msg.ValidateBasic()
@@ -89,12 +87,11 @@ func IssueCreateCmd(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().Uint(flagDecimals, types.CoinDecimalsMaxValue, "Decimals of the token")
-	cmd.Flags().Bool(flagBurnOwnerDisabled, false, "Disable token owner burn")
-	cmd.Flags().Bool(flagBurnHolderDisabled, false, "Disable token holder burn")
-	cmd.Flags().Bool(flagBurnFromDisabled, false, "Disable token owner burn from any holder")
-	cmd.Flags().Bool(flagMintingFinished, false, "Token owner can not mint")
-	cmd.Flags().Bool(flagFreezeDisabled, false, "Token holder can transfer the token")
+	cmd.Flags().Bool("burn-owner", false, "Disable token owner burn")
+	cmd.Flags().Bool("burn-holder", false, "Disable token holder burn")
+	cmd.Flags().Bool("burn-from", false, "Disable token owner burn from any holder")
+	cmd.Flags().Bool("minting-finished", false, "Token owner can not mint")
+	cmd.Flags().Bool("freeze", false, "Token holder can transfer the token")
 
 	cmd = client.PostCommands(cmd)[0]
 
@@ -108,7 +105,7 @@ func IssueTransferOwnershipCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(3),
 		Short:   "Transfer ownership a token",
 		Long:    "Token owner transfer the ownership to new account",
-		Example: "$ xarcli issue transfer-ownership coin_key coin174876e800 xard1vf7pnhwh5v4lmdp59dms2andn2hhperghppkxc",
+		Example: "$ xarcli issue transfer-ownership coin_key xar174876e800 xar1vf7pnhwh5v4lmdp59dms2andn2hhperghppkxc",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			issueID := args[1]
 			if err := types.CheckIssueId(issueID); err != nil {
@@ -149,7 +146,7 @@ func IssueDescriptionCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(3),
 		Short:   "Add description to a token",
 		Long:    "Owner can add a description of the token. The description needs to be in json format. You can customize preferences or use recommended templates.",
-		Example: "$ xarcli issue describe coin_key coin174876e800 path/description.json --from foo",
+		Example: "$ xarcli issue describe coin_key xar174876e800 path/description.json",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			issueID := args[0]
 			if err := types.CheckIssueId(issueID); err != nil {
@@ -196,7 +193,7 @@ func IssueMintCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(4),
 		Short:   "Mint tokens",
 		Long:    "Token owner can mint the token to an address",
-		Example: "$ xarcli issue mint coin_key coin174876e800 xard1vf7pnhwh5v4lmdp59dms2andn2hhperghppkxc 100",
+		Example: "$ xarcli issue mint coin_key xar174876e800 xar1vf7pnhwh5v4lmdp59dms2andn2hhperghppkxc 100",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			issueID := args[1]
 			if err := types.CheckIssueId(issueID); err != nil {
@@ -223,8 +220,7 @@ func IssueMintCmd(cdc *codec.Codec) *cobra.Command {
 				return types.Errorf(types.ErrCanNotMint())
 			}
 
-			amount = types.MulDecimals(amount, issueInfo.GetDecimals())
-			msg := types.NewMsgIssueMint(issueID, cliCtx.GetFromAddress(), to, amount, issueInfo.GetDecimals())
+			msg := types.NewMsgIssueMint(issueID, cliCtx.GetFromAddress(), to, amount)
 
 			validateErr := msg.ValidateBasic()
 			if validateErr != nil {
@@ -250,11 +246,11 @@ func IssueDisableFeatureCmd(cdc *codec.Codec) *cobra.Command {
 			"%s:Token owner can burn the token from any holder\n"+
 			"%s:Token owner can freeze in and out the token from any address\n"+
 			"%s:Token owner can mint the token", types.BurnOwner, types.BurnHolder, types.BurnFrom, types.Freeze, types.Minting),
-		Example: fmt.Sprintf("$ xarcli issue disable coin_key coin174876e800 %s\n"+
-			"$ xarcli issue disable coin_key coin174876e800 %s\n"+
-			"$ xarcli issue disable coin_key coin174876e800 %s\n"+
-			"$ xarcli issue disable coin_key coin174876e800 %s\n"+
-			"$ xarcli issue disable coin_key coin174876e800 %s",
+		Example: fmt.Sprintf("$ xarcli issue disable coin_key xar174876e800 %s\n"+
+			"$ xarcli issue disable coin_key xar174876e800 %s\n"+
+			"$ xarcli issue disable coin_key xar174876e800 %s\n"+
+			"$ xarcli issue disable coin_key xar174876e800 %s\n"+
+			"$ xarcli issue disable coin_key xar174876e800 %s",
 			types.BurnOwner, types.BurnHolder, types.BurnFrom, types.Freeze, types.Minting),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -300,9 +296,9 @@ func IssueFreezeCmd(cdc *codec.Codec) *cobra.Command {
 			"%s:The address can not transfer in\n"+
 			"%s:The address can not transfer out\n"+
 			"%s:The address not can transfer in or out\n\n", types.FreezeIn, types.FreezeOut, types.FreezeInAndOut),
-		Example: "$ xarcli issue freeze coin_key in coin174876e800 xard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
-			"$ xarcli issue freeze coin_key out coin174876e800 xard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
-			"$ xarcli issue freeze coin_key in-out coin174876e800 xard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
+		Example: "$ xarcli issue freeze coin_key in xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
+			"$ xarcli issue freeze coin_key out xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
+			"$ xarcli issue freeze coin_key in-out xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return issueFreeze(cdc, args, true)
 		},
@@ -322,9 +318,9 @@ func IssueUnFreeCmd(cdc *codec.Codec) *cobra.Command {
 			"%s:The address can transfer in\n"+
 			"%s:The address can transfer out\n"+
 			"%s:The address can transfer in and out", types.FreezeIn, types.FreezeOut, types.FreezeInAndOut),
-		Example: "$ xarcli issue unfreeze coin_key in coin174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
-			"$ xarcli issue unfreeze coin_key out coin174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
-			"$ xarcli issue unfreeze coin_key in-out coin174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
+		Example: "$ xarcli issue unfreeze coin_key in xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
+			"$ xarcli issue unfreeze coin_key out xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
+			"$ xarcli issue unfreeze coin_key in-out xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return issueFreeze(cdc, args, false)
 		},
@@ -352,7 +348,7 @@ func IssueBurnCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(3),
 		Short:   "Token holder can burn the token",
 		Long:    "Token holder or the Owner burns the token he holds (the Owner can burn if 'burning_owner_disabled' is false, the holder can burn if 'burning_holder_disabled' is false)",
-		Example: "$ xarcli issue burn coin_key coin174876e800 88888",
+		Example: "$ xarcli issue burn coin_key xar174876e800 88888",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return issueBurnFrom(cdc, args, types.BurnHolder)
 		},
@@ -369,7 +365,7 @@ func IssueBurnFromCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(4),
 		Short:   "Token owner burns the token",
 		Long:    "Token Owner burns the token from any holder (the Owner can burn if 'burning_any_disabled' is false)",
-		Example: "$ xarcli issue burn-from coin_key coin174876e800 xard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
+		Example: "$ xarcli issue burn-from coin_key xar174876e800 xard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return issueBurnFrom(cdc, args, types.BurnFrom)
 		},
@@ -419,7 +415,7 @@ func IssueSendFromCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(5),
 		Short:   "Send tokens from one address to another",
 		Long:    "Send tokens from one address to another by allowance",
-		Example: "$ xarcli issue send-from coin_key coin174876e800 xard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n xard1vud9ptwagudgq7yht53cwuf8qfmgkd0qcej0ah 100",
+		Example: "$ xarcli issue send-from coin_key xar174876e800 xard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n xard1vud9ptwagudgq7yht53cwuf8qfmgkd0qcej0ah 100",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			issueID := args[1]
 			if err := types.CheckIssueId(issueID); err != nil {
@@ -449,13 +445,6 @@ func IssueSendFromCmd(cdc *codec.Codec) *cobra.Command {
 			if err = rest.CheckFreeze(cliCtx, issueID, fromAddress, toAddress); err != nil {
 				return err
 			}
-
-			issueInfo, err := rest.GetIssueByID(cliCtx, issueID)
-			if err != nil {
-				return err
-			}
-			amount = types.MulDecimals(amount, issueInfo.GetDecimals())
-
 			msg := types.NewMsgIssueSendFrom(issueID, cliCtx.GetFromAddress(), fromAddress, toAddress, amount)
 
 			validateErr := msg.ValidateBasic()
@@ -478,7 +467,7 @@ func IssueApproveCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(4),
 		Short:   "Approve tokens on behalf of sender",
 		Long:    "Approve the passed address to spend the specified amount of tokens on behalf of sender",
-		Example: "$ xarcli issue approve coin_key coin174876e800 xard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
+		Example: "$ xarcli issue approve coin_key xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return issueApprove(cdc, args, types.Approve)
 		},
@@ -495,7 +484,7 @@ func IssueIncreaseApprovalCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(4),
 		Short:   "Increase approval to spend tokens on behalf of sender",
 		Long:    "Increase approval to spend the specified amount of tokens on behalf of sender",
-		Example: "$ xarcli issue increase-approval coin_key coin174876e800 xard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
+		Example: "$ xarcli issue increase-approval coin_key xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return issueApprove(cdc, args, types.IncreaseApproval)
 		},
@@ -512,7 +501,7 @@ func IssueDecreaseApprovalCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(4),
 		Short:   "Decrease approval to spend tokens on behalf of sender",
 		Long:    "Decrease approval to spend the specified amount of tokens on behalf of sender",
-		Example: "$ xarcli issue decrease-approval coin_key coin174876e800 xard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
+		Example: "$ xarcli issue decrease-approval coin_key xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return issueApprove(cdc, args, types.DecreaseApproval)
 		},

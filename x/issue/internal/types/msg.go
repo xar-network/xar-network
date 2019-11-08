@@ -33,7 +33,7 @@ func (msg MsgIssue) ValidateBasic() sdk.Error {
 	if msg.TotalSupply.IsZero() || !msg.TotalSupply.IsPositive() {
 		return sdk.ErrInvalidCoins("cannot issue 0 or less supply")
 	}
-	if QuoDecimals(msg.TotalSupply, msg.Decimals).GT(CoinMaxTotalSupply) {
+	if msg.TotalSupply.GT(CoinMaxTotalSupply) {
 		return ErrCoinTotalSupplyMaxValueNotValid()
 	}
 	if len(msg.Name) < CoinNameMinLength || len(msg.Name) > CoinNameMaxLength {
@@ -41,12 +41,6 @@ func (msg MsgIssue) ValidateBasic() sdk.Error {
 	}
 	if len(msg.Symbol) < CoinSymbolMinLength || len(msg.Symbol) > CoinSymbolMaxLength {
 		return ErrCoinSymbolNotValid()
-	}
-	if msg.Decimals > CoinDecimalsMaxValue {
-		return ErrCoinDecimalsMaxValueNotValid()
-	}
-	if msg.Decimals%CoinDecimalsMultiple != 0 {
-		return ErrCoinDecimalsMultipleNotValid()
 	}
 	if len(msg.Description) > CoinDescriptionMaxLength {
 		return ErrCoinDescriptionMaxLengthNotValid()
@@ -215,7 +209,6 @@ type MsgIssueMint struct {
 	FromAddress sdk.AccAddress `json:"from_address" yaml:"from_address"`
 	ToAddress   sdk.AccAddress `json:"to_address" yaml:"to_address"`
 	Amount      sdk.Int        `json:"amount" yaml:"amount"`
-	Decimals    uint           `json:"decimals" yaml:"decimals"`
 }
 
 var _ sdk.Msg = MsgIssueMint{}
@@ -226,14 +219,12 @@ func NewMsgIssueMint(
 	fromAddr,
 	toAddr sdk.AccAddress,
 	amount sdk.Int,
-	decimals uint,
 ) MsgIssueMint {
 	return MsgIssueMint{
 		IssueId:     issueId,
 		FromAddress: fromAddr,
 		ToAddress:   toAddr,
 		Amount:      amount,
-		Decimals:    decimals,
 	}
 }
 
@@ -252,7 +243,7 @@ func (msg MsgIssueMint) ValidateBasic() sdk.Error {
 	if !msg.Amount.IsPositive() {
 		return sdk.ErrInvalidCoins("cannot mint 0 or negative coin amounts")
 	}
-	if QuoDecimals(msg.Amount, msg.Decimals).GT(CoinMaxTotalSupply) {
+	if msg.Amount.GT(CoinMaxTotalSupply) {
 		return ErrCoinTotalSupplyMaxValueNotValid()
 	}
 	return nil

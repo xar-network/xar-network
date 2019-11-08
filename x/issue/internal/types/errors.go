@@ -17,7 +17,6 @@ const (
 	CodeAmountNotValid            sdk.CodeType = 3505
 	CodeIssueSymbolNotValid       sdk.CodeType = 3506
 	CodeIssueTotalSupplyNotValid  sdk.CodeType = 3507
-	CodeIssueCoinDecimalsNotValid sdk.CodeType = 3508
 	CodeIssueDescriptionNotValid  sdk.CodeType = 3509
 	CodeUnknownIssue              sdk.CodeType = 3510
 	CanNotMint                    sdk.CodeType = 3511
@@ -46,12 +45,6 @@ func ErrNotEnoughFee() sdk.Error {
 }
 func ErrAmountNotValid() sdk.Error {
 	return sdk.NewError(DefaultCodespace, CodeAmountNotValid, "invalid amount")
-}
-func ErrCoinDecimalsMaxValueNotValid() sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeIssueCoinDecimalsNotValid, "greater than decimal max value")
-}
-func ErrCoinDecimalsMultipleNotValid() sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeIssueCoinDecimalsNotValid, "decimals must be a multiple")
 }
 func ErrCoinTotalSupplyMaxValueNotValid() sdk.Error {
 	return sdk.NewError(DefaultCodespace, CodeIssueTotalSupplyNotValid, "greater than total supply max value")

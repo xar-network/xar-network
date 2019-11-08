@@ -410,7 +410,7 @@ func (k BaseKeeper) Mint(ctx sdk.Context, issueID string, amount sdk.Int, sender
 	if coinIssueInfo.IsMintingFinished() {
 		return nil, types.ErrCanNotMint()
 	}
-	if types.QuoDecimals(coinIssueInfo.TotalSupply.Add(amount), coinIssueInfo.Decimals).GT(types.CoinMaxTotalSupply) {
+	if coinIssueInfo.TotalSupply.Add(amount).GT(types.CoinMaxTotalSupply) {
 		return nil, types.ErrCoinTotalSupplyMaxValueNotValid()
 	}
 	coin := sdk.Coin{Denom: coinIssueInfo.IssueId, Amount: amount}

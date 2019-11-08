@@ -1,7 +1,6 @@
 package types
 
 import (
-	"math/big"
 	"math/rand"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -29,19 +28,6 @@ func CheckIssueId(issueID string) sdk.Error {
 		return ErrIssueID()
 	}
 	return nil
-}
-
-func GetDecimalsInt(decimals uint) sdk.Int {
-	exp := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil)
-	return sdk.NewIntFromBigInt(exp)
-}
-
-func MulDecimals(totalSupply sdk.Int, decimals uint) sdk.Int {
-	return totalSupply.Mul(GetDecimalsInt(decimals))
-}
-
-func QuoDecimals(totalSupply sdk.Int, decimals uint) sdk.Int {
-	return totalSupply.Quo(GetDecimalsInt(decimals))
 }
 
 func IssueOwnerCheck(cliCtx context.CLIContext, sender sdk.AccAddress, issueID string) (Issue, error) {

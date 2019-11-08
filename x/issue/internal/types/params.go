@@ -113,7 +113,6 @@ type IssueParams struct {
 	Name               string  `json:"name"`
 	Symbol             string  `json:"symbol"`
 	TotalSupply        sdk.Int `json:"total_supply"`
-	Decimals           uint    `json:"decimals"`
 	Description        string  `json:"description"`
 	BurnOwnerDisabled  bool    `json:"burn_owner_disabled"`
 	BurnHolderDisabled bool    `json:"burn_holder_disabled"`
@@ -130,23 +129,23 @@ type IssueQueryParams struct {
 }
 
 func GetQueryIssuePath(issueID string) string {
-	return fmt.Sprintf("%s/%s/%s/%s", Custom, QuerierRoute, QueryIssue, issueID)
+	return fmt.Sprintf("custom/issue/query/%s", issueID)
 }
 func GetQueryParamsPath() string {
-	return fmt.Sprintf("%s/%s/%s", Custom, QuerierRoute, QueryParams)
+	return "custom/issue/params"
 }
 func GetQueryIssueAllowancePath(issueID string, owner sdk.AccAddress, spender sdk.AccAddress) string {
-	return fmt.Sprintf("%s/%s/%s/%s/%s/%s", Custom, QuerierRoute, QueryAllowance, issueID, owner.String(), spender.String())
+	return fmt.Sprintf("custom/issue/allowance/%s/%s/%s", issueID, owner.String(), spender.String())
 }
 func GetQueryIssueFreezePath(issueID string, accAddress sdk.AccAddress) string {
-	return fmt.Sprintf("%s/%s/%s/%s/%s", Custom, QuerierRoute, QueryFreeze, issueID, accAddress.String())
+	return fmt.Sprintf("custom/issue/freeze/%s/%s", issueID, accAddress.String())
 }
 func GetQueryIssueFreezesPath(issueID string) string {
-	return fmt.Sprintf("%s/%s/%s/%s", Custom, QuerierRoute, QueryFreezes, issueID)
+	return fmt.Sprintf("custom/issue/freezes/%s", issueID)
 }
 func GetQueryIssueSearchPath(symbol string) string {
-	return fmt.Sprintf("%s/%s/%s/%s", Custom, QuerierRoute, QuerySearch, symbol)
+	return fmt.Sprintf("custom/issue/search/%s", symbol)
 }
 func GetQueryIssuesPath() string {
-	return fmt.Sprintf("%s/%s/%s", Custom, QuerierRoute, QueryIssues)
+	return "custom/issue/list"
 }

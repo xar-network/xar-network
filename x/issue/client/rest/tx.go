@@ -2,7 +2,6 @@ package rest
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -35,29 +34,29 @@ type PostIssueBaseReq struct {
 // RegisterRoutes - Central function to define routes that get registered by the main application
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc("/issue", postIssueHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/approve/{%s}/{%s}/{%s}", "issue-id", "accAddress", "amount"), postIssueApproveHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/approve/increase/{%s}/{%s}/{%s}", "issue-id", "accAddress", "amount"), postIssueIncreaseApproval(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/approve/decrease/{%s}/{%s}/{%s}", "issue-id", "accAddress", "amount"), postIssueDecreaseApproval(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/burn/{%s}/{%s}", "issue-id", "amount"), postBurnHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/burn-from/{%s}/{%s}/{%s}", "issue-id", "accAddress", "amount"), postBurnFromHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/freeze/{%s}/{%s}/{%s}", "freeze-type", "issue-id", "accAddress"), postIssueFreezeHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/unfreeze/{%s}/{%s}/{%s}", "freeze-type", "issue-id", "accAddress"), postIssueUnFreezeHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/send-from/{%s}/{%s}/{%s}/{%s}", "issue-id", "from", "to", "amount"), postIssueSendFrom(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/mint/{%s}/{%s}/{%s}", "issue-id", "amount", "to"), postMintHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/ownership/transfer/{%s}/{%s}", "issue-id", "to"), postTransferOwnershipHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/description/{%s}", "issue-id"), postDescribeHandlerFn(cliCtx)).Methods("POST")
-	r.HandleFunc(fmt.Sprintf("/issue/feature/disable/{%s}/{%s}", "issue-id", "feature"), postDisableFeatureHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc("/issue/approve/{issue-id}/{accAddress}/{amount}", postIssueApproveHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc("/issue/approve/increase/{issue-id}/{accAddress}/{amount}", postIssueIncreaseApproval(cliCtx)).Methods("POST")
+	r.HandleFunc("/issue/approve/decrease/{issue-id}/{accAddress}/{amount}", postIssueDecreaseApproval(cliCtx)).Methods("POST")
+	r.HandleFunc("/issue/burn/{issue-id}/{amount}", postBurnHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc("/issue/burn-from/{issue-id}/{accAddress}/{amount}", postBurnFromHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc("/issue/freeze/{freeze-type}/{issue-id}/{accAddress}", postIssueFreezeHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc("/issue/unfreeze/{freeze-type}/{issue-id}/{accAddress}", postIssueUnFreezeHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc("/issue/send-from/{issue-id}/{from}/{to}/{amount}", postIssueSendFrom(cliCtx)).Methods("POST")
+	r.HandleFunc("/issue/mint/{issue-id}/{amount}/{to}", postMintHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc("/issue/ownership/transfer/{issue-id}/{to}", postTransferOwnershipHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc("/issue/description/{issue-id}", postDescribeHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc("/issue/feature/disable/{issue-id}/{feature}", postDisableFeatureHandlerFn(cliCtx)).Methods("POST")
 }
 
 // RegisterRoutes - Central function to define routes that get registered by the main application
 func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	r.HandleFunc(fmt.Sprintf("/%s/%s", types.QuerierRoute, types.QueryParams), queryParamsHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}", types.QuerierRoute, types.QueryIssue, "issue-id"), queryIssueHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc(fmt.Sprintf("/%s/%s", types.QuerierRoute, types.QueryIssues), queryIssuesHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}", types.QuerierRoute, types.QuerySearch, "symbol"), queryIssueSearchHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}/{%s}", types.QuerierRoute, types.QueryFreeze, "issue-id", restAddress), queryIssueFreezeHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}", types.QuerierRoute, types.QueryFreezes, "issue-id"), queryIssueFreezesHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc(fmt.Sprintf("/%s/%s/{%s}/{%s}/{%s}", types.QuerierRoute, types.QueryAllowance, "issue-id", restAddress, spenderAddress), queryIssueAllowanceHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc("/issue/params", queryParamsHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc("/issue/query/{issue-id}", queryIssueHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc("/issue/list", queryIssuesHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc("/issue/search/{symbol}", queryIssueSearchHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc("/issue/freeze/{issue-id}/{address}", queryIssueFreezeHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc("/issue/freezes/{issue-id}", queryIssueFreezesHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc("/issue/allowance/{issue-id}/{address}/{spender_address}", queryIssueAllowanceHandlerFn(cliCtx)).Methods("GET")
 }
 
 func postIssueHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
@@ -126,13 +125,8 @@ func postMintHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		issueInfo, err := types.IssueOwnerCheck(cliCtx, fromAddr, issueID)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
 
-		msg := types.NewMsgIssueMint(issueID, fromAddr, toAddr, amount, issueInfo.GetDecimals())
+		msg := types.NewMsgIssueMint(issueID, fromAddr, toAddr, amount)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -524,9 +518,6 @@ func burnCheck(sender sdk.AccAddress, burnFrom sdk.AccAddress, issueInfo types.I
 		}
 
 	}
-	if cli {
-		amount = types.MulDecimals(amount, issueInfo.GetDecimals())
-	}
 	// TODO validate enough funds, need to get an accGetter
 	// ensure account has enough coins
 	/*if !coins.IsAllGTE(sdk.NewCoins(sdk.NewCoin(issueInfo.GetIssueId(), amount))) {
@@ -556,9 +547,6 @@ func GetBurnMsg(
 	err = burnCheck(sender, burnFrom, issueInfo, amount, burnFromType, cli)
 	if err != nil {
 		return nil, err
-	}
-	if cli {
-		amount = types.MulDecimals(amount, issueInfo.GetDecimals())
 	}
 	var msg sdk.Msg
 	switch burnFromType {
@@ -632,13 +620,6 @@ func GetIssueApproveMsg(
 ) (sdk.Msg, error) {
 	if err := types.CheckIssueId(issueID); err != nil {
 		return nil, types.Errorf(err)
-	}
-	issueInfo, err := GetIssueByID(cliCtx, issueID)
-	if err != nil {
-		return nil, err
-	}
-	if cli {
-		amount = types.MulDecimals(amount, issueInfo.GetDecimals())
 	}
 	var msg sdk.Msg
 	switch approveType {

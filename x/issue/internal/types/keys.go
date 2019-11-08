@@ -34,10 +34,27 @@ var (
 )
 
 const (
-	IDPreStr = "coin"
+	restAddress      = "address"
+	spenderAddress   = "spender_address"
+	restStartIssueId = "start_issue_id"
+	restLimit        = "limit"
+)
+const (
+	IDPreStr = "xar"
 	Custom   = "custom"
 )
-
+const (
+	flagAddress            = "address"
+	flagSymbol             = "symbol"
+	flagStartIssueId       = "start-issue-id"
+	flagMintTo             = "to"
+	flagMintingFinished    = "minting-finished"
+	flagBurnOwnerDisabled  = "burn-owner"
+	flagBurnHolderDisabled = "burn-holder"
+	flagBurnFromDisabled   = "burn-from"
+	flagLimit              = "limit"
+	flagFreezeDisabled     = "freeze"
+)
 const (
 	TypeMsgIssue                  = "issue"
 	TypeMsgIssueMint              = "issue_mint"
@@ -55,8 +72,6 @@ const (
 	TypeMsgIssueUnFreeze          = "issue_unfreeze"
 )
 const (
-	CoinDecimalsMaxValue                  = uint(18)
-	CoinDecimalsMultiple                  = uint(3)
 	CodeInvalidGenesis       sdk.CodeType = 102
 	CoinNameMinLength                     = 3
 	CoinNameMaxLength                     = 32

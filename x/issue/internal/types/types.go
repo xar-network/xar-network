@@ -57,9 +57,6 @@ type Issue interface {
 	GetTotalSupply() sdk.Int
 	SetTotalSupply(sdk.Int)
 
-	GetDecimals() uint
-	SetDecimals(uint)
-
 	GetDescription() string
 	SetDescription(string)
 
@@ -96,7 +93,6 @@ type CoinIssueInfo struct {
 	Name               string         `json:"name"`
 	Symbol             string         `json:"symbol"`
 	TotalSupply        sdk.Int        `json:"total_supply"`
-	Decimals           uint           `json:"decimals"`
 	Description        string         `json:"description"`
 	BurnOwnerDisabled  bool           `json:"burn_owner_disabled"`
 	BurnHolderDisabled bool           `json:"burn_holder_disabled"`
@@ -144,12 +140,6 @@ func (ci CoinIssueInfo) GetTotalSupply() sdk.Int {
 }
 func (ci *CoinIssueInfo) SetTotalSupply(totalSupply sdk.Int) {
 	ci.TotalSupply = totalSupply
-}
-func (ci CoinIssueInfo) GetDecimals() uint {
-	return ci.Decimals
-}
-func (ci *CoinIssueInfo) SetDecimals(decimals uint) {
-	ci.Decimals = decimals
 }
 func (ci CoinIssueInfo) GetDescription() string {
 	return ci.Description
@@ -211,7 +201,6 @@ func (ci CoinIssueInfo) String() string {
   Name:             			%s
   Symbol:    	    			%s
   TotalSupply:      			%s
-  Decimals:         			%d
   IssueTime:					%d
   Description:	    			%s
   BurnOwnerDisabled:  			%t
@@ -220,17 +209,17 @@ func (ci CoinIssueInfo) String() string {
   FreezeDisabled:  				%t
   MintingFinished:  			%t `,
 		ci.IssueId, ci.Issuer.String(), ci.Owner.String(), ci.Name, ci.Symbol, ci.TotalSupply.String(),
-		ci.Decimals, ci.IssueTime, ci.Description, ci.BurnOwnerDisabled, ci.BurnHolderDisabled,
+		ci.IssueTime, ci.Description, ci.BurnOwnerDisabled, ci.BurnHolderDisabled,
 		ci.BurnFromDisabled, ci.FreezeDisabled, ci.MintingFinished)
 }
 
 //nolint
 func (coinIssues CoinIssues) String() string {
-	out := fmt.Sprintf("%-17s|%-44s|%-10s|%-6s|%-18s|%-8s|%s\n",
-		"IssueID", "Owner", "Name", "Symbol", "TotalSupply", "Decimals", "IssueTime")
+	out := fmt.Sprintf("%-17s|%-44s|%-10s|%-6s|%-18s|%s\n",
+		"IssueID", "Owner", "Name", "Symbol", "TotalSupply", "IssueTime")
 	for _, issue := range coinIssues {
-		out += fmt.Sprintf("%-17s|%-44s|%-10s|%-6s|%-18s|%-8d|%d\n",
-			issue.IssueId, issue.GetOwner().String(), issue.Name, issue.Symbol, issue.TotalSupply.String(), issue.Decimals, issue.IssueTime)
+		out += fmt.Sprintf("%-17s|%-44s|%-10s|%-6s|%-18s|%d\n",
+			issue.IssueId, issue.GetOwner().String(), issue.Name, issue.Symbol, issue.TotalSupply.String(), issue.IssueTime)
 	}
 	return strings.TrimSpace(out)
 }
