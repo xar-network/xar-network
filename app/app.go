@@ -167,6 +167,7 @@ func NewXarApp(
 		supply.StoreKey, mint.StoreKey, distr.StoreKey, slashing.StoreKey,
 		gov.StoreKey, params.StoreKey, issue.StoreKey, pricefeed.StoreKey,
 		auction.StoreKey, csdt.StoreKey, liquidator.StoreKey, nft.StoreKey,
+		interest.StoreKey, authority.StoreKey, issuer.StoreKey,
 		record.StoreKey,
 	)
 
@@ -278,11 +279,9 @@ func NewXarApp(
 		gov.ModuleName,
 		staking.ModuleName,
 		pricefeed.ModuleName,
-		interest.ModuleName,
-		issuer.ModuleName,
 		authority.ModuleName,
 		interest.ModuleName,
-		issuer.ModuleName,
+		issue.ModuleName,
 		authority.ModuleName,
 	)
 
@@ -293,6 +292,7 @@ func NewXarApp(
 		slashing.ModuleName, gov.ModuleName, mint.ModuleName, supply.ModuleName,
 		crisis.ModuleName, issue.ModuleName,
 		auction.ModuleName, csdt.ModuleName, liquidator.ModuleName, pricefeed.ModuleName,
+		interest.ModuleName, authority.ModuleName, liquidityprovider.ModuleName, issuer.ModuleName,
 		nft.ModuleName, record.ModuleName, genutil.ModuleName,
 	)
 
