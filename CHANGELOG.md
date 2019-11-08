@@ -38,10 +38,17 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ### Features
 
-* (xard) [\#119](https://github.com/cosmos/xar/pull/119) Add support for the `--inter-block-cache` CLI
+* (cosmosd) [\#119](https://github.com/cosmos/cosmos/pull/119) Add support for the `--inter-block-cache` CLI
 flag and configuration.
-* (xarcli) [\#132](https://github.com/cosmos/xar/pull/132) Add `tx decode` command to decode
+* (cosmoscli) [\#132](https://github.com/cosmos/cosmos/pull/132) Add `tx decode` command to decode
 Base64 encoded transactions.
+
+## [v2.0.3] - 2019-11-04
+
+### Improvements
+
+* (sdk) Bump SDK version to [v0.37.4](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.37.4).
+* (tendermint) Bump Tendermint version to [v0.32.7](https://github.com/tendermint/tendermint/releases/tag/v0.32.7).
 
 ## [v2.0.2] - 2019-10-12
 
@@ -54,11 +61,11 @@ Base64 encoded transactions.
 
 ### Features
 
-* (xard) [\#119](https://github.com/cosmos/xar/pull/119) Add support for the `--halt-time` CLI flag and configuration.
+* (cosmosd) [\#119](https://github.com/cosmos/cosmos/pull/119) Add support for the `--halt-time` CLI flag and configuration.
 
 ### Improvements
 
-* [\#119](https://github.com/cosmos/xar/pull/119) Refactor and upgrade Circle CI
+* [\#119](https://github.com/cosmos/cosmos/pull/119) Refactor and upgrade Circle CI
 configuration.
 * (sdk) Update SDK version to v0.37.1
 
@@ -66,7 +73,7 @@ configuration.
 
 ### Bug Fixes
 
-* [\#104](https://github.com/cosmos/xar/issues/104) Fix `ModuleAccountAddrs` to
+* [\#104](https://github.com/cosmos/cosmos/issues/104) Fix `ModuleAccountAddrs` to
 not rely on the `x/supply` keeper to get module account addresses for blacklisting.
 
 ### State Machine Breaking Changes
@@ -77,29 +84,29 @@ not rely on the `x/supply` keeper to get module account addresses for blacklisti
 
 ### Bug Fixes
 
-* (xard) [\#4113](https://github.com/cosmos/cosmos-sdk/issues/4113) Fix incorrect `$GOBIN` in `Install Go`
-* (xarcli) [\#3945](https://github.com/cosmos/cosmos-sdk/issues/3945) There's no check for chain-id in TxBuilder.SignStdTx
-* (xarcli) [\#4190](https://github.com/cosmos/cosmos-sdk/issues/4190) Fix redelegations-from by using the correct params and query endpoint.
-* (xarcli) [\#4219](https://github.com/cosmos/cosmos-sdk/issues/4219) Return an error when an empty mnemonic is provided during key recovery.
-* (xarcli) [\#4345](https://github.com/cosmos/cosmos-sdk/issues/4345) Improved Ledger Nano X detection
+* (cosmosd) [\#4113](https://github.com/cosmos/cosmos-sdk/issues/4113) Fix incorrect `$GOBIN` in `Install Go`
+* (cosmoscli) [\#3945](https://github.com/cosmos/cosmos-sdk/issues/3945) There's no check for chain-id in TxBuilder.SignStdTx
+* (cosmoscli) [\#4190](https://github.com/cosmos/cosmos-sdk/issues/4190) Fix redelegations-from by using the correct params and query endpoint.
+* (cosmoscli) [\#4219](https://github.com/cosmos/cosmos-sdk/issues/4219) Return an error when an empty mnemonic is provided during key recovery.
+* (cosmoscli) [\#4345](https://github.com/cosmos/cosmos-sdk/issues/4345) Improved Ledger Nano X detection
 
 ### Breaking Changes
 
 * (sdk) Update SDK version to v0.36.0
-* (xard) [\#3985](https://github.com/cosmos/cosmos-sdk/issues/3985) ValidatorPowerRank uses potential consensus power
-* (xard) [\#4027](https://github.com/cosmos/cosmos-sdk/issues/4027) xard version command does not return the checksum of the go.sum file shipped along with the source release tarball.
+* (cosmosd) [\#3985](https://github.com/cosmos/cosmos-sdk/issues/3985) ValidatorPowerRank uses potential consensus power
+* (cosmosd) [\#4027](https://github.com/cosmos/cosmos-sdk/issues/4027) cosmosd version command does not return the checksum of the go.sum file shipped along with the source release tarball.
   Go modules feature guarantees dependencies reproducibility and as long as binaries are built via the Makefile shipped with the sources, no dependendencies can break such guarantee.
-* (xard) [\#4159](https://github.com/cosmos/cosmos-sdk/issues/4159) use module pattern and module manager for initialization
-* (xard) [\#4272](https://github.com/cosmos/cosmos-sdk/issues/4272) Merge xarreplay functionality into xard replay.
-  Drop `xarreplay` in favor of new `xard replay` command.
-* (xarcli) [\#3715](https://github.com/cosmos/cosmos-sdk/issues/3715) query distr rewards returns per-validator
+* (cosmosd) [\#4159](https://github.com/cosmos/cosmos-sdk/issues/4159) use module pattern and module manager for initialization
+* (cosmosd) [\#4272](https://github.com/cosmos/cosmos-sdk/issues/4272) Merge cosmosreplay functionality into cosmosd replay.
+  Drop `cosmosreplay` in favor of new `cosmosd replay` command.
+* (cosmoscli) [\#3715](https://github.com/cosmos/cosmos-sdk/issues/3715) query distr rewards returns per-validator
   rewards along with rewards total amount.
-* (xarcli) [\#40](https://github.com/cosmos/cosmos-sdk/issues/40) rest-server's --cors option is now gone.
-* (xarcli) [\#4027](https://github.com/cosmos/cosmos-sdk/issues/4027) xarcli version command dooes not return the checksum of the go.sum file anymore.
-* (xarcli) [\#4142](https://github.com/cosmos/cosmos-sdk/issues/4142) Turn xarcli tx send's --from into a required argument.
-  New shorter syntax: `xarcli tx send FROM TO AMOUNT`
-* (xarcli) [\#4228](https://github.com/cosmos/cosmos-sdk/issues/4228) Merge xarkeyutil functionality into xarcli keys.
-  Drop `xarkeyutil` in favor of new `xarcli keys parse` command. Syntax and semantic are preserved.
+* (cosmoscli) [\#40](https://github.com/cosmos/cosmos-sdk/issues/40) rest-server's --cors option is now gone.
+* (cosmoscli) [\#4027](https://github.com/cosmos/cosmos-sdk/issues/4027) cosmoscli version command dooes not return the checksum of the go.sum file anymore.
+* (cosmoscli) [\#4142](https://github.com/cosmos/cosmos-sdk/issues/4142) Turn cosmoscli tx send's --from into a required argument.
+  New shorter syntax: `cosmoscli tx send FROM TO AMOUNT`
+* (cosmoscli) [\#4228](https://github.com/cosmos/cosmos-sdk/issues/4228) Merge cosmoskeyutil functionality into cosmoscli keys.
+  Drop `cosmoskeyutil` in favor of new `cosmoscli keys parse` command. Syntax and semantic are preserved.
 * (rest) [\#3715](https://github.com/cosmos/cosmos-sdk/issues/3715) Update /distribution/delegators/{delegatorAddr}/rewards GET endpoint
   as per new specs. For a given delegation, the endpoint now returns the
   comprehensive list of validator-reward tuples along with the grand total.
@@ -110,19 +117,19 @@ not rely on the `x/supply` keeper to get module account addresses for blacklisti
 
 ### Features
 
-* (xard) Add `migrate` command to `xard` to provide the ability to migrate exported
+* (cosmosd) Add `migrate` command to `cosmosd` to provide the ability to migrate exported
   genesis state from one version to another.
-* (xard) Update Xar for community pool spend proposals per Cosmos Hub governance proposal [\#7](https://github.com/cosmos/cosmos-sdk/issues/7) "Activate the Community Pool"
+* (cosmosd) Update Xar for community pool spend proposals per Cosmos Hub governance proposal [\#7](https://github.com/cosmos/cosmos-sdk/issues/7) "Activate the Community Pool"
 
 ### Improvements
 
-* (xard) [\#4042](https://github.com/cosmos/cosmos-sdk/issues/4042) Update docs and scripts to include the correct `GO111MODULE=on` environment variable.
-* (xard) [\#4066](https://github.com/cosmos/cosmos-sdk/issues/4066) Fix 'ExportGenesisFile() incorrectly overwrites genesis'
-* (xard) [\#4064](https://github.com/cosmos/cosmos-sdk/issues/4064) Remove `dep` and `vendor` from `doc` and `version`.
-* (xard) [\#4080](https://github.com/cosmos/cosmos-sdk/issues/4080) add missing invariants during simulations
-* (xard) [\#4343](https://github.com/cosmos/cosmos-sdk/issues/4343) Upgrade toolchain to Go 1.12.5.
-* (xarcli) [\#4068](https://github.com/cosmos/cosmos-sdk/issues/4068) Remove redundant account check on `xarcli`
-* (xarcli) [\#4227](https://github.com/cosmos/cosmos-sdk/issues/4227) Support for Ledger App v1.5
+* (cosmosd) [\#4042](https://github.com/cosmos/cosmos-sdk/issues/4042) Update docs and scripts to include the correct `GO111MODULE=on` environment variable.
+* (cosmosd) [\#4066](https://github.com/cosmos/cosmos-sdk/issues/4066) Fix 'ExportGenesisFile() incorrectly overwrites genesis'
+* (cosmosd) [\#4064](https://github.com/cosmos/cosmos-sdk/issues/4064) Remove `dep` and `vendor` from `doc` and `version`.
+* (cosmosd) [\#4080](https://github.com/cosmos/cosmos-sdk/issues/4080) add missing invariants during simulations
+* (cosmosd) [\#4343](https://github.com/cosmos/cosmos-sdk/issues/4343) Upgrade toolchain to Go 1.12.5.
+* (cosmoscli) [\#4068](https://github.com/cosmos/cosmos-sdk/issues/4068) Remove redundant account check on `cosmoscli`
+* (cosmoscli) [\#4227](https://github.com/cosmos/cosmos-sdk/issues/4227) Support for Ledger App v1.5
 * (rest) [\#2007](https://github.com/cosmos/cosmos-sdk/issues/2007) Return 200 status code on empty results
 * (rest) [\#4123](https://github.com/cosmos/cosmos-sdk/issues/4123) Fix typo, url error and outdated command description of doc clients.
 * (rest) [\#4129](https://github.com/cosmos/cosmos-sdk/issues/4129) Translate doc clients to chinese.
@@ -130,8 +137,9 @@ not rely on the `x/supply` keeper to get module account addresses for blacklisti
 
 <!-- Release links -->
 
-[Unreleased]: https://github.com/cosmos/xar/compare/v2.0.2...HEAD
-[v2.0.2]: https://github.com/cosmos/xar/releases/tag/v2.0.2
-[v2.0.1]: https://github.com/cosmos/xar/releases/tag/v2.0.1
-[v2.0.0]: https://github.com/cosmos/xar/releases/tag/v2.0.0
-[v1.0.0]: https://github.com/cosmos/xar/releases/tag/v1.0.0
+[Unreleased]: https://github.com/cosmos/gaia/compare/v2.0.3...HEAD
+[v2.0.3]: https://github.com/cosmos/gaia/releases/tag/v2.0.3
+[v2.0.2]: https://github.com/cosmos/gaia/releases/tag/v2.0.2
+[v2.0.1]: https://github.com/cosmos/gaia/releases/tag/v2.0.1
+[v2.0.0]: https://github.com/cosmos/gaia/releases/tag/v2.0.0
+[v1.0.0]: https://github.com/cosmos/gaia/releases/tag/v1.0.0
