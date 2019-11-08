@@ -1,0 +1,23 @@
+{
+"type": "cosmos-sdk/StdTx",
+"value": {
+"msg": [
+  {
+"type": "issue/MsgIssueMint",
+"value": {
+"issue_id": "coin174876e800",
+"from_address": "xar1dnylvxgqsn7kgnt29kzqjxl2yzrcw7cz3s5yu2",
+"to_address": "xar1dnylvxgqsn7kgnt29kzqjxl2yzrcw7cz3s5yu2",
+"amount": "100",
+"decimals": "18"
+}
+}
+],
+"fee": {
+"amount": [],
+"gas": "200000"
+},
+"signatures": null,
+"memo": ""
+}
+}

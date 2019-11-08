@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	QueryGetCsdts   = "csdts"
+	QueryGetCsdts  = "csdts"
 	QueryGetParams = "params"
 )
 
@@ -17,7 +17,7 @@ const StableDenom = "csdt" // TODO allow to be changed
 // GovDenom asset code of the governance coin
 const GovDenom = "ftm"
 
-// CSDT is the state of a single Collateralized Debt Position.
+// CSDT is the state of a single account.
 type CSDT struct {
 	//ID             []byte                                    // removing IDs for now to make things simpler
 	Owner            sdk.AccAddress `json:"owner"`             // Account that authorizes changes to the CSDT
