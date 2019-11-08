@@ -152,7 +152,7 @@ type xarApp struct {
 }
 
 // NewxarApp returns a reference to an initialized xarApp.
-func NewxarApp(
+func NewXarApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
 ) *xarApp {

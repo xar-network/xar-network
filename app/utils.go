@@ -32,6 +32,6 @@ func NewxarAppUNSAFE(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLat
 	invCheckPeriod uint, baseAppOptions ...func(*baseapp.BaseApp),
 ) (app *xarApp, keyMain, keyStaking *sdk.KVStoreKey, stakingKeeper staking.Keeper) {
 
-	app = NewxarApp(logger, db, traceStore, loadLatest, invCheckPeriod, baseAppOptions...)
+	app = NewXarApp(logger, db, traceStore, loadLatest, invCheckPeriod, baseAppOptions...)
 	return app, app.keys[bam.MainStoreKey], app.keys[staking.StoreKey], app.stakingKeeper
 }

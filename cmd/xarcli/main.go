@@ -37,6 +37,10 @@ import (
 	recordcmd "github.com/xar-network/xar-network/x/record/client/cli"
 	uniswapcmd "github.com/xar-network/xar-network/x/uniswap/client/cli"
 
+	authoritycli "github.com/xar-network/xar-network/x/authority/client/cli"
+	issuercli "github.com/xar-network/xar-network/x/issuer/client/cli"
+	lpcli "github.com/xar-network/xar-network/x/liquidityprovider/client/cli"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -158,6 +162,9 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		liquidatorcmd.GetTxCmd(cdc),
 		pricefeedcmd.GetTxCmd(cdc),
 		uniswapcmd.GetTxCmd(cdc),
+		lpcli.GetTxCmd(cdc),
+		issuercli.GetTxCmd(cdc),
+		authoritycli.GetTxCmd(cdc),
 		client.LineBreak,
 	)
 
