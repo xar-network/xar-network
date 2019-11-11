@@ -119,17 +119,6 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		authcmd.QueryTxsByEventsCmd(cdc),
 		authcmd.QueryTxCmd(cdc),
 		client.LineBreak,
-		nftcmd.GetQueryCmd(nft.StoreKey, cdc),
-		client.LineBreak,
-		issuecmd.QueryCmd(cdc),
-		issuecmd.QueryIssueCmd(cdc),
-		issuecmd.QueryFreezeCmd(cdc),
-		issuecmd.QueryIssuesCmd(cdc),
-		issuecmd.QueryParamsCmd(cdc),
-		issuecmd.QueryFreezesCmd(cdc),
-		issuecmd.QueryAllowanceCmd(cdc),
-		issuecmd.QuerySearchIssuesCmd(cdc),
-		client.LineBreak,
 	)
 
 	// add modules' query commands

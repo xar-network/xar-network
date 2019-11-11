@@ -14,7 +14,7 @@ import (
 func GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 	inflationQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
-		Short:                      "Commands for querying the interest states of denominations",
+		Short:                      "Querying commands for the interest states of denominations",
 		SuggestionsMinimumDistance: 2,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)

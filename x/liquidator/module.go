@@ -9,11 +9,13 @@ package liquidator
 import (
 	"encoding/json"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/xar-network/xar-network/x/csdt/client/cli"
+	querycli "github.com/xar-network/xar-network/x/liquidator/client/cli"
 	"github.com/xar-network/xar-network/x/liquidator/internal/keeper"
 
 	"github.com/gorilla/mux"
@@ -69,7 +71,18 @@ func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 }
 
 // GetQueryCmd returns no root query command for the bank module.
-func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command { return nil }
+func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command {
+	queryCmd := &cobra.Command{
+		Use:   "liquidator",
+		Short: "Querying commands for the liquidator module",
+	}
+
+	queryCmd.AddCommand(client.GetCommands(
+		querycli.GetCmd_GetOutstandingDebt(StoreKey, ModuleCdc),
+	)...)
+
+	return queryCmd
+}
 
 // AppModule app module type
 type AppModule struct {

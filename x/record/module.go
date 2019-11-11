@@ -3,6 +3,7 @@ package record
 import (
 	"encoding/json"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -64,7 +65,30 @@ func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 }
 
 // GetQueryCmd returns no root query command for the bank module.
-func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command { return nil }
+func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command {
+	recordCmd := &cobra.Command{
+		Use:   types.ModuleName,
+		Short: "Querying commands for the record module",
+		Long:  "Record a 64 characters hash of any user data into the chain.",
+	}
+	recordCmd.AddCommand(
+		client.GetCommands(
+			cli.GetCmdQueryRecord(ModuleCdc),
+			cli.GetCmdQueryList(ModuleCdc),
+		)...)
+	recordCmd.AddCommand(client.LineBreak)
+
+	txCmd := client.PostCommands(
+		cli.GetCmdRecordCreate(ModuleCdc),
+	)
+
+	for _, cmd := range txCmd {
+		_ = cmd.MarkFlagRequired(client.FlagFrom)
+		recordCmd.AddCommand(cmd)
+	}
+
+	return recordCmd
+}
 
 // AppModule app module type
 type AppModule struct {

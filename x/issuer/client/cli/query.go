@@ -14,7 +14,7 @@ import (
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	issuerQueryCmd := &cobra.Command{
 		Use:   "issuers",
-		Short: "List issuers",
+		Short: "Querying commands for the authority issuer module",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)

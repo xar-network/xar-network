@@ -3,6 +3,7 @@ package cli
 import (
 	"strings"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -10,6 +11,28 @@ import (
 	"github.com/spf13/viper"
 	"github.com/xar-network/xar-network/x/issue/internal/types"
 )
+
+// GetQueryCmd returns the transaction commands for this module
+func GetQueryCmd(cdc *codec.Codec) *cobra.Command {
+	issueCmd := &cobra.Command{
+		Use:                        types.ModuleName,
+		Short:                      "Querying commands for the issue module",
+		DisableFlagParsing:         true,
+		SuggestionsMinimumDistance: 2,
+		RunE:                       client.ValidateCmd,
+	}
+	issueCmd.AddCommand(
+		QueryParamsCmd(cdc),
+		QueryCmd(cdc),
+		QueryIssueCmd(cdc),
+		QueryAllowanceCmd(cdc),
+		QueryFreezeCmd(cdc),
+		QueryIssuesCmd(cdc),
+		QuerySearchIssuesCmd(cdc),
+	)
+
+	return issueCmd
+}
 
 // QueryParamsCmd implements the query params command.
 func QueryParamsCmd(cdc *codec.Codec) *cobra.Command {

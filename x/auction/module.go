@@ -9,11 +9,13 @@ package auction
 import (
 	"encoding/json"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/xar-network/xar-network/x/auction/client/cli"
+	auctioncmd "github.com/xar-network/xar-network/x/auction/client/cli"
 	"github.com/xar-network/xar-network/x/auction/internal/keeper"
 
 	"github.com/gorilla/mux"
@@ -64,7 +66,19 @@ func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 }
 
 // GetQueryCmd returns no root query command for the bank module.
-func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command { return nil }
+func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command {
+	// Group nameservice queries under a subcommand
+	auctionQueryCmd := &cobra.Command{
+		Use:   "auction",
+		Short: "Querying commands for the auction module",
+	}
+
+	auctionQueryCmd.AddCommand(client.GetCommands(
+		auctioncmd.GetCmdGetAuctions(StoreKey, ModuleCdc),
+	)...)
+
+	return auctionQueryCmd
+}
 
 // AppModule app module type
 type AppModule struct {
