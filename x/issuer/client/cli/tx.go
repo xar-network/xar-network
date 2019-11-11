@@ -14,6 +14,7 @@ import (
 func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	issuanceTxCmd := &cobra.Command{
 		Use:                        "issuer",
+		Short:                      "Issuer transactions subcommands",
 		Aliases:                    []string{"i"},
 		DisableFlagParsing:         false,
 		SuggestionsMinimumDistance: 2,

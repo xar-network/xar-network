@@ -14,7 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/xar-network/xar-network/x/csdt/client/cli"
+	"github.com/xar-network/xar-network/x/liquidator/client/cli"
 	querycli "github.com/xar-network/xar-network/x/liquidator/client/cli"
 	"github.com/xar-network/xar-network/x/liquidator/internal/keeper"
 

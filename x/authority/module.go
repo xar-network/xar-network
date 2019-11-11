@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/xar-network/xar-network/x/authority/client/cli"
 	"github.com/xar-network/xar-network/x/authority/internal/types"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -43,8 +44,8 @@ func (amb AppModuleBasic) RegisterRESTRoutes(context.CLIContext, *mux.Router) {
 
 }
 
-func (amb AppModuleBasic) GetTxCmd(*codec.Codec) *cobra.Command {
-	return nil
+func (amb AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
+	return cli.GetTxCmd(cdc)
 }
 
 func (amb AppModuleBasic) GetQueryCmd(*codec.Codec) *cobra.Command {

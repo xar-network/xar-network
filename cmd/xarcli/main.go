@@ -28,19 +28,6 @@ import (
 	pricerest "github.com/xar-network/xar-network/x/pricefeed/client/rest"
 	recordrest "github.com/xar-network/xar-network/x/record/client/rest"
 
-	nftcmd "github.com/cosmos/modules/incubator/nft/client/cli"
-	auctioncmd "github.com/xar-network/xar-network/x/auction/client/cli"
-	csdtcmd "github.com/xar-network/xar-network/x/csdt/client/cli"
-	issuecmd "github.com/xar-network/xar-network/x/issue/client/cli"
-	liquidatorcmd "github.com/xar-network/xar-network/x/liquidator/client/cli"
-	pricefeedcmd "github.com/xar-network/xar-network/x/pricefeed/client/cli"
-	recordcmd "github.com/xar-network/xar-network/x/record/client/cli"
-	uniswapcmd "github.com/xar-network/xar-network/x/uniswap/client/cli"
-
-	authoritycli "github.com/xar-network/xar-network/x/authority/client/cli"
-	issuercli "github.com/xar-network/xar-network/x/issuer/client/cli"
-	lpcli "github.com/xar-network/xar-network/x/liquidityprovider/client/cli"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -142,18 +129,6 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		authcmd.GetBroadcastCommand(cdc),
 		authcmd.GetEncodeCommand(cdc),
 		authcmd.GetDecodeCommand(cdc),
-		client.LineBreak,
-		nftcmd.GetTxCmd(nft.StoreKey, cdc),
-		issuecmd.GetTxCmd(cdc),
-		recordcmd.GetTxCmd(cdc),
-		auctioncmd.GetTxCmd(cdc),
-		csdtcmd.GetTxCmd(cdc),
-		liquidatorcmd.GetTxCmd(cdc),
-		pricefeedcmd.GetTxCmd(cdc),
-		uniswapcmd.GetTxCmd(cdc),
-		lpcli.GetTxCmd(cdc),
-		issuercli.GetTxCmd(cdc),
-		authoritycli.GetTxCmd(cdc),
 		client.LineBreak,
 	)
 

@@ -17,7 +17,7 @@ import (
 func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	csdtTxCmd := &cobra.Command{
 		Use:   "csdt",
-		Short: "csdt transactions subcommands",
+		Short: "CSDT transactions subcommands",
 	}
 
 	csdtTxCmd.AddCommand(

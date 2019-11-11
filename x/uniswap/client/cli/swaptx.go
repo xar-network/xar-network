@@ -16,7 +16,7 @@ import (
 func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        swap.ModuleName,
-		Short:                      "swap subcommands",
+		Short:                      "Swap transaction subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,

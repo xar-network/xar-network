@@ -16,7 +16,7 @@ import (
 func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        types.ModuleName,
-		Short:                      "liquidator subcommands",
+		Short:                      "Liquidator transactions subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
@@ -57,7 +57,7 @@ As this is a forward-reverse auction type, if the max stable coin is bid then bi
 			// Prepare and send message
 			msgs := []sdk.Msg{types.MsgSeizeAndStartCollateralAuction{
 				Sender:          sender,
-				CsdtOwner:        csdtOwner,
+				CsdtOwner:       csdtOwner,
 				CollateralDenom: denom,
 			}}
 			// TODO print out results like auction ID?
