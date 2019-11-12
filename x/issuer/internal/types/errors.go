@@ -7,15 +7,20 @@ import (
 )
 
 const (
-	DefaultCodespace sdk.CodespaceType = "iss"
+	DefaultCodespace sdk.CodespaceType = "issuer"
 
 	CodeNegativeCredit        sdk.CodeType = 1
 	CodeNotLiquidityProvider  sdk.CodeType = 2
 	CodeDuplicateDenomination sdk.CodeType = 3
 	CodeIssuerNotFound        sdk.CodeType = 4
-	CodeNegativeInflation     sdk.CodeType = 5
+	CodeNegativeInterest      sdk.CodeType = 5
 	CodeDoesNotControlDenom   sdk.CodeType = 6
+	CodeNotAnIssuer           sdk.CodeType = 7
 )
+
+func ErrNotAnIssuer(address sdk.AccAddress) sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeNotAnIssuer, fmt.Sprintf("%v is not an issuer", address))
+}
 
 func ErrNegativeCredit(lp sdk.AccAddress) sdk.Error {
 	return sdk.NewError(DefaultCodespace, CodeNegativeCredit, fmt.Sprintf("credit decrease would result in negative credit for %d", lp))
@@ -37,6 +42,6 @@ func ErrIssuerNotFound(issuer sdk.AccAddress) sdk.Error {
 	return sdk.NewError(DefaultCodespace, CodeIssuerNotFound, fmt.Sprintf("unable to find issuer %v", issuer))
 }
 
-func ErrNegativeInflation() sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeNegativeInflation, "cannot set negative inflation")
+func ErrNegativeInterest() sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeNegativeInterest, "cannot set negative interest")
 }

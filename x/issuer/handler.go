@@ -18,8 +18,8 @@ func newHandler(k keeper.Keeper) sdk.Handler {
 			return handleMsgDecreaseCredit(ctx, msg, k)
 		case types.MsgRevokeLiquidityProvider:
 			return handleMsgRevokeLiquidityProvider(ctx, msg, k)
-		case types.MsgSetInflation:
-			return handleMsgSetInflation(ctx, msg, k)
+		case types.MsgSetInterest:
+			return handleMsgSetInterest(ctx, msg, k)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized issuance Msg type: %v", msg.Type())
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -27,8 +27,8 @@ func newHandler(k keeper.Keeper) sdk.Handler {
 	}
 }
 
-func handleMsgSetInflation(ctx sdk.Context, msg types.MsgSetInflation, k keeper.Keeper) sdk.Result {
-	return k.SetInflationRate(ctx, msg.Issuer, msg.InflationRate, msg.Denom)
+func handleMsgSetInterest(ctx sdk.Context, msg types.MsgSetInterest, k keeper.Keeper) sdk.Result {
+	return k.SetInterestRate(ctx, msg.Issuer, msg.InterestRate, msg.Denom)
 }
 
 func handleMsgRevokeLiquidityProvider(ctx sdk.Context, msg types.MsgRevokeLiquidityProvider, k keeper.Keeper) sdk.Result {

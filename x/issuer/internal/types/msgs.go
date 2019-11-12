@@ -8,7 +8,7 @@ var (
 	_ sdk.Msg = MsgIncreaseCredit{}
 	_ sdk.Msg = MsgDecreaseCredit{}
 	_ sdk.Msg = MsgRevokeLiquidityProvider{}
-	_ sdk.Msg = MsgSetInflation{}
+	_ sdk.Msg = MsgSetInterest{}
 )
 
 // Increase the credit of a liquidity provider. If the account is not previously an LP, it will be made one.
@@ -30,20 +30,20 @@ type (
 		Issuer            sdk.AccAddress
 	}
 
-	MsgSetInflation struct {
-		Denom         string
-		InflationRate sdk.Dec
-		Issuer        sdk.AccAddress
+	MsgSetInterest struct {
+		Denom        string
+		InterestRate sdk.Dec
+		Issuer       sdk.AccAddress
 	}
 )
 
-func (msg MsgSetInflation) Route() string { return ModuleName }
+func (msg MsgSetInterest) Route() string { return ModuleName }
 
-func (msg MsgSetInflation) Type() string { return "setInflation" }
+func (msg MsgSetInterest) Type() string { return "setInterest" }
 
-func (msg MsgSetInflation) ValidateBasic() sdk.Error {
-	if msg.InflationRate.IsNegative() {
-		return ErrNegativeInflation()
+func (msg MsgSetInterest) ValidateBasic() sdk.Error {
+	if msg.InterestRate.IsNegative() {
+		return ErrNegativeInterest()
 	}
 
 	if msg.Issuer.Empty() {
@@ -53,11 +53,11 @@ func (msg MsgSetInflation) ValidateBasic() sdk.Error {
 	return nil
 }
 
-func (msg MsgSetInflation) GetSignBytes() []byte {
+func (msg MsgSetInterest) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
-func (msg MsgSetInflation) GetSigners() []sdk.AccAddress {
+func (msg MsgSetInterest) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Issuer}
 }
 

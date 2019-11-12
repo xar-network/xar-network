@@ -79,6 +79,27 @@ func (k Keeper) SetInterest(ctx sdk.Context, newInterest sdk.Dec, denom string) 
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
+func (k Keeper) AddDenoms(ctx sdk.Context, denoms []string) sdk.Result {
+	state := k.GetState(ctx)
+
+	for _, denom := range denoms {
+		if state.FindByDenom(denom) != nil {
+			continue
+		}
+
+		asset := types.InterestAsset{
+			Denom:    denom,
+			Interest: sdk.ZeroDec(),
+			Accum:    sdk.ZeroDec(),
+		}
+
+		state.InterestAssets = append(state.InterestAssets, asset)
+	}
+
+	k.SetState(ctx, state)
+	return sdk.Result{Events: ctx.EventManager().Events()}
+}
+
 func (k Keeper) TotalTokenSupply(ctx sdk.Context) sdk.Coins {
 	return k.supplyKeeper.GetSupply(ctx).GetTotal()
 }

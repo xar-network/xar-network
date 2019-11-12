@@ -11,7 +11,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgIncreaseCredit{}, "issuer/MsgIncreaseCredit", nil)
 	cdc.RegisterConcrete(MsgDecreaseCredit{}, "issuer/MsgDecreaseCredit", nil)
 	cdc.RegisterConcrete(MsgRevokeLiquidityProvider{}, "issuer/MsgRevokeLiquidityProvider", nil)
-	cdc.RegisterConcrete(MsgSetInflation{}, "issuer/MsgSetInflation", nil)
+	cdc.RegisterConcrete(MsgSetInterest{}, "issuer/MsgSetInterest", nil)
 }
 
 func init() {

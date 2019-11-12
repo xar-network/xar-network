@@ -54,7 +54,7 @@ func TestAddIssuer(t *testing.T) {
 	require.Len(t, keeper.GetIssuers(ctx), 2)
 	require.Len(t, collectDenoms(keeper.GetIssuers(ctx)), 3)
 
-	issuer := keeper.mustBeIssuer(ctx, acc1)
+	issuer, _ := keeper.mustBeIssuer(ctx, acc1)
 	require.Equal(t, issuer1, issuer)
 
 	acc2, _ := sdk.AccAddressFromBech32("xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu")
@@ -244,7 +244,11 @@ func createTestComponents(t *testing.T) (sdk.Context, auth.AccountKeeper, liquid
 
 type mockInterestKeeper struct{}
 
-func (m mockInterestKeeper) SetInterest(ctx sdk.Context, inflation sdk.Dec, denom string) (_ sdk.Result) {
+func (m mockInterestKeeper) SetInterest(ctx sdk.Context, interest sdk.Dec, denom string) (_ sdk.Result) {
+	return
+}
+
+func (m mockInterestKeeper) AddDenoms(sdk.Context, []string) (_ sdk.Result) {
 	return
 }
 
