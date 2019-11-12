@@ -209,7 +209,7 @@ func NewXarApp(
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
-	bankKeeper := bank.NewBaseKeeper(app.accountKeeper, bankSubspace, bank.DefaultCodespace, app.ModuleAccountAddrs())
+	app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper, bankSubspace, bank.DefaultCodespace, app.ModuleAccountAddrs())
 	app.supplyKeeper = supply.NewKeeper(app.cdc, keys[supply.StoreKey], app.accountKeeper, app.bankKeeper, maccPerms)
 	stakingKeeper := staking.NewKeeper(app.cdc, keys[staking.StoreKey], app.supplyKeeper, stakingSubspace, staking.DefaultCodespace)
 	app.mintKeeper = mint.NewKeeper(app.cdc, keys[mint.StoreKey], mintSubspace, &stakingKeeper, app.supplyKeeper, auth.FeeCollectorName)
@@ -247,9 +247,9 @@ func NewXarApp(
 		staking.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()),
 	)
 
-	app.bankKeeper = *bankKeeper.SetHooks(
+	/*app.bankKeeper = *bankKeeper.SetHooks(
 		NewBankHooks(app.boxKeeper.Hooks(), app.issueKeeper.Hooks(), app.accMustMemoKeeper.Hooks()),
-	)
+	)*/
 
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
@@ -277,6 +277,8 @@ func NewXarApp(
 		liquidityprovider.NewAppModule(app.lpKeeper),
 		issuer.NewAppModule(app.issuerKeeper),
 		authority.NewAppModule(app.authorityKeeper),
+
+		uniswap.NewAppModule(app.uniswapKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -308,7 +310,7 @@ func NewXarApp(
 		crisis.ModuleName, issue.ModuleName,
 		auction.ModuleName, csdt.ModuleName, liquidator.ModuleName, pricefeed.ModuleName,
 		interest.ModuleName, authority.ModuleName, liquidityprovider.ModuleName, issuer.ModuleName,
-		nft.ModuleName, record.ModuleName, genutil.ModuleName,
+		nft.ModuleName, record.ModuleName, uniswap.ModuleName, genutil.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.crisisKeeper)
