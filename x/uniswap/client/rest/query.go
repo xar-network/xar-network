@@ -45,7 +45,7 @@ func swapEstimateHandlerFn(cliCtx context.CLIContext, cdc *codec.Codec) http.Han
 		stdTx := auth.NewStdTx([]sdk.Msg{msg}, auth.StdFee{}, []auth.StdSignature{
 			auth.StdSignature{},
 		}, "")
-		bz, err := cdc.MarshalBinaryLengthPrefixed(stdTx)
+		_, err = cdc.MarshalBinaryLengthPrefixed(stdTx)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -73,9 +73,9 @@ func swapEstimateHandlerFn(cliCtx context.CLIContext, cdc *codec.Codec) http.Han
 			return
 		}
 
-		for _, tag := range result.Tags {
-			if string(tag.Key) == "swap" {
-				coin, err := sdk.ParseCoin(string(tag.Value))
+		for _, event := range result.Events {
+			if string(event.Type) == "swap" {
+				coin, err := sdk.ParseCoin(string(event.Attributes[0].Value))
 				if err != nil {
 					rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 					return
@@ -89,6 +89,6 @@ func swapEstimateHandlerFn(cliCtx context.CLIContext, cdc *codec.Codec) http.Han
 			return
 		}
 
-		rest.PostProcessResponse(w, cdc, res, cliCtx.Indent)
+		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }

@@ -1,4 +1,4 @@
-package uniswap
+package keeper
 
 import (
 	"fmt"
@@ -6,42 +6,39 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/params"
+
+	"github.com/xar-network/xar-network/x/uniswap/internal/types"
 )
 
 type Keeper struct {
 	cdc        *codec.Codec
 	storeKey   sdk.StoreKey
 	paramspace params.Subspace
-
-	bk bank.Keeper
 }
 
-func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, paramspace params.Subspace, bk bank.Keeper) Keeper {
+func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, paramspace params.Subspace) Keeper {
 	return Keeper{
 		cdc:        cdc,
 		storeKey:   storeKey,
-		paramspace: paramspace.WithKeyTable(ParamKeyTable()),
-
-		bk: bk,
+		paramspace: paramspace.WithKeyTable(types.ParamKeyTable()),
 	}
 }
 
-func (keeper Keeper) SetPoolConfig(ctx sdk.Context, config PoolConfig) {
+func (keeper Keeper) SetPoolConfig(ctx sdk.Context, config types.PoolConfig) {
 	keeper.paramspace.SetParamSet(ctx, &config)
 }
 
-func (keeper Keeper) GetPoolConfig(ctx sdk.Context) PoolConfig {
-	config := PoolConfig{}
+func (keeper Keeper) GetPoolConfig(ctx sdk.Context) types.PoolConfig {
+	config := types.PoolConfig{}
 	keeper.paramspace.GetParamSet(ctx, &config)
 	return config
 }
 
 func (keeper Keeper) AddLiquidity(ctx sdk.Context, coin sdk.Coin, token sdk.Coin) sdk.Error {
-	pool := Pool{}
+	pool := types.Pool{}
 	if keeper.HasPool(ctx, token.Denom) == false {
-		pool = NewPool(sdk.NewCoin(coin.Denom, sdk.NewInt(0)), sdk.NewCoin(token.Denom, sdk.NewInt(0)))
+		pool = types.NewPool(sdk.NewCoin(coin.Denom, sdk.NewInt(0)), sdk.NewCoin(token.Denom, sdk.NewInt(0)))
 	} else {
 		var err sdk.Error
 		pool, err = keeper.GetPool(ctx, token.Denom)
@@ -61,35 +58,35 @@ func (keeper Keeper) AddLiquidity(ctx sdk.Context, coin sdk.Coin, token sdk.Coin
 	return nil
 }
 
-func (keeper Keeper) Swap(ctx sdk.Context, asset sdk.Coin, targetDenom string) (sdk.Coin, sdk.Tags, sdk.Error) {
+func (keeper Keeper) Swap(ctx sdk.Context, asset sdk.Coin, targetDenom string) (sdk.Coin, sdk.Error) {
 	if asset.Denom == targetDenom {
-		return sdk.Coin{}, sdk.Tags{}, sdk.ErrInternal("Can't swap identical token")
+		return sdk.Coin{}, sdk.ErrInternal("Can't swap identical token")
 	}
 
 	config := keeper.GetPoolConfig(ctx)
 	if config.CoinDenom == asset.Denom {
 		coin, err := keeper.swapFromCoin(ctx, asset, targetDenom)
 		if err != nil {
-			return sdk.Coin{}, sdk.Tags{}, err
+			return sdk.Coin{}, err
 		}
-		return coin, sdk.NewTags("swap", coin.String()), nil
+		return coin, nil
 	} else {
 		if targetDenom == config.CoinDenom {
 			coin, err := keeper.swapToCoin(ctx, asset)
 			if err != nil {
-				return sdk.Coin{}, sdk.Tags{}, err
+				return sdk.Coin{}, err
 			}
-			return coin, sdk.NewTags("swap", coin.String()), nil
+			return coin, nil
 		} else {
 			intermediate, err := keeper.swapToCoin(ctx, asset)
 			if err != nil {
-				return sdk.Coin{}, sdk.Tags{}, err
+				return sdk.Coin{}, err
 			}
 			coin, err := keeper.swapFromCoin(ctx, intermediate, targetDenom)
 			if err != nil {
-				return sdk.Coin{}, sdk.Tags{}, err
+				return sdk.Coin{}, err
 			}
-			return coin, sdk.NewTags("swap", coin.String()), nil
+			return coin, nil
 		}
 	}
 }
@@ -144,7 +141,7 @@ func (keeper Keeper) swapFromCoin(ctx sdk.Context, coin sdk.Coin, tokenDenom str
 	return result, err
 }
 
-func (keeper Keeper) SetPool(ctx sdk.Context, pool Pool) sdk.Error {
+func (keeper Keeper) SetPool(ctx sdk.Context, pool types.Pool) sdk.Error {
 	config := keeper.GetPoolConfig(ctx)
 	if len(config.CoinDenom) == 0 {
 		return sdk.ErrInternal("Pool config not set")
@@ -175,10 +172,10 @@ func (keeper Keeper) SetPool(ctx sdk.Context, pool Pool) sdk.Error {
 	return nil
 }
 
-func (keeper Keeper) GetPool(ctx sdk.Context, tokenDenom string) (Pool, sdk.Error) {
+func (keeper Keeper) GetPool(ctx sdk.Context, tokenDenom string) (types.Pool, sdk.Error) {
 	config := keeper.GetPoolConfig(ctx)
 	if len(config.CoinDenom) == 0 {
-		return Pool{}, sdk.ErrInternal("Pool config not set")
+		return types.Pool{}, sdk.ErrInternal("Pool config not set")
 	}
 
 	store := ctx.KVStore(keeper.storeKey)
@@ -186,13 +183,13 @@ func (keeper Keeper) GetPool(ctx sdk.Context, tokenDenom string) (Pool, sdk.Erro
 
 	bz := store.Get(key)
 	if len(bz) == 0 {
-		return Pool{}, sdk.ErrInternal("Unkown token pool")
+		return types.Pool{}, sdk.ErrInternal("Unkown token pool")
 	}
 
-	pool := Pool{}
+	pool := types.Pool{}
 	gerr := keeper.cdc.UnmarshalBinaryBare(bz, &pool)
 	if gerr != nil {
-		return Pool{}, sdk.ErrInternal(gerr.Error())
+		return types.Pool{}, sdk.ErrInternal(gerr.Error())
 	}
 
 	return pool, nil

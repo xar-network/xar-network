@@ -6,9 +6,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/xar-network/xar-network/x/uniswap/client/cli"
-	"github.com/xar-network/xar-network/x/uniswap/internal/keeper"
+	"github.com/xar-network/xar-network/x/uniswap/internal/types"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -34,7 +35,7 @@ func (AppModuleBasic) Name() string {
 
 // RegisterCodec register module codec
 func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
-	RegisterCodec(cdc)
+	types.RegisterCodec(cdc)
 }
 
 // DefaultGenesis default genesis state
@@ -54,7 +55,7 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 
 // RegisterRESTRoutes registers the REST routes for the bank module.
 func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
-	rest.RegisterRoutes(ctx, rtr, StoreKey)
+	rest.RegisterRoutes(ctx, rtr, ModuleCdc)
 }
 
 // GetTxCmd returns the root tx command for the bank module.
@@ -69,6 +70,7 @@ func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command { return nil }
 type AppModule struct {
 	AppModuleBasic
 	keeper Keeper
+	bk     bank.Keeper
 }
 
 // NewAppModule creates a new AppModule object
@@ -94,7 +96,7 @@ func (AppModule) Route() string {
 
 // NewHandler module handler
 func (am AppModule) NewHandler() sdk.Handler {
-	return NewHandler(am.keeper)
+	return NewHandler(am.keeper, am.bk)
 }
 
 // QuerierRoute module querier route name
@@ -104,7 +106,7 @@ func (AppModule) QuerierRoute() string {
 
 // NewQuerierHandler module querier
 func (am AppModule) NewQuerierHandler() sdk.Querier {
-	return keeper.NewQuerier(am.keeper)
+	return nil
 }
 
 // InitGenesis module init-genesis

@@ -1,16 +1,16 @@
-package uniswap
+package types
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
-// Register concrete types on codec codec
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(MsgSwap{}, "cosmos-sdk/MsgSwap", nil)
+	cdc.RegisterConcrete(MsgSwap{}, "uniswap/MsgSwap", nil)
 }
 
-var msgCdc = codec.New()
+var ModuleCdc *codec.Codec
 
 func init() {
-	RegisterCodec(msgCdc)
+	ModuleCdc = codec.New()
+	RegisterCodec(ModuleCdc)
 }

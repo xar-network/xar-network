@@ -26,7 +26,7 @@ func GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 		QueryCmd(cdc),
 		QueryIssueCmd(cdc),
 		QueryAllowanceCmd(cdc),
-		QueryFreezeCmd(cdc),
+		//QueryFreezeCmd(cdc),
 		QueryIssuesCmd(cdc),
 		QuerySearchIssuesCmd(cdc),
 	)

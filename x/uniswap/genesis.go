@@ -2,16 +2,17 @@ package uniswap
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/xar-network/xar-network/x/uniswap/internal/types"
 )
 
 // GenesisState is the bank state that must be provided at genesis.
 type GenesisState struct {
-	CoinDenom string `json:"coin_denom"`
-	Pools     []Pool `json:"pools`
+	CoinDenom string       `json:"coin_denom"`
+	Pools     []types.Pool `json:"pools`
 }
 
 // NewGenesisState creates a new genesis state.
-func NewGenesisState(coinDenom string, pools []Pool) GenesisState {
+func NewGenesisState(coinDenom string, pools []types.Pool) GenesisState {
 	return GenesisState{
 		CoinDenom: coinDenom,
 		Pools:     pools,
@@ -21,9 +22,9 @@ func NewGenesisState(coinDenom string, pools []Pool) GenesisState {
 // DefaultGenesisState returns a default genesis state
 func DefaultGenesisState() GenesisState {
 	return NewGenesisState(
-		"ftm", []Pool{
-			Pool{
-				BalanceCoin:  sdk.NewCoin("ftm", sdk.NewInt(1)),
+		"ftm", []types.Pool{
+			types.Pool{
+				BalanceCoin:  sdk.NewCoin("ftm", sdk.NewInt(76)),
 				BalanceToken: sdk.NewCoin("csdt", sdk.NewInt(1)),
 			},
 		},
@@ -32,7 +33,7 @@ func DefaultGenesisState() GenesisState {
 
 // InitGenesis sets distribution information for genesis.
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
-	config := PoolConfig{
+	config := types.PoolConfig{
 		CoinDenom: data.CoinDenom,
 	}
 

@@ -43,6 +43,9 @@ import (
 
 	//Proof of existence
 	"github.com/xar-network/xar-network/x/record"
+
+	//uniswap
+	"github.com/xar-network/xar-network/x/uniswap"
 )
 
 const appName = "xar"
@@ -79,6 +82,7 @@ var (
 		liquidityprovider.AppModuleBasic{},
 		issuer.AppModuleBasic{},
 		authority.AppModule{},
+		uniswap.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -98,6 +102,7 @@ var (
 // returned.
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
+
 	ModuleBasics.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
@@ -144,6 +149,8 @@ type xarApp struct {
 	issuerKeeper    issuer.Keeper
 	authorityKeeper authority.Keeper
 
+	uniswapKeeper uniswap.Keeper
+
 	// the module manager
 	mm *module.Manager
 
@@ -151,7 +158,7 @@ type xarApp struct {
 	sm *module.SimulationManager
 }
 
-// NewxarApp returns a reference to an initialized xarApp.
+// NewXarApp returns a reference to an initialized xarApp.
 func NewXarApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
@@ -168,7 +175,7 @@ func NewXarApp(
 		gov.StoreKey, params.StoreKey, issue.StoreKey, pricefeed.StoreKey,
 		auction.StoreKey, csdt.StoreKey, liquidator.StoreKey, nft.StoreKey,
 		interest.StoreKey, authority.StoreKey, issuer.StoreKey,
-		record.StoreKey,
+		record.StoreKey, uniswap.ModuleName,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -198,9 +205,11 @@ func NewXarApp(
 	recordSubspace := app.paramsKeeper.Subspace(record.DefaultParamspace)
 	interestSubspace := app.paramsKeeper.Subspace(interest.DefaultParamspace)
 
+	uniswapSubspace := app.paramsKeeper.Subspace(uniswap.DefaultParamSpace)
+
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
-	app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper, bankSubspace, bank.DefaultCodespace, app.ModuleAccountAddrs())
+	bankKeeper := bank.NewBaseKeeper(app.accountKeeper, bankSubspace, bank.DefaultCodespace, app.ModuleAccountAddrs())
 	app.supplyKeeper = supply.NewKeeper(app.cdc, keys[supply.StoreKey], app.accountKeeper, app.bankKeeper, maccPerms)
 	stakingKeeper := staking.NewKeeper(app.cdc, keys[staking.StoreKey], app.supplyKeeper, stakingSubspace, staking.DefaultCodespace)
 	app.mintKeeper = mint.NewKeeper(app.cdc, keys[mint.StoreKey], mintSubspace, &stakingKeeper, app.supplyKeeper, auth.FeeCollectorName)
@@ -222,6 +231,8 @@ func NewXarApp(
 	app.issuerKeeper = issuer.NewKeeper(keys[issuer.StoreKey], app.lpKeeper, app.interestKeeper)
 	app.authorityKeeper = authority.NewKeeper(keys[authority.StoreKey], app.issuerKeeper)
 
+	app.uniswapKeeper = uniswap.NewKeeper(app.cdc, keys[uniswap.ModuleName], uniswapSubspace)
+
 	// register the proposal types
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
@@ -234,6 +245,10 @@ func NewXarApp(
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.stakingKeeper = *stakingKeeper.SetHooks(
 		staking.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()),
+	)
+
+	app.bankKeeper = *bankKeeper.SetHooks(
+		NewBankHooks(app.boxKeeper.Hooks(), app.issueKeeper.Hooks(), app.accMustMemoKeeper.Hooks()),
 	)
 
 	// NOTE: Any module instantiated in the module manager that is later modified
