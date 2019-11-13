@@ -10,6 +10,7 @@ require (
 	github.com/cosmos/modules/incubator/nft v0.0.0-20191015123508-50d0c8092493
 	github.com/golang/mock v1.3.1 // indirect
 	github.com/gorilla/mux v1.7.3
+	github.com/hammadtq/moneymarket v0.0.0-20191103180456-2bb20436a7b4
 	github.com/otiai10/copy v1.0.2
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v1.1.0 // indirect

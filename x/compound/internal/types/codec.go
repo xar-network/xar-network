@@ -1,19 +1,20 @@
 package types
 
-import "github.com/cosmos/cosmos-sdk/codec"
+import (
+	"github.com/cosmos/cosmos-sdk/codec"
+)
 
-// generic sealed codec to be used throughout module
-var ModuleCdc *codec.Codec
+var ModuleCdc = codec.New()
 
 func init() {
-	cdc := codec.New()
-	RegisterCodec(cdc)
-	codec.RegisterCrypto(cdc)
-	ModuleCdc = cdc.Seal()
+	RegisterCodec(ModuleCdc)
 }
 
-// RegisterCodec registers concrete types on the codec.
+// RegisterCodec registers concrete types on the Amino codec
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(MsgCreateOrModifyCSDT{}, "csdt/MsgCreateOrModifyCSDT", nil)
-	cdc.RegisterConcrete(MsgTransferCSDT{}, "csdt/MsgTransferCSDT", nil)
+	cdc.RegisterConcrete(MsgCreateCompound{}, "compound/CreateCompound", nil)
+	cdc.RegisterConcrete(MsgSupplyMarket{}, "moneymarket/SupplyCompound", nil)
+	cdc.RegisterConcrete(MsgBorrowFromMarket{}, "moneymarket/BorrowFromMarket", nil)
+	cdc.RegisterConcrete(MsgRedeemFromMarket{}, "moneymarket/RedeemFromMarket", nil)
+	cdc.RegisterConcrete(MsgRepayToMarket{}, "moneymarket/RepayToMarket", nil)
 }

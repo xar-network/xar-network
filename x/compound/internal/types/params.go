@@ -7,16 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 )
 
-/*
-How this uses the sdk params module:
- - Put all the params for this module in one struct `CSDTModuleParams`
- - Store this in the keeper's paramSubspace under one key
- - Provide a function to load the param struct all at once `keeper.GetParams(ctx)`
-It's possible to set individual key value pairs within a paramSubspace, but reading and setting them is awkward (an empty variable needs to be created, then Get writes the value into it)
-This approach will be awkward if we ever need to write individual parameters (because they're stored all together). If this happens do as the sdk modules do - store parameters separately with custom get/set func for each.
-*/
-
-type CsdtModuleParams struct {
+type CompoundModuleParams struct {
 	GlobalDebtLimit  sdk.Int
 	CollateralParams []CollateralParams
 }
@@ -28,16 +19,16 @@ type CollateralParams struct {
 	//DebtFloor        sdk.Int // used to prevent dust
 }
 
-var ModuleParamsKey = []byte("CsdtModuleParams")
+var ModuleParamsKey = []byte("CompoundModuleParams")
 
 func CreateParamsKeyTable() params.KeyTable {
 	return params.NewKeyTable(
-		ModuleParamsKey, CsdtModuleParams{},
+		ModuleParamsKey, CompoundModuleParams{},
 	)
 }
 
 // Implement fmt.Stringer interface for cli querying
-func (p CsdtModuleParams) String() string {
+func (p CompoundModuleParams) String() string {
 	out := fmt.Sprintf(`Params:
 	Global Debt Limit: %s
 	Collateral Params:`,
@@ -58,7 +49,7 @@ func (p CsdtModuleParams) String() string {
 
 // Helper methods to search the list of collateral params for a particular denom. Wouldn't be needed if amino supported maps.
 
-func (p CsdtModuleParams) GetCollateralParams(collateralDenom string) CollateralParams {
+func (p CompoundModuleParams) GetCollateralParams(collateralDenom string) CollateralParams {
 	// search for matching denom, return
 	for _, cp := range p.CollateralParams {
 		if cp.Denom == collateralDenom {
@@ -68,7 +59,7 @@ func (p CsdtModuleParams) GetCollateralParams(collateralDenom string) Collateral
 	// panic if not found, to be safe
 	panic("collateral params not found in module params")
 }
-func (p CsdtModuleParams) IsCollateralPresent(collateralDenom string) bool {
+func (p CompoundModuleParams) IsCollateralPresent(collateralDenom string) bool {
 	// search for matching denom, return
 	for _, cp := range p.CollateralParams {
 		if cp.Denom == collateralDenom {

@@ -5,156 +5,147 @@ import (
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/types/rest"
-	"github.com/gorilla/mux"
-
 	"github.com/xar-network/xar-network/x/compound/internal/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
+	"github.com/gorilla/mux"
 )
-
-/*
-API Design:
-
-Currently CSDTs do not have IDs so standard REST uri conventions (ie GET /csdts/{csdt-id}) don't work too well.
-
-Get one or more csdts
-	GET /csdts?collateralDenom={denom}&owner={address}&underCollateralizedAt={price}
-Modify a CSDT (idempotent). Create is not separated out because conceptually all CSDTs already exist (just with zero collateral and debt). // TODO is making this idempotent actually useful?
-	PUT /csdts
-Get the module params, including authorized collateral denoms.
-	GET /params
-*/
-
-// RegisterRoutes - Central function to define routes that get registered by the main application
-func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	r.HandleFunc("/csdts", getCsdtsHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc("/csdts", modifyCsdtHandlerFn(cliCtx)).Methods("PUT")
-	r.HandleFunc("/csdts/params", getParamsHandlerFn(cliCtx)).Methods("GET")
-}
 
 const (
-	RestOwner                 = "owner"
-	RestCollateralDenom       = "collateralDenom"
-	RestUnderCollateralizedAt = "underCollateralizedAt"
+	restName = "name"
 )
 
-func getCsdtsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+// RegisterRoutes - Central function to define routes that get registered by the main application
+func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) {
+	r.HandleFunc(fmt.Sprintf("/%s/names", storeName), namesHandler(cliCtx, storeName)).Methods("GET")
+	r.HandleFunc(fmt.Sprintf("/%s/names", storeName), buyNameHandler(cliCtx)).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/%s/names", storeName), setNameHandler(cliCtx)).Methods("PUT")
+	r.HandleFunc(fmt.Sprintf("/%s/names/{%s}", storeName, restName), resolveNameHandler(cliCtx, storeName)).Methods("GET")
+	r.HandleFunc(fmt.Sprintf("/%s/names/{%s}/whois", storeName, restName), whoIsHandler(cliCtx, storeName)).Methods("GET")
+}
+
+func resolveNameHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// get parameters from the URL
-		ownerBech32 := r.URL.Query().Get(RestOwner)
-		collateralDenom := r.URL.Query().Get(RestCollateralDenom)
-		priceString := r.URL.Query().Get(RestUnderCollateralizedAt)
+		vars := mux.Vars(r)
+		paramType := vars[restName]
 
-		// Construct querier params
-		querierParams := types.QueryCsdtsParams{}
-
-		if len(ownerBech32) != 0 {
-			owner, err := sdk.AccAddressFromBech32(ownerBech32)
-			if err != nil {
-				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-				return
-			}
-			querierParams.Owner = owner
-		}
-
-		if len(collateralDenom) != 0 {
-			// TODO validate denom
-			querierParams.CollateralDenom = collateralDenom
-		}
-
-		if len(priceString) != 0 {
-			price, err := sdk.NewDecFromStr(priceString)
-			if err != nil {
-				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-				return
-			}
-			querierParams.UnderCollateralizedAt = price
-		}
-
-		querierParamsBz, err := cliCtx.Codec.MarshalJSON(querierParams)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
-
-		// Get the CSDTs
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetCsdts), querierParamsBz)
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/resolve/%s", storeName, paramType), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}
 
-		// Return the CSDTs
 		rest.PostProcessResponse(w, cliCtx, res)
-
 	}
 }
 
-type ModifyCsdtRequestBody struct {
-	BaseReq rest.BaseReq `json:"base_req"`
-	Csdt     types.CSDT    `json:"csdt"`
+func whoIsHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		paramType := vars[restName]
+
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/whois/%s", storeName, paramType), nil)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
 }
 
-func modifyCsdtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+func namesHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Decode PUT request body
-		var requestBody ModifyCsdtRequestBody
-		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &requestBody) {
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/names", storeName), nil)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}
-		requestBody.BaseReq = requestBody.BaseReq.Sanitize()
-		if !requestBody.BaseReq.ValidateBasic(w) {
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+type buyNameReq struct {
+	BaseReq rest.BaseReq `json:"base_req"`
+	Name    string       `json:"name"`
+	Amount  string       `json:"amount"`
+	Buyer   string       `json:"buyer"`
+}
+
+func buyNameHandler(cliCtx context.CLIContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req buyNameReq
+
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
 			return
 		}
 
-		// Get the stored CSDT
-		querierParams := types.QueryCsdtsParams{
-			Owner:           requestBody.Csdt.Owner,
-			CollateralDenom: requestBody.Csdt.CollateralDenom,
+		baseReq := req.BaseReq.Sanitize()
+		if !baseReq.ValidateBasic(w) {
+			return
 		}
-		querierParamsBz, err := cliCtx.Codec.MarshalJSON(querierParams)
+
+		addr, err := sdk.AccAddressFromBech32(req.Buyer)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetCsdts), querierParamsBz)
+
+		coins, err := sdk.ParseCoins(req.Amount)
 		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-		var csdts types.CSDTs
-		err = cliCtx.Codec.UnmarshalJSON(res, &csdts)
-		if len(csdts) != 1 || err != nil {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		// Calculate CSDT updates
-		collateralDelta := requestBody.Csdt.CollateralAmount.Sub(csdts[0].CollateralAmount)
-		debtDelta := requestBody.Csdt.Debt.Sub(csdts[0].Debt)
+		// create the message
+		msg := types.NewMsgBuyName(req.Name, coins, addr)
+		err = msg.ValidateBasic()
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
 
-		// Create and return msg
-		msg := types.NewMsgCreateOrModifyCSDT(
-			requestBody.Csdt.Owner,
-			requestBody.Csdt.CollateralDenom,
-			collateralDelta,
-			debtDelta,
-		)
-		utils.WriteGenerateStdTxResponse(w, cliCtx, requestBody.BaseReq, []sdk.Msg{msg})
+		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
 	}
 }
 
-func getParamsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+type setNameReq struct {
+	BaseReq rest.BaseReq `json:"base_req"`
+	Name    string       `json:"name"`
+	Value   string       `json:"value"`
+	Owner   string       `json:"owner"`
+}
+
+func setNameHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Get the params
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetParams), nil)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+		var req setNameReq
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
 			return
 		}
-		// Return the params
-		rest.PostProcessResponse(w, cliCtx, res)
+
+		baseReq := req.BaseReq.Sanitize()
+		if !baseReq.ValidateBasic(w) {
+			return
+		}
+
+		addr, err := sdk.AccAddressFromBech32(req.Owner)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		// create the message
+		msg := types.NewMsgSetName(req.Name, req.Value, addr)
+		err = msg.ValidateBasic()
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
 	}
 }
