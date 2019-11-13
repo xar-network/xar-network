@@ -50,10 +50,10 @@ func getCmdSetInflation(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			msg := types.MsgSetInflation{
-				Denom:         denom,
-				InflationRate: inflation,
-				Issuer:        cliCtx.GetFromAddress(),
+			msg := types.MsgSetInterest{
+				Denom:        denom,
+				InterestRate: inflation,
+				Issuer:       cliCtx.GetFromAddress(),
 			}
 
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})

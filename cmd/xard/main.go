@@ -34,8 +34,8 @@ func main() {
 
 	config := sdk.GetConfig()
 	config.SetBech32PrefixForAccount("xar", "xarp")
-	config.SetBech32PrefixForValidator("zva", "zvap")
-	config.SetBech32PrefixForConsensusNode("zca", "zcap")
+	config.SetBech32PrefixForValidator("xva", "xvap")
+	config.SetBech32PrefixForConsensusNode("xca", "xcap")
 	config.Seal()
 
 	ctx := server.NewDefaultContext()

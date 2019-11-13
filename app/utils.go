@@ -28,7 +28,7 @@ func ExportStateToJSON(app *xarApp, path string) error {
 // NewxarAppUNSAFE is used for debugging purposes only.
 //
 // NOTE: to not use this function with non-test code
-func NewxarAppUNSAFE(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
+func NewXarAppUNSAFE(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*baseapp.BaseApp),
 ) (app *xarApp, keyMain, keyStaking *sdk.KVStoreKey, stakingKeeper staking.Keeper) {
 
