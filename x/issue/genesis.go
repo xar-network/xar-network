@@ -26,7 +26,7 @@ type GenesisState struct {
 
 // NewGenesisState creates a new genesis state.
 func NewGenesisState(startingIssueId uint64) GenesisState {
-	params := types.DefaultParams("ftm")
+	params := types.DefaultParams("uftm")
 	return GenesisState{
 		StartingIssueId: startingIssueId,
 		Params:          params,

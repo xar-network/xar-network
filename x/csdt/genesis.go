@@ -23,32 +23,32 @@ type GenesisState struct {
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
 		types.CsdtModuleParams{
-			GlobalDebtLimit: sdk.NewInt(25000000),
+			GlobalDebtLimit: sdk.NewInt(25000000000000),
 			CollateralParams: []types.CollateralParams{
 				{
-					Denom:            "btc",
+					Denom:            "ubtc",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
-					DebtLimit:        sdk.NewInt(500000),
+					DebtLimit:        sdk.NewInt(500000000000),
 				},
 				{
-					Denom:            "bnb",
+					Denom:            "ubnb",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
-					DebtLimit:        sdk.NewInt(500000),
+					DebtLimit:        sdk.NewInt(500000000000),
 				},
 				{
-					Denom:            "eth",
+					Denom:            "ueth",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
-					DebtLimit:        sdk.NewInt(500000),
+					DebtLimit:        sdk.NewInt(500000000000),
 				},
 				{
-					Denom:            "ftm",
+					Denom:            "uftm",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
-					DebtLimit:        sdk.NewInt(500000),
+					DebtLimit:        sdk.NewInt(500000000000),
 				},
 				{
-					Denom:            "zar",
+					Denom:            "uzar",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.3"),
-					DebtLimit:        sdk.NewInt(500000),
+					DebtLimit:        sdk.NewInt(500000000000),
 				},
 			},
 		},

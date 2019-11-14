@@ -22,23 +22,23 @@ type GenesisState struct {
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
 		types.LiquidatorModuleParams{
-			DebtAuctionSize: sdk.NewInt(1000),
+			DebtAuctionSize: sdk.NewInt(1000000000),
 			CollateralParams: []types.CollateralParams{
 				{
-					Denom:       "btc",
-					AuctionSize: sdk.NewInt(1),
-				},
-				{
-					Denom:       "bnb",
+					Denom:       "ubtc",
 					AuctionSize: sdk.NewInt(1000),
 				},
 				{
-					Denom:       "eth",
-					AuctionSize: sdk.NewInt(10),
+					Denom:       "ubnb",
+					AuctionSize: sdk.NewInt(100000),
 				},
 				{
-					Denom:       "ftm",
-					AuctionSize: sdk.NewInt(1000000),
+					Denom:       "ueth",
+					AuctionSize: sdk.NewInt(10000),
+				},
+				{
+					Denom:       "uftm",
+					AuctionSize: sdk.NewInt(10000000000),
 				},
 			},
 		},

@@ -8,7 +8,6 @@ import (
 )
 
 type GenesisState struct {
-	WhoisRecords       []Whois       `json:"whois_records"`
 	MoneyMarketRecords []MoneyMarket `json:"moneymarket_records"`
 }
 

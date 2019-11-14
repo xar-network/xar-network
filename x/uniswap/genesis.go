@@ -22,9 +22,9 @@ func NewGenesisState(coinDenom string, pools []types.Pool) GenesisState {
 // DefaultGenesisState returns a default genesis state
 func DefaultGenesisState() GenesisState {
 	return NewGenesisState(
-		"ftm", []types.Pool{
+		"uftm", []types.Pool{
 			types.Pool{
-				BalanceCoin:  sdk.NewCoin("ftm", sdk.NewInt(76)),
+				BalanceCoin:  sdk.NewCoin("uftm", sdk.NewInt(76)),
 				BalanceToken: sdk.NewCoin("csdt", sdk.NewInt(1)),
 			},
 		},

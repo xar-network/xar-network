@@ -13,8 +13,8 @@ import (
 
 // GenesisState state at gensis
 type GenesisState struct {
-	Assets  []types.Asset
-	Oracles []types.Oracle
+	Assets  []types.Asset  `json:"assets" yaml:"assets"`
+	Oracles []types.Oracle `json:"oracles" yaml:"oracles"`
 }
 
 // InitGenesis sets distribution information for genesis.
@@ -32,10 +32,10 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, genState GenesisState) {
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
 		[]types.Asset{
-			{AssetCode: "btc", Description: "Bitcoin"},
-			{AssetCode: "bnb", Description: "Binance Chain Coin"},
-			{AssetCode: "eth", Description: "Ethereum"},
-			{AssetCode: "ftm", Description: "Fantom"}},
+			{AssetCode: "ubtc", Description: "uBitcoin"},
+			{AssetCode: "ubnb", Description: "uBinance Chain Coin"},
+			{AssetCode: "ueth", Description: "uEthereum"},
+			{AssetCode: "uftm", Description: "uFantom"}},
 		[]types.Oracle{}}
 }
 
