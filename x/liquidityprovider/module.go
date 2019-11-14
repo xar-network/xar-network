@@ -40,8 +40,7 @@ func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 
 // default genesis state
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
-	cdc := codec.New()
-	return cdc.MustMarshalJSON(defaultGenesisState())
+	return ModuleCdc.MustMarshalJSON(defaultGenesisState())
 }
 
 // module validate genesis
@@ -117,17 +116,16 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 
 // module init-genesis
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
-	//var genesisState GenesisState
-	//ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-	//InitGenesis(ctx, am.keeper, genesisState)
+	var genesisState GenesisState
+	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	InitGenesis(ctx, am.keeper, genesisState)
 
 	return []abci.ValidatorUpdate{}
 }
 
 // module export genesis
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
-	cdc := codec.New()
-	return cdc.MustMarshalJSON(defaultGenesisState())
+	return ModuleCdc.MustMarshalJSON(defaultGenesisState())
 }
 
 // module begin-block

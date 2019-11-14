@@ -56,7 +56,7 @@ func getCmdBurn(cdc *codec.Codec) *cobra.Command {
 
 func getCmdMint(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:  "mint",
+		Use:  "mint [amount]",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)

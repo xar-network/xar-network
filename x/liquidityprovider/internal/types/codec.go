@@ -8,14 +8,15 @@ import (
 var ModuleCdc *codec.Codec
 
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(&LiquidityProviderAccount{}, "liquidityprovider/LiquidityProviderAccount", nil)
 	cdc.RegisterConcrete(MsgMintTokens{}, "liquidityprovider/MsgMintTokens", nil)
 	cdc.RegisterConcrete(MsgBurnTokens{}, "liquidityprovider/MsgBurnTokens", nil)
+
+	cdc.RegisterConcrete(&LiquidityProviderAccount{}, "liquidityprovider/LiquidityProviderAccount", nil)
 }
 
 func init() {
-	ModuleCdc = codec.New()
-	RegisterCodec(ModuleCdc)
-	codec.RegisterCrypto(ModuleCdc)
-	ModuleCdc.Seal()
+	cdc := codec.New()
+	RegisterCodec(cdc)
+	codec.RegisterCrypto(cdc)
+	ModuleCdc = cdc.Seal()
 }

@@ -1,18 +1,18 @@
 package liquidityprovider
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/xar-network/xar-network/x/liquidityprovider/internal/types"
 )
 
-type genesisState struct {
-	Accounts []types.LiquidityProviderAccount
+type GenesisState struct {
+	Accounts []types.LiquidityProviderAccount `json:"accounts" yaml:"accounts"`
 }
 
-func defaultGenesisState() genesisState {
-	return genesisState{}
+func defaultGenesisState() GenesisState {
+	return GenesisState{}
 }
 
-//
-//func InitGenesis(_ *sdk.Context,  am.keeper, gs genesisState) {
-//
-//}
+func InitGenesis(_ sdk.Context, _ Keeper, _ GenesisState) {
+
+}

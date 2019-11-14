@@ -103,10 +103,10 @@ var (
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
 
-	ModuleBasics.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 	codec.RegisterEvidences(cdc)
+	ModuleBasics.RegisterCodec(cdc)
 
 	return cdc.Seal()
 }
