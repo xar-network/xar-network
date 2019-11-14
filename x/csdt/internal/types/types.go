@@ -7,16 +7,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-const (
-	QueryGetCsdts  = "csdts"
-	QueryGetParams = "params"
-)
-
-// StableDenom asset code of the dollar-denominated debt coin
-const StableDenom = "csdt" // TODO allow to be changed
-// GovDenom asset code of the governance coin
-const GovDenom = "ftm"
-
 // CSDT is the state of a single account.
 type CSDT struct {
 	//ID             []byte                                    // removing IDs for now to make things simpler
