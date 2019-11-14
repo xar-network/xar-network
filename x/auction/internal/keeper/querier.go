@@ -9,16 +9,11 @@ import (
 	"github.com/xar-network/xar-network/x/auction/internal/types"
 )
 
-const (
-	// QueryGetAuction command for getting the information about a particular auction
-	QueryGetAuction = "getauctions"
-)
-
 // NewQuerier is the module level router for state queries
 func NewQuerier(keeper Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {
-		case QueryGetAuction:
+		case types.QueryGetAuction:
 			return queryAuctions(ctx, req, keeper)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown auction query endpoint")

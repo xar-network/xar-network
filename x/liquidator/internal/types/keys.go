@@ -11,4 +11,8 @@ const (
 	QuerierRoute = ModuleName
 	// Parameter store default namestore
 	DefaultParamspace = ModuleName
+
+	QueryGetOutstandingDebt = "outstanding_debt" // Get the outstanding seized debt
 )
+
+var ModuleParamsKey = []byte("LiquidatorModuleParams")

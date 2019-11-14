@@ -17,7 +17,7 @@ Design options and problems:
 
 type MsgSeizeAndStartCollateralAuction struct {
 	Sender          sdk.AccAddress // only needed to pay the tx fees
-	CsdtOwner        sdk.AccAddress
+	CsdtOwner       sdk.AccAddress
 	CollateralDenom string
 }
 

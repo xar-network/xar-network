@@ -11,4 +11,7 @@ const (
 	QuerierRoute = ModuleName
 	// Parameter store default namestore
 	DefaultParamspace = ModuleName
+
+	// QueryGetAuction command for getting the information about a particular auction
+	QueryGetAuction = "getauctions"
 )

@@ -36,3 +36,24 @@ func handleMsgPlaceBid(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgPlace
 
 	return sdk.Result{}
 }
+
+// EndBlocker runs at the end of every block.
+func EndBlocker(ctx sdk.Context, k Keeper) sdk.Result {
+
+	// get an iterator of expired auctions
+	expiredAuctions := k.GetQueueIterator(ctx, types.EndTime(ctx.BlockHeight()))
+	defer expiredAuctions.Close()
+
+	// loop through and close them - distribute funds, delete from store (and queue)
+	for ; expiredAuctions.Valid(); expiredAuctions.Next() {
+		var auctionID types.ID
+		ModuleCdc.MustUnmarshalBinaryLengthPrefixed(expiredAuctions.Value(), &auctionID)
+
+		err := k.CloseAuction(ctx, auctionID)
+		if err != nil {
+			panic(err) // TODO how should errors be handled here?
+		}
+	}
+
+	return sdk.Result{Events: ctx.EventManager().Events()}
+}

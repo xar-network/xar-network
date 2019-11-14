@@ -13,7 +13,7 @@ type Keeper struct {
 	cdc            *codec.Codec
 	paramsSubspace params.Subspace
 	storeKey       sdk.StoreKey
-	csdtKeeper      csdtKeeper
+	csdtKeeper     csdtKeeper
 	auctionKeeper  auctionKeeper
 	bankKeeper     bankKeeper
 }
@@ -24,7 +24,7 @@ func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace
 		cdc:            cdc,
 		paramsSubspace: subspace,
 		storeKey:       storeKey,
-		csdtKeeper:      csdtKeeper,
+		csdtKeeper:     csdtKeeper,
 		auctionKeeper:  auctionKeeper,
 		bankKeeper:     bankKeeper,
 	}
@@ -35,6 +35,7 @@ func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace
 // result: stable coin is transferred to module account, collateral is transferred from module account to buyer, (and any excess collateral is transferred to original CSDT owner)
 func (k Keeper) SeizeAndStartCollateralAuction(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string) (auction.ID, sdk.Error) {
 	// Get CSDT
+	// TODO: Change getCSDT to use denom for coins or name for NFT (NFT keeper lookup?)
 	csdt, found := k.csdtKeeper.GetCSDT(ctx, owner, collateralDenom)
 	if !found {
 		return 0, sdk.ErrInternal("CSDT not found")

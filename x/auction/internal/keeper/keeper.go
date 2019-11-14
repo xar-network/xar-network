@@ -261,7 +261,7 @@ func (k Keeper) removeFromQueue(ctx sdk.Context, endTime types.EndTime, auctionI
 }
 
 // Returns an iterator for all the auctions in the queue that expire by endTime
-func (k Keeper) getQueueIterator(ctx sdk.Context, endTime types.EndTime) sdk.Iterator { // TODO rename to "getAuctionsByExpiry" ?
+func (k Keeper) GetQueueIterator(ctx sdk.Context, endTime types.EndTime) sdk.Iterator { // TODO rename to "getAuctionsByExpiry" ?
 	// get store
 	store := ctx.KVStore(k.storeKey)
 	// get an interator
