@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"sort"
 	"testing"
 
@@ -33,8 +34,7 @@ func init() {
 func TestAddIssuer(t *testing.T) {
 	ctx, _, _, keeper := createTestComponents(t)
 
-	acc1, _ := sdk.AccAddressFromBech32("xar1kt0vh0ttget0xx77g6d3ttnvq2lnxx6vp3uyl0")
-
+	acc1, _ := sdk.AccAddressFromBech32("xar1gwd65q0c5xycffz9d4w7hcjm2v2875vxcpek5a")
 	var (
 		issuer1 = types.NewIssuer(acc1, "x2eur", "x0jpy")
 		issuer2 = types.NewIssuer(acc1, "x2chf")
@@ -57,22 +57,21 @@ func TestAddIssuer(t *testing.T) {
 	issuer, _ := keeper.mustBeIssuer(ctx, acc1)
 	require.Equal(t, issuer1, issuer)
 
-	acc2, _ := sdk.AccAddressFromBech32("xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu")
-	require.Panics(t, func() {
-		// Function must panic if provided with a non-issuer account
-		keeper.mustBeIssuer(ctx, acc2)
-	})
-	require.Panics(t, func() {
-		// Function must panic if somehow provided with a nil address
-		keeper.mustBeIssuer(ctx, nil)
-	})
+	acc2, _ := sdk.AccAddressFromBech32("xar1raxczg7qt3uc3m4src3mjaqxk75sz30d0mpdwk")
+	// Function must panic if provided with a non-issuer account
+	_, err := keeper.mustBeIssuer(ctx, acc2)
+	require.Error(t, err)
+
+	// Function must panic if somehow provided with a nil address
+	_, err = keeper.mustBeIssuer(ctx, nil)
+	require.Error(t, err)
 }
 
 func TestRemoveIssuer(t *testing.T) {
 	ctx, _, _, keeper := createTestComponents(t)
 
-	acc1, _ := sdk.AccAddressFromBech32("xar1kt0vh0ttget0xx77g6d3ttnvq2lnxx6vp3uyl0")
-	acc2, _ := sdk.AccAddressFromBech32("xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu")
+	acc1, _ := sdk.AccAddressFromBech32("xar1gwd65q0c5xycffz9d4w7hcjm2v2875vxcpek5a")
+	acc2, _ := sdk.AccAddressFromBech32("xar1raxczg7qt3uc3m4src3mjaqxk75sz30d0mpdwk")
 
 	issuer := types.NewIssuer(acc1, "x2eur", "x0jpy")
 
@@ -93,8 +92,8 @@ func TestIssuerModifyLiquidityProvider(t *testing.T) {
 	ctx, ak, _, keeper := createTestComponents(t)
 
 	var (
-		iacc, _  = sdk.AccAddressFromBech32("xar1kt0vh0ttget0xx77g6d3ttnvq2lnxx6vp3uyl0")
-		lpacc, _ = sdk.AccAddressFromBech32("xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu")
+		iacc, _  = sdk.AccAddressFromBech32("xar1gwd65q0c5xycffz9d4w7hcjm2v2875vxcpek5a")
+		lpacc, _ = sdk.AccAddressFromBech32("xar1raxczg7qt3uc3m4src3mjaqxk75sz30d0mpdwk")
 	)
 
 	ak.SetAccount(ctx, ak.NewAccountWithAddress(ctx, lpacc))
@@ -137,9 +136,9 @@ func TestAddAndRevokeLiquidityProvider(t *testing.T) {
 	ctx, ak, _, keeper := createTestComponents(t)
 
 	var (
-		iacc, _      = sdk.AccAddressFromBech32("xar1kt0vh0ttget0xx77g6d3ttnvq2lnxx6vp3uyl0")
-		lpacc, _     = sdk.AccAddressFromBech32("xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu")
-		randomacc, _ = sdk.AccAddressFromBech32("xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu")
+		iacc, _      = sdk.AccAddressFromBech32("xar1gwd65q0c5xycffz9d4w7hcjm2v2875vxcpek5a")
+		lpacc, _     = sdk.AccAddressFromBech32("xar1raxczg7qt3uc3m4src3mjaqxk75sz30d0mpdwk")
+		randomacc, _ = sdk.AccAddressFromBech32("xar16afcue799xu7e5gq6w36pqpj5kvfsk9v9aeu4y")
 	)
 
 	ak.SetAccount(ctx, ak.NewAccountWithAddress(ctx, lpacc))
@@ -149,19 +148,22 @@ func TestAddAndRevokeLiquidityProvider(t *testing.T) {
 	credit := MustParseCoins("100000x2eur,5000x0jpy")
 
 	// Ensure that a random account can't create a LP
-	require.Panics(t, func() {
-		keeper.IncreaseCreditOfLiquidityProvider(ctx, lpacc, randomacc, credit)
-	})
+	result := keeper.IncreaseCreditOfLiquidityProvider(ctx, lpacc, randomacc, credit)
+	require.False(t, result.IsOK())
 
 	keeper.IncreaseCreditOfLiquidityProvider(ctx, lpacc, iacc, credit)
+	a := ak.GetAccount(ctx, lpacc)
+	account, _ := a.(*liquidityprovider.Account)
+
+	ctx.Logger().Error(fmt.Sprintf("%s", account.String()))
+
 	require.IsType(t, &liquidityprovider.Account{}, ak.GetAccount(ctx, lpacc))
 
 	// Make sure a random account can't revoke LP status
-	require.Panics(t, func() {
-		keeper.RevokeLiquidityProvider(ctx, lpacc, randomacc)
-	})
+	result = keeper.RevokeLiquidityProvider(ctx, lpacc, randomacc)
+	require.False(t, result.IsOK())
 
-	result := keeper.RevokeLiquidityProvider(ctx, lpacc, iacc)
+	result = keeper.RevokeLiquidityProvider(ctx, lpacc, iacc)
 	require.True(t, result.IsOK(), "%v", result)
 	require.IsType(t, &auth.BaseAccount{}, ak.GetAccount(ctx, lpacc))
 }
@@ -222,7 +224,7 @@ func createTestComponents(t *testing.T) (sdk.Context, auth.AccountKeeper, liquid
 	logger := log.NewNopLogger() // Default
 	//logger = log.NewTMLogger(os.Stdout) // Override to see output
 
-	ctx := sdk.NewContext(ms, abci.Header{ChainID: "supply-chain"}, true, logger)
+	ctx := sdk.NewContext(ms, abci.Header{ChainID: "xar-chain"}, true, logger)
 
 	maccPerms := map[string][]string{
 		types.ModuleName: {supply.Minter},

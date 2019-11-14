@@ -5,14 +5,20 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
-var _ exported.Account = LiquidityProviderAccount{}
+var _ exported.Account = (*LiquidityProviderAccount)(nil)
+
+func init() {
+	// Register the LiquidityProviderAccount on the auth module codec
+	authtypes.RegisterAccountTypeCodec(&LiquidityProviderAccount{}, "liquidityprovider/LiquidityProviderAccount")
+}
 
 type LiquidityProviderAccount struct {
 	exported.Account
 
-	Credit sdk.Coins
+	Credit sdk.Coins `json:"credit" yaml:"credit"`
 }
 
 func NewLiquidityProviderAccount(baseAccount exported.Account, credit sdk.Coins) *LiquidityProviderAccount {
