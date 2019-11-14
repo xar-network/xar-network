@@ -114,6 +114,8 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 			// Error if there are no valid prices in the raw pricefeed
 
 			//return types.ErrNoValidPrice(k.codespace)
+			medianPrice = sdk.NewDec(0)
+			expiry = sdk.NewInt(0)
 		} else if l == 1 {
 
 			// Return immediately if there's only one price

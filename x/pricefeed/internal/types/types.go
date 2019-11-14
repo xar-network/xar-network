@@ -37,6 +37,11 @@ func (a Asset) String() string {
 Description: %s`, a.AssetCode, a.Description))
 }
 
+// implement fmt.Stringer
+func (a PendingPriceAsset) String() string {
+	return strings.TrimSpace(fmt.Sprintf(`AssetCode: %s`, a.AssetCode))
+}
+
 // QueryRawPricesResp response to a rawprice query
 type QueryRawPricesResp []string
 
@@ -55,13 +60,18 @@ func (n QueryAssetsResp) String() string {
 
 // Asset struct that represents an asset in the pricefeed
 type Asset struct {
-	AssetCode   string `json:"asset_code"`
+	AssetCode   string `json:"asset_code"` // The nft id or the asset denom
 	Description string `json:"description"`
 }
 
 // Oracle struct that documents which address an oracle is using
 type Oracle struct {
 	OracleAddress string `json:"oracle_address"`
+}
+
+// PendingPriceAsset struct that contains the info about the asset which price is still to be determined
+type PendingPriceAsset struct {
+	AssetCode string `json:"asset_code"`
 }
 
 // CurrentPrice struct that contains the metadata of a current price for a particular asset in the pricefeed module.

@@ -378,6 +378,7 @@ func (app *xarApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.Re
 
 // application update at chain initialization
 func (app *xarApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+	//app.Logger().Error(fmt.Sprintf("%s", req.String()))
 	var genesisState GenesisState
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 	return app.mm.InitGenesis(ctx, genesisState)

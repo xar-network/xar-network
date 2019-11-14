@@ -4,15 +4,19 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+
+	"github.com/xar-network/xar-network/x/pool/internal/keeper"
+	"github.com/xar-network/xar-network/x/pool/internal/types"
 )
 
 // Handle all pool messages.
-func NewHandler(keeper Keeper) sdk.Handler {
+func NewHandler(keeper keeper.Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 		switch msg := msg.(type) {
-		case MsgDepositFund:
+		case types.MsgDepositFund:
 			return handleMsgDepositFund(ctx, keeper, msg)
-		case MsgWithdrawFund:
+		case types.MsgWithdrawFund:
 			return handleMsgWithdrawFund(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized pool msg type: %T", msg)
@@ -22,7 +26,7 @@ func NewHandler(keeper Keeper) sdk.Handler {
 }
 
 // handles the message that allows a user to deposit funds into the pool
-func handleMsgDepositFund(ctx sdk.Context, keeper Keeper, msg MsgDepositFund) sdk.Result {
+func handleMsgDepositFund(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgDepositFund) sdk.Result {
 
 	err := keeper.DepositFundFromAddress(ctx, msg.Sender, msg.Amount)
 	if err != nil {
@@ -33,7 +37,7 @@ func handleMsgDepositFund(ctx sdk.Context, keeper Keeper, msg MsgDepositFund) sd
 }
 
 // handles the message that allows a user to withdraw funds from the pool
-func handleMsgWithdrawFund(ctx sdk.Context, keeper Keeper, msg MsgWithdrawFund) sdk.Result {
+func handleMsgWithdrawFund(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgWithdrawFund) sdk.Result {
 
 	err := keeper.WithdrawFundToAddress(ctx, msg.Amount, msg.Sender)
 	if err != nil {
@@ -44,7 +48,7 @@ func handleMsgWithdrawFund(ctx sdk.Context, keeper Keeper, msg MsgWithdrawFund) 
 }
 
 // EndBlocker distributes the rewards
-func EndBlocker(ctx sdk.Context, k Keeper) sdk.Tags {
+func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {
 
 	// Running in the end blocker ensures that rewards will update at most once per block
 	err := k.DistributeReward(ctx)
@@ -52,5 +56,5 @@ func EndBlocker(ctx sdk.Context, k Keeper) sdk.Tags {
 		panic(err)
 	}
 
-	return sdk.Tags{}
+	return []abci.ValidatorUpdate{}
 }

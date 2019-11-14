@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -11,6 +12,22 @@ import (
 	"github.com/xar-network/xar-network/x/pool/internal/types"
 )
 
+func GetTxCmd(cdc *codec.Codec) *cobra.Command {
+	cmds := &cobra.Command{
+		Use:                "pool",
+		Short:              "Pool transactions subcommands",
+		DisableFlagParsing: false,
+		RunE:               client.ValidateCmd,
+	}
+
+	cmds.AddCommand(client.PostCommands(
+		GetCmdGetFunds(types.StoreKey, cdc),
+		GetCmdGetAllFunds(types.StoreKey, cdc),
+	)...)
+
+	cmds = client.PostCommands(cmds)[0]
+	return cmds
+}
 func GetCmdGetFunds(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "get-funds [address]",
@@ -33,7 +50,7 @@ func GetCmdGetFunds(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			res, err := cliCtx.QueryWithData(
+			res, _, err := cliCtx.QueryWithData(
 				fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryReadFunds),
 				bz,
 			)
@@ -56,7 +73,7 @@ func GetCmdGetAllFunds(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryTotalFunds), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryTotalFunds), nil)
 			if err != nil {
 				return err
 			}

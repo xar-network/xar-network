@@ -22,14 +22,10 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 	}
 }
 
-type QueryFundsParams struct {
-	Owner sdk.AccAddress
-}
-
 // queryGetFunds fetched the funds for a specific owner
 func queryGetFunds(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, sdk.Error) {
 	// Decode request
-	var requestParams QueryFundsParams
+	var requestParams types.QueryFundsParams
 	err := keeper.cdc.UnmarshalJSON(req.Data, &requestParams)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
