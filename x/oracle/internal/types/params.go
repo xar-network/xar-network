@@ -14,11 +14,11 @@ func ParamKeyTable() params.KeyTable {
 
 /*
 Keys:								Values:
-pricefeed						N/A (top level prefix)
-pricefeed:raw:x 		[]PostedPrice{AssetCode: string, OracleAddress: string, Price: sdk.Dec, Expiry: sdk.Int}
-pricefeed:current:x CurrentPrice{AssetCode: string, Price: sdk.Dec, Expiry: sdk.Int}
-pricefeed:oracles:x []Oracle{OracleAddress: string}
-pricefeed:assets 		[]Asset{AssetCode:string, Description: string}
+oracle						N/A (top level prefix)
+oracle:raw:x 		[]PostedPrice{AssetCode: string, OracleAddress: string, Price: sdk.Dec, Expiry: sdk.Int}
+oracle:current:x CurrentPrice{AssetCode: string, Price: sdk.Dec, Expiry: sdk.Int}
+oracle:oracles:x []Oracle{OracleAddress: string}
+oracle:assets 		[]Asset{AssetCode:string, Description: string}
 
 To update the price for a particular oracle after they have made a MsgPostPrice transaction:
 prices := keeper.GetPrices(AssetCode)

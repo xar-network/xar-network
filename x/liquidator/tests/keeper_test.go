@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/xar-network/xar-network/x/csdt"
-	"github.com/xar-network/xar-network/x/pricefeed"
+	"github.com/xar-network/xar-network/x/oracle"
 )
 
 func TestKeeper_SeizeAndStartCollateralAuction(t *testing.T) {
@@ -19,15 +19,15 @@ func TestKeeper_SeizeAndStartCollateralAuction(t *testing.T) {
 
 	csdt.InitGenesis(ctx, k.csdtKeeper, csdt.DefaultGenesisState())
 	InitGenesis(ctx, k.liquidatorKeeper, DefaultGenesisState())
-	pricefeed.InitGenesis(ctx, k.pricefeedKeeper, pricefeed.GenesisState{Assets: []pricefeed.Asset{{"btc", "a description"}}})
-	k.pricefeedKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("8000.00"), i(999999999))
-	k.pricefeedKeeper.SetCurrentPrices(ctx)
+	oracle.InitGenesis(ctx, k.oracleKeeper, oracle.GenesisState{Assets: []oracle.Asset{{"btc", "a description"}}})
+	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("8000.00"), i(999999999))
+	k.oracleKeeper.SetCurrentPrices(ctx)
 	k.bankKeeper.AddCoins(ctx, addrs[0], cs(c("btc", 100)))
 
 	k.csdtKeeper.ModifyCSDT(ctx, addrs[0], "btc", i(3), i(16000))
 
-	k.pricefeedKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("7999.99"), i(999999999))
-	k.pricefeedKeeper.SetCurrentPrices(ctx)
+	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("7999.99"), i(999999999))
+	k.oracleKeeper.SetCurrentPrices(ctx)
 
 	// Run test function
 	auctionID, err := k.liquidatorKeeper.SeizeAndStartCollateralAuction(ctx, addrs[0], "btc")
@@ -98,15 +98,15 @@ func TestKeeper_partialSeizeCSDT(t *testing.T) {
 
 	csdt.InitGenesis(ctx, k.csdtKeeper, csdt.DefaultGenesisState())
 	InitGenesis(ctx, k.liquidatorKeeper, DefaultGenesisState())
-	pricefeed.InitGenesis(ctx, k.pricefeedKeeper, pricefeed.GenesisState{Assets: []pricefeed.Asset{{"btc", "a description"}}})
-	k.pricefeedKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("8000.00"), i(999999999))
-	k.pricefeedKeeper.SetCurrentPrices(ctx)
+	oracle.InitGenesis(ctx, k.oracleKeeper, oracle.GenesisState{Assets: []oracle.Asset{{"btc", "a description"}}})
+	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("8000.00"), i(999999999))
+	k.oracleKeeper.SetCurrentPrices(ctx)
 	k.bankKeeper.AddCoins(ctx, addrs[0], cs(c("btc", 100)))
 
 	k.csdtKeeper.ModifyCSDT(ctx, addrs[0], "btc", i(3), i(16000))
 
-	k.pricefeedKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("7999.99"), i(999999999))
-	k.pricefeedKeeper.SetCurrentPrices(ctx)
+	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("7999.99"), i(999999999))
+	k.oracleKeeper.SetCurrentPrices(ctx)
 
 	// Run test function
 	err := k.liquidatorKeeper.partialSeizeCSDT(ctx, addrs[0], "btc", i(2), i(10000))

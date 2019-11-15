@@ -1,14 +1,8 @@
-/**
-
-Baseline from Kava Cosmos Module
-
-**/
-
-package pricefeed
+package oracle
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/xar-network/xar-network/x/pricefeed/internal/types"
+	"github.com/xar-network/xar-network/x/oracle/internal/types"
 )
 
 // GenesisState state at gensis

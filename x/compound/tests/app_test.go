@@ -15,16 +15,16 @@ func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 	testAddr := addrs[0]
 	testPrivKey := privKeys[0]
 	mock.SetGenesis(mapp, genAccs)
-	// setup pricefeed, TODO can this be shortened a bit?
+	// setup oracle, TODO can this be shortened a bit?
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
-	keeper.pricefeed.AddAsset(ctx, "xrp", "xrp test")
-	keeper.pricefeed.SetPrice(
+	keeper.oracle.AddAsset(ctx, "xrp", "xrp test")
+	keeper.oracle.SetPrice(
 		ctx, sdk.AccAddress{}, "xrp",
 		sdk.MustNewDecFromStr("1.00"),
 		sdk.NewInt(10))
-	keeper.pricefeed.SetCurrentPrices(ctx)
+	keeper.oracle.SetCurrentPrices(ctx)
 	mapp.EndBlock(abci.RequestEndBlock{})
 	mapp.Commit()
 

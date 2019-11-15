@@ -4,12 +4,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/xar-network/xar-network/x/pricefeed/internal/types"
+	"github.com/xar-network/xar-network/x/oracle/internal/types"
 )
 
 // price Takes an [assetcode] and returns CurrentPrice for that asset
-// pricefeed Takes an [assetcode] and returns the raw []PostedPrice for that asset
-// assets Returns []Assets in the pricefeed system
+// oracle Takes an [assetcode] and returns the raw []PostedPrice for that asset
+// assets Returns []Assets in the oracle system
 
 // NewQuerier is the module level router for state queries
 func NewQuerier(keeper Keeper) sdk.Querier {
@@ -22,7 +22,7 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 		case types.QueryAssets:
 			return queryAssets(ctx, req, keeper)
 		default:
-			return nil, sdk.ErrUnknownRequest("unknown pricefeed query endpoint")
+			return nil, sdk.ErrUnknownRequest("unknown oracle query endpoint")
 		}
 	}
 

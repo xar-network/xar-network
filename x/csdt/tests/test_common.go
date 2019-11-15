@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/xar-network/xar-network/x/pricefeed"
+	"github.com/xar-network/xar-network/x/oracle"
 )
 
 // Mock app is an ABCI app with an in memory database.
@@ -27,8 +27,8 @@ func setUpMockAppWithoutGenesis() (*mock.App, Keeper) {
 
 	// Create keepers
 	keyCSDT := sdk.NewKVStoreKey("csdt")
-	keyPriceFeed := sdk.NewKVStoreKey(pricefeed.StoreKey)
-	priceFeedKeeper := pricefeed.NewKeeper(keyPriceFeed, mapp.Cdc, pricefeed.DefaultCodespace)
+	keyPriceFeed := sdk.NewKVStoreKey(oracle.StoreKey)
+	priceFeedKeeper := oracle.NewKeeper(keyPriceFeed, mapp.Cdc, oracle.DefaultCodespace)
 	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace)
 	csdtKeeper := NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace("csdtSubspace"), priceFeedKeeper, bankKeeper)
 

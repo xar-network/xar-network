@@ -1,4 +1,4 @@
-package pricefeed
+package tests
 
 import (
 	"testing"
@@ -22,7 +22,7 @@ type testHelper struct {
 func getMockApp(t *testing.T, numGenAccs int, genState GenesisState, genAccs []auth.Account) testHelper {
 	mApp := mock.NewApp()
 	RegisterCodec(mApp.Cdc)
-	keyPricefeed := sdk.NewKVStoreKey("pricefeed")
+	keyPricefeed := sdk.NewKVStoreKey("oracle")
 	keeper := NewKeeper(keyPricefeed, mApp.Cdc, DefaultCodespace)
 
 	// Register routes

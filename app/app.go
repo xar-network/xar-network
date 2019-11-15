@@ -39,7 +39,7 @@ import (
 	"github.com/xar-network/xar-network/x/auction"
 	"github.com/xar-network/xar-network/x/csdt"
 	"github.com/xar-network/xar-network/x/liquidator"
-	"github.com/xar-network/xar-network/x/pricefeed"
+	"github.com/xar-network/xar-network/x/oracle"
 
 	//Proof of existence
 	"github.com/xar-network/xar-network/x/record"
@@ -76,7 +76,7 @@ var (
 		auction.AppModuleBasic{},
 		csdt.AppModuleBasic{},
 		liquidator.AppModuleBasic{},
-		pricefeed.AppModuleBasic{},
+		oracle.AppModuleBasic{},
 		record.AppModuleBasic{},
 		interest.AppModuleBasic{},
 		liquidityprovider.AppModuleBasic{},
@@ -138,7 +138,7 @@ type xarApp struct {
 	auctionKeeper    auction.Keeper
 	csdtKeeper       csdt.Keeper
 	liquidatorKeeper liquidator.Keeper
-	pricefeedKeeper  pricefeed.Keeper
+	oracleKeeper  oracle.Keeper
 	issueKeeper      issue.Keeper
 	recordKeeper     record.Keeper
 
@@ -172,7 +172,7 @@ func NewXarApp(
 
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
 		supply.StoreKey, mint.StoreKey, distr.StoreKey, slashing.StoreKey,
-		gov.StoreKey, params.StoreKey, issue.StoreKey, pricefeed.StoreKey,
+		gov.StoreKey, params.StoreKey, issue.StoreKey, oracle.StoreKey,
 		auction.StoreKey, csdt.StoreKey, liquidator.StoreKey, nft.StoreKey,
 		interest.StoreKey, authority.StoreKey, issuer.StoreKey,
 		record.StoreKey, uniswap.ModuleName,
@@ -220,9 +220,9 @@ func NewXarApp(
 
 	app.NFTKeeper = nft.NewKeeper(app.cdc, keys[nft.StoreKey])
 	app.issueKeeper = issue.NewKeeper(keys[issue.StoreKey], issueSubspace, app.bankKeeper, issue.DefaultCodespace)
-	app.pricefeedKeeper = pricefeed.NewKeeper(keys[pricefeed.StoreKey], app.cdc, pricefeed.DefaultCodespace)
+	app.oracleKeeper = oracle.NewKeeper(keys[oracle.StoreKey], app.cdc, oracle.DefaultCodespace)
 	app.recordKeeper = record.NewKeeper(app.cdc, keys[record.StoreKey], recordSubspace, record.DefaultCodespace)
-	app.csdtKeeper = csdt.NewKeeper(app.cdc, keys[csdt.StoreKey], csdtSubspace, app.pricefeedKeeper, app.bankKeeper)
+	app.csdtKeeper = csdt.NewKeeper(app.cdc, keys[csdt.StoreKey], csdtSubspace, app.oracleKeeper, app.bankKeeper)
 	app.auctionKeeper = auction.NewKeeper(app.cdc, app.csdtKeeper, keys[auction.StoreKey])
 	app.liquidatorKeeper = liquidator.NewKeeper(app.cdc, keys[liquidator.StoreKey], liquidatorSubspace, app.csdtKeeper, app.auctionKeeper, app.csdtKeeper)
 
@@ -270,7 +270,7 @@ func NewXarApp(
 		auction.NewAppModule(app.auctionKeeper),
 		csdt.NewAppModule(app.csdtKeeper),
 		liquidator.NewAppModule(app.liquidatorKeeper),
-		pricefeed.NewAppModule(app.pricefeedKeeper),
+		oracle.NewAppModule(app.oracleKeeper),
 		record.NewAppModule(app.recordKeeper),
 
 		interest.NewAppModule(app.interestKeeper),
@@ -295,7 +295,7 @@ func NewXarApp(
 		crisis.ModuleName,
 		gov.ModuleName,
 		staking.ModuleName,
-		pricefeed.ModuleName,
+		oracle.ModuleName,
 		authority.ModuleName,
 		interest.ModuleName,
 		issue.ModuleName,
@@ -308,7 +308,7 @@ func NewXarApp(
 		distr.ModuleName, staking.ModuleName, auth.ModuleName, bank.ModuleName,
 		slashing.ModuleName, gov.ModuleName, mint.ModuleName, supply.ModuleName,
 		crisis.ModuleName, issue.ModuleName,
-		auction.ModuleName, csdt.ModuleName, liquidator.ModuleName, pricefeed.ModuleName,
+		auction.ModuleName, csdt.ModuleName, liquidator.ModuleName, oracle.ModuleName,
 		interest.ModuleName, authority.ModuleName, liquidityprovider.ModuleName, issuer.ModuleName,
 		nft.ModuleName, record.ModuleName, uniswap.ModuleName, genutil.ModuleName,
 	)
@@ -339,7 +339,7 @@ func NewXarApp(
 			auction.NewAppModule(app.auctionKeeper),
 			csdt.NewAppModule(app.csdtKeeper),
 			liquidator.NewAppModule(app.liquidatorKeeper),
-			pricefeed.NewAppModule(app.pricefeedKeeper),
+			oracle.NewAppModule(app.oracleKeeper),
 			nft.NewAppModule(app.NFTKeeper),
 
 		*/

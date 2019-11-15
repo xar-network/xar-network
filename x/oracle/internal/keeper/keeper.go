@@ -5,17 +5,17 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/xar-network/xar-network/x/pricefeed/internal/types"
+	"github.com/xar-network/xar-network/x/oracle/internal/types"
 )
 
-// Keeper struct for pricefeed module
+// Keeper struct for oracle module
 type Keeper struct {
 	storeKey  sdk.StoreKey
 	cdc       *codec.Codec
 	codespace sdk.CodespaceType
 }
 
-// NewKeeper returns a new keeper for the pricefeed modle
+// NewKeeper returns a new keeper for the oracle modle
 func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, codespace sdk.CodespaceType) Keeper {
 	return Keeper{
 		storeKey:  storeKey,
@@ -111,7 +111,7 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 		var expiry sdk.Int
 		// TODO make threshold for acceptance (ie. require 51% of oracles to have posted valid prices
 		if l == 0 {
-			// Error if there are no valid prices in the raw pricefeed
+			// Error if there are no valid prices in the raw oracle
 
 			//return types.ErrNoValidPrice(k.codespace)
 			medianPrice = sdk.NewDec(0)
@@ -160,7 +160,7 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 	return nil
 }
 
-// GetOracles returns the oracles in the pricefeed store
+// GetOracles returns the oracles in the oracle store
 func (k Keeper) GetOracles(ctx sdk.Context) []types.Oracle {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get([]byte(types.OraclePrefix))
@@ -169,7 +169,7 @@ func (k Keeper) GetOracles(ctx sdk.Context) []types.Oracle {
 	return oracles
 }
 
-// GetAssets returns the assets in the pricefeed store
+// GetAssets returns the assets in the oracle store
 func (k Keeper) GetAssets(ctx sdk.Context) []types.Asset {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get([]byte(types.AssetPrefix))
@@ -178,7 +178,7 @@ func (k Keeper) GetAssets(ctx sdk.Context) []types.Asset {
 	return assets
 }
 
-// GetAsset returns the asset if it is in the pricefeed system
+// GetAsset returns the asset if it is in the oracle system
 func (k Keeper) GetAsset(ctx sdk.Context, assetCode string) (types.Asset, bool) {
 	assets := k.GetAssets(ctx)
 
@@ -191,7 +191,7 @@ func (k Keeper) GetAsset(ctx sdk.Context, assetCode string) (types.Asset, bool) 
 
 }
 
-// GetOracle returns the oracle address as a string if it is in the pricefeed store
+// GetOracle returns the oracle address as a string if it is in the oracle store
 func (k Keeper) GetOracle(ctx sdk.Context, oracle string) (types.Oracle, bool) {
 	oracles := k.GetOracles(ctx)
 

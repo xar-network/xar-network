@@ -1,10 +1,4 @@
-/**
-
-Baseline from Kava Cosmos Module
-
-**/
-
-package pricefeed
+package oracle
 
 import (
 	"encoding/json"
@@ -14,15 +8,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/xar-network/xar-network/x/pricefeed/client/cli"
-	pricefeedcmd "github.com/xar-network/xar-network/x/pricefeed/client/cli"
-	"github.com/xar-network/xar-network/x/pricefeed/internal/keeper"
+	"github.com/xar-network/xar-network/x/oracle/client/cli"
+	cmd "github.com/xar-network/xar-network/x/oracle/client/cli"
+	"github.com/xar-network/xar-network/x/oracle/internal/keeper"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/xar-network/xar-network/x/pricefeed/client/rest"
+	"github.com/xar-network/xar-network/x/oracle/client/rest"
 )
 
 var (
@@ -73,18 +67,18 @@ func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 // GetQueryCmd returns no root query command for the bank module.
 func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command {
 	// Group nameservice queries under a subcommand
-	pricefeedQueryCmd := &cobra.Command{
-		Use:   "pricefeed",
-		Short: "Querying commands for the pricefeed module",
+	queryCmd := &cobra.Command{
+		Use:   "oracle",
+		Short: "Querying commands for the oracle module",
 	}
 
-	pricefeedQueryCmd.AddCommand(client.GetCommands(
-		pricefeedcmd.GetCmdCurrentPrice(StoreKey, ModuleCdc),
-		pricefeedcmd.GetCmdRawPrices(StoreKey, ModuleCdc),
-		pricefeedcmd.GetCmdAssets(StoreKey, ModuleCdc),
+	queryCmd.AddCommand(client.GetCommands(
+		cmd.GetCmdCurrentPrice(StoreKey, ModuleCdc),
+		cmd.GetCmdRawPrices(StoreKey, ModuleCdc),
+		cmd.GetCmdAssets(StoreKey, ModuleCdc),
 	)...)
 
-	return pricefeedQueryCmd
+	return queryCmd
 }
 
 // AppModule app module type

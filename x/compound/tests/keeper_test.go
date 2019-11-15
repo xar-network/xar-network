@@ -103,12 +103,12 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 			mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 			ctx := mapp.BaseApp.NewContext(false, header)
 			// setup store state
-			keeper.pricefeed.AddAsset(ctx, "xrp", "xrp test")
-			keeper.pricefeed.SetPrice(
+			keeper.oracle.AddAsset(ctx, "xrp", "xrp test")
+			keeper.oracle.SetPrice(
 				ctx, sdk.AccAddress{}, "xrp",
 				sdk.MustNewDecFromStr(tc.price),
 				i(10))
-			keeper.pricefeed.SetCurrentPrices(ctx)
+			keeper.oracle.SetCurrentPrices(ctx)
 			if tc.priorState.CSDT.CollateralDenom != "" { // check if the prior CSDT should be created or not (see if an empty one was specified)
 				keeper.setCSDT(ctx, tc.priorState.CSDT)
 			}
@@ -155,25 +155,25 @@ func TestKeeper_PartialSeizeCSDT(t *testing.T) {
 	genAccs, addrs, _, _ := mock.CreateGenAccounts(1, cs(c(collateral, 100)))
 	testAddr := addrs[0]
 	mock.SetGenesis(mapp, genAccs)
-	// setup pricefeed
+	// setup oracle
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
-	keeper.pricefeed.AddAsset(ctx, collateral, "test description")
-	keeper.pricefeed.SetPrice(
+	keeper.oracle.AddAsset(ctx, collateral, "test description")
+	keeper.oracle.SetPrice(
 		ctx, sdk.AccAddress{}, collateral,
 		sdk.MustNewDecFromStr("1.00"),
 		i(10))
-	keeper.pricefeed.SetCurrentPrices(ctx)
+	keeper.oracle.SetCurrentPrices(ctx)
 	// Create CSDT
 	err := keeper.ModifyCSDT(ctx, testAddr, collateral, i(10), i(5))
 	require.NoError(t, err)
 	// Reduce price
-	keeper.pricefeed.SetPrice(
+	keeper.oracle.SetPrice(
 		ctx, sdk.AccAddress{}, collateral,
 		sdk.MustNewDecFromStr("0.90"),
 		i(10))
-	keeper.pricefeed.SetCurrentPrices(ctx)
+	keeper.oracle.SetCurrentPrices(ctx)
 
 	// Seize entire CSDT
 	err = keeper.PartialSeizeCSDT(ctx, testAddr, collateral, i(10), i(5))

@@ -14,18 +14,18 @@ import (
 // Keeper csdt Keeper
 type Keeper struct {
 	storeKey       sdk.StoreKey
-	pricefeed      pricefeedKeeper
+	oracle      oracleKeeper
 	bank           bankKeeper
 	paramsSubspace params.Subspace
 	cdc            *codec.Codec
 }
 
 // NewKeeper creates a new keeper
-func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace, pricefeed pricefeedKeeper, bank bankKeeper) Keeper {
+func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace, oracle oracleKeeper, bank bankKeeper) Keeper {
 	subspace = subspace.WithKeyTable(types.CreateParamsKeyTable())
 	return Keeper{
 		storeKey:       storeKey,
-		pricefeed:      pricefeed,
+		oracle:      oracle,
 		bank:           bank,
 		paramsSubspace: subspace,
 		cdc:            cdc,
@@ -74,7 +74,7 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 		return sdk.ErrInternal("can't pay back more debt than exists in CSDT")
 	}
 	isUnderCollateralized := csdt.IsUnderCollateralized(
-		k.pricefeed.GetCurrentPrice(ctx, csdt.CollateralDenom).Price,
+		k.oracle.GetCurrentPrice(ctx, csdt.CollateralDenom).Price,
 		p.GetCollateralParams(csdt.CollateralDenom).LiquidationRatio,
 	)
 	if isUnderCollateralized {
@@ -156,7 +156,7 @@ func (k Keeper) PartialSeizeCSDT(ctx sdk.Context, owner sdk.AccAddress, collater
 	// Check if CSDT is undercollateralized
 	p := k.GetParams(ctx)
 	isUnderCollateralized := csdt.IsUnderCollateralized(
-		k.pricefeed.GetCurrentPrice(ctx, csdt.CollateralDenom).Price,
+		k.oracle.GetCurrentPrice(ctx, csdt.CollateralDenom).Price,
 		p.GetCollateralParams(csdt.CollateralDenom).LiquidationRatio,
 	)
 	if !isUnderCollateralized {

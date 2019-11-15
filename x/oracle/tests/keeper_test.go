@@ -1,4 +1,4 @@
-package pricefeed
+package tests
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-// TestKeeper_SetGetAsset tests adding assets to the pricefeed, getting assets from the store
+// TestKeeper_SetGetAsset tests adding assets to the oracle, getting assets from the store
 func TestKeeper_SetGetAsset(t *testing.T) {
 	helper := getMockApp(t, 0, GenesisState{}, nil)
 	header := abci.Header{Height: helper.mApp.LastBlockHeight() + 1}

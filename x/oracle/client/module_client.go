@@ -4,7 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/spf13/cobra"
 	amino "github.com/tendermint/go-amino"
-	pricefeedcmd "github.com/xar-network/xar-network/x/pricefeed/client/cli"
+	cmd "github.com/xar-network/xar-network/x/oracle/client/cli"
 )
 
 // ModuleClient exports all client functionality from this module
@@ -21,30 +21,30 @@ func NewModuleClient(storeKey string, cdc *amino.Codec) ModuleClient {
 // GetQueryCmd returns the cli query commands for this module
 func (mc ModuleClient) GetQueryCmd() *cobra.Command {
 	// Group nameservice queries under a subcommand
-	pricefeedQueryCmd := &cobra.Command{
-		Use:   "pricefeed",
-		Short: "Querying commands for the pricefeed module",
+	queryCmd := &cobra.Command{
+		Use:   "oracle",
+		Short: "Querying commands for the oracle module",
 	}
 
-	pricefeedQueryCmd.AddCommand(client.GetCommands(
-		pricefeedcmd.GetCmdCurrentPrice(mc.storeKey, mc.cdc),
-		pricefeedcmd.GetCmdRawPrices(mc.storeKey, mc.cdc),
-		pricefeedcmd.GetCmdAssets(mc.storeKey, mc.cdc),
+	queryCmd.AddCommand(client.GetCommands(
+		cmd.GetCmdCurrentPrice(mc.storeKey, mc.cdc),
+		cmd.GetCmdRawPrices(mc.storeKey, mc.cdc),
+		cmd.GetCmdAssets(mc.storeKey, mc.cdc),
 	)...)
 
-	return pricefeedQueryCmd
+	return queryCmd
 }
 
 // GetTxCmd returns the transaction commands for this module
 func (mc ModuleClient) GetTxCmd() *cobra.Command {
-	pricefeedTxCmd := &cobra.Command{
-		Use:   "pricefeed",
-		Short: "Pricefeed transactions subcommands",
+	txCmd := &cobra.Command{
+		Use:   "oracle",
+		Short: "Oracle transactions subcommands",
 	}
 
-	pricefeedTxCmd.AddCommand(client.PostCommands(
-		pricefeedcmd.GetCmdPostPrice(mc.cdc),
+	txCmd.AddCommand(client.PostCommands(
+		cmd.GetCmdPostPrice(mc.cdc),
 	)...)
 
-	return pricefeedTxCmd
+	return txCmd
 }

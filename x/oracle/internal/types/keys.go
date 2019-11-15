@@ -2,7 +2,7 @@ package types
 
 const (
 	// ModuleKey is the name of the module
-	ModuleName = "pricefeed"
+	ModuleName = "oracle"
 
 	// StoreKey is the store key string for gov
 	StoreKey = ModuleName
@@ -16,13 +16,13 @@ const (
 	// Parameter store default namestore
 	DefaultParamspace = ModuleName
 
-	// Store prefix for the raw pricefeed of an asset
+	// Store prefix for the raw oracle of an asset
 	RawPriceFeedPrefix = StoreKey + ":raw:"
 
 	// Store prefix for the current price of an asset
 	CurrentPricePrefix = StoreKey + ":currentprice:"
 
-	// Store Prefix for the assets in the pricefeed system
+	// Store Prefix for the assets in the oracle system
 	AssetPrefix = StoreKey + ":assets"
 
 	// OraclePrefix store prefix for the oracle accounts

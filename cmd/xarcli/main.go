@@ -24,8 +24,8 @@ import (
 	csdtrest "github.com/xar-network/xar-network/x/csdt/client/rest"
 	issuerest "github.com/xar-network/xar-network/x/issue/client/rest"
 	liquidatorrest "github.com/xar-network/xar-network/x/liquidator/client/rest"
-	"github.com/xar-network/xar-network/x/pricefeed"
-	pricerest "github.com/xar-network/xar-network/x/pricefeed/client/rest"
+	"github.com/xar-network/xar-network/x/oracle"
+	oraclerest "github.com/xar-network/xar-network/x/oracle/client/rest"
 	recordrest "github.com/xar-network/xar-network/x/record/client/rest"
 
 	"github.com/spf13/cobra"
@@ -158,7 +158,7 @@ func registerRoutes(rs *lcd.RestServer) {
 
 	issuerest.RegisterRoutes(rs.CliCtx, rs.Mux)
 	nftrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec, nft.StoreKey)
-	pricerest.RegisterRoutes(rs.CliCtx, rs.Mux, pricefeed.StoreKey)
+	oraclerest.RegisterRoutes(rs.CliCtx, rs.Mux, oracle.StoreKey)
 	auctionrest.RegisterRoutes(rs.CliCtx, rs.Mux)
 	csdtrest.RegisterRoutes(rs.CliCtx, rs.Mux)
 	liquidatorrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec)

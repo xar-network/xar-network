@@ -2,7 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/xar-network/xar-network/x/pricefeed"
+	"github.com/xar-network/xar-network/x/oracle"
 )
 
 type bankKeeper interface {
@@ -12,10 +12,10 @@ type bankKeeper interface {
 	SubtractCoins(sdk.Context, sdk.AccAddress, sdk.Coins) (sdk.Coins, sdk.Error)
 }
 
-type pricefeedKeeper interface {
-	GetCurrentPrice(sdk.Context, string) pricefeed.CurrentPrice
+type oracleKeeper interface {
+	GetCurrentPrice(sdk.Context, string) oracle.CurrentPrice
 	// These are used for testing TODO replace mockApp with keeper in tests to remove these
 	AddAsset(sdk.Context, string, string)
-	SetPrice(sdk.Context, sdk.AccAddress, string, sdk.Dec, sdk.Int) (pricefeed.PostedPrice, sdk.Error)
+	SetPrice(sdk.Context, sdk.AccAddress, string, sdk.Dec, sdk.Int) (oracle.PostedPrice, sdk.Error)
 	SetCurrentPrices(sdk.Context) sdk.Error
 }

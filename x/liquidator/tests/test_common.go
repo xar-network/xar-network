@@ -13,7 +13,7 @@ import (
 
 	"github.com/xar-network/xar-network/x/auction"
 	"github.com/xar-network/xar-network/x/csdt"
-	"github.com/xar-network/xar-network/x/pricefeed"
+	"github.com/xar-network/xar-network/x/oracle"
 )
 
 // Avoid cluttering test cases with long function name
@@ -25,7 +25,7 @@ type keepers struct {
 	paramsKeeper     params.Keeper
 	accountKeeper    auth.AccountKeeper
 	bankKeeper       bank.Keeper
-	pricefeedKeeper  pricefeed.Keeper
+	oracleKeeper  oracle.Keeper
 	auctionKeeper    auction.Keeper
 	csdtKeeper        csdt.Keeper
 	liquidatorKeeper Keeper
@@ -37,7 +37,7 @@ func setupTestKeepers() (sdk.Context, keepers) {
 	keyParams := sdk.NewKVStoreKey(params.StoreKey)
 	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-	keyPriceFeed := sdk.NewKVStoreKey(pricefeed.StoreKey)
+	keyPriceFeed := sdk.NewKVStoreKey(oracle.StoreKey)
 	keyCSDT := sdk.NewKVStoreKey("csdt")
 	keyAuction := sdk.NewKVStoreKey("auction")
 	keyLiquidator := sdk.NewKVStoreKey("liquidator")
@@ -72,12 +72,12 @@ func setupTestKeepers() (sdk.Context, keepers) {
 		paramsKeeper.Subspace(bank.DefaultParamspace),
 		bank.DefaultCodespace,
 	)
-	pricefeedKeeper := pricefeed.NewKeeper(keyPriceFeed, cdc, pricefeed.DefaultCodespace)
+	oracleKeeper := oracle.NewKeeper(keyPriceFeed, cdc, oracle.DefaultCodespace)
 	csdtKeeper := csdt.NewKeeper(
 		cdc,
 		keyCSDT,
 		paramsKeeper.Subspace("csdtSubspace"),
-		pricefeedKeeper,
+		oracleKeeper,
 		bankKeeper,
 	)
 	auctionKeeper := auction.NewKeeper(cdc, csdtKeeper, keyAuction) // Note: csdt keeper stands in for bank keeper
@@ -97,7 +97,7 @@ func setupTestKeepers() (sdk.Context, keepers) {
 		paramsKeeper,
 		accountKeeper,
 		bankKeeper,
-		pricefeedKeeper,
+		oracleKeeper,
 		auctionKeeper,
 		csdtKeeper,
 		liquidatorKeeper,
@@ -108,7 +108,7 @@ func makeTestCodec() *codec.Codec {
 	var cdc = codec.New()
 	auth.RegisterCodec(cdc)
 	bank.RegisterCodec(cdc)
-	pricefeed.RegisterCodec(cdc)
+	oracle.RegisterCodec(cdc)
 	auction.RegisterCodec(cdc)
 	csdt.RegisterCodec(cdc)
 	RegisterCodec(cdc)

@@ -10,7 +10,7 @@ const (
 )
 
 // MsgPostPrice struct representing a posted price message.
-// Used by oracles to input prices to the pricefeed
+// Used by oracles to input prices to the oracle
 type MsgPostPrice struct {
 	From      sdk.AccAddress // client that sent in this address
 	AssetCode string         // asset code used by exchanges/api

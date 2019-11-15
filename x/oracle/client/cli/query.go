@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
-	"github.com/xar-network/xar-network/x/pricefeed/internal/types"
+	"github.com/xar-network/xar-network/x/oracle/internal/types"
 )
 
 // GetCmdCurrentPrice queries the current price of an asset
@@ -52,11 +52,11 @@ func GetCmdRawPrices(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-// GetCmdAssets queries list of assets in the pricefeed
+// GetCmdAssets queries list of assets in the oracle
 func GetCmdAssets(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "assets",
-		Short: "get the assets in the pricefeed",
+		Short: "get the assets in the oracle",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/assets", queryRoute), nil)

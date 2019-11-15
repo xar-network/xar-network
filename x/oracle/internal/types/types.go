@@ -58,7 +58,7 @@ func (n QueryAssetsResp) String() string {
 	return strings.Join(n[:], "\n")
 }
 
-// Asset struct that represents an asset in the pricefeed
+// Asset struct that represents an asset in the oracle
 type Asset struct {
 	AssetCode   string `json:"asset_code"` // The nft id or the asset denom
 	Description string `json:"description"`
@@ -74,7 +74,7 @@ type PendingPriceAsset struct {
 	AssetCode string `json:"asset_code"`
 }
 
-// CurrentPrice struct that contains the metadata of a current price for a particular asset in the pricefeed module.
+// CurrentPrice struct that contains the metadata of a current price for a particular asset in the oracle module.
 type CurrentPrice struct {
 	AssetCode string  `json:"asset_code"`
 	Price     sdk.Dec `json:"price"`
