@@ -14,7 +14,7 @@ import (
 // Keeper csdt Keeper
 type Keeper struct {
 	storeKey       sdk.StoreKey
-	oracle      oracleKeeper
+	oracle         oracleKeeper
 	bank           bankKeeper
 	paramsSubspace params.Subspace
 	cdc            *codec.Codec
@@ -25,7 +25,7 @@ func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace
 	subspace = subspace.WithKeyTable(types.CreateParamsKeyTable())
 	return Keeper{
 		storeKey:       storeKey,
-		oracle:      oracle,
+		oracle:         oracle,
 		bank:           bank,
 		paramsSubspace: subspace,
 		cdc:            cdc,
@@ -289,8 +289,8 @@ func (k Keeper) deleteCSDT(ctx sdk.Context, csdt types.CSDT) { // TODO should th
 // `price` filters for CSDTs that will be below the liquidation ratio when the collateral is at that specified price.
 func (k Keeper) GetCSDTs(ctx sdk.Context, collateralDenom string, price sdk.Dec) (types.CSDTs, sdk.Error) {
 	// Validate inputs
-	params := k.GetParams(ctx)
-	if len(collateralDenom) != 0 && !params.IsCollateralPresent(collateralDenom) {
+	p := k.GetParams(ctx)
+	if len(collateralDenom) != 0 && !p.IsCollateralPresent(collateralDenom) {
 		return nil, sdk.ErrInternal("collateral denom not authorized")
 	}
 	if len(collateralDenom) == 0 && !(price.IsNil() || price.IsNegative()) {
@@ -317,7 +317,7 @@ func (k Keeper) GetCSDTs(ctx sdk.Context, collateralDenom string, price sdk.Dec)
 	if !price.IsNil() && !price.IsNegative() {
 		var filteredCSDTs types.CSDTs
 		for _, csdt := range csdts {
-			if csdt.IsUnderCollateralized(price, params.GetCollateralParams(collateralDenom).LiquidationRatio) {
+			if csdt.IsUnderCollateralized(price, p.GetCollateralParams(collateralDenom).LiquidationRatio) {
 				filteredCSDTs = append(filteredCSDTs, csdt)
 			} else {
 				break // break early because list is sorted
@@ -510,4 +510,9 @@ func stripGovCoin(coins sdk.Coins) sdk.Coins {
 		}
 	}
 	return filteredCoins
+}
+
+// GetOracle allows testing
+func (k Keeper) GetOracle() oracleKeeper {
+	return k.oracle
 }
