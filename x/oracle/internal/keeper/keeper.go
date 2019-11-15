@@ -112,7 +112,6 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 		// TODO make threshold for acceptance (ie. require 51% of oracles to have posted valid prices
 		if l == 0 {
 			// Error if there are no valid prices in the raw oracle
-
 			//return types.ErrNoValidPrice(k.codespace)
 			medianPrice = sdk.NewDec(0)
 			expiry = sdk.NewInt(0)
@@ -149,16 +148,16 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 		oldPrice := k.GetCurrentPrice(ctx, assetCode)
 
 		// Only update if there is a price or expiry change, no need to update after every block
-		if !oldPrice.Price.Equal(medianPrice) || !oldPrice.Expiry.Equal(expiry) {
+		if oldPrice.AssetCode == "" || !oldPrice.Price.Equal(medianPrice) || !oldPrice.Expiry.Equal(expiry) {
 
-			currentPrice := types.CurrentPrice{
+			newPrice := types.CurrentPrice{
 				AssetCode: assetCode,
 				Price:     medianPrice,
 				Expiry:    expiry,
 			}
 
 			store.Set(
-				[]byte(types.CurrentPricePrefix+assetCode), k.cdc.MustMarshalBinaryBare(currentPrice),
+				[]byte(types.CurrentPricePrefix+assetCode), k.cdc.MustMarshalBinaryBare(newPrice),
 			)
 		}
 	}
