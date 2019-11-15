@@ -18,6 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
+	"github.com/cosmos/cosmos-sdk/x/evidence"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/mint"
@@ -56,7 +57,7 @@ var (
 	// default home directories for xard
 	DefaultNodeHome = os.ExpandEnv("$HOME/.xard")
 
-	// The module BasicManager is in charge of setting up basic,
+	// ModuleBasics The module BasicManager is in charge of setting up basic,
 	// non-dependant module elements, such as codec registration
 	// and genesis verification.
 	ModuleBasics = module.NewBasicManager(
@@ -71,6 +72,8 @@ var (
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
+		evidence.AppModuleBasic{},
+
 		issue.AppModuleBasic{},
 		nft.AppModuleBasic{},
 		auction.AppModuleBasic{},
@@ -120,7 +123,7 @@ type xarApp struct {
 
 	// keys to access the substores
 	keys  map[string]*sdk.KVStoreKey
-	tkeys map[string]*sdk.TransientStoreKey
+	tKeys map[string]*sdk.TransientStoreKey
 
 	// keepers
 	accountKeeper  auth.AccountKeeper
@@ -133,6 +136,7 @@ type xarApp struct {
 	govKeeper      gov.Keeper
 	crisisKeeper   crisis.Keeper
 	paramsKeeper   params.Keeper
+	evidenceKeeper *evidence.Keeper
 
 	// app specific keepers
 	auctionKeeper    auction.Keeper
@@ -170,26 +174,27 @@ func NewXarApp(
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetAppVersion(version.Version)
 
-	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
+	keys := sdk.NewKVStoreKeys(
+		bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
 		supply.StoreKey, mint.StoreKey, distr.StoreKey, slashing.StoreKey,
 		gov.StoreKey, params.StoreKey, issue.StoreKey, oracle.StoreKey,
 		auction.StoreKey, csdt.StoreKey, liquidator.StoreKey, nft.StoreKey,
 		interest.StoreKey, authority.StoreKey, issuer.StoreKey,
-		record.StoreKey, uniswap.ModuleName,
+		record.StoreKey, uniswap.ModuleName, evidence.StoreKey,
 	)
 
-	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
+	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
 	app := &xarApp{
 		BaseApp:        bApp,
 		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
 		keys:           keys,
-		tkeys:          tkeys,
+		tKeys:          tKeys,
 	}
 
 	// init params keeper and subspaces
-	app.paramsKeeper = params.NewKeeper(app.cdc, keys[params.StoreKey], tkeys[params.TStoreKey], params.DefaultCodespace)
+	app.paramsKeeper = params.NewKeeper(app.cdc, keys[params.StoreKey], tKeys[params.TStoreKey], params.DefaultCodespace)
 	authSubspace := app.paramsKeeper.Subspace(auth.DefaultParamspace)
 	bankSubspace := app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	stakingSubspace := app.paramsKeeper.Subspace(staking.DefaultParamspace)
@@ -198,6 +203,7 @@ func NewXarApp(
 	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
+	evidenceSubspace := app.paramsKeeper.Subspace(evidence.DefaultParamspace)
 
 	issueSubspace := app.paramsKeeper.Subspace(issue.DefaultParamspace)
 	csdtSubspace := app.paramsKeeper.Subspace(csdt.DefaultParamspace)
@@ -232,7 +238,13 @@ func NewXarApp(
 	app.authorityKeeper = authority.NewKeeper(keys[authority.StoreKey], app.issuerKeeper, app.oracleKeeper)
 
 	app.uniswapKeeper = uniswap.NewKeeper(app.cdc, keys[uniswap.ModuleName], uniswapSubspace)
-
+	// create evidence keeper with evidence router
+	app.evidenceKeeper = evidence.NewKeeper(
+		app.cdc, keys[evidence.StoreKey], evidenceSubspace, evidence.DefaultCodespace,
+	)
+	evidenceRouter := evidence.NewRouter()
+	// TODO: Register evidence routes.
+	app.evidenceKeeper.SetRouter(evidenceRouter)
 	// register the proposal types
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
@@ -264,6 +276,7 @@ func NewXarApp(
 		mint.NewAppModule(app.mintKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
+		evidence.NewAppModule(*app.evidenceKeeper),
 
 		nft.NewAppModule(app.NFTKeeper),
 		issue.NewAppModule(app.issueKeeper, app.accountKeeper),
@@ -311,6 +324,7 @@ func NewXarApp(
 		auction.ModuleName, csdt.ModuleName, liquidator.ModuleName, oracle.ModuleName,
 		interest.ModuleName, authority.ModuleName, liquidityprovider.ModuleName, issuer.ModuleName,
 		nft.ModuleName, record.ModuleName, uniswap.ModuleName, genutil.ModuleName,
+		evidence.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.crisisKeeper)
@@ -349,7 +363,7 @@ func NewXarApp(
 
 	// initialize stores
 	app.MountKVStores(keys)
-	app.MountTransientStores(tkeys)
+	app.MountTransientStores(tKeys)
 
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)

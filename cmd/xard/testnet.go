@@ -113,6 +113,7 @@ func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 	xarConfig := srvconfig.DefaultConfig()
 	xarConfig.MinGasPrices = minGasPrices
 
+	//nolint:prealloc
 	var (
 		genAccounts []authexported.GenesisAccount
 		genFiles    []string
@@ -173,7 +174,12 @@ func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 			keyPass = client.DefaultKeyPass
 		}
 
-		addr, secret, err := server.GenerateSaveCoinKey(clientDir, nodeDirName, keyPass, true)
+		kb, err := keys.NewKeyBaseFromDir(clientDir)
+		if err != nil {
+			return err
+		}
+
+		addr, secret, err := server.GenerateSaveCoinKey(kb, nodeDirName, keyPass, true)
 		if err != nil {
 			_ = os.RemoveAll(outputDir)
 			return err
@@ -209,13 +215,9 @@ func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 			sdk.OneInt(),
 		)
 
-		kb, err := keys.NewKeyBaseFromDir(clientDir)
-		if err != nil {
-			return err
-		}
-
+		inBuf := bufio.NewReader(cmd.InOrStdin())
 		tx := auth.NewStdTx([]sdk.Msg{msg}, auth.StdFee{}, []auth.StdSignature{}, memo)
-		txBldr := auth.NewTxBuilderFromCLI().WithChainID(chainID).WithMemo(memo).WithKeybase(kb)
+		txBldr := auth.NewTxBuilderFromCLI(inBuf).WithChainID(chainID).WithMemo(memo).WithKeybase(kb)
 
 		signedTx, err := txBldr.SignStdTx(nodeDirName, client.DefaultKeyPass, tx, false)
 		if err != nil {

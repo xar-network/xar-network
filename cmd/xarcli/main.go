@@ -19,11 +19,11 @@ import (
 
 	"github.com/xar-network/xar-network/x/nft"
 
-	nftrest "github.com/xar-network/xar-network/x/nft/client/rest"
 	auctionrest "github.com/xar-network/xar-network/x/auction/client/rest"
 	csdtrest "github.com/xar-network/xar-network/x/csdt/client/rest"
 	issuerest "github.com/xar-network/xar-network/x/issue/client/rest"
 	liquidatorrest "github.com/xar-network/xar-network/x/liquidator/client/rest"
+	nftrest "github.com/xar-network/xar-network/x/nft/client/rest"
 	"github.com/xar-network/xar-network/x/oracle"
 	oraclerest "github.com/xar-network/xar-network/x/oracle/client/rest"
 	recordrest "github.com/xar-network/xar-network/x/record/client/rest"
