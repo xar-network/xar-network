@@ -165,7 +165,7 @@ func (k Keeper) DistributeReward(ctx sdk.Context) error {
 			// update only the same coins, not others
 			if fund.Denom == fundCoin.Denom {
 
-				// compute the divided
+				// compute the dividend
 				dividend := fund.Amount.Quo(fundCoin.Amount)
 
 				// add it to the fund

@@ -146,15 +146,21 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 		}
 
 		store := ctx.KVStore(k.storeKey)
-		currentPrice := types.CurrentPrice{
-			AssetCode: assetCode,
-			Price:     medianPrice,
-			Expiry:    expiry,
-		}
+		oldPrice := k.GetCurrentPrice(ctx, assetCode)
 
-		store.Set(
-			[]byte(types.CurrentPricePrefix+assetCode), k.cdc.MustMarshalBinaryBare(currentPrice),
-		)
+		// Only update if there is a price or expiry change, no need to update after every block
+		if !oldPrice.Price.Equal(medianPrice) || !oldPrice.Expiry.Equal(expiry) {
+
+			currentPrice := types.CurrentPrice{
+				AssetCode: assetCode,
+				Price:     medianPrice,
+				Expiry:    expiry,
+			}
+
+			store.Set(
+				[]byte(types.CurrentPricePrefix+assetCode), k.cdc.MustMarshalBinaryBare(currentPrice),
+			)
+		}
 	}
 
 	return nil

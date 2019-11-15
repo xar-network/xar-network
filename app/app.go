@@ -312,7 +312,6 @@ func NewXarApp(
 		authority.ModuleName,
 		interest.ModuleName,
 		issue.ModuleName,
-		authority.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
