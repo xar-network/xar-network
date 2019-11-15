@@ -5,9 +5,12 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/xar-network/xar-network/x/csdt/internal/keeper"
+	"github.com/xar-network/xar-network/x/csdt/internal/types"
 )
 
 // Test the bank functionality of the CSDT keeper
@@ -22,37 +25,37 @@ func TestKeeper_AddSubtractGetCoins(t *testing.T) {
 		amount        sdk.Coins
 		expectedCoins sdk.Coins
 	}{
-		{"addNormalAddress", normalAddr, true, cs(c(StableDenom, 53)), cs(c(StableDenom, 153), c(GovDenom, 100))},
-		{"subNormalAddress", normalAddr, false, cs(c(StableDenom, 53)), cs(c(StableDenom, 47), c(GovDenom, 100))},
-		{"addLiquidatorStable", LiquidatorAccountAddress, true, cs(c(StableDenom, 53)), cs(c(StableDenom, 153))},
-		{"subLiquidatorStable", LiquidatorAccountAddress, false, cs(c(StableDenom, 53)), cs(c(StableDenom, 47))},
-		{"addLiquidatorGov", LiquidatorAccountAddress, true, cs(c(GovDenom, 53)), cs(c(StableDenom, 100))},  // no change to balance
-		{"subLiquidatorGov", LiquidatorAccountAddress, false, cs(c(GovDenom, 53)), cs(c(StableDenom, 100))}, // no change to balance
+		{"addNormalAddress", normalAddr, true, cs(c(types.StableDenom, 53)), cs(c(types.StableDenom, 153), c(types.GovDenom, 100))},
+		{"subNormalAddress", normalAddr, false, cs(c(types.StableDenom, 53)), cs(c(types.StableDenom, 47), c(types.GovDenom, 100))},
+		{"addLiquidatorStable", keeper.LiquidatorAccountAddress, true, cs(c(types.StableDenom, 53)), cs(c(types.StableDenom, 153))},
+		{"subLiquidatorStable", keeper.LiquidatorAccountAddress, false, cs(c(types.StableDenom, 53)), cs(c(types.StableDenom, 47))},
+		{"addLiquidatorGov", keeper.LiquidatorAccountAddress, true, cs(c(types.GovDenom, 53)), cs(c(types.StableDenom, 100))},  // no change to balance
+		{"subLiquidatorGov", keeper.LiquidatorAccountAddress, false, cs(c(types.GovDenom, 53)), cs(c(types.StableDenom, 100))}, // no change to balance
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			// setup keeper
-			mapp, keeper := setUpMockAppWithoutGenesis()
+			// setup k
+			mapp, k := setUpMockAppWithoutGenesis()
 			// initialize an account with coins
 			genAcc := auth.BaseAccount{
 				Address: normalAddr,
-				Coins:   cs(c(StableDenom, 100), c(GovDenom, 100)),
+				Coins:   cs(c(types.StableDenom, 100), c(types.GovDenom, 100)),
 			}
-			mock.SetGenesis(mapp, []auth.Account{&genAcc})
+			mock.SetGenesis(mapp, []exported.Account{&genAcc})
 
 			// create a new context and setup the liquidator account
 			header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 			mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 			ctx := mapp.BaseApp.NewContext(false, header)
-			keeper.setLiquidatorModuleAccount(ctx, LiquidatorModuleAccount{cs(c(StableDenom, 100))}) // set gov coin "balance" to zero
+			k.SetLiquidatorModuleAccount(ctx, keeper.LiquidatorModuleAccount{Coins: cs(c(types.StableDenom, 100))}) // set gov coin "balance" to zero
 
 			// perform the test action
 			var err sdk.Error
 			if tc.shouldAdd {
-				_, err = keeper.AddCoins(ctx, tc.address, tc.amount)
+				_, err = k.AddCoins(ctx, tc.address, tc.amount)
 			} else {
-				_, err = keeper.SubtractCoins(ctx, tc.address, tc.amount)
+				_, err = k.SubtractCoins(ctx, tc.address, tc.amount)
 			}
 
 			mapp.EndBlock(abci.RequestEndBlock{})
@@ -60,7 +63,7 @@ func TestKeeper_AddSubtractGetCoins(t *testing.T) {
 
 			// check balances are as expected
 			require.NoError(t, err)
-			require.Equal(t, tc.expectedCoins, keeper.GetCoins(ctx, tc.address))
+			require.Equal(t, tc.expectedCoins, k.GetCoins(ctx, tc.address))
 		})
 	}
 }

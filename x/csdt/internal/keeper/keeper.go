@@ -436,7 +436,7 @@ func (k Keeper) AddCoins(ctx sdk.Context, address sdk.AccAddress, amount sdk.Coi
 			return amount, sdk.ErrInsufficientCoins(fmt.Sprintf("insufficient account funds; %s < %s", lma.Coins, amount))
 		}
 		lma.Coins = updatedCoins
-		k.setLiquidatorModuleAccount(ctx, lma)
+		k.SetLiquidatorModuleAccount(ctx, lma)
 		return updatedCoins, nil
 	} else {
 		return k.bank.AddCoins(ctx, address, amount)
@@ -459,7 +459,7 @@ func (k Keeper) SubtractCoins(ctx sdk.Context, address sdk.AccAddress, amount sd
 			return amount, sdk.ErrInsufficientCoins(fmt.Sprintf("insufficient account funds; %s < %s", lma.Coins, amount))
 		}
 		lma.Coins = updatedCoins
-		k.setLiquidatorModuleAccount(ctx, lma)
+		k.SetLiquidatorModuleAccount(ctx, lma)
 		return updatedCoins, nil
 	} else {
 		return k.bank.SubtractCoins(ctx, address, amount)
@@ -497,7 +497,7 @@ func (k Keeper) getLiquidatorModuleAccount(ctx sdk.Context) LiquidatorModuleAcco
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &lma)
 	return lma
 }
-func (k Keeper) setLiquidatorModuleAccount(ctx sdk.Context, lma LiquidatorModuleAccount) {
+func (k Keeper) SetLiquidatorModuleAccount(ctx sdk.Context, lma LiquidatorModuleAccount) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(lma)
 	store.Set(liquidatorAccountKey, bz)
