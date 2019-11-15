@@ -6,6 +6,7 @@ var ModuleCdc *codec.Codec
 
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgCreateIssuer{}, "authority/MsgCreateIssuer", nil)
+	cdc.RegisterConcrete(MsgCreateOracle{}, "authority/MsgCreateOracle", nil)
 	cdc.RegisterConcrete(MsgDestroyIssuer{}, "authority/MsgDestroyIssuer", nil)
 }
 

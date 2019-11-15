@@ -52,7 +52,7 @@ func (msg MsgPostPrice) GetSigners() []sdk.AccAddress {
 // ValidateBasic does a simple validation check that doesn't require access to any other information.
 func (msg MsgPostPrice) ValidateBasic() sdk.Error {
 	if msg.From.Empty() {
-		return sdk.ErrInternal("invalid (empty) bidder address")
+		return sdk.ErrInternal("invalid (empty) oracle address")
 	}
 	if len(msg.AssetCode) == 0 {
 		return sdk.ErrInternal("invalid (empty) asset code")
