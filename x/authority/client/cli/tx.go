@@ -68,7 +68,7 @@ func getCmdCreateOracle(cdc *codec.Codec) *cobra.Command {
 		Use:     "create-oracle [authority_key_or_address] [oracle_address]",
 		Example: "xarcli authority create-issuer masterkey xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu",
 		Short:   "Create a new oracle",
-		Args:    cobra.ExactArgs(3),
+		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
