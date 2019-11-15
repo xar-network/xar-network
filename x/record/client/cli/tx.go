@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"bufio"
+
 	"github.com/xar-network/xar-network/x/record/internal/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -48,8 +50,9 @@ func GetCmdRecordCreate(cdc *codec.Codec) *cobra.Command {
 		Long:    "Create a new record",
 		Example: "$ xarcli record create contractAEE321 BC38CAEE32149BEF4CCFAEAB518EC9A5FBC85AE6AC8D5A9F6CD710FAF5E4A2B8 --from live_key",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
 
 			para := types.RecordParams{
 				Name:        args[0],

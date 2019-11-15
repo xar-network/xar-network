@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -62,8 +63,9 @@ func IssueCreateCmd(cdc *codec.Codec) *cobra.Command {
 				return fmt.Errorf("Total supply %s not a valid int, please input a valid total supply", args[2])
 			}
 
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
 
 			coinIssueInfo := types.IssueParams{
 				Name:               args[1],
@@ -111,8 +113,10 @@ func IssueTransferOwnershipCmd(cdc *codec.Codec) *cobra.Command {
 			if err := types.CheckIssueId(issueID); err != nil {
 				return types.Errorf(err)
 			}
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
 
 			to, err := sdk.AccAddressFromBech32(args[2])
 			if err != nil {
@@ -152,8 +156,10 @@ func IssueDescriptionCmd(cdc *codec.Codec) *cobra.Command {
 			if err := types.CheckIssueId(issueID); err != nil {
 				return types.Errorf(err)
 			}
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
 
 			contents, err := ioutil.ReadFile(args[2])
 			if err != nil {
@@ -203,8 +209,10 @@ func IssueMintCmd(cdc *codec.Codec) *cobra.Command {
 			if !ok {
 				return types.Errorf(types.ErrAmountNotValid())
 			}
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
 
 			to, err := sdk.AccAddressFromBech32(args[2])
 			if err != nil {
@@ -265,8 +273,10 @@ func IssueDisableFeatureCmd(cdc *codec.Codec) *cobra.Command {
 			if err := types.CheckIssueId(issueID); err != nil {
 				return types.Errorf(err)
 			}
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
 
 			_, err := types.IssueOwnerCheck(cliCtx, cliCtx.GetFromAddress(), issueID)
 			if err != nil {
@@ -300,7 +310,7 @@ func IssueFreezeCmd(cdc *codec.Codec) *cobra.Command {
 			"$ xarcli issue freeze coin_key out xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
 			"$ xarcli issue freeze coin_key in-out xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return issueFreeze(cdc, args, true)
+			return issueFreeze(cdc, args, true, cmd)
 		},
 	}
 
@@ -322,7 +332,7 @@ func IssueUnFreeCmd(cdc *codec.Codec) *cobra.Command {
 			"$ xarcli issue unfreeze coin_key out xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n\n" +
 			"$ xarcli issue unfreeze coin_key in-out xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return issueFreeze(cdc, args, false)
+			return issueFreeze(cdc, args, false, cmd)
 		},
 	}
 
@@ -330,9 +340,11 @@ func IssueUnFreeCmd(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-func issueFreeze(cdc *codec.Codec, args []string, freeze bool) error {
-	txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-	cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+func issueFreeze(cdc *codec.Codec, args []string, freeze bool, cmd *cobra.Command) error {
+
+	inBuf := bufio.NewReader(cmd.InOrStdin())
+	txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+	cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
 
 	msg, err := rest.GetIssueFreezeMsg(cliCtx, cliCtx.GetFromAddress(), args[1], args[2], args[3], freeze)
 	if err != nil {
@@ -350,7 +362,7 @@ func IssueBurnCmd(cdc *codec.Codec) *cobra.Command {
 		Long:    "Token holder or the Owner burns the token he holds (the Owner can burn if 'burning_owner_disabled' is false, the holder can burn if 'burning_holder_disabled' is false)",
 		Example: "$ xarcli issue burn coin_key xar174876e800 88888",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return issueBurnFrom(cdc, args, types.BurnHolder)
+			return issueBurnFrom(cdc, args, types.BurnHolder, cmd)
 		},
 	}
 
@@ -367,7 +379,7 @@ func IssueBurnFromCmd(cdc *codec.Codec) *cobra.Command {
 		Long:    "Token Owner burns the token from any holder (the Owner can burn if 'burning_any_disabled' is false)",
 		Example: "$ xarcli issue burn-from coin_key xar174876e800 xard15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return issueBurnFrom(cdc, args, types.BurnFrom)
+			return issueBurnFrom(cdc, args, types.BurnFrom, cmd)
 		},
 	}
 
@@ -375,13 +387,14 @@ func IssueBurnFromCmd(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-func issueBurnFrom(cdc *codec.Codec, args []string, burnFromType string) error {
+func issueBurnFrom(cdc *codec.Codec, args []string, burnFromType string, cmd *cobra.Command) error {
 	issueID := args[1]
 	if err := types.CheckIssueId(issueID); err != nil {
 		return types.Errorf(err)
 	}
-	txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-	cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+	inBuf := bufio.NewReader(cmd.InOrStdin())
+	txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+	cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
 
 	amountStr := ""
 	//burn sender
@@ -435,8 +448,9 @@ func IssueSendFromCmd(cdc *codec.Codec) *cobra.Command {
 				return types.Errorf(types.ErrAmountNotValid())
 			}
 
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
 
 			if err := rest.CheckAllowance(cliCtx, issueID, fromAddress, cliCtx.GetFromAddress(), amount); err != nil {
 				return err
@@ -469,7 +483,7 @@ func IssueApproveCmd(cdc *codec.Codec) *cobra.Command {
 		Long:    "Approve the passed address to spend the specified amount of tokens on behalf of sender",
 		Example: "$ xarcli issue approve coin_key xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return issueApprove(cdc, args, types.Approve)
+			return issueApprove(cdc, args, types.Approve, cmd)
 		},
 	}
 
@@ -486,7 +500,7 @@ func IssueIncreaseApprovalCmd(cdc *codec.Codec) *cobra.Command {
 		Long:    "Increase approval to spend the specified amount of tokens on behalf of sender",
 		Example: "$ xarcli issue increase-approval coin_key xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return issueApprove(cdc, args, types.IncreaseApproval)
+			return issueApprove(cdc, args, types.IncreaseApproval, cmd)
 		},
 	}
 
@@ -503,14 +517,14 @@ func IssueDecreaseApprovalCmd(cdc *codec.Codec) *cobra.Command {
 		Long:    "Decrease approval to spend the specified amount of tokens on behalf of sender",
 		Example: "$ xarcli issue decrease-approval coin_key xar174876e800 xar15l5yzrq3ff8fl358ng430cc32lzkvxc30n405n 100",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return issueApprove(cdc, args, types.DecreaseApproval)
+			return issueApprove(cdc, args, types.DecreaseApproval, cmd)
 		},
 	}
 
 	cmd = client.PostCommands(cmd)[0]
 	return cmd
 }
-func issueApprove(cdc *codec.Codec, args []string, approveType string) error {
+func issueApprove(cdc *codec.Codec, args []string, approveType string, cmd *cobra.Command) error {
 	issueID := args[1]
 	accAddress, err := sdk.AccAddressFromBech32(args[2])
 	if err != nil {
@@ -520,8 +534,9 @@ func issueApprove(cdc *codec.Codec, args []string, approveType string) error {
 	if !ok {
 		return types.Errorf(types.ErrAmountNotValid())
 	}
-	txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-	cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+	inBuf := bufio.NewReader(cmd.InOrStdin())
+	txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+	cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
 
 	msg, err := rest.GetIssueApproveMsg(cliCtx, issueID, cliCtx.GetFromAddress(), accAddress, approveType, amount, true)
 	if err != nil {

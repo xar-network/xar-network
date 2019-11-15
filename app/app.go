@@ -27,7 +27,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
-	"github.com/cosmos/modules/incubator/nft"
+	"github.com/xar-network/xar-network/x/nft"
 
 	//Public issuance
 	"github.com/xar-network/xar-network/x/authority"

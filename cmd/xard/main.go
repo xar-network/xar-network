@@ -40,6 +40,7 @@ func main() {
 
 	ctx := server.NewDefaultContext()
 	cobra.EnableCommandSorting = false
+
 	rootCmd := &cobra.Command{
 		Use:               "xard",
 		Short:             "Xar Daemon (server)",

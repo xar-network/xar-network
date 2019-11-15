@@ -17,9 +17,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 
-	"github.com/cosmos/modules/incubator/nft"
+	"github.com/xar-network/xar-network/x/nft"
 
-	nftrest "github.com/cosmos/modules/incubator/nft/client/rest"
+	nftrest "github.com/xar-network/xar-network/x/nft/client/rest"
 	auctionrest "github.com/xar-network/xar-network/x/auction/client/rest"
 	csdtrest "github.com/xar-network/xar-network/x/csdt/client/rest"
 	issuerest "github.com/xar-network/xar-network/x/issue/client/rest"
