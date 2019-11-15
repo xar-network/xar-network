@@ -3,6 +3,7 @@ package keeper
 import (
 	"github.com/xar-network/xar-network/x/authority/internal/types"
 	"github.com/xar-network/xar-network/x/issuer"
+	"github.com/xar-network/xar-network/x/oracle"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -14,11 +15,13 @@ const (
 type Keeper struct {
 	storeKey sdk.StoreKey
 	ik       issuer.Keeper
+	ok       oracle.Keeper
 }
 
-func NewKeeper(storeKey sdk.StoreKey, issuerKeeper issuer.Keeper) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, issuerKeeper issuer.Keeper, oracleKeeper oracle.Keeper) Keeper {
 	return Keeper{
 		ik:       issuerKeeper,
+		ok:       oracleKeeper,
 		storeKey: storeKey,
 	}
 }
@@ -58,6 +61,13 @@ func (k Keeper) DestroyIssuer(ctx sdk.Context, authority sdk.AccAddress, issuerA
 	k.MustBeAuthority(ctx, authority)
 
 	return k.ik.RemoveIssuer(ctx, issuerAddress)
+}
+
+func (k Keeper) CreateOracle(ctx sdk.Context, authority sdk.AccAddress, oracle sdk.AccAddress) sdk.Result {
+	k.MustBeAuthority(ctx, authority)
+
+	k.ok.AddOracle(ctx, oracle.String())
+	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
 func (k Keeper) MustBeAuthority(ctx sdk.Context, address sdk.AccAddress) {

@@ -138,7 +138,7 @@ type xarApp struct {
 	auctionKeeper    auction.Keeper
 	csdtKeeper       csdt.Keeper
 	liquidatorKeeper liquidator.Keeper
-	oracleKeeper  oracle.Keeper
+	oracleKeeper     oracle.Keeper
 	issueKeeper      issue.Keeper
 	recordKeeper     record.Keeper
 
@@ -229,7 +229,7 @@ func NewXarApp(
 	app.interestKeeper = interest.NewKeeper(app.cdc, keys[interest.StoreKey], interestSubspace, app.supplyKeeper, auth.FeeCollectorName)
 	app.lpKeeper = liquidityprovider.NewKeeper(app.accountKeeper, app.supplyKeeper)
 	app.issuerKeeper = issuer.NewKeeper(keys[issuer.StoreKey], app.lpKeeper, app.interestKeeper)
-	app.authorityKeeper = authority.NewKeeper(keys[authority.StoreKey], app.issuerKeeper)
+	app.authorityKeeper = authority.NewKeeper(keys[authority.StoreKey], app.issuerKeeper, app.oracleKeeper)
 
 	app.uniswapKeeper = uniswap.NewKeeper(app.cdc, keys[uniswap.ModuleName], uniswapSubspace)
 

@@ -26,10 +26,12 @@ func newHandler(k Keeper) sdk.Handler {
 		switch msg := msg.(type) {
 		case types.MsgCreateIssuer:
 			return k.CreateIssuer(ctx, msg.Authority, msg.Issuer, msg.Denominations)
+		case types.MsgCreateOracle:
+			return k.CreateOracle(ctx, msg.Authority, msg.Oracle)
 		case types.MsgDestroyIssuer:
 			return k.DestroyIssuer(ctx, msg.Authority, msg.Issuer)
 		default:
-			errMsg := fmt.Sprintf("Unrecognized inflation Msg type: %v", msg.Type())
+			errMsg := fmt.Sprintf("Unrecognized authority Msg type: %v", msg.Type())
 			return sdk.ErrUnknownRequest(errMsg).Result()
 		}
 	}

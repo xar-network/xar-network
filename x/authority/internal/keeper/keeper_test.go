@@ -13,6 +13,7 @@ import (
 	"github.com/xar-network/xar-network/x/authority/internal/types"
 	"github.com/xar-network/xar-network/x/issuer"
 	"github.com/xar-network/xar-network/x/liquidityprovider"
+	"github.com/xar-network/xar-network/x/oracle"
 
 	"github.com/stretchr/testify/require"
 
@@ -120,6 +121,7 @@ func createTestComponents(t *testing.T) (sdk.Context, Keeper, issuer.Keeper) {
 		keyParams    = sdk.NewKVStoreKey(params.StoreKey)
 		keySupply    = sdk.NewKVStoreKey(supply.StoreKey)
 		keyIssuer    = sdk.NewKVStoreKey(issuer.ModuleName)
+		keyOracle    = sdk.NewKVStoreKey(oracle.StoreKey)
 		tkeyParams   = sdk.NewTransientStoreKey(params.TStoreKey)
 	)
 
@@ -135,7 +137,7 @@ func createTestComponents(t *testing.T) (sdk.Context, Keeper, issuer.Keeper) {
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 
-	ctx := sdk.NewContext(ms, abci.Header{ChainID: "supply-chain"}, true, logger)
+	ctx := sdk.NewContext(ms, abci.Header{ChainID: "xar-chain"}, true, logger)
 
 	maccPerms := map[string][]string{
 		types.ModuleName: {supply.Minter},
@@ -147,20 +149,25 @@ func createTestComponents(t *testing.T) (sdk.Context, Keeper, issuer.Keeper) {
 		bk  = bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, make(map[string]bool))
 		sk  = supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
 		lpk = liquidityprovider.NewKeeper(ak, sk)
-		ik  = issuer.NewKeeper(keySupply, lpk, mockInflationKeeper{})
+		ik  = issuer.NewKeeper(keySupply, lpk, mockInterestKeeper{})
+		ok  = oracle.NewKeeper(keyOracle, cdc, oracle.DefaultCodespace)
 	)
 
 	// Empty supply
 	sk.SetSupply(ctx, supply.NewSupply(sdk.NewCoins()))
 
-	keeper := NewKeeper(keyAuthority, ik)
+	keeper := NewKeeper(keyAuthority, ik, ok)
 
 	return ctx, keeper, ik
 }
 
-type mockInflationKeeper struct{}
+type mockInterestKeeper struct{}
 
-func (m mockInflationKeeper) SetInflation(ctx sdk.Context, inflation sdk.Dec, denom string) (_ sdk.Result) {
+func (m mockInterestKeeper) SetInterest(ctx sdk.Context, inflation sdk.Dec, denom string) (_ sdk.Result) {
+	return
+}
+
+func (m mockInterestKeeper) AddDenoms(ctx sdk.Context, denoms []string) (_ sdk.Result) {
 	return
 }
 
