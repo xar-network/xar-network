@@ -126,14 +126,14 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 		panic(err) // this shouldn't happen because coin balance was checked earlier
 	}
 	// Set CSDT
-	if csdt.CollateralAmount.IsZero() && csdt.Debt.IsZero() { // TODO maybe abstract this logic into setCSDT
-		k.deleteCSDT(ctx, csdt)
+	if csdt.CollateralAmount.IsZero() && csdt.Debt.IsZero() { // TODO maybe abstract this logic into SetCSDT
+		k.DeleteCSDT(ctx, csdt)
 	} else {
-		k.setCSDT(ctx, csdt)
+		k.SetCSDT(ctx, csdt)
 	}
 	// set total debts
 	k.SetGlobalDebt(ctx, gDebt)
-	k.setCollateralState(ctx, collateralState)
+	k.SetCollateralState(ctx, collateralState)
 
 	return nil
 }
@@ -195,12 +195,12 @@ func (k Keeper) PartialSeizeCSDT(ctx sdk.Context, owner sdk.AccAddress, collater
 	// TODO update global seized debt? this is what maker does (named vice in Vat.grab) but it's not used anywhere
 
 	// Store updated state
-	if csdt.CollateralAmount.IsZero() && csdt.Debt.IsZero() { // TODO maybe abstract this logic into setCSDT
-		k.deleteCSDT(ctx, csdt)
+	if csdt.CollateralAmount.IsZero() && csdt.Debt.IsZero() { // TODO maybe abstract this logic into SetCSDT
+		k.DeleteCSDT(ctx, csdt)
 	} else {
-		k.setCSDT(ctx, csdt)
+		k.SetCSDT(ctx, csdt)
 	}
-	k.setCollateralState(ctx, collateralState)
+	k.SetCollateralState(ctx, collateralState)
 	return nil
 }
 
@@ -271,14 +271,14 @@ func (k Keeper) GetCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom s
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &csdt)
 	return csdt, true
 }
-func (k Keeper) setCSDT(ctx sdk.Context, csdt types.CSDT) {
+func (k Keeper) SetCSDT(ctx sdk.Context, csdt types.CSDT) {
 	// get store
 	store := ctx.KVStore(k.storeKey)
 	// marshal and set
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(csdt)
 	store.Set(k.getCSDTKey(csdt.Owner, csdt.CollateralDenom), bz)
 }
-func (k Keeper) deleteCSDT(ctx sdk.Context, csdt types.CSDT) { // TODO should this id the csdt by passing in owner,collateralDenom pair?
+func (k Keeper) DeleteCSDT(ctx sdk.Context, csdt types.CSDT) { // TODO should this id the csdt by passing in owner,collateralDenom pair?
 	// get store
 	store := ctx.KVStore(k.storeKey)
 	// delete key
@@ -368,7 +368,7 @@ func (k Keeper) GetCollateralState(ctx sdk.Context, collateralDenom string) (typ
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &collateralState)
 	return collateralState, true
 }
-func (k Keeper) setCollateralState(ctx sdk.Context, collateralstate types.CollateralState) {
+func (k Keeper) SetCollateralState(ctx sdk.Context, collateralstate types.CollateralState) {
 	// get store
 	store := ctx.KVStore(k.storeKey)
 	// marshal and set
