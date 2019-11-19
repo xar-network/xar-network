@@ -8,7 +8,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 )
 
-// Keeper csdt Keeper
 type Keeper struct {
 	fundsStoreKey sdk.StoreKey // key for the keystore that contains the pairs account -> deposited funds
 	bankKeeper    bank.Keeper

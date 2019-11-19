@@ -23,9 +23,9 @@ type Compound struct {
 func NewCompound() Compound {
 	return Compound{
 		InterestRate:     sdk.NewInt(0),
-		TokenSupply:      sdk.Coins{sdk.NewInt64Coin("ftm", 0)},
-		TokenBorrowed:    sdk.Coins{sdk.NewInt64Coin("ftm", 0)},
-		BorrowCollateral: sdk.Coins{sdk.NewInt64Coin("btc", 0)},
+		TokenSupply:      sdk.Coins{sdk.NewInt64Coin("uftm", 0)},
+		TokenBorrowed:    sdk.Coins{sdk.NewInt64Coin("uftm", 0)},
+		BorrowCollateral: sdk.Coins{sdk.NewInt64Coin("ubtc", 0)},
 	}
 }
 
@@ -48,9 +48,9 @@ type CompoundPosition struct {
 // Returns a new CompoundPosition with default rate
 func NewCompoundPosition() CompoundPosition {
 	return CompoundPosition{
-		LendTokens:       sdk.Coins{sdk.NewInt64Coin("ftm", 0)},
-		BorrowTokens:     sdk.Coins{sdk.NewInt64Coin("ftm", 0)},
-		BorrowCollateral: sdk.Coins{sdk.NewInt64Coin("btc", 0)},
+		LendTokens:       sdk.Coins{sdk.NewInt64Coin("uftm", 0)},
+		BorrowTokens:     sdk.Coins{sdk.NewInt64Coin("uftm", 0)},
+		BorrowCollateral: sdk.Coins{sdk.NewInt64Coin("ubtc", 0)},
 	}
 }
 

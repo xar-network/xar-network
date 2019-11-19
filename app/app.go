@@ -44,9 +44,6 @@ import (
 
 	//Proof of existence
 	"github.com/xar-network/xar-network/x/record"
-
-	//uniswap
-	"github.com/xar-network/xar-network/x/uniswap"
 )
 
 const appName = "xar"
@@ -85,7 +82,6 @@ var (
 		liquidityprovider.AppModuleBasic{},
 		issuer.AppModuleBasic{},
 		authority.AppModule{},
-		uniswap.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -153,8 +149,6 @@ type xarApp struct {
 	issuerKeeper    issuer.Keeper
 	authorityKeeper authority.Keeper
 
-	uniswapKeeper uniswap.Keeper
-
 	// the module manager
 	mm *module.Manager
 
@@ -180,7 +174,7 @@ func NewXarApp(
 		gov.StoreKey, params.StoreKey, issue.StoreKey, oracle.StoreKey,
 		auction.StoreKey, csdt.StoreKey, liquidator.StoreKey, nft.StoreKey,
 		interest.StoreKey, authority.StoreKey, issuer.StoreKey,
-		record.StoreKey, uniswap.ModuleName, evidence.StoreKey,
+		record.StoreKey, evidence.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -211,8 +205,6 @@ func NewXarApp(
 	recordSubspace := app.paramsKeeper.Subspace(record.DefaultParamspace)
 	interestSubspace := app.paramsKeeper.Subspace(interest.DefaultParamspace)
 
-	uniswapSubspace := app.paramsKeeper.Subspace(uniswap.DefaultParamSpace)
-
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
 	app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper, bankSubspace, bank.DefaultCodespace, app.ModuleAccountAddrs())
@@ -237,7 +229,6 @@ func NewXarApp(
 	app.issuerKeeper = issuer.NewKeeper(keys[issuer.StoreKey], app.lpKeeper, app.interestKeeper)
 	app.authorityKeeper = authority.NewKeeper(keys[authority.StoreKey], app.issuerKeeper, app.oracleKeeper)
 
-	app.uniswapKeeper = uniswap.NewKeeper(app.cdc, keys[uniswap.ModuleName], uniswapSubspace)
 	// create evidence keeper with evidence router
 	app.evidenceKeeper = evidence.NewKeeper(
 		app.cdc, keys[evidence.StoreKey], evidenceSubspace, evidence.DefaultCodespace,
@@ -290,8 +281,6 @@ func NewXarApp(
 		liquidityprovider.NewAppModule(app.lpKeeper),
 		issuer.NewAppModule(app.issuerKeeper),
 		authority.NewAppModule(app.authorityKeeper),
-
-		uniswap.NewAppModule(app.uniswapKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -322,7 +311,7 @@ func NewXarApp(
 		crisis.ModuleName, issue.ModuleName,
 		auction.ModuleName, csdt.ModuleName, liquidator.ModuleName, oracle.ModuleName,
 		interest.ModuleName, authority.ModuleName, liquidityprovider.ModuleName, issuer.ModuleName,
-		nft.ModuleName, record.ModuleName, uniswap.ModuleName, genutil.ModuleName,
+		nft.ModuleName, record.ModuleName, genutil.ModuleName,
 		evidence.ModuleName,
 	)
 

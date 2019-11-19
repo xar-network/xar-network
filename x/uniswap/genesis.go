@@ -5,54 +5,39 @@ import (
 	"github.com/xar-network/xar-network/x/uniswap/internal/types"
 )
 
-// GenesisState is the bank state that must be provided at genesis.
+// TODO: ...
+
+// GenesisState - coinswap genesis state
 type GenesisState struct {
-	CoinDenom string       `json:"coin_denom"`
-	Pools     []types.Pool `json:"pools`
+	Params types.Params `json:"params"`
 }
 
-// NewGenesisState creates a new genesis state.
-func NewGenesisState(coinDenom string, pools []types.Pool) GenesisState {
+// NewGenesisState is the constructor function for GenesisState
+func NewGenesisState(params types.Params) GenesisState {
 	return GenesisState{
-		CoinDenom: coinDenom,
-		Pools:     pools,
+		Params: params,
 	}
 }
 
-// DefaultGenesisState returns a default genesis state
+// DefaultGenesisState creates a default GenesisState object
 func DefaultGenesisState() GenesisState {
-	return NewGenesisState(
-		"uftm", []types.Pool{
-			types.Pool{
-				BalanceCoin:  sdk.NewCoin("uftm", sdk.NewInt(76)),
-				BalanceToken: sdk.NewCoin("csdt", sdk.NewInt(1)),
-			},
-		},
-	)
+	return NewGenesisState(types.DefaultParams())
 }
 
-// InitGenesis sets distribution information for genesis.
+// InitGenesis new coinswap genesis
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
-	config := types.PoolConfig{
-		CoinDenom: data.CoinDenom,
-	}
 
-	keeper.SetPoolConfig(ctx, config)
-
-	for _, pool := range data.Pools {
-		err := keeper.SetPool(ctx, pool)
-		if err != nil {
-			panic(err.Error())
-		}
-	}
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
 func ExportGenesis(ctx sdk.Context, keeper Keeper) GenesisState {
-	panic("not yet implemented")
-	return GenesisState{}
+	return NewGenesisState(types.DefaultParams())
 }
 
-// ValidateGenesis performs basic validation of bank genesis data returning an
-// error for any failed validation criteria.
-func ValidateGenesis(data GenesisState) error { return nil }
+// ValidateGenesis - placeholder function
+func ValidateGenesis(data GenesisState) error {
+	if err := types.ValidateParams(data.Params); err != nil {
+		return err
+	}
+	return nil
+}

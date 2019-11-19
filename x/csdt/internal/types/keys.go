@@ -16,7 +16,7 @@ const (
 	QueryGetParams = "params"
 
 	// StableDenom asset code of the dollar-denominated debt coin
-	StableDenom = "csdt" // TODO allow to be changed
+	StableDenom = "ucsdt" // TODO allow to be changed
 	// GovDenom asset code of the governance coin
-	GovDenom = "ftm"
+	GovDenom = "uftm"
 )

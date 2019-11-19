@@ -5,17 +5,21 @@ import (
 	"github.com/xar-network/xar-network/x/uniswap/internal/types"
 )
 
-const (
-	ModuleName        = types.ModuleName
-	DefaultParamSpace = types.DefaultParamspace
-	StoreKey          = types.StoreKey
+type (
+	Keeper             = keeper.Keeper
+	MsgSwapOrder       = types.MsgSwapOrder
+	MsgAddLiquidity    = types.MsgAddLiquidity
+	MsgRemoveLiquidity = types.MsgRemoveLiquidity
 )
 
 var (
-	NewKeeper = keeper.NewKeeper
-	ModuleCdc = types.ModuleCdc
+	ErrInvalidDeadline  = types.ErrInvalidDeadline
+	ErrNotPositive      = types.ErrNotPositive
+	ErrConstraintNotMet = types.ErrConstraintNotMet
+	ErrNotSupported     = types.ErrNotSupported
 )
 
-type (
-	Keeper = keeper.Keeper
+const (
+	DefaultCodespace = types.DefaultCodespace
+	ModuleName       = types.ModuleName
 )

@@ -3,19 +3,14 @@ package uniswap
 import (
 	"encoding/json"
 
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/xar-network/xar-network/x/uniswap/client/cli"
-	"github.com/xar-network/xar-network/x/uniswap/internal/types"
-
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/xar-network/xar-network/x/uniswap/client/rest"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 var (
@@ -26,16 +21,14 @@ var (
 // AppModuleBasic app module basics object
 type AppModuleBasic struct{}
 
-var _ module.AppModuleBasic = AppModuleBasic{}
-
-// Name get module name
+// Name defines module name
 func (AppModuleBasic) Name() string {
 	return ModuleName
 }
 
-// RegisterCodec register module codec
+// RegisterCodec registers module codec
 func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
-	types.RegisterCodec(cdc)
+	RegisterCodec(cdc)
 }
 
 // DefaultGenesis default genesis state
@@ -53,68 +46,61 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 	return ValidateGenesis(data)
 }
 
-// RegisterRESTRoutes registers the REST routes for the bank module.
-func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
-	rest.RegisterRoutes(ctx, rtr, ModuleCdc)
+// RegisterRESTRoutes registers rest routes
+func (AppModuleBasic) RegisterRESTRoutes(_ context.CLIContext, _ *mux.Router) {
+
 }
 
-// GetTxCmd returns the root tx command for the bank module.
-func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
-	return cli.GetTxCmd(cdc)
-}
+// GetTxCmd returns the root tx command of this module
+func (AppModuleBasic) GetTxCmd(_ *codec.Codec) *cobra.Command { return nil }
 
-// GetQueryCmd returns no root query command for the bank module.
+// GetQueryCmd returns the root query command of this module
 func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command { return nil }
 
-// AppModule app module type
+// AppModule coinswap app module
 type AppModule struct {
 	AppModuleBasic
 	keeper Keeper
-	bk     bank.Keeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper Keeper) AppModule {
-	return AppModule{
+func NewAppModule(keeper Keeper) module.AppModule {
+	return sdk.NewGenesisOnlyAppModule(AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
-	}
+	})
 }
 
-// Name module name
-func (AppModule) Name() string {
-	return ModuleName
+// RegisterInvariants registers the coinswap module invariants
+func (am AppModule) RegisterInvariants(ir sdk.InvariantRouter) {
+	RegisterInvariants(ir, am.keeper)
 }
-
-// RegisterInvariants register module invariants
-func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
 // Route module message route name
 func (AppModule) Route() string {
-	return ModuleName
+	return RouterKey
 }
 
 // NewHandler module handler
 func (am AppModule) NewHandler() sdk.Handler {
-	return NewHandler(am.keeper, am.bk)
+	return NewHandler(am.keeper)
 }
 
 // QuerierRoute module querier route name
 func (AppModule) QuerierRoute() string {
-	return ModuleName
+	return QuerierRoute
 }
 
 // NewQuerierHandler module querier
 func (am AppModule) NewQuerierHandler() sdk.Querier {
-	return nil
+	return NewQuerier(am.keeper)
 }
 
-// InitGenesis module init-genesis
+// InitGenesis coinswap module init-genesis
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
 	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
 	InitGenesis(ctx, am.keeper, genesisState)
-
 	return []abci.ValidatorUpdate{}
 }
 
@@ -124,11 +110,10 @@ func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 	return ModuleCdc.MustMarshalJSON(gs)
 }
 
-// BeginBlock performs a no-op.
+// BeginBlock module begin-block
 func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
-// EndBlock returns the end blocker for the bank module. It returns no validator
-// updates.
-func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+// EndBlock module end-block
+func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }

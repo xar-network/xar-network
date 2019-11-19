@@ -1,94 +1,72 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/rest"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	swap "github.com/xar-network/xar-network/x/uniswap/internal/types"
-
 	"github.com/gorilla/mux"
+
+	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/cosmos/cosmos-sdk/x/coinswap/internal/types"
 )
 
-func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *codec.Codec) {
-	registerQueryRoutes(cliCtx, r, cdc)
-}
-
-func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *codec.Codec) {
+func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
+	// Get liquidity values stored in the reserve pool for a trading pair
 	r.HandleFunc(
-		"/swap/estimate/{sender}/{asset}/{targetDenom}",
-		swapEstimateHandlerFn(cliCtx, cdc),
+		"/coinswap/liquidity/{non_native_denom}",
+		liquidityHandlerFn(cliCtx),
+	).Methods("GET")
+
+	// Get the current coinswap parameter values
+	r.HandleFunc(
+		"/coinswap/parameters",
+		paramsHandlerFn(cliCtx),
 	).Methods("GET")
 }
 
-func swapEstimateHandlerFn(cliCtx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
+func liquidityHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		assetStr := vars["asset"]
-		asset, err := sdk.ParseCoin(assetStr)
+		nonNativeDenom := vars["non_native_denom"]
+
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		params := types.NewQueryLiquidityParams(nonNativeDenom)
+		bz, err := cliCtx.Codec.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		senderStr := vars["sender"]
-		sender, err := sdk.AccAddressFromBech32(senderStr)
+		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryLiquidity)
+		res, height, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func paramsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
 			return
 		}
 
-		msg := swap.NewMsgSwap(sender, asset, vars["targetDenom"])
-		stdTx := auth.NewStdTx([]sdk.Msg{msg}, auth.StdFee{}, []auth.StdSignature{
-			auth.StdSignature{},
-		}, "")
-		_, err = cdc.MarshalBinaryLengthPrefixed(stdTx)
+		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryParameters)
+		res, height, err := cliCtx.Query(route)
 		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-
-		simulated, _, err := cliCtx.Query("app/simulate")
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
-
-		result := sdk.Result{}
-		err = cdc.UnmarshalBinaryLengthPrefixed(simulated, &result)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
-
-		var res struct {
-			Coin string `json:"coin"`
-		}
-
-		if result.Code != 0 {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, result.Log)
-			return
-		}
-
-		for _, event := range result.Events {
-			if string(event.Type) == "swap" {
-				coin, err := sdk.ParseCoin(string(event.Attributes[0].Value))
-				if err != nil {
-					rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-					return
-				}
-				res.Coin = coin.String()
-			}
-		}
-
-		if res.Coin == "" {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, "Unkwon issue")
-			return
-		}
-
+		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }
