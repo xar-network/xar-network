@@ -6,6 +6,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/xar-network/xar-network/x/csdt"
+	"github.com/xar-network/xar-network/x/csdt/internal/keeper"
+	"github.com/xar-network/xar-network/x/csdt/internal/types"
 	"github.com/xar-network/xar-network/x/oracle"
 )
 
@@ -18,27 +21,27 @@ import (
 //  - DeliverTx delivers a tx
 //  - EndBlock signals the end of a block
 //  - Commit ?
-func setUpMockAppWithoutGenesis() (*mock.App, Keeper) {
+func setUpMockAppWithoutGenesis() (*mock.App, keeper.Keeper) {
 	// Create uninitialized mock app
 	mapp := mock.NewApp()
 
 	// Register codecs
-	RegisterCodec(mapp.Cdc)
+	types.RegisterCodec(mapp.Cdc)
 
 	// Create keepers
 	keyCSDT := sdk.NewKVStoreKey("csdt")
 	keyPriceFeed := sdk.NewKVStoreKey(oracle.StoreKey)
 	priceFeedKeeper := oracle.NewKeeper(keyPriceFeed, mapp.Cdc, oracle.DefaultCodespace)
-	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace)
-	csdtKeeper := NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace("csdtSubspace"), priceFeedKeeper, bankKeeper)
+	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, map[string]bool{})
+	csdtKeeper := keeper.NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace("csdtSubspace"), priceFeedKeeper, bankKeeper)
 
 	// Register routes
-	mapp.Router().AddRoute("csdt", NewHandler(csdtKeeper))
+	mapp.Router().AddRoute("csdt", csdt.NewHandler(csdtKeeper))
 
 	mapp.SetInitChainer(
 		func(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 			res := mapp.InitChainer(ctx, req)
-			InitGenesis(ctx, csdtKeeper, DefaultGenesisState()) // Create a default genesis state, then set the keeper store to it
+			csdt.InitGenesis(ctx, csdtKeeper, csdt.DefaultGenesisState()) // Create a default genesis state, then set the keeper store to it
 			return res
 		},
 	)
