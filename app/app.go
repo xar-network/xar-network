@@ -44,6 +44,20 @@ import (
 
 	//Proof of existence
 	"github.com/xar-network/xar-network/x/record"
+
+	//Matching engine for dex
+
+	"github.com/xar-network/xar-network/embedded/batch"
+	"github.com/xar-network/xar-network/embedded/book"
+	"github.com/xar-network/xar-network/embedded/fill"
+	embeddedorder "github.com/xar-network/xar-network/embedded/order"
+	"github.com/xar-network/xar-network/embedded/price"
+	"github.com/xar-network/xar-network/execution"
+	"github.com/xar-network/xar-network/types"
+	"github.com/xar-network/xar-network/x/market"
+	markettypes "github.com/xar-network/xar-network/x/market/types"
+	"github.com/xar-network/xar-network/x/order"
+	ordertypes "github.com/xar-network/xar-network/x/order/types"
 )
 
 const appName = "xar"
@@ -82,6 +96,9 @@ var (
 		liquidityprovider.AppModuleBasic{},
 		issuer.AppModuleBasic{},
 		authority.AppModule{},
+
+		market.AppModuleBasic{},
+		order.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -114,6 +131,7 @@ func MakeCodec() *codec.Codec {
 type xarApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
+	mq  types.Backend
 
 	invCheckPeriod uint
 
@@ -149,6 +167,10 @@ type xarApp struct {
 	issuerKeeper    issuer.Keeper
 	authorityKeeper authority.Keeper
 
+	marketKeeper market.Keeper
+	orderKeeper  order.Keeper
+	execKeeper   execution.Keeper
+
 	// the module manager
 	mm *module.Manager
 
@@ -158,11 +180,26 @@ type xarApp struct {
 
 // NewXarApp returns a reference to an initialized xarApp.
 func NewXarApp(
-	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
+	logger log.Logger, db dbm.DB, mktDataDB dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
 ) *xarApp {
 
 	cdc := MakeCodec()
+
+	fillKeeper := fill.NewKeeper(mktDataDB, cdc)
+	priceKeeper := price.NewKeeper(mktDataDB, cdc)
+	embOrderKeeper := embeddedorder.NewKeeper(mktDataDB, cdc)
+	batchKeeper := batch.NewKeeper(mktDataDB, cdc)
+
+	queue := types.NewMemBackend()
+	queue.Start()
+	consumer := types.NewLocalConsumer(queue, []types.EventHandler{
+		fillKeeper,
+		priceKeeper,
+		embOrderKeeper,
+		batchKeeper,
+	})
+	consumer.Start()
 
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
@@ -174,7 +211,8 @@ func NewXarApp(
 		gov.StoreKey, params.StoreKey, issue.StoreKey, oracle.StoreKey,
 		auction.StoreKey, csdt.StoreKey, liquidator.StoreKey, nft.StoreKey,
 		interest.StoreKey, authority.StoreKey, issuer.StoreKey,
-		record.StoreKey, evidence.StoreKey,
+		record.StoreKey, evidence.StoreKey, markettypes.StoreKey,
+		ordertypes.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -229,10 +267,12 @@ func NewXarApp(
 	app.issuerKeeper = issuer.NewKeeper(keys[issuer.StoreKey], app.lpKeeper, app.interestKeeper)
 	app.authorityKeeper = authority.NewKeeper(keys[authority.StoreKey], app.issuerKeeper, app.oracleKeeper)
 
+	app.marketKeeper = market.NewKeeper(keys[markettypes.StoreKey], app.cdc)
+	app.orderKeeper = order.NewKeeper(app.bankKeeper, app.marketKeeper, keys[ordertypes.StoreKey], queue, app.cdc)
+	app.execKeeper = execution.NewKeeper(queue, app.marketKeeper, app.orderKeeper, app.bankKeeper)
+
 	// create evidence keeper with evidence router
-	app.evidenceKeeper = evidence.NewKeeper(
-		app.cdc, keys[evidence.StoreKey], evidenceSubspace, evidence.DefaultCodespace,
-	)
+	app.evidenceKeeper = evidence.NewKeeper(app.cdc, keys[evidence.StoreKey], evidenceSubspace, evidence.DefaultCodespace)
 	evidenceRouter := evidence.NewRouter()
 	// TODO: Register evidence routes.
 	app.evidenceKeeper.SetRouter(evidenceRouter)
@@ -281,6 +321,9 @@ func NewXarApp(
 		liquidityprovider.NewAppModule(app.lpKeeper),
 		issuer.NewAppModule(app.issuerKeeper),
 		authority.NewAppModule(app.authorityKeeper),
+
+		market.NewAppModule(app.marketKeeper),
+		order.NewAppModule(app.orderKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -312,8 +355,14 @@ func NewXarApp(
 		auction.ModuleName, csdt.ModuleName, liquidator.ModuleName, oracle.ModuleName,
 		interest.ModuleName, authority.ModuleName, liquidityprovider.ModuleName, issuer.ModuleName,
 		nft.ModuleName, record.ModuleName, genutil.ModuleName,
-		evidence.ModuleName,
+		evidence.ModuleName, markettypes.ModuleName,
 	)
+	app.QueryRouter().
+		AddRoute("embeddedorder", embeddedorder.NewQuerier(embOrderKeeper)).
+		AddRoute("fill", fill.NewQuerier(fillKeeper)).
+		AddRoute("price", price.NewQuerier(priceKeeper)).
+		AddRoute("book", book.NewQuerier(embOrderKeeper)).
+		AddRoute("batch", batch.NewQuerier(batchKeeper))
 
 	app.mm.RegisterInvariants(&app.crisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
@@ -375,6 +424,7 @@ func (app *xarApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abc
 
 // application updates every end block
 func (app *xarApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+	app.performMatching(ctx)
 	return app.mm.EndBlock(ctx, req)
 }
 
@@ -404,6 +454,15 @@ func (app *xarApp) ModuleAccountAddrs() map[string]bool {
 // Codec returns the application's sealed codec.
 func (app *xarApp) Codec() *codec.Codec {
 	return app.cdc
+}
+
+func (app *xarApp) performMatching(ctx sdk.Context) {
+	err := app.execKeeper.ExecuteAndCancelExpired(ctx)
+	// an error in the execution/cancellation step is a
+	// critical consensus failure.
+	if err != nil {
+		panic(err)
+	}
 }
 
 // GetMaccPerms returns a mapping of the application's module account permissions.

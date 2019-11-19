@@ -267,7 +267,7 @@ func BenchmarkFullAppSimulation(b *testing.B) {
 		_ = os.RemoveAll(dir)
 	}()
 
-	gapp := NewXarApp(logger, db, nil, true, simapp.FlagPeriodValue, interBlockCacheOpt())
+	gapp := NewXarApp(logger, db, db, nil, true, simapp.FlagPeriodValue, interBlockCacheOpt())
 
 	// Run randomized simulation
 	// TODO: parameterize numbers, save for a later PR
@@ -328,7 +328,7 @@ func TestFullAppSimulation(t *testing.T) {
 		_ = os.RemoveAll(dir)
 	}()
 
-	gapp := NewXarApp(logger, db, nil, true, simapp.FlagPeriodValue, fauxMerkleModeOpt)
+	gapp := NewXarApp(logger, db, db, nil, true, simapp.FlagPeriodValue, fauxMerkleModeOpt)
 	require.Equal(t, "XarApp", gapp.Name())
 
 	// Run randomized simulation
@@ -384,7 +384,7 @@ func TestAppImportExport(t *testing.T) {
 		_ = os.RemoveAll(dir)
 	}()
 
-	app := NewXarApp(logger, db, nil, true, simapp.FlagPeriodValue, fauxMerkleModeOpt)
+	app := NewXarApp(logger, db, db, nil, true, simapp.FlagPeriodValue, fauxMerkleModeOpt)
 	require.Equal(t, "SimApp", app.Name())
 
 	// Run randomized simulation
@@ -430,7 +430,7 @@ func TestAppImportExport(t *testing.T) {
 		_ = os.RemoveAll(newDir)
 	}()
 
-	newApp := NewXarApp(log.NewNopLogger(), newDB, nil, true, simapp.FlagPeriodValue, fauxMerkleModeOpt)
+	newApp := NewXarApp(log.NewNopLogger(), newDB, newDB, nil, true, simapp.FlagPeriodValue, fauxMerkleModeOpt)
 	require.Equal(t, "SimApp", newApp.Name())
 
 	var genesisState simapp.GenesisState
@@ -504,7 +504,7 @@ func TestAppSimulationAfterImport(t *testing.T) {
 		_ = os.RemoveAll(dir)
 	}()
 
-	gapp := NewXarApp(logger, db, nil, true, simapp.FlagPeriodValue, fauxMerkleModeOpt)
+	gapp := NewXarApp(logger, db, db, nil, true, simapp.FlagPeriodValue, fauxMerkleModeOpt)
 	require.Equal(t, "XarApp", gapp.Name())
 
 	// Run randomized simulation
@@ -560,7 +560,7 @@ func TestAppSimulationAfterImport(t *testing.T) {
 		_ = os.RemoveAll(newDir)
 	}()
 
-	newApp := NewXarApp(log.NewNopLogger(), newDB, nil, true, 0, fauxMerkleModeOpt)
+	newApp := NewXarApp(log.NewNopLogger(), newDB, newDB, nil, true, 0, fauxMerkleModeOpt)
 	require.Equal(t, "XarApp", newApp.Name())
 
 	newApp.InitChain(abci.RequestInitChain{
@@ -599,7 +599,7 @@ func TestAppStateDeterminism(t *testing.T) {
 		for j := 0; j < numTimesToRunPerSeed; j++ {
 			logger := log.NewNopLogger()
 			db := dbm.NewMemDB()
-			app := NewXarApp(logger, db, nil, true, simapp.FlagPeriodValue, interBlockCacheOpt())
+			app := NewXarApp(logger, db, db, nil, true, simapp.FlagPeriodValue, interBlockCacheOpt())
 
 			fmt.Printf(
 				"running non-determinism simulation; seed %d: %d/%d, attempt: %d/%d\n",
@@ -647,7 +647,7 @@ func BenchmarkInvariants(b *testing.B) {
 		os.RemoveAll(dir)
 	}()
 
-	gapp := NewXarApp(logger, db, nil, true, simapp.FlagPeriodValue, interBlockCacheOpt())
+	gapp := NewXarApp(logger, db, db, nil, true, simapp.FlagPeriodValue, interBlockCacheOpt())
 
 	// 2. Run parameterized simulation (w/o invariants)
 	_, simParams, simErr := simulation.SimulateFromSeed(

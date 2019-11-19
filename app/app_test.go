@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
-	db "github.com/tendermint/tm-db"
+	tdb "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -15,20 +15,22 @@ import (
 )
 
 func TestXardExport(t *testing.T) {
-	db := db.NewMemDB()
-	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
+	db := tdb.NewMemDB()
+	mkdb := tdb.NewMemDB()
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
 	setGenesis(gapp)
 
 	// Making a new app object with the db, so that initchain hasn't been called
-	newGapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
+	newGapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
 	_, _, err := newGapp.ExportAppStateAndValidators(false, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 }
 
 // ensure that black listed addresses are properly set in bank keeper
 func TestBlackListedAddrs(t *testing.T) {
-	db := db.NewMemDB()
-	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
+	db := tdb.NewMemDB()
+	mkdb := tdb.NewMemDB()
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
 
 	for acc := range maccPerms {
 		require.True(t, gapp.bankKeeper.BlacklistedAddr(gapp.supplyKeeper.GetModuleAddress(acc)))

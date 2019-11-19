@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/lcd"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -19,14 +20,10 @@ import (
 
 	"github.com/xar-network/xar-network/x/nft"
 
-	auctionrest "github.com/xar-network/xar-network/x/auction/client/rest"
-	csdtrest "github.com/xar-network/xar-network/x/csdt/client/rest"
-	issuerest "github.com/xar-network/xar-network/x/issue/client/rest"
 	liquidatorrest "github.com/xar-network/xar-network/x/liquidator/client/rest"
 	nftrest "github.com/xar-network/xar-network/x/nft/client/rest"
 	"github.com/xar-network/xar-network/x/oracle"
 	oraclerest "github.com/xar-network/xar-network/x/oracle/client/rest"
-	recordrest "github.com/xar-network/xar-network/x/record/client/rest"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -35,6 +32,7 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 
 	"github.com/xar-network/xar-network/app"
+	embeddedclient "github.com/xar-network/xar-network/embedded/client"
 )
 
 func main() {
@@ -73,7 +71,9 @@ func main() {
 		queryCmd(cdc),
 		txCmd(cdc),
 		client.LineBreak,
-		lcd.ServeCommand(cdc, registerRoutes),
+		lcd.ServeCommand(cdc, func(server *lcd.RestServer) {
+			registerRoutes(server, cdc)
+		}),
 		client.LineBreak,
 		keys.Commands(),
 		client.LineBreak,
@@ -152,17 +152,14 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 // registerRoutes registers the routes from the different modules for the LCD.
 // NOTE: details on the routes added for each module are in the module documentation
 // NOTE: If making updates here you also need to update the test helper in client/lcd/test_helper.go
-func registerRoutes(rs *lcd.RestServer) {
+func registerRoutes(rs *lcd.RestServer, cdc *codec.Codec) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
 
-	issuerest.RegisterRoutes(rs.CliCtx, rs.Mux)
+	embeddedclient.RegisterRoutes(rs.CliCtx, rs.Mux, cdc, false)
 	nftrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec, nft.StoreKey)
 	oraclerest.RegisterRoutes(rs.CliCtx, rs.Mux, oracle.StoreKey)
-	auctionrest.RegisterRoutes(rs.CliCtx, rs.Mux)
-	csdtrest.RegisterRoutes(rs.CliCtx, rs.Mux)
 	liquidatorrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.CliCtx.Codec)
-	recordrest.RegisterRoutes(rs.CliCtx, rs.Mux)
 
 	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }

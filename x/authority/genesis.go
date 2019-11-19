@@ -19,3 +19,15 @@ func DefaultGenesisState() GenesisState {
 func InitGenesis(ctx sdk.Context, keeper Keeper, state GenesisState) {
 	keeper.SetAuthority(ctx, state.AuthorityKey)
 }
+
+// ExportGenesis returns a GenesisState for a given context and keeper.
+func ExportGenesis(ctx sdk.Context, keeper Keeper) GenesisState {
+	authorityKey := keeper.GetAuthority(ctx)
+	return NewGenesisState(authorityKey)
+}
+
+// ValidateGenesis validates the provided genesis state to ensure the
+// expected invariants holds.
+func ValidateGenesis(data GenesisState) error {
+	return nil
+}

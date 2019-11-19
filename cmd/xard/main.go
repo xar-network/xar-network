@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io"
+	"path"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -29,6 +30,8 @@ const flagInvCheckPeriod = "inv-check-period"
 
 var invCheckPeriod uint
 
+var mktDataDB dbm.DB
+
 func main() {
 	cdc := app.MakeCodec()
 
@@ -42,9 +45,21 @@ func main() {
 	cobra.EnableCommandSorting = false
 
 	rootCmd := &cobra.Command{
-		Use:               "xard",
-		Short:             "Xar Daemon (server)",
-		PersistentPreRunE: server.PersistentPreRunEFn(ctx),
+		Use:   "xard",
+		Short: "Xar Daemon (server)",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			err := server.PersistentPreRunEFn(ctx)(cmd, args)
+			if err != nil {
+				return err
+			}
+
+			mdb, err := initMktDataDB()
+			if err != nil {
+				return err
+			}
+			mktDataDB = mdb
+			return nil
+		},
 	}
 
 	rootCmd.AddCommand(genutilcli.InitCmd(ctx, cdc, app.ModuleBasics, app.DefaultNodeHome))
@@ -82,7 +97,7 @@ func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application
 	}
 
 	return app.NewXarApp(
-		logger, db, traceStore, true, invCheckPeriod,
+		logger, db, mktDataDB, traceStore, true, invCheckPeriod,
 		baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))),
 		baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
 		baseapp.SetHaltHeight(viper.GetUint64(server.FlagHaltHeight)),
@@ -96,7 +111,7 @@ func exportAppStateAndTMValidators(
 ) (json.RawMessage, []tmtypes.GenesisValidator, error) {
 
 	if height != -1 {
-		gapp := app.NewXarApp(logger, db, traceStore, false, uint(1))
+		gapp := app.NewXarApp(logger, db, mktDataDB, traceStore, false, uint(1))
 		err := gapp.LoadHeight(height)
 		if err != nil {
 			return nil, nil, err
@@ -104,6 +119,11 @@ func exportAppStateAndTMValidators(
 		return gapp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 	}
 
-	gapp := app.NewXarApp(logger, db, traceStore, true, uint(1))
+	gapp := app.NewXarApp(logger, db, mktDataDB, traceStore, true, uint(1))
 	return gapp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
+}
+
+func initMktDataDB() (dbm.DB, error) {
+	dir := path.Join(viper.GetString(cli.HomeFlag), "data")
+	return dbm.NewGoLevelDB("mktdata", dir)
 }

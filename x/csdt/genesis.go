@@ -56,6 +56,13 @@ func DefaultGenesisState() GenesisState {
 	}
 }
 
+func NewGenesisState(csdtModuleParams types.CsdtModuleParams, globalDebt sdk.Int) GenesisState {
+	return GenesisState{
+		CsdtModuleParams: csdtModuleParams,
+		GlobalDebt:       globalDebt,
+	}
+}
+
 // InitGenesis sets the genesis state in the keeper.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, data GenesisState) {
 	k.SetParams(ctx, data.CsdtModuleParams)
@@ -77,7 +84,9 @@ func ValidateGenesis(data GenesisState) error {
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
-func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) GenesisState {
-	// TODO implement this
-	return DefaultGenesisState()
+func ExportGenesis(ctx sdk.Context, k keeper.Keeper) GenesisState {
+	// TODO add csdt's to genesisState for export or track csdt in account space?
+	params := k.GetParams(ctx)
+	globalDebt := k.GetGlobalDebt(ctx)
+	return NewGenesisState(params, globalDebt)
 }

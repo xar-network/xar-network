@@ -271,6 +271,8 @@ func (k Keeper) GetCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom s
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &csdt)
 	return csdt, true
 }
+
+//Potentially change this logic to use the account interface?
 func (k Keeper) SetCSDT(ctx sdk.Context, csdt types.CSDT) {
 	// get store
 	store := ctx.KVStore(k.storeKey)
