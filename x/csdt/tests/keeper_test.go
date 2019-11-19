@@ -201,7 +201,7 @@ func TestKeeper_GetCSDTs(t *testing.T) {
 	csdts := CSDTs{
 		{addrs[0], "uftm", i(4000), i(5)},
 		{addrs[1], "uftm", i(4000), i(2000)},
-		{addrs[0], "btc", i(10), i(20)},
+		{addrs[0], "ubtc", i(10), i(20)},
 	}
 	for _, csdt := range csdts {
 		keeper.SetCSDT(ctx, csdt)
@@ -212,7 +212,7 @@ func TestKeeper_GetCSDTs(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t,
 		CSDTs{
-			{addrs[0], "btc", i(10), i(20)},
+			{addrs[0], "ubtc", i(10), i(20)},
 			{addrs[1], "uftm", i(4000), i(2000)},
 			{addrs[0], "uftm", i(4000), i(5)}},
 		returnedCsdts,
@@ -260,7 +260,7 @@ func TestKeeper_GetCSDTs(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t,
 		CSDTs{
-			{addrs[0], "btc", i(10), i(20)},
+			{addrs[0], "ubtc", i(10), i(20)},
 			{addrs[1], "uftm", i(4000), i(2000)}},
 		returnedCsdts,
 	)
