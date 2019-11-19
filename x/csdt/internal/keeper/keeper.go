@@ -14,7 +14,7 @@ import (
 // Keeper csdt Keeper
 type Keeper struct {
 	storeKey       sdk.StoreKey
-	oracle      oracleKeeper
+	oracle         oracleKeeper
 	bank           bankKeeper
 	paramsSubspace params.Subspace
 	cdc            *codec.Codec
@@ -25,7 +25,7 @@ func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace
 	subspace = subspace.WithKeyTable(types.CreateParamsKeyTable())
 	return Keeper{
 		storeKey:       storeKey,
-		oracle:      oracle,
+		oracle:         oracle,
 		bank:           bank,
 		paramsSubspace: subspace,
 		cdc:            cdc,
@@ -126,14 +126,14 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 		panic(err) // this shouldn't happen because coin balance was checked earlier
 	}
 	// Set CSDT
-	if csdt.CollateralAmount.IsZero() && csdt.Debt.IsZero() { // TODO maybe abstract this logic into setCSDT
-		k.deleteCSDT(ctx, csdt)
+	if csdt.CollateralAmount.IsZero() && csdt.Debt.IsZero() { // TODO maybe abstract this logic into SetCSDT
+		k.DeleteCSDT(ctx, csdt)
 	} else {
-		k.setCSDT(ctx, csdt)
+		k.SetCSDT(ctx, csdt)
 	}
 	// set total debts
 	k.SetGlobalDebt(ctx, gDebt)
-	k.setCollateralState(ctx, collateralState)
+	k.SetCollateralState(ctx, collateralState)
 
 	return nil
 }
@@ -195,12 +195,12 @@ func (k Keeper) PartialSeizeCSDT(ctx sdk.Context, owner sdk.AccAddress, collater
 	// TODO update global seized debt? this is what maker does (named vice in Vat.grab) but it's not used anywhere
 
 	// Store updated state
-	if csdt.CollateralAmount.IsZero() && csdt.Debt.IsZero() { // TODO maybe abstract this logic into setCSDT
-		k.deleteCSDT(ctx, csdt)
+	if csdt.CollateralAmount.IsZero() && csdt.Debt.IsZero() { // TODO maybe abstract this logic into SetCSDT
+		k.DeleteCSDT(ctx, csdt)
 	} else {
-		k.setCSDT(ctx, csdt)
+		k.SetCSDT(ctx, csdt)
 	}
-	k.setCollateralState(ctx, collateralState)
+	k.SetCollateralState(ctx, collateralState)
 	return nil
 }
 
@@ -271,14 +271,14 @@ func (k Keeper) GetCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom s
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &csdt)
 	return csdt, true
 }
-func (k Keeper) setCSDT(ctx sdk.Context, csdt types.CSDT) {
+func (k Keeper) SetCSDT(ctx sdk.Context, csdt types.CSDT) {
 	// get store
 	store := ctx.KVStore(k.storeKey)
 	// marshal and set
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(csdt)
 	store.Set(k.getCSDTKey(csdt.Owner, csdt.CollateralDenom), bz)
 }
-func (k Keeper) deleteCSDT(ctx sdk.Context, csdt types.CSDT) { // TODO should this id the csdt by passing in owner,collateralDenom pair?
+func (k Keeper) DeleteCSDT(ctx sdk.Context, csdt types.CSDT) { // TODO should this id the csdt by passing in owner,collateralDenom pair?
 	// get store
 	store := ctx.KVStore(k.storeKey)
 	// delete key
@@ -289,8 +289,8 @@ func (k Keeper) deleteCSDT(ctx sdk.Context, csdt types.CSDT) { // TODO should th
 // `price` filters for CSDTs that will be below the liquidation ratio when the collateral is at that specified price.
 func (k Keeper) GetCSDTs(ctx sdk.Context, collateralDenom string, price sdk.Dec) (types.CSDTs, sdk.Error) {
 	// Validate inputs
-	params := k.GetParams(ctx)
-	if len(collateralDenom) != 0 && !params.IsCollateralPresent(collateralDenom) {
+	p := k.GetParams(ctx)
+	if len(collateralDenom) != 0 && !p.IsCollateralPresent(collateralDenom) {
 		return nil, sdk.ErrInternal("collateral denom not authorized")
 	}
 	if len(collateralDenom) == 0 && !(price.IsNil() || price.IsNegative()) {
@@ -317,7 +317,7 @@ func (k Keeper) GetCSDTs(ctx sdk.Context, collateralDenom string, price sdk.Dec)
 	if !price.IsNil() && !price.IsNegative() {
 		var filteredCSDTs types.CSDTs
 		for _, csdt := range csdts {
-			if csdt.IsUnderCollateralized(price, params.GetCollateralParams(collateralDenom).LiquidationRatio) {
+			if csdt.IsUnderCollateralized(price, p.GetCollateralParams(collateralDenom).LiquidationRatio) {
 				filteredCSDTs = append(filteredCSDTs, csdt)
 			} else {
 				break // break early because list is sorted
@@ -368,7 +368,7 @@ func (k Keeper) GetCollateralState(ctx sdk.Context, collateralDenom string) (typ
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &collateralState)
 	return collateralState, true
 }
-func (k Keeper) setCollateralState(ctx sdk.Context, collateralstate types.CollateralState) {
+func (k Keeper) SetCollateralState(ctx sdk.Context, collateralstate types.CollateralState) {
 	// get store
 	store := ctx.KVStore(k.storeKey)
 	// marshal and set
@@ -436,7 +436,7 @@ func (k Keeper) AddCoins(ctx sdk.Context, address sdk.AccAddress, amount sdk.Coi
 			return amount, sdk.ErrInsufficientCoins(fmt.Sprintf("insufficient account funds; %s < %s", lma.Coins, amount))
 		}
 		lma.Coins = updatedCoins
-		k.setLiquidatorModuleAccount(ctx, lma)
+		k.SetLiquidatorModuleAccount(ctx, lma)
 		return updatedCoins, nil
 	} else {
 		return k.bank.AddCoins(ctx, address, amount)
@@ -459,7 +459,7 @@ func (k Keeper) SubtractCoins(ctx sdk.Context, address sdk.AccAddress, amount sd
 			return amount, sdk.ErrInsufficientCoins(fmt.Sprintf("insufficient account funds; %s < %s", lma.Coins, amount))
 		}
 		lma.Coins = updatedCoins
-		k.setLiquidatorModuleAccount(ctx, lma)
+		k.SetLiquidatorModuleAccount(ctx, lma)
 		return updatedCoins, nil
 	} else {
 		return k.bank.SubtractCoins(ctx, address, amount)
@@ -497,7 +497,7 @@ func (k Keeper) getLiquidatorModuleAccount(ctx sdk.Context) LiquidatorModuleAcco
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &lma)
 	return lma
 }
-func (k Keeper) setLiquidatorModuleAccount(ctx sdk.Context, lma LiquidatorModuleAccount) {
+func (k Keeper) SetLiquidatorModuleAccount(ctx sdk.Context, lma LiquidatorModuleAccount) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(lma)
 	store.Set(liquidatorAccountKey, bz)
@@ -510,4 +510,9 @@ func stripGovCoin(coins sdk.Coins) sdk.Coins {
 		}
 	}
 	return filteredCoins
+}
+
+// GetOracle allows testing
+func (k Keeper) GetOracle() oracleKeeper {
+	return k.oracle
 }

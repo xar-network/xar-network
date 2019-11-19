@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/xar-network/xar-network/x/csdt/internal/types"
 )
 
 func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
@@ -19,29 +20,29 @@ func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
-	keeper.oracle.AddAsset(ctx, "xrp", "xrp test")
-	keeper.oracle.SetPrice(
+	keeper.GetOracle().AddAsset(ctx, "xrp", "xrp test")
+	_, _ = keeper.GetOracle().SetPrice(
 		ctx, sdk.AccAddress{}, "xrp",
 		sdk.MustNewDecFromStr("1.00"),
 		sdk.NewInt(10))
-	keeper.oracle.SetCurrentPrices(ctx)
+	_ = keeper.GetOracle().SetCurrentPrices(ctx)
 	mapp.EndBlock(abci.RequestEndBlock{})
 	mapp.Commit()
 
 	// Create CSDT
-	msgs := []sdk.Msg{NewMsgCreateOrModifyCSDT(testAddr, "xrp", i(10), i(5))}
+	msgs := []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "xrp", i(10), i(5))}
 	mock.SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{0}, true, true, testPrivKey)
 
-	mock.CheckBalance(t, mapp, testAddr, cs(c(StableDenom, 5), c("xrp", 90)))
+	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 5), c("xrp", 90)))
 
 	// Modify CSDT
-	msgs = []sdk.Msg{NewMsgCreateOrModifyCSDT(testAddr, "xrp", i(40), i(5))}
+	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "xrp", i(40), i(5))}
 	mock.SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{1}, true, true, testPrivKey)
 
-	mock.CheckBalance(t, mapp, testAddr, cs(c(StableDenom, 10), c("xrp", 50)))
+	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 10), c("xrp", 50)))
 
 	// Delete CSDT
-	msgs = []sdk.Msg{NewMsgCreateOrModifyCSDT(testAddr, "xrp", i(-50), i(-10))}
+	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "xrp", i(-50), i(-10))}
 	mock.SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{2}, true, true, testPrivKey)
 
 	mock.CheckBalance(t, mapp, testAddr, cs(c("xrp", 100)))

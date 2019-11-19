@@ -6,9 +6,11 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/xar-network/xar-network/x/csdt/internal/types"
 )
 
 // How could one reduce the number of params in the test cases. Create a table driven test for each of the 4 add/withdraw collateral/debt?
@@ -18,7 +20,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 	ownerAddr := addrs[0]
 
 	type state struct { // TODO this allows invalid state to be set up, should it?
-		CSDT             CSDT
+		CSDT            CSDT
 		OwnerCoins      sdk.Coins
 		GlobalDebt      sdk.Int
 		CollateralState CollateralState
@@ -97,24 +99,24 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				Address: ownerAddr,
 				Coins:   tc.priorState.OwnerCoins,
 			}
-			mock.SetGenesis(mapp, []auth.Account{&genAcc})
+			mock.SetGenesis(mapp, []exported.Account{&genAcc})
 			// create a new context
 			header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 			mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 			ctx := mapp.BaseApp.NewContext(false, header)
 			// setup store state
-			keeper.oracle.AddAsset(ctx, "xrp", "xrp test")
-			keeper.oracle.SetPrice(
+			keeper.GetOracle().AddAsset(ctx, "xrp", "xrp test")
+			_, _ = keeper.GetOracle().SetPrice(
 				ctx, sdk.AccAddress{}, "xrp",
 				sdk.MustNewDecFromStr(tc.price),
 				i(10))
-			keeper.oracle.SetCurrentPrices(ctx)
+			_ = keeper.GetOracle().SetCurrentPrices(ctx)
 			if tc.priorState.CSDT.CollateralDenom != "" { // check if the prior CSDT should be created or not (see if an empty one was specified)
-				keeper.setCSDT(ctx, tc.priorState.CSDT)
+				keeper.SetCSDT(ctx, tc.priorState.CSDT)
 			}
-			keeper.setGlobalDebt(ctx, tc.priorState.GlobalDebt)
+			keeper.SetGlobalDebt(ctx, tc.priorState.GlobalDebt)
 			if tc.priorState.CollateralState.Denom != "" {
-				keeper.setCollateralState(ctx, tc.priorState.CollateralState)
+				keeper.SetCollateralState(ctx, tc.priorState.CollateralState)
 			}
 
 			// call func under test
@@ -159,21 +161,21 @@ func TestKeeper_PartialSeizeCSDT(t *testing.T) {
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
-	keeper.oracle.AddAsset(ctx, collateral, "test description")
-	keeper.oracle.SetPrice(
+	keeper.GetOracle().AddAsset(ctx, collateral, "test description")
+	_, _ = keeper.GetOracle().SetPrice(
 		ctx, sdk.AccAddress{}, collateral,
 		sdk.MustNewDecFromStr("1.00"),
 		i(10))
-	keeper.oracle.SetCurrentPrices(ctx)
+	_ = keeper.GetOracle().SetCurrentPrices(ctx)
 	// Create CSDT
 	err := keeper.ModifyCSDT(ctx, testAddr, collateral, i(10), i(5))
 	require.NoError(t, err)
 	// Reduce price
-	keeper.oracle.SetPrice(
+	_, _ = keeper.GetOracle().SetPrice(
 		ctx, sdk.AccAddress{}, collateral,
 		sdk.MustNewDecFromStr("0.90"),
 		i(10))
-	keeper.oracle.SetCurrentPrices(ctx)
+	_ = keeper.GetOracle().SetCurrentPrices(ctx)
 
 	// Seize entire CSDT
 	err = keeper.PartialSeizeCSDT(ctx, testAddr, collateral, i(10), i(5))
@@ -190,7 +192,7 @@ func TestKeeper_PartialSeizeCSDT(t *testing.T) {
 func TestKeeper_GetCSDTs(t *testing.T) {
 	// setup keeper
 	mapp, keeper := setUpMockAppWithoutGenesis()
-	mock.SetGenesis(mapp, []auth.Account(nil))
+	mock.SetGenesis(mapp, []exported.Account(nil))
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
@@ -202,7 +204,7 @@ func TestKeeper_GetCSDTs(t *testing.T) {
 		{addrs[0], "btc", i(10), i(20)},
 	}
 	for _, csdt := range csdts {
-		keeper.setCSDT(ctx, csdt)
+		keeper.SetCSDT(ctx, csdt)
 	}
 
 	// Check nil params returns all CSDTs
@@ -253,7 +255,7 @@ func TestKeeper_GetCSDTs(t *testing.T) {
 	_, err = keeper.GetCSDTs(ctx, "", d("0.34023"))
 	require.Error(t, err)
 	// Check deleting a CSDT removes it
-	keeper.deleteCSDT(ctx, csdts[0])
+	keeper.DeleteCSDT(ctx, csdts[0])
 	returnedCsdts, err = keeper.GetCSDTs(ctx, "", sdk.Dec{})
 	require.NoError(t, err)
 	require.Equal(t,
@@ -273,7 +275,7 @@ func TestKeeper_GetSetDeleteCSDT(t *testing.T) {
 	csdt := CSDT{addrs[0], "xrp", i(412), i(56)}
 
 	// write and read from store
-	keeper.setCSDT(ctx, csdt)
+	keeper.SetCSDT(ctx, csdt)
 	readCSDT, found := keeper.GetCSDT(ctx, csdt.Owner, csdt.CollateralDenom)
 
 	// check before and after match
@@ -281,7 +283,7 @@ func TestKeeper_GetSetDeleteCSDT(t *testing.T) {
 	require.Equal(t, csdt, readCSDT)
 
 	// delete auction
-	keeper.deleteCSDT(ctx, csdt)
+	keeper.DeleteCSDT(ctx, csdt)
 
 	// check auction does not exist
 	_, found = keeper.GetCSDT(ctx, csdt.Owner, csdt.CollateralDenom)
@@ -296,7 +298,7 @@ func TestKeeper_GetSetGDebt(t *testing.T) {
 	gDebt := i(4120000)
 
 	// write and read from store
-	keeper.setGlobalDebt(ctx, gDebt)
+	keeper.SetGlobalDebt(ctx, gDebt)
 	readGDebt := keeper.GetGlobalDebt(ctx)
 
 	// check before and after match
@@ -312,10 +314,21 @@ func TestKeeper_GetSetCollateralState(t *testing.T) {
 	collateralState := CollateralState{"xrp", i(15400)}
 
 	// write and read from store
-	keeper.setCollateralState(ctx, collateralState)
+	keeper.SetCollateralState(ctx, collateralState)
 	readCState, found := keeper.GetCollateralState(ctx, collateralState.Denom)
 
 	// check before and after match
 	require.Equal(t, collateralState, readCState)
 	require.True(t, found)
 }
+
+// shorten for easier reading
+type (
+	CSDT            = types.CSDT
+	CSDTs           = types.CSDTs
+	CollateralState = types.CollateralState
+)
+
+const (
+	StableDenom = types.StableDenom
+)

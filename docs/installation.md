@@ -23,9 +23,7 @@ source ~/.bash_profile
 
 ```bash
 git clone https://github.com/xar-network/xar-network
-cd xar-network
-go build ./cmd/xarcli
-go build ./cmd/xard
+cd xar-network && make install
 ```
 
 ## Install the binaries
