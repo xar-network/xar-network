@@ -23,7 +23,7 @@ func RegisterRoutes(_ context.CLIContext, r *mux.Router, _ *codec.Codec) {
 
 func uiHandler(w http.ResponseWriter, r *http.Request) {
 	if tmpl == nil {
-		box := packr.NewBox("./public")
+		box := packr.NewBox("./build")
 		boxHdlr = http.FileServer(box)
 		tmplStr, err := box.FindString("/index.html")
 		if err != nil {

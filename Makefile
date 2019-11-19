@@ -149,6 +149,9 @@ benchmark:
 	@go test -bench=. ./...
 
 
+update-ui:
+	./update-ui.sh
+	packr -z
 ########################################
 ### Local validator nodes using docker and docker-compose
 

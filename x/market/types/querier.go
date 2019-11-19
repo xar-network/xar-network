@@ -33,8 +33,8 @@ func (l ListQueryResult) String() string {
 		t.Append([]string{
 			m.ID.String(),
 			m.Name,
-			m.BaseAssetID.String(),
-			m.QuoteAssetID.String(),
+			m.BaseAssetDenom,
+			m.QuoteAssetDenom,
 		})
 	}
 
