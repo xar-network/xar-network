@@ -12,7 +12,7 @@ require (
 	github.com/cespare/cp v1.1.1 // indirect
 	github.com/coreos/etcd v3.3.13+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
-	github.com/cosmos/cosmos-sdk v0.34.4-0.20191119023933-c89dee502a5f
+	github.com/cosmos/cosmos-sdk v0.34.4-0.20191119205431-43f011865d1d
 	github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d // indirect
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
