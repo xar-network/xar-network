@@ -28,6 +28,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
+	markettypes "github.com/xar-network/xar-network/x/market/types"
 	"github.com/xar-network/xar-network/x/nft"
 
 	//Public issuance
@@ -46,7 +47,6 @@ import (
 	"github.com/xar-network/xar-network/x/record"
 
 	//Matching engine for dex
-
 	"github.com/xar-network/xar-network/embedded/batch"
 	"github.com/xar-network/xar-network/embedded/book"
 	"github.com/xar-network/xar-network/embedded/fill"
@@ -55,7 +55,6 @@ import (
 	"github.com/xar-network/xar-network/execution"
 	"github.com/xar-network/xar-network/types"
 	"github.com/xar-network/xar-network/x/market"
-	markettypes "github.com/xar-network/xar-network/x/market/types"
 	"github.com/xar-network/xar-network/x/order"
 	ordertypes "github.com/xar-network/xar-network/x/order/types"
 )
@@ -211,7 +210,7 @@ func NewXarApp(
 		gov.StoreKey, params.StoreKey, issue.StoreKey, oracle.StoreKey,
 		auction.StoreKey, csdt.StoreKey, liquidator.StoreKey, nft.StoreKey,
 		interest.StoreKey, authority.StoreKey, issuer.StoreKey,
-		record.StoreKey, evidence.StoreKey, markettypes.StoreKey,
+		record.StoreKey, evidence.StoreKey, market.StoreKey,
 		ordertypes.StoreKey,
 	)
 
@@ -262,14 +261,14 @@ func NewXarApp(
 	app.auctionKeeper = auction.NewKeeper(app.cdc, app.csdtKeeper, keys[auction.StoreKey])
 	app.liquidatorKeeper = liquidator.NewKeeper(app.cdc, keys[liquidator.StoreKey], liquidatorSubspace, app.csdtKeeper, app.auctionKeeper, app.csdtKeeper)
 
-	app.interestKeeper = interest.NewKeeper(app.cdc, keys[interest.StoreKey], interestSubspace, app.supplyKeeper, auth.FeeCollectorName)
-	app.lpKeeper = liquidityprovider.NewKeeper(app.accountKeeper, app.supplyKeeper)
-	app.issuerKeeper = issuer.NewKeeper(keys[issuer.StoreKey], app.lpKeeper, app.interestKeeper)
-	app.authorityKeeper = authority.NewKeeper(keys[authority.StoreKey], app.issuerKeeper, app.oracleKeeper)
-
 	app.marketKeeper = market.NewKeeper(keys[markettypes.StoreKey], app.cdc)
 	app.orderKeeper = order.NewKeeper(app.bankKeeper, app.marketKeeper, keys[ordertypes.StoreKey], queue, app.cdc)
 	app.execKeeper = execution.NewKeeper(queue, app.marketKeeper, app.orderKeeper, app.bankKeeper)
+
+	app.interestKeeper = interest.NewKeeper(app.cdc, keys[interest.StoreKey], interestSubspace, app.supplyKeeper, auth.FeeCollectorName)
+	app.lpKeeper = liquidityprovider.NewKeeper(app.accountKeeper, app.supplyKeeper)
+	app.issuerKeeper = issuer.NewKeeper(keys[issuer.StoreKey], app.lpKeeper, app.interestKeeper)
+	app.authorityKeeper = authority.NewKeeper(keys[authority.StoreKey], app.issuerKeeper, app.oracleKeeper, app.marketKeeper)
 
 	// create evidence keeper with evidence router
 	app.evidenceKeeper = evidence.NewKeeper(app.cdc, keys[evidence.StoreKey], evidenceSubspace, evidence.DefaultCodespace)

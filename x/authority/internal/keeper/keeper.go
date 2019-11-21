@@ -3,6 +3,7 @@ package keeper
 import (
 	"github.com/xar-network/xar-network/x/authority/internal/types"
 	"github.com/xar-network/xar-network/x/issuer"
+	"github.com/xar-network/xar-network/x/market"
 	"github.com/xar-network/xar-network/x/oracle"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,12 +17,14 @@ type Keeper struct {
 	storeKey sdk.StoreKey
 	ik       issuer.Keeper
 	ok       oracle.Keeper
+	mk       market.Keeper
 }
 
-func NewKeeper(storeKey sdk.StoreKey, issuerKeeper issuer.Keeper, oracleKeeper oracle.Keeper) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, issuerKeeper issuer.Keeper, oracleKeeper oracle.Keeper, marketKeeper market.Keeper) Keeper {
 	return Keeper{
 		ik:       issuerKeeper,
 		ok:       oracleKeeper,
+		mk:       marketKeeper,
 		storeKey: storeKey,
 	}
 }
@@ -67,6 +70,13 @@ func (k Keeper) CreateOracle(ctx sdk.Context, authority sdk.AccAddress, oracle s
 	k.MustBeAuthority(ctx, authority)
 
 	k.ok.AddOracle(ctx, oracle.String())
+	return sdk.Result{Events: ctx.EventManager().Events()}
+}
+
+func (k Keeper) CreateMarket(ctx sdk.Context, authority sdk.AccAddress, baseAsset, quoteAsset string) sdk.Result {
+	k.MustBeAuthority(ctx, authority)
+
+	k.mk.Create(ctx, baseAsset, quoteAsset)
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 

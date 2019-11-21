@@ -27,6 +27,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 		client.PostCommands(
 			getCmdCreateIssuer(cdc),
 			getCmdCreateOracle(cdc),
+			getCmdCreateMarket(cdc),
 			getCmdDestroyIssuer(cdc),
 		)...,
 	)
@@ -69,7 +70,7 @@ func getCmdCreateIssuer(cdc *codec.Codec) *cobra.Command {
 func getCmdCreateOracle(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "create-oracle [authority_key_or_address] [oracle_address]",
-		Example: "xarcli authority create-issuer masterkey xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu",
+		Example: "xarcli authority create-oracle masterkey xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu",
 		Short:   "Create a new oracle",
 		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -85,6 +86,28 @@ func getCmdCreateOracle(cdc *codec.Codec) *cobra.Command {
 			msg := types.MsgCreateOracle{
 				Oracle:    oracleAddr,
 				Authority: cliCtx.GetFromAddress(),
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
+
+func getCmdCreateMarket(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:     "create-market [authority_key_or_address] [base_asset_denom] [quote_asset_denom]",
+		Example: "xarcli authority create-market masterkey uftm ucsdt",
+		Short:   "Create a new market",
+		Args:    cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
+
+			msg := types.MsgCreateMarket{
+				BaseAsset:  args[1],
+				QuoteAsset: args[2],
+				Authority:  cliCtx.GetFromAddress(),
 			}
 
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
