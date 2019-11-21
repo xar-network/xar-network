@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/xar-network/xar-network/embedded"
-
-	"github.com/gorilla/mux"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/gorilla/mux"
 
 	"github.com/xar-network/xar-network/embedded/session"
 )
@@ -112,7 +112,7 @@ func meHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
 }
 
 func authorize(passphrase string) (string, string, error) {
-	kb, err := keys.NewKeyringFromHomeFlag(nil)
+	kb, err := keys.NewKeyringFromHomeFlag(strings.NewReader(passphrase + "\n"))
 	if err != nil {
 		return "", "", err
 	}
