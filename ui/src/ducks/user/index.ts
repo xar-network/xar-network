@@ -1,9 +1,14 @@
 import { Dispatch } from "redux";
 import { ActionType } from '../types';
 import {post, get, GetUserOrderResponse, BalanceResponse} from "../../utils/fetch";
+import { unlockAccount } from '../../utils/zar-util';
 import {addOrders, OrderType} from "../exchange";
 import BigNumber from "bignumber.js";
 import {bn} from "../../utils/bn";
+
+import crypto from 'crypto'
+import sha256 from 'sha256';
+import bip39 from 'bip39';
 
 export const ADD_USER_ORDERS = 'app/user/addUserOrders';
 export const ADD_USER_ADDRESS = 'app/user/addUserAddress';
@@ -53,7 +58,7 @@ export const addUserOrders = (orders: OrderType[]): ActionType<OrderType[]> => (
 });
 
 export const login = (password: string) => async (dispatch: Dispatch): Promise<Response> => {
-  const resp = await post('/auth/login', { username: 'xar-validator-12', password });
+  const resp = await post('/auth/login', { username: 'validator', password });
 
   if (resp.status === 204) {
     const addrRes = await get('/auth/me');
@@ -64,6 +69,68 @@ export const login = (password: string) => async (dispatch: Dispatch): Promise<R
 
   return resp;
 };
+
+export const loginZAR = (email: string, password: string) => async (dispatch: Dispatch): Promise<Response> => {
+  const resp = await post('http://localhost:8081/api/v1/login', _encrypt({ email_address: email, password }, '/api/v1/login'));
+  return resp;
+};
+
+export const loginKeystore = (keystore: string, password: string) => async (dispatch: Dispatch) => {
+  const resp = unlockAccount({ keystore, password });
+  return resp;
+};
+
+export const createZAR = (email: string, password: string, firstname: string, lastname: string) => async (dispatch: Dispatch): Promise<Response> => {
+  const resp = await post('/auth/login', { username: 'validator', password });
+  return resp;
+};
+
+export const createKeystore = (password: string) => async (dispatch: Dispatch): Promise<Response> => {
+  const resp = await post('/auth/login', { username: 'validator', password });
+  return resp;
+};
+
+function _encrypt(postData:Object, url:string) {
+  const signJson = JSON.stringify(postData);
+  const signMnemonic = bip39.generateMnemonic();
+  const cipher = crypto.createCipher('aes-256-cbc', signMnemonic);
+  const signEncrypted =
+    cipher.update(signJson, 'utf8', 'base64') + cipher.final('base64');
+  var signData = {
+    e: hexEncode(signEncrypted),
+    m: hexEncode(signMnemonic),
+    u: sha256(url.toLowerCase()),
+    p: sha256(sha256(url.toLowerCase())),
+    t: new Date().getTime(),
+    s: ''
+  };
+  const signSeed = JSON.stringify(signData);
+  const signSignature = sha256(signSeed);
+  signData.s = signSignature;
+  postData = JSON.stringify(signData);
+
+  return postData;
+}
+
+function hexEncode (str:String) {
+  var hex, i;
+  var result = '';
+  for (i = 0; i < str.length; i++) {
+    hex = str.charCodeAt(i).toString(16);
+    result += ('000' + hex).slice(-4);
+  }
+  return result;
+};
+
+
+
+
+export const logout = () => (dispatch: Dispatch) => {
+  dispatch(setAddress(''));
+  dispatch(setLogin(false));
+
+  return true
+}
 
 export const setLogin = (payload: boolean): ActionType<boolean> => ({
   type: SET_LOGIN,
@@ -81,17 +148,22 @@ export const setAddress = (payload: string): ActionType<string> => ({
 });
 
 export const checkLogin = () => async (dispatch: Dispatch) => {
-  const resp = await get('/user/balances');
+  try {
+    const resp = await get('/user/balances');
+    console.log(resp)
 
-  switch (resp.status) {
-    case 401:
-      return dispatch(setLogin(false));
-    case 200:
-      const addrRes = await get('/auth/me');
-      const addrJSON: { address: string} = await addrRes.json();
-      dispatch({ type: '%INIT' });
-      dispatch(setAddress(addrJSON.address));
-      dispatch(setLogin(true));
+    switch (resp.status) {
+      case 401:
+        return dispatch(setLogin(false));
+      case 200:
+        const addrRes = await get('/auth/me');
+        const addrJSON: { address: string} = await addrRes.json();
+        dispatch({ type: '%INIT' });
+        dispatch(setAddress(addrJSON.address));
+        dispatch(setLogin(true));
+    }
+  } catch (e) {
+    console.log(e)
   }
 };
 

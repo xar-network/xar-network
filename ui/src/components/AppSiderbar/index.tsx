@@ -22,13 +22,22 @@ import {
   TRANSFER,
 } from '../../constants/routes';
 import "./app-sidebar.scss";
+import { connect } from 'react-redux';
+import { REDUX_STATE } from "../../ducks";
 
-class AppSidebar extends Component<RouteComponentProps> {
+type StateProps = {
+  isLoggedIn?: boolean
+}
+
+type PropTypes = StateProps & RouteComponentProps;
+
+class AppSidebar extends Component<PropTypes> {
   render() {
     const {
       location: {
         pathname,
       },
+      isLoggedIn
     } = this.props;
 
     const isWalletSelected = [
@@ -57,15 +66,25 @@ class AppSidebar extends Component<RouteComponentProps> {
           selected={isExchangeSelected}
           hoverable
         />
-        <Item
+        {isLoggedIn === true && <Item
           imageUrl={isWalletSelected ? WalletBlue : Wallet}
           onClick={() => this.props.history.push(WALLET)}
           selected={isWalletSelected}
           hoverable
-        />
+        />}
       </div>
     )
   }
 }
 
-export default withRouter(AppSidebar);
+
+function mapStateToProps(state: REDUX_STATE): StateProps {
+  return {
+    isLoggedIn: state.user.isLoggedIn,
+  };
+}
+
+
+export default withRouter(
+  connect(mapStateToProps, null)(AppSidebar)
+);

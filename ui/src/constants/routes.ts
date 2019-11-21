@@ -1,6 +1,7 @@
 export const HOME: string = "/";
 export const EXCHANGE: string = "/exchange";
 export const WALLET: string = "/wallet";
+export const AUTHENTICATE: string = "/authenticate";
 export const CONNECT_WALLET: string = "/wallet/connect";
 export const CONNECT_WALLET__HARDWARE: string = "/wallet/connect/hardware";
 export const CONNECT_WALLET__MOBILE: string = "/wallet/connect/mobile";

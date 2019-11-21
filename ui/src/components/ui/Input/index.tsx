@@ -12,9 +12,10 @@ type PropTypes = {
   onKeyPress?: (event: KeyboardEvent<HTMLInputElement>) => void
   onPaste?: (event: ClipboardEvent<HTMLInputElement>) => void
   value?: string
-  type?: 'text' | 'number' | 'password'
+  type?: 'text' | 'number' | 'password' | 'file'
   step?: string
   autoFocus?: boolean
+  name?: string
 }
 
 class Input extends Component<PropTypes> {
@@ -33,6 +34,7 @@ class Input extends Component<PropTypes> {
       value,
       step,
       autoFocus,
+      name
     } = this.props;
 
     return (
@@ -51,6 +53,7 @@ class Input extends Component<PropTypes> {
             value={value}
             step={step}
             autoFocus={autoFocus}
+            name={name}
           />
           { suffix && <div className="input__suffix">{suffix}</div> }
         </div>

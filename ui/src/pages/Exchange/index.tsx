@@ -8,7 +8,7 @@ import './style/exchange.scss';
 
 const Exchange: React.FC = () => {
   return (
-    <div className="exchange">
+    <div className="exchange"> 
       <Chart />
       <Depth />
       <List />

@@ -7,13 +7,19 @@ import AppHeader from '../../components/AppHeader';
 import Wallet from "../Wallet";
 import Exchange from '../Exchange';
 import Login from "../Login";
+import ConnectWallet from '../ConnectWallet';
+import CreateWallet from '../CreateWallet';
+import Authenticate from '../Authentication';
 import {
   CONNECT_WALLET,
   CONNECT_WALLET__SOFTWARE,
   CREATE_WALLET__SOFTWARE,
+  CONNECT_WALLET__MOBILE,
   CONFIRM_SEEDPHRASE_BACKUP__SOFTWARE,
   EXCHANGE,
-  WALLET
+  HOME,
+  WALLET,
+  AUTHENTICATE
 } from '../../constants/routes';
 import {checkLogin, login} from '../../ducks/user';
 import { ActionType } from "../../ducks/types";
@@ -53,19 +59,8 @@ class Main extends Component<PropsType> {
         <AppSidebar />
         <div className="app__body">
           <AppHeader />
-          { isLoggedIn ? this.renderRoutes() : this.renderAuthRoutes() }
+          { this.renderRoutes() }
         </div>
-      </div>
-    );
-  }
-
-  renderAuthRoutes(): ReactNode {
-    return (
-      <div className="app__content">
-        <Switch>
-          <Route path={CONNECT_WALLET__SOFTWARE} component={Login} exact />
-          <Redirect to={CONNECT_WALLET__SOFTWARE} />
-        </Switch>
       </div>
     );
   }
@@ -74,9 +69,13 @@ class Main extends Component<PropsType> {
     return (
       <div className="app__content">
         <Switch>
-          <Route path={EXCHANGE} component={Exchange} exact />
+          <Route path={EXCHANGE} component={Exchange} />
+          <Route path={CONNECT_WALLET__SOFTWARE} component={Login} />
+          <Route path={CREATE_WALLET__SOFTWARE} component={CreateWallet} />
           <Route path={WALLET} component={Wallet} />
-          <Redirect to="/exchange" />
+          <Route path={AUTHENTICATE} component={Authenticate} />
+          <Route path={HOME} component={Exchange} />
+          <Redirect from='*' to='/exchange' />
         </Switch>
       </div>
     );

@@ -1,0 +1,121 @@
+@import "../../variables";
+
+.authenticate {
+  @extend %column-nowrap;
+  position: relative;
+  margin: 2rem auto 0 auto;
+  align-items: center;
+  background-color: mix($white, $regal-blue, 95);
+  border-radius: .25rem;
+  padding: 1.5rem 3rem;
+  box-shadow: 0 2px 4px 2px rgba($black, .35);
+  width: 45rem;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  min-height: 15rem;
+  align-items: flex-start;
+
+  &__title {
+    font-weight: 500;
+    font-size: 1.25rem;
+    color: rgba($black, .8);
+    flex: 0 0 100%;
+    text-align: center;
+  }
+
+  &__info {
+    width: 60rem;
+    box-sizing: border-box;
+    background-color: rgba($texas-rose-orange, .15);
+    border-radius: 3px;
+    padding: .5rem 1rem;
+    margin-top: 1rem;
+    font-size: .675rem;
+    font-family: "Roboto Mono";
+    color: mix($black, $texas-rose-orange, 30);
+    text-align: center;
+  }
+
+  &__method {
+    flex: 0 0 30%;
+    margin-top: 1rem;
+
+    .input {
+
+      &__label {
+        width: calc(100% - 1rem);
+        flex: 0 0 auto;
+        color: rgba($black, .5);
+        font-weight: 500;
+      }
+    }
+  }
+
+
+  &__error-message {
+    @extend %ellipsify;
+    text-align: center;
+    font-size: .75rem;
+    margin-top: .5rem;
+    color: $persimmon-red;
+    width: 20rem;
+    height: 1rem;
+  }
+
+
+  &__text {
+    font-weight: 300;
+    font-size: 1rem;
+    margin-top: 2rem;
+  }
+
+
+  &__button {
+    margin-top: 2rem;
+  }
+
+
+  &__action {
+    flex: 0 0 70%;
+
+    .input {
+      @extend %column-nowrap;
+      width: 20rem;
+      margin-top: 2rem;
+
+      &__label {
+        width: calc(100% - 1rem);
+        flex: 0 0 auto;
+        color: rgba($black, .5);
+        font-weight: 500;
+      }
+
+      &__wrapper {
+        @extend %row-nowrap;
+        align-items: center;
+        flex: 0 0 auto;
+        margin-top: .25rem;
+        background-color: rgba($black, .1) !important;
+        width: calc(100% - 1rem);
+      }
+
+
+      &__input {
+        color: $black;
+        font-size: 1rem;
+        padding: .5rem;
+      }
+    }
+  }
+
+  &__error-message {
+    @extend %ellipsify;
+    text-align: center;
+    font-size: .75rem;
+    margin-top: .5rem;
+    color: $persimmon-red;
+    width: 20rem;
+    height: 1rem;
+  }
+}
