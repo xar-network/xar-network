@@ -14,7 +14,6 @@ import (
 	"github.com/xar-network/xar-network/embedded/fill"
 	"github.com/xar-network/xar-network/embedded/order"
 	"github.com/xar-network/xar-network/embedded/price"
-	"github.com/xar-network/xar-network/embedded/ui"
 )
 
 func RegisterRoutes(ctx context.CLIContext, r *mux.Router, cdc *codec.Codec, enableFaucet bool) {
@@ -31,5 +30,5 @@ func RegisterRoutes(ctx context.CLIContext, r *mux.Router, cdc *codec.Codec, ena
 	price.RegisterRoutes(ctx, sub, cdc)
 	book.RegisterRoutes(ctx, sub, cdc)
 	batch.RegisterRoutes(ctx, sub, cdc)
-	ui.RegisterRoutes(ctx, r, cdc)
+	//ui.RegisterRoutes(ctx, r, cdc)
 }
