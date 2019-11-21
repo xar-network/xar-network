@@ -3,6 +3,7 @@ module github.com/xar-network/xar-network
 go 1.13
 
 require (
+	github.com/99designs/keyring v1.1.3
 	github.com/btcsuite/btcd v0.0.0-20190115013929-ed77733ec07d
 	github.com/cosmos/cosmos-sdk v0.34.4-0.20191114141721-d4c831e63ad3
 	github.com/go-kit/kit v0.9.0

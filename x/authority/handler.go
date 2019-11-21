@@ -28,6 +28,8 @@ func newHandler(k Keeper) sdk.Handler {
 			return k.CreateIssuer(ctx, msg.Authority, msg.Issuer, msg.Denominations)
 		case types.MsgCreateOracle:
 			return k.CreateOracle(ctx, msg.Authority, msg.Oracle)
+		case types.MsgCreateMarket:
+			return k.CreateMarket(ctx, msg.Authority, msg.BaseAsset, msg.QuoteAsset)
 		case types.MsgDestroyIssuer:
 			return k.DestroyIssuer(ctx, msg.Authority, msg.Issuer)
 		default:

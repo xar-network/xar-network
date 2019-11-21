@@ -41,7 +41,22 @@ func DefaultGenesisState() GenesisState {
 			{
 				ID:              store.NewEntityID(1),
 				BaseAssetDenom:  "uftm",
-				QuoteAssetDenom: "ucsdt",
+				QuoteAssetDenom: "uzar",
+			},
+			{
+				ID:              store.NewEntityID(2),
+				BaseAssetDenom:  "ueur",
+				QuoteAssetDenom: "uzar",
+			},
+			{
+				ID:              store.NewEntityID(3),
+				BaseAssetDenom:  "uusd",
+				QuoteAssetDenom: "uzar",
+			},
+			{
+				ID:              store.NewEntityID(4),
+				BaseAssetDenom:  "ubtc",
+				QuoteAssetDenom: "uzar",
 			},
 		},
 	}

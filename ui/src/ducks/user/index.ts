@@ -58,7 +58,7 @@ export const addUserOrders = (orders: OrderType[]): ActionType<OrderType[]> => (
 });
 
 export const login = (password: string) => async (dispatch: Dispatch): Promise<Response> => {
-  const resp = await post('/auth/login', { username: 'validator', password });
+  const resp = await post('/auth/login', { username: 'zafx', password });
 
   if (resp.status === 204) {
     const addrRes = await get('/auth/me');

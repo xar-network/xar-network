@@ -22,6 +22,11 @@ type (
 		Oracle    sdk.AccAddress
 		Authority sdk.AccAddress
 	}
+	MsgCreateMarket struct {
+		Authority  sdk.AccAddress
+		BaseAsset  string
+		QuoteAsset string
+	}
 )
 
 func (msg MsgDestroyIssuer) Type() string { return "destroyIssuer" }
@@ -29,6 +34,8 @@ func (msg MsgDestroyIssuer) Type() string { return "destroyIssuer" }
 func (msg MsgCreateIssuer) Type() string { return "createIssuer" }
 
 func (msg MsgCreateOracle) Type() string { return "createOracle" }
+
+func (msg MsgCreateMarket) Type() string { return "createMarket" }
 
 func (msg MsgDestroyIssuer) ValidateBasic() sdk.Error {
 	if msg.Issuer.Empty() {
@@ -45,6 +52,24 @@ func (msg MsgDestroyIssuer) ValidateBasic() sdk.Error {
 func (msg MsgCreateOracle) ValidateBasic() sdk.Error {
 	if msg.Oracle.Empty() {
 		return sdk.ErrInvalidAddress("missing oracle address")
+	}
+
+	if msg.Authority.Empty() {
+		return sdk.ErrInvalidAddress("missing authority address")
+	}
+
+	return nil
+}
+
+func (msg MsgCreateMarket) ValidateBasic() sdk.Error {
+	//TODO check if asset exists in supply
+	if msg.BaseAsset == "" {
+		return sdk.ErrInvalidAddress("missing base asset")
+	}
+
+	//TODO check if asset exists in supply
+	if msg.QuoteAsset == "" {
+		return sdk.ErrInvalidAddress("missing base asset")
 	}
 
 	if msg.Authority.Empty() {
@@ -81,11 +106,20 @@ func (msg MsgCreateIssuer) GetSigners() []sdk.AccAddress {
 func (msg MsgCreateOracle) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Authority}
 }
+
+func (msg MsgCreateMarket) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.Authority}
+}
+
 func (msg MsgDestroyIssuer) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 func (msg MsgCreateIssuer) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+func (msg MsgCreateMarket) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
@@ -98,3 +132,5 @@ func (msg MsgDestroyIssuer) Route() string { return ModuleName }
 func (msg MsgCreateIssuer) Route() string { return ModuleName }
 
 func (msg MsgCreateOracle) Route() string { return ModuleName }
+
+func (msg MsgCreateMarket) Route() string { return ModuleName }
