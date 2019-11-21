@@ -86,8 +86,8 @@ class Index extends Component<PropTypes> {
             <TableCell>
               {
                 lastPrice
-                  .div(10 ** quoteAsset.decimals)
-                  .toFixed(Math.min(quoteAsset.nativeDecimals, 4))
+                  .div(10 ** 8)
+                  .toFixed(Math.min(8, 4))
               }
             </TableCell>
           </Tooltip>
@@ -191,8 +191,8 @@ function mapStateToProps(state: REDUX_STATE): StatePropTypes {
   const { bids = [], asks = [], baseSymbol = '', quoteSymbol = '' } = market || {};
   const quoteAsset = assets[symbolToAssetId[quoteSymbol]] || {};
   const baseAsset = assets[symbolToAssetId[baseSymbol]] || {};
-  const { max: bidMax, depths: bidDepth } = reduceDepthFromOrders(bids, quoteAsset.decimals, quoteAsset.nativeDecimals);
-  const { max: askMax, depths: askDepth } = reduceDepthFromOrders(asks, quoteAsset.decimals, quoteAsset.nativeDecimals);
+  const { max: bidMax, depths: bidDepth } = reduceDepthFromOrders(bids, 8, 8);
+  const { max: askMax, depths: askDepth } = reduceDepthFromOrders(asks, 8, 8);
 
   return {
     selectedSpreadType: selectedSpreadType,

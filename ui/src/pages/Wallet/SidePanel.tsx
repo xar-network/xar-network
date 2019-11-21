@@ -26,7 +26,7 @@ class SidePanel extends Component<Props> {
       <div className="wallet__side-panel">
         <div className="wallet__side-panel__header">
           <div className="wallet__side-panel__header__text">Overview</div>
-          <div className="wallet__side-panel__header__conversion-dropdown">TEST</div>
+          <div className="wallet__side-panel__header__conversion-dropdown">UCSDT</div>
         </div>
         { this.renderBalance('Total Holdings', locked.plus(unlocked).dividedBy(10 ** 18).toFixed(4))}
         { this.renderBalance('On Orders', locked.dividedBy(10 ** 18).toFixed(4))}

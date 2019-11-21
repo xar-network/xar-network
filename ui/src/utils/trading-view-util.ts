@@ -36,11 +36,11 @@ export const TVDatafeed: IBasicDataFeed = {
       timezone: 'America/Los_Angeles',
       ticker: symbolName,
       minmov: 1,
-      pricescale: 10 ** Math.min(4, quoteAsset.nativeDecimals),
+      pricescale: 10 ** Math.min(4, 8),
       has_intraday: true,
       intraday_multipliers: ['1'],
       supported_resolutions:  ["1", "5", "15", "60"],
-      volume_precision: Math.min(4, quoteAsset.nativeDecimals),
+      volume_precision: Math.min(4, 8),
       data_status: 'streaming',
     };
 
@@ -60,10 +60,10 @@ export const TVDatafeed: IBasicDataFeed = {
     const quoteAssetId = symbolToAssetId[quoteSymbol];
     const quoteAsset = assets[quoteAssetId];
 
-    const marketId = pairToMarketId[`${baseAsset.symbol}/${quoteAsset.symbol}`]
+    const marketId = pairToMarketId[`${baseSymbol}/${quoteSymbol}`]
 
-    if (!baseAsset) return onErrorCallback(`Cannot get bars for ${baseSymbol}`);
-    if (!quoteAsset) return onErrorCallback(`Cannot get bars for ${quoteSymbol}`);
+    //if (!baseAsset) return onErrorCallback(`Cannot get bars for ${baseSymbol}`);
+    //if (!quoteAsset) return onErrorCallback(`Cannot get bars for ${quoteSymbol}`);
 
     try {
       const rawCandles = await chartDataProvider.fetchCandles(
@@ -75,7 +75,7 @@ export const TVDatafeed: IBasicDataFeed = {
         to * 1000,
         from * 1000,
       );
-      onHistoryCallback(formatTVCandles(rawCandles, 1 / (10 ** quoteAsset.decimals)), { noData: !rawCandles.length });
+      onHistoryCallback(formatTVCandles(rawCandles, 1 / (10 ** 8)), { noData: !rawCandles.length });
     } catch (e) {
       onErrorCallback(e.message);
     }

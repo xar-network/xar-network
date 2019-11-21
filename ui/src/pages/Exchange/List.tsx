@@ -119,14 +119,14 @@ class List extends Component<PropTypes, State> {
       >
         <TableCell>
           {
-            clearingPrice.div(10 ** quoteAsset.decimals)
-              .toFixed(Math.min(quoteAsset.nativeDecimals, 4))
+            clearingPrice.div(10 ** 8)
+              .toFixed(Math.min(8, 4))
           }
         </TableCell>
         <TableCell>
           {
-            clearingQuantity.div(10 ** baseAsset.decimals)
-              .toFixed(Math.min(baseAsset.nativeDecimals, 6))
+            clearingQuantity.div(10 ** 8)
+              .toFixed(Math.min(8, 6))
           }
         </TableCell>
         <TableCell>{getHHMMSS(date)}</TableCell>

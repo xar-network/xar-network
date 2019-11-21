@@ -59,7 +59,7 @@ class DepthTableRow extends Component<Props, State> {
     if (!baseAsset || !quoteAsset) return null;
 
     const priceN = price;
-    let quantityN = quantity.div(10 ** baseAsset.decimals);
+    let quantityN = quantity.div(10 ** 8);
     let isPendingFills = false;
 
     if (quantityN.isZero()) {
@@ -69,8 +69,8 @@ class DepthTableRow extends Component<Props, State> {
     const totalN = priceN.multipliedBy(quantityN);
     const percentN = price.multipliedBy(quantity).div(max).multipliedBy(100);
 
-    const p = priceN.toFixed(quoteAsset.nativeDecimals);
-    const q = quantityN.toFixed(Math.min(baseAsset.nativeDecimals, 8))
+    const p = priceN.toFixed(8);
+    const q = quantityN.toFixed(Math.min(8, 8))
 
     return (
       <TableRow
@@ -81,7 +81,7 @@ class DepthTableRow extends Component<Props, State> {
       >
         <TableCell>{p}</TableCell>
         <TableCell>{q}</TableCell>
-        <TableCell>{totalN.toFixed(quoteAsset.nativeDecimals)}</TableCell>
+        <TableCell>{totalN.toFixed(8)}</TableCell>
         <div
           className="exchange__depth__percentage"
           style={{

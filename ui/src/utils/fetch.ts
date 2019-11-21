@@ -70,11 +70,9 @@ export type OrderbookResponse = {
 }
 
 type Balance = {
-  asset_id: string
+  denom: string
   at_risk: string
-  liquid: string
-  name: string
-  symbol: string
+  amount: string
 }
 
 export type BalanceResponse = {

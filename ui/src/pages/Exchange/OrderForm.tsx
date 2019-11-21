@@ -91,13 +91,13 @@ class OrderForm extends Component<Props, State> {
       case ORDER_SIDE.buy:
         this.setState({
           bidPrice: price,
-          bidTotal: bn(price).multipliedBy(bn(bidAmount)).toFixed(quoteAsset.nativeDecimals),
+          bidTotal: bn(price).multipliedBy(bn(bidAmount)).toFixed(8),
         });
         return;
       case ORDER_SIDE.sell:
         this.setState({
           askPrice: price,
-          askTotal: bn(price).multipliedBy(bn(askAmount)).toFixed(quoteAsset.nativeDecimals),
+          askTotal: bn(price).multipliedBy(bn(askAmount)).toFixed(8),
         });
         return;
       default:
@@ -118,7 +118,7 @@ class OrderForm extends Component<Props, State> {
           bidAmount: amount,
           bidTotal: bn(bidPrice)
             .multipliedBy(bn(amount))
-            .toFixed(quoteAsset.nativeDecimals),
+            .toFixed(8),
         });
         return;
       case ORDER_SIDE.sell:
@@ -126,7 +126,7 @@ class OrderForm extends Component<Props, State> {
           askAmount: amount,
           askTotal: bn(askPrice)
             .multipliedBy(bn(amount))
-            .toFixed(quoteAsset.nativeDecimals),
+            .toFixed(8),
         });
         return;
       default:
@@ -145,7 +145,7 @@ class OrderForm extends Component<Props, State> {
       case ORDER_SIDE.buy:
         this.setState({
           bidAmount: !bn(bidPrice).isZero()
-            ? bn(total).div(bn(bidPrice)).toFixed(baseAsset.nativeDecimals)
+            ? bn(total).div(bn(bidPrice)).toFixed(8)
             : '0',
           bidTotal: total,
         });
@@ -153,7 +153,7 @@ class OrderForm extends Component<Props, State> {
       case ORDER_SIDE.sell:
         this.setState({
           askAmount: !bn(askPrice).isZero()
-            ? bn(total).div(bn(askPrice)).toFixed(baseAsset.nativeDecimals)
+            ? bn(total).div(bn(askPrice)).toFixed(8)
             : '0',
           askTotal: total,
         });
@@ -178,10 +178,10 @@ class OrderForm extends Component<Props, State> {
         market_id: selectedMarket,
         direction: 'BID',
         price: bn(bidPrice)
-          .multipliedBy(10 ** quoteAsset.decimals)
+          .multipliedBy(10 ** 8)
           .toFixed(0),
         quantity: bn(bidAmount)
-          .multipliedBy(10 ** baseAsset.decimals)
+          .multipliedBy(10 ** 8)
           .toFixed(0),
         type: 'LIMIT',
         time_in_force: 100,
@@ -231,10 +231,10 @@ class OrderForm extends Component<Props, State> {
         market_id: selectedMarket,
         direction: 'ASK',
         price: bn(askPrice)
-          .multipliedBy(10 ** quoteAsset.decimals)
+          .multipliedBy(10 ** 8)
           .toFixed(0),
         quantity: bn(askAmount)
-          .multipliedBy(10 ** baseAsset.decimals)
+          .multipliedBy(10 ** 8)
           .toFixed(0),
         type: 'LIMIT',
         time_in_force: 100,

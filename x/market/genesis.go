@@ -40,8 +40,8 @@ func DefaultGenesisState() GenesisState {
 		Markets: []types.Market{
 			{
 				ID:              store.NewEntityID(1),
-				BaseAssetDenom:  "ucsdt",
-				QuoteAssetDenom: "uftm",
+				BaseAssetDenom:  "uftm",
+				QuoteAssetDenom: "ucsdt",
 			},
 		},
 	}

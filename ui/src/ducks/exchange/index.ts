@@ -124,12 +124,12 @@ const initialState = {
   selectedChartType: CHART_TYPE.TradingView,
   selectedBatch: '',
   pairToMarketId: {
-    'DEMO/TEST': '1',
+    'UFTM/UCSDT': '1',
   },
   markets: {
     1: {
-      quoteSymbol: 'DEMO',
-      baseSymbol: 'TEST',
+      quoteSymbol: 'UFTM',
+      baseSymbol: 'UCSDT',
       dayStats: makeDayStats({}),
       batches: {},
       bids: [],

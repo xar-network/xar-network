@@ -36,8 +36,7 @@ class History extends Component<Props> {
       baseAsset,
       quoteAsset,
     } = this.props;
-
-    const filteredOrders = orders.filter(({status}) => {
+    const filteredOrders = orders/*.filter(({status}) => {
       switch (orderHistoryFilter) {
         case ORDER_HISTORY_FILTERS.ALL:
           return true;
@@ -46,7 +45,7 @@ class History extends Component<Props> {
         default:
           return false;
       }
-    });
+    });*/
 
     if (!baseAsset || !quoteAsset) return <noscript />;
 
@@ -98,7 +97,7 @@ class History extends Component<Props> {
   renderRow = (order: OrderType): React.ReactNode => {
     const { baseAsset, quoteAsset } = this.props;
 
-    if (!baseAsset || !quoteAsset) return <noscript />;
+    if (!baseAsset || !quoteAsset || !order) return <noscript />;
 
     return (
       <TableRow key={order.id}>
@@ -109,22 +108,22 @@ class History extends Component<Props> {
         <TableCell>
           {
             order.price
-              .div(10 ** quoteAsset.decimals)
-              .toFixed(Math.min(6, quoteAsset.nativeDecimals))
+              .div(10 ** 8)
+              .toFixed(Math.min(6, 8))
           }
         </TableCell>
         <TableCell>
           {
             order.quantity
-              .div(10 ** baseAsset.decimals)
-              .toFixed(Math.min(6, baseAsset.nativeDecimals))
+              .div(10 ** 8)
+              .toFixed(Math.min(6, 8))
           }
         </TableCell>
         <TableCell>
           {
             order.quantity_filled
-              .div(10 ** baseAsset.decimals)
-              .toFixed(Math.min(6, baseAsset.nativeDecimals))
+              .div(10 ** 8)
+              .toFixed(Math.min(6, 8))
           }
         </TableCell>
         <TableCell>{ order.status }</TableCell>

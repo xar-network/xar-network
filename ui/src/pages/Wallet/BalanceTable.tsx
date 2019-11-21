@@ -9,10 +9,10 @@ import "./style/balance-table.scss";
 
 type StateProps = {
   balances: {
-    [assetId: string]: BalanceType
+    [denom: string]: BalanceType
   }
   assets: {
-    [assetId: string]: AssetType
+    [denom: string]: AssetType
   }
 }
 
@@ -56,8 +56,8 @@ class BalanceTable extends Component<Props> {
 
   renderTableRow (balance: BalanceType): ReactNode {
     const { assets } = this.props;
-    const { assetId, locked, unlocked } = balance;
-    const { symbol, decimals, name } = assets[assetId];
+    const { denom, locked, unlocked } = balance;
+    const { symbol, decimals, name } = assets[denom];
 
     return (
       <TableRow key={symbol}>

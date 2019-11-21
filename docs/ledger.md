@@ -48,7 +48,7 @@ xarcli keys add <keyName> --ledger
 <keyName> ledger cosmos1... cosmospub1...
 ```
 
-Cosmos uses [HD Wallets](./hd-wallets.md). This means you can setup many accounts using the same Ledger seed. To create another account from your Ledger device, run;
+Cosmos uses [HD Wallets](./hd-wallets.md). This means you can setup many accounts using the same Ledger seed. To create another account from your Ledger device, run:
 
 ```bash
 xarcli keys add <secondKeyName> --ledger

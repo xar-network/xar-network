@@ -84,7 +84,7 @@ class Login extends Component<Props, State> {
             <Button
               type="primary"
               onClick={this.login}
-              disabled={!this.state.password || isLoggingIn}
+              disabled={isLoggingIn}
               loading={isLoggingIn}
             >
               { isLoggingIn ? 'Logging In' : 'Login' }

@@ -56,8 +56,8 @@ class ExchangeHeader extends Component<PropTypes> {
             'Last Price',
             <Numeral
               value={lastPrice}
-              decimals={quoteAsset.decimals}
-              displayDecimals={quoteAsset.nativeDecimals}
+              decimals={8}
+              displayDecimals={8}
               formatAsCurrency
             />,
             lastPriceModifier,
@@ -70,8 +70,8 @@ class ExchangeHeader extends Component<PropTypes> {
             <div>
               <Numeral
                 value={dayChange}
-                decimals={quoteAsset.decimals}
-                displayDecimals={quoteAsset.nativeDecimals}
+                decimals={8}
+                displayDecimals={8}
                 formatAsCurrency
               />
               <span>(</span>
@@ -87,8 +87,8 @@ class ExchangeHeader extends Component<PropTypes> {
             '24H High',
             <Numeral
               value={dayHigh}
-              decimals={quoteAsset.decimals}
-              displayDecimals={quoteAsset.nativeDecimals}
+              decimals={8}
+              displayDecimals={8}
               formatAsCurrency
             />,
             '',
@@ -100,8 +100,8 @@ class ExchangeHeader extends Component<PropTypes> {
             '24H Low',
             <Numeral
               value={dayLow}
-              decimals={quoteAsset.decimals}
-              displayDecimals={quoteAsset.nativeDecimals}
+              decimals={8}
+              displayDecimals={8}
               formatAsCurrency
             />,
             '',

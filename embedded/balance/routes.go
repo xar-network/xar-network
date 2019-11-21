@@ -33,11 +33,14 @@ func getBalanceHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFun
 	return func(w http.ResponseWriter, r *http.Request) {
 		owner := auth.MustGetKBFromSession(r)
 
-		req := GetQueryRequest{
-			Address: owner.GetAddr(),
+		params := bank.NewQueryBalanceParams(owner.GetAddr())
+		bz, err := cdc.MarshalJSON(params)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
 		}
 
-		resB, _, err := ctx.QueryWithData("custom/balance/get", cdc.MustMarshalBinaryBare(req))
+		resB, _, err := ctx.QueryWithData("custom/bank/balances", bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return

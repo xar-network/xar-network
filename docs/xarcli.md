@@ -4,7 +4,7 @@
 
 `xarcli` is the tool that enables you to interact with the node that runs on the Cosmos Hub network, whether you run it yourself or not. Let us set it up properly. In order to install it, follow the [installation procedure](./installation.md).
 
-### Setting up xarcli 
+### Setting up xarcli
 
 The main command used to set up `xarcli` is the following:
 
@@ -12,17 +12,17 @@ The main command used to set up `xarcli` is the following:
 xarcli config <flag> <value>
 ```
 
-It allows you to set a default value for each given flag. 
+It allows you to set a default value for each given flag.
 
 First, set up the address of the full-node you want to connect to:
 
 ```bash
-xarcli config node <host>:<port
+xarcli config node <host>:<port>
 
 # example: xarcli config node https://77.87.106.33:26657
 ```
 
-If you run your own full-node, just use `tcp://localhost:26657` as the address. 
+If you run your own full-node, just use `tcp://localhost:26657` as the address.
 
 Then, let us set the default value of the `--trust-node` flag:
 
@@ -62,6 +62,19 @@ There are three types of key representations that are used:
   - Get this value with `xard tendermint show-validator`
   - e.g. `cosmosvalconspub1zcjduepq0ms2738680y72v44tfyqm3c9ppduku8fs6sr73fx7m666sjztznqzp2emf`
 
+#### Migrate Keys From Legacy On-Disk Keybase To OS Built-in Secret Store
+
+Older versions of `gaiacli` used store keys in the user's home directory. If you are migrating
+from an old version of `gaiacli` you will need to migrate your old keys into your operating system's
+credentials storage by running the following command:
+
+```bash
+gaiacli keys migrate
+```
+
+The command will prompt for every passphrase. If a passphrase is incorrect, it will skip the
+respective key.
+
 #### Generate Keys
 
 You'll need an account private and public key pair \(a.k.a. `sk, pk` respectively\) to be able to receive funds, send txs, bond tx, etc.
@@ -72,10 +85,10 @@ To generate a new _secp256k1_ key:
 xarcli keys add <account_name>
 ```
 
-Next, you will have to create a passphrase to protect the key on disk. The output of the above
-command will contain a _seed phrase_. It is recommended to save the _seed phrase_ in a safe
-place so that in case you forget the password, you could eventually regenerate the key from
-the seed phrase with the following command:
+The output of the above command will contain a _seed phrase_. It is recommended to save the _seed
+phrase_ in a safe place so that in case you forget the password of the operating system's
+credentials store, you could eventually regenerate the key from the seed phrase with the
+following command:
 
 ```bash
 xarcli keys add --recover
@@ -151,13 +164,13 @@ and `block` makes the client wait for the tx to be committed (or timing out).
 
 It is important to note that the `block` mode should **not** be used in most
 circumstances. This is because broadcasting can timeout but the tx may still be
-included in a block. This can result in many undesirable situations. Therefor, it
+included in a block. This can result in many undesirable situations. Therefore, it
 is best to use `sync` or `async` and query by tx hash to determine when the tx
 is included in a block.
 
 ### Fees & Gas
 
-Each transaction may either supply fees or gas prices, but not both. 
+Each transaction may either supply fees or gas prices, but not both.
 
 Validator's have a minimum gas price (multi-denom) configuration and they use
 this value when when determining if they should include the transaction in a block during `CheckTx`, where `gasPrices >= minGasPrices`. Note, your transaction must supply fees that are greater than or equal to __any__ of the denominations the validator requires.
@@ -619,7 +632,7 @@ respective parameter, eg. `MaxValidators` should be an integer and not a decimal
 
 Proper vetting of a parameter change proposal should prevent this from happening
 (no deposits should occur during the governance process), but it should be noted
-regardless. 
+regardless.
 
 :::
 
@@ -844,7 +857,7 @@ xarcli tx sign \
   unsignedTx.json \
   --multisig=<multisig_address> \
   --from=p1 \
-  --output-document=p1signature.json 
+  --output-document=p1signature.json
 ```
 
 Once the signature is generated, `p1` transmits both `unsignedTx.json` and

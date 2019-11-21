@@ -112,7 +112,7 @@ func meHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
 }
 
 func authorize(passphrase string) (string, string, error) {
-	kb, err := keys.NewKeyBaseFromHomeFlag()
+	kb, err := keys.NewKeyringFromHomeFlag(nil)
 	if err != nil {
 		return "", "", err
 	}

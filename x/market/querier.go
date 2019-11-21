@@ -38,7 +38,7 @@ func queryList(ctx sdk.Context, keeper Keeper) ([]byte, sdk.Error) {
 		}
 
 		res.Markets = append(res.Markets, types.NamedMarket{
-			ID:              mkt.ID,
+			ID:              mkt.ID.String(),
 			BaseAssetDenom:  mkt.BaseAssetDenom,
 			QuoteAssetDenom: mkt.QuoteAssetDenom,
 			Name:            name,

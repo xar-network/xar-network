@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	AssetDecimals = 18
+	AssetDecimals = 8
 )
 
 var divisor = sdk.NewDec(int64(math.Pow(float64(10), float64(AssetDecimals))))

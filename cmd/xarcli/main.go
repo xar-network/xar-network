@@ -47,6 +47,7 @@ func main() {
 	config.SetBech32PrefixForAccount("xar", "xarp")
 	config.SetBech32PrefixForValidator("xva", "xvap")
 	config.SetBech32PrefixForConsensusNode("xca", "xcap")
+	config.SetKeyringServiceName("xar")
 	config.Seal()
 
 	// TODO: setup keybase, viper object, etc. to be passed into
@@ -129,6 +130,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		authcmd.GetBroadcastCommand(cdc),
 		authcmd.GetEncodeCommand(cdc),
 		authcmd.GetDecodeCommand(cdc),
+		authcmd.GetDecodeTxCmd(cdc),
 		client.LineBreak,
 	)
 

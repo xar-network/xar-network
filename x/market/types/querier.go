@@ -4,12 +4,10 @@ import (
 	"bytes"
 
 	"github.com/olekukonko/tablewriter"
-
-	"github.com/xar-network/xar-network/types/store"
 )
 
 type NamedMarket struct {
-	ID              store.EntityID
+	ID              string
 	BaseAssetDenom  string
 	QuoteAssetDenom string
 	Name            string
@@ -31,7 +29,7 @@ func (l ListQueryResult) String() string {
 
 	for _, m := range l.Markets {
 		t.Append([]string{
-			m.ID.String(),
+			m.ID,
 			m.Name,
 			m.BaseAssetDenom,
 			m.QuoteAssetDenom,

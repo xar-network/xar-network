@@ -95,7 +95,7 @@ class BatchExecutionChart extends Component<Props> {
       const cursor = new am4charts.XYCursor();
 
       chart.cursor = cursor;
-      chart.numberFormatter.numberFormat = `#.${Array(Math.min(quoteAsset.nativeDecimals, 4)).fill('0').join('')}`;
+      chart.numberFormatter.numberFormat = `#.${Array(Math.min(8, 4)).fill('0').join('')}`;
       // chart.scrollbarY = new am4charts.XYChartScrollbar();
       // (chart.scrollbarX as any).series.push(askSeries);
 
@@ -186,22 +186,22 @@ class BatchExecutionChart extends Component<Props> {
 
     sortedBids.forEach((b, i) => {
       const valueN =  b.price
-        .multipliedBy(b.quantity.div(10 ** baseAsset.decimals));
+        .multipliedBy(b.quantity.div(10 ** 8));
 
       if (i === 0) {
         bids.push({
           price: b.price
-            .toFixed(quoteAsset.nativeDecimals),
-          value: bn(0).toFixed(quoteAsset.nativeDecimals),
+            .toFixed(8),
+          value: bn(0).toFixed(8),
         });
       }
 
       bids.push({
         price: b.price
-          .toFixed(quoteAsset.nativeDecimals),
+          .toFixed(8),
         value: valueN
           .plus(accumBids)
-          .toFixed(quoteAsset.nativeDecimals),
+          .toFixed(8),
       });
       accumBids = valueN.plus(accumBids);
     });
@@ -215,20 +215,20 @@ class BatchExecutionChart extends Component<Props> {
 
     sortedAsks.forEach((b, i) => {
       const valueN =  b.price
-        .multipliedBy(b.quantity.div(10 ** baseAsset.decimals));
+        .multipliedBy(b.quantity.div(10 ** 8));
 
       if (i === 0) {
         asks.push({
           price: b.price
-            .toFixed(quoteAsset.nativeDecimals),
-          value: bn(0).toFixed(quoteAsset.nativeDecimals),
+            .toFixed(8),
+          value: bn(0).toFixed(8),
         });
       }
 
       asks.push({
         price: b.price
-          .toFixed(quoteAsset.nativeDecimals),
-        value: valueN.plus(accumAsks).toFixed(quoteAsset.nativeDecimals),
+          .toFixed(8),
+        value: valueN.plus(accumAsks).toFixed(8),
       });
       accumAsks = valueN.plus(accumAsks);
     });
@@ -238,8 +238,8 @@ class BatchExecutionChart extends Component<Props> {
     this.askSeries.dataFields.valueY= 'price';
 
     const cp = batch.clearingPrice
-      .div(10 ** quoteAsset.decimals)
-      .toFixed(quoteAsset.nativeDecimals);
+      .div(10 ** 8)
+      .toFixed(8);
 
     this.clearingPriceSeries.data = [
       {
@@ -249,8 +249,8 @@ class BatchExecutionChart extends Component<Props> {
       {
         price: cp,
         value: accumBids.isGreaterThan(accumAsks)
-          ? accumBids.toFixed(quoteAsset.nativeDecimals)
-          : accumAsks.toFixed(quoteAsset.nativeDecimals),
+          ? accumBids.toFixed(8)
+          : accumAsks.toFixed(8),
       },
     ];
     this.clearingPriceSeries.dataFields.valueX = 'value';
@@ -286,16 +286,16 @@ function mapStateToProps (state: REDUX_STATE, ownProps: OwnProps): StateProps {
 
   const { depths: bidDepth } = reduceDepthFromOrders(
     batch ? batch.bids : [],
-    quoteAsset.decimals,
-    quoteAsset.nativeDecimals,
+    8,
+    8,
   );
   const { depths: askDepth } = reduceDepthFromOrders(
     batch ? batch.asks : [],
-    quoteAsset.decimals,
-    quoteAsset.nativeDecimals,
+    8,
+    8,
   );
 
-  // const { clearingPrice } = estimateBatch(bidDepth, askDepth, quoteAsset.decimals, quoteAsset.nativeDecimals);
+  // const { clearingPrice } = estimateBatch(bidDepth, askDepth, 8, 8);
   return {
     baseAsset,
     quoteAsset,

@@ -13,7 +13,7 @@ export const reduceDepthFromOrders = (orders: Order[], decimals: number, nativeD
   const { assets: { assets } } = store.getState();
 
   orders.forEach((order) => {
-    const key = order.price.div(10 ** decimals).toFixed(Math.min(4, nativeDecimals));
+    const key = order.price.div(10 ** 8).toFixed(Math.min(4, 8));
     depths[key] = depths[key] || bn(0);
     depths[key] = depths[key].plus(order.quantity);
   });

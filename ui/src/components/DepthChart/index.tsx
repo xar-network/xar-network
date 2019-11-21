@@ -136,16 +136,16 @@ class DepthChart extends Component<Props> {
 
     sortedBids.forEach(b => {
       const valueN =  b.price
-        // .div(10 ** quoteAsset.decimals)
-        .multipliedBy(b.quantity.div(10 ** baseAsset.decimals));
+        // .div(10 ** 8)
+        .multipliedBy(b.quantity.div(10 ** 8));
 
       bids.push({
         price: b.price
-          // .div(10 ** quoteAsset.decimals)
-          .toFixed(quoteAsset.nativeDecimals),
+          // .div(10 ** 8)
+          .toFixed(8),
         value: valueN
           .plus(accumBids)
-          .toFixed(quoteAsset.nativeDecimals),
+          .toFixed(8),
       });
       accumBids = valueN.plus(accumBids);
     });
@@ -163,14 +163,14 @@ class DepthChart extends Component<Props> {
 
     sortedAsks.forEach(b => {
       const valueN =  b.price
-        // .div(10 ** quoteAsset.decimals)
-        .multipliedBy(b.quantity.div(10 ** baseAsset.decimals));
+        // .div(10 ** 8)
+        .multipliedBy(b.quantity.div(10 ** 8));
 
       asks.push({
         price: b.price
-          // .div(10 ** quoteAsset.decimals)
-          .toFixed(quoteAsset.nativeDecimals),
-        value: valueN.plus(accumAsks).toFixed(quoteAsset.nativeDecimals),
+          // .div(10 ** 8)
+          .toFixed(8),
+        value: valueN.plus(accumAsks).toFixed(8),
       });
       accumAsks = valueN.plus(accumAsks);
     });
@@ -216,10 +216,10 @@ function mapStateToProps(state: REDUX_STATE): Props {
   const { bids = [], asks = [], quoteSymbol, baseSymbol } = market;
   const quoteAsset = assets[symbolToAssetId[quoteSymbol]] || {};
   const baseAsset = assets[symbolToAssetId[baseSymbol]] || {};
-  const quoteDecimals = quoteAsset.decimals || 0;
-  const { depths: bidDepth } = reduceDepthFromOrders(bids, quoteAsset.decimals, quoteAsset.nativeDecimals);
-  const { depths: askDepth } = reduceDepthFromOrders(asks, quoteAsset.decimals, quoteAsset.nativeDecimals);
-  const { clearingPrice, bidRation, askRation } = estimateBatch(bids, asks, quoteAsset.decimals, quoteAsset.nativeDecimals);
+  const quoteDecimals = 8 || 0;
+  const { depths: bidDepth } = reduceDepthFromOrders(bids, 8, 8);
+  const { depths: askDepth } = reduceDepthFromOrders(asks, 8, 8);
+  const { clearingPrice, bidRation, askRation } = estimateBatch(bids, asks, 8, 8);
 
   return {
     bids: bidDepth,

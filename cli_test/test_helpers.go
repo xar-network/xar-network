@@ -70,17 +70,17 @@ var (
 
 // Fixtures is used to setup the testing environment
 type Fixtures struct {
-	BuildDir      string
-	RootDir       string
+	BuildDir     string
+	RootDir      string
 	XardBinary   string
 	XarcliBinary string
-	ChainID       string
-	RPCAddr       string
-	Port          string
+	ChainID      string
+	RPCAddr      string
+	Port         string
 	XardHome     string
 	XarcliHome   string
-	P2PAddr       string
-	T             *testing.T
+	P2PAddr      string
+	T            *testing.T
 }
 
 // NewFixtures creates a new instance of Fixtures with many vars set
@@ -101,16 +101,16 @@ func NewFixtures(t *testing.T) *Fixtures {
 	}
 
 	return &Fixtures{
-		T:             t,
-		BuildDir:      buildDir,
-		RootDir:       tmpDir,
+		T:            t,
+		BuildDir:     buildDir,
+		RootDir:      tmpDir,
 		XardBinary:   filepath.Join(buildDir, "xard"),
 		XarcliBinary: filepath.Join(buildDir, "xarcli"),
 		XardHome:     filepath.Join(tmpDir, ".xard"),
 		XarcliHome:   filepath.Join(tmpDir, ".xarcli"),
-		RPCAddr:       servAddr,
-		P2PAddr:       p2pAddr,
-		Port:          port,
+		RPCAddr:      servAddr,
+		P2PAddr:      p2pAddr,
+		Port:         port,
 	}
 }
 
@@ -226,13 +226,13 @@ func (f *Fixtures) AddGenesisAccount(address sdk.AccAddress, coins sdk.Coins, fl
 // GenTx is xard gentx
 func (f *Fixtures) GenTx(name string, flags ...string) {
 	cmd := fmt.Sprintf("%s gentx --name=%s --home=%s --home-client=%s", f.XardBinary, name, f.XardHome, f.XarcliHome)
-	executeWriteCheckErr(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
+	executeWriteCheckErr(f.T, addFlags(cmd, flags))
 }
 
 // CollectGenTxs is xard collect-gentxs
 func (f *Fixtures) CollectGenTxs(flags ...string) {
 	cmd := fmt.Sprintf("%s collect-gentxs --home=%s", f.XardBinary, f.XardHome)
-	executeWriteCheckErr(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
+	executeWriteCheckErr(f.T, addFlags(cmd, flags))
 }
 
 // GDStart runs xard start with the appropriate flags and returns a process
@@ -271,19 +271,19 @@ func (f *Fixtures) KeysDelete(name string, flags ...string) {
 // KeysAdd is xarcli keys add
 func (f *Fixtures) KeysAdd(name string, flags ...string) {
 	cmd := fmt.Sprintf("%s keys add --home=%s %s", f.XarcliBinary, f.XarcliHome, name)
-	executeWriteCheckErr(f.T, addFlags(cmd, flags), client.DefaultKeyPass)
+	executeWriteCheckErr(f.T, addFlags(cmd, flags))
 }
 
 // KeysAddRecover prepares xarcli keys add --recover
 func (f *Fixtures) KeysAddRecover(name, mnemonic string, flags ...string) (exitSuccess bool, stdout, stderr string) {
 	cmd := fmt.Sprintf("%s keys add --home=%s --recover %s", f.XarcliBinary, f.XarcliHome, name)
-	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), client.DefaultKeyPass, mnemonic)
+	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), mnemonic)
 }
 
 // KeysAddRecoverHDPath prepares xarcli keys add --recover --account --index
 func (f *Fixtures) KeysAddRecoverHDPath(name, mnemonic string, account uint32, index uint32, flags ...string) {
 	cmd := fmt.Sprintf("%s keys add --home=%s --recover %s --account %d --index %d", f.XarcliBinary, f.XarcliHome, name, account, index)
-	executeWriteCheckErr(f.T, addFlags(cmd, flags), client.DefaultKeyPass, mnemonic)
+	executeWriteCheckErr(f.T, addFlags(cmd, flags), mnemonic)
 }
 
 // KeysShow is xarcli keys show

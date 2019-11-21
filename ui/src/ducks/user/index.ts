@@ -17,9 +17,9 @@ export enum ORDER_HISTORY_FILTERS {
 }
 
 export type BalanceType = {
-  assetId: string
-  locked: BigNumber
-  unlocked: BigNumber
+  denom: string,
+  locked: BigNumber,
+  unlocked: BigNumber,
 }
 
 export type UserStateType = {
@@ -27,7 +27,7 @@ export type UserStateType = {
   orders: string[]
   transactions: string[]
   balances: {
-    [assetId: string]: BalanceType
+    [denom: string]: BalanceType
   }
   address: string
   isLoggedIn?: boolean
@@ -53,7 +53,7 @@ export const addUserOrders = (orders: OrderType[]): ActionType<OrderType[]> => (
 });
 
 export const login = (password: string) => async (dispatch: Dispatch): Promise<Response> => {
-  const resp = await post('/auth/login', { username: 'dex-demo', password });
+  const resp = await post('/auth/login', { username: 'xar-validator-12', password });
 
   if (resp.status === 204) {
     const addrRes = await get('/auth/me');
@@ -117,10 +117,11 @@ export const fetchBalance = () => async (dispatch: Dispatch<ActionType<BalanceTy
     const json: BalanceResponse = await resp.json();
 
     json.balances.forEach(balance => {
+      console.log(balance)
       dispatch(setBalance({
-        assetId: balance.asset_id,
+        denom: balance.denom,
         locked: bn(balance.at_risk),
-        unlocked: bn(balance.liquid),
+        unlocked: bn(balance.amount),
       }))
     })
   } catch (e) {
@@ -171,12 +172,12 @@ function handleSetOrderHistoryFilter(state: UserStateType, action: ActionType<OR
 }
 
 function handleSetBalance(state: UserStateType, action: ActionType<BalanceType>): UserStateType {
-  const { assetId } = action.payload;
+  const { denom } = action.payload;
   return {
     ...state,
     balances: {
       ...state.balances,
-      [assetId]: action.payload,
+      [denom]: action.payload,
     },
   };
 }

@@ -44,6 +44,9 @@ func (k Keeper) Post(ctx sdk.Context, owner sdk.AccAddress, mktID store.EntityID
 		return types3.Order{}, err
 	}
 
+	// validateSufficientQuantity
+	// price - assumed to be the 8 decimal value integer
+
 	var postedAsset string
 	var postedAmt sdk.Uint
 	if direction == matcheng.Bid {
