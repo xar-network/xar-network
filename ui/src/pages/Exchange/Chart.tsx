@@ -84,7 +84,7 @@ class ChartView extends Component<PropTypes, State> {
             key="trading-view"
             className="hidden"
           />,
-          // <DepthChart key="depth-chart" />,
+           <DepthChart key="depth-chart" />,
         ];
       case CHART_TYPE.Batch:
         return [
