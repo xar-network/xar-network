@@ -10,6 +10,25 @@
     justify-content: center;
     padding: .625rem;
 
+    &__caret {
+      position: absolute;
+      width: .5rem;
+      height: .5rem;
+      right: 0px;
+      top: 5px;
+      background-image: url("../../assets/icons/caret-down.svg");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    &__text {
+      padding-right: 0.8rem;
+      cursor: pointer;
+      padding-bottom: 10px;
+      padding-left: 5px;
+    }
+
     &__label {
       @extend %ellipsify;
       flex: 0 0 auto;

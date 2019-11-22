@@ -211,7 +211,6 @@ export const fetchBalance = () => async (dispatch: Dispatch<ActionType<BalanceTy
     const json: BalanceResponse = await resp.json();
 
     json.balances.forEach(balance => {
-      console.log(balance)
       dispatch(setBalance({
         denom: balance.denom,
         locked: bn(balance.at_risk),

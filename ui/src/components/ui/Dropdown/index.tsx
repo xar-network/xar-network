@@ -75,6 +75,8 @@ export default class Dropdown extends Component<PropTypes, StateTypes> {
 
     const { isOpened } = this.state;
 
+    console.log(isOpened)
+
     return (
       <div
         className={c(`dropdown ${className}`, {
