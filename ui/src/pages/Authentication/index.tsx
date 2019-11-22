@@ -71,9 +71,6 @@ class Authentication extends Component<Props, State> {
 
     const resp = await this.props.loginKeystore(keystore, password);
 
-    console.log(resp.address)
-    console.log(resp.privateKey)
-
     this.setState({
       isLoggingIn: false,
     });

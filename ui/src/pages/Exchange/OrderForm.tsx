@@ -11,18 +11,22 @@ import {ActionType} from "../../ducks/types";
 import {Spinner} from "../../components/ui/LoadingIndicator";
 import {bn} from "../../utils/bn";
 import {AssetType} from "../../ducks/assets";
+import {AUTHENTICATE} from "../../constants/routes";
+import { withRouter, RouteComponentProps } from 'react-router-dom';
 
 type StateProps = {
   selectedMarket: string
   baseAsset: AssetType | undefined
   quoteAsset: AssetType | undefined
+  isLoggedIn?: boolean
 }
 
 type DispatchProps = {
   placeOrder: (o: PlaceOrderRequest) => Promise<any>
 }
 
-type Props = StateProps & DispatchProps
+
+type Props = StateProps & DispatchProps & RouteComponentProps;
 
 type State = {
   bidPrice?: string
@@ -48,7 +52,7 @@ class OrderForm extends Component<Props, State> {
     isPlacingBid: false,
     isPlacingAsk: false,
     askErrorMessage: '',
-    bidErrorMessage: '',
+    bidErrorMessage: ''
   };
 
   isValid(type: ORDER_SIDE): boolean {
@@ -261,7 +265,6 @@ class OrderForm extends Component<Props, State> {
         askTotal: '',
       });
     } catch (e) {
-      console.log(e);
       this.setState({
         isPlacingAsk: false,
         askErrorMessage: e.message,
@@ -271,6 +274,11 @@ class OrderForm extends Component<Props, State> {
   };
 
   render() {
+
+    const {
+      isLoggedIn
+    } = this.props
+
     return (
       <Module className="exchange__order-form">
         <ModuleHeader>
@@ -278,12 +286,31 @@ class OrderForm extends Component<Props, State> {
           {/*<ModuleHeaderButton>Market Order</ModuleHeaderButton>*/}
         </ModuleHeader>
         <ModuleContent className="exchange__order-form__content">
+          { !isLoggedIn && this.renderOverlay() }
           { this.renderBuy() }
           <div className="exchange__order-form__content__divider" />
           { this.renderSell() }
         </ModuleContent>
       </Module>
     );
+  }
+
+  renderOverlay(): ReactNode {
+    return (
+      <div className="exchange__order-form__overlay">
+        <div className="exchange__order-form__overlay__content">
+          Please log in to place orders
+          <div className="exchange__order-form__overlay__content__button">
+            <Button
+              type="primary"
+              onClick={() => this.props.history.push(AUTHENTICATE)}
+            >
+              Login
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   renderBuy(): ReactNode {
@@ -431,6 +458,7 @@ function mapStateToProps (state: REDUX_STATE) {
   const {
     exchange: { selectedMarket, markets },
     assets: { assets, symbolToAssetId },
+    user
   } = state;
 
   const market = markets[selectedMarket] || {};
@@ -442,6 +470,7 @@ function mapStateToProps (state: REDUX_STATE) {
     selectedMarket,
     quoteAsset,
     baseAsset,
+    isLoggedIn: user.isLoggedIn,
   }
 }
 
@@ -451,4 +480,6 @@ function mapDispatchToProps(dispatch: ThunkDispatch<REDUX_STATE, PlaceOrderReque
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(OrderForm);
+export default withRouter(
+  connect(mapStateToProps, mapDispatchToProps)(OrderForm)
+);

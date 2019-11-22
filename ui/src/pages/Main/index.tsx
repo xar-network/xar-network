@@ -46,13 +46,13 @@ class Main extends Component<PropsType> {
   render() {
     const { isLoggedIn } = this.props;
 
-    if (typeof isLoggedIn === 'undefined') {
-      return (
-        <div className="app app--loading">
-          <Spinner />
-        </div>
-      );
-    }
+    // if (typeof isLoggedIn === 'undefined') {
+    //   return (
+    //     <div className="app app--loading">
+    //       <Spinner />
+    //     </div>
+    //   );
+    // }
 
     return (
       <div className="app">

@@ -168,8 +168,6 @@ export const setKeystore = (payload: string): ActionType<string> => ({
 export const checkLogin = () => async (dispatch: Dispatch) => {
   try {
     const resp = await get('/user/balances');
-    console.log(resp)
-
     switch (resp.status) {
       case 401:
         return dispatch(setLogin(false));

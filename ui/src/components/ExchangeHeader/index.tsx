@@ -24,7 +24,6 @@ class ExchangeHeader extends Component<PropTypes> {
       dayStats,
     } = this.props;
 
-
     if (!quoteAsset || !baseAsset || !dayStats) return <div />;
 
     const quoteSymbol = quoteAsset.symbol;
@@ -139,9 +138,21 @@ function mapStateToProps(state: REDUX_STATE) {
     },
     assets: { assets, symbolToAssetId },
   } = state;
+
+  console.log(markets)
+  console.log(selectedMarket)
+
+  console.log(assets)
+  console.log(symbolToAssetId)
+
   const market = markets[selectedMarket] || { dayStats: {} };
   const baseAsset = assets[symbolToAssetId[market.baseSymbol]];
   const quoteAsset = assets[symbolToAssetId[market.quoteSymbol]];
+
+  console.log(markets)
+  console.log(baseAsset)
+  console.log(quoteAsset)
+
 
   return {
     dayStats: market.dayStats,
@@ -150,4 +161,4 @@ function mapStateToProps(state: REDUX_STATE) {
   }
 }
 
-export default connect(mapStateToProps)(ExchangeHeader)
+export default connect(mapStateToProps, null)(ExchangeHeader)
