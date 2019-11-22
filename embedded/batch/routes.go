@@ -11,12 +11,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/rest"
-
-	"github.com/xar-network/xar-network/embedded/auth"
 )
 
 func RegisterRoutes(ctx context.CLIContext, r *mux.Router, cdc *codec.Codec) {
-	r.Handle("/markets/{marketID}/batches", auth.DefaultAuthMW(latestBatch(ctx, cdc))).Methods("GET")
+	r.Handle("/markets/{marketID}/batches", latestBatch(ctx, cdc)).Methods("GET")
 }
 
 func latestBatch(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {

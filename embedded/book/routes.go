@@ -13,7 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 
-	"github.com/xar-network/xar-network/embedded/auth"
 	"github.com/xar-network/xar-network/embedded/node"
 	"github.com/xar-network/xar-network/embedded/order"
 	"github.com/xar-network/xar-network/pkg/matcheng"
@@ -21,7 +20,7 @@ import (
 )
 
 func RegisterRoutes(ctx context.CLIContext, r *mux.Router, cdc *codec.Codec) {
-	r.Handle("/markets/{marketID}/book", auth.DefaultAuthMW(bookHandler(ctx, cdc))).Methods("GET")
+	r.Handle("/markets/{marketID}/book", bookHandler(ctx, cdc)).Methods("GET")
 }
 
 func bookHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {

@@ -13,13 +13,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 
-	"github.com/xar-network/xar-network/embedded/auth"
 	"github.com/xar-network/xar-network/pkg/conv"
 )
 
 func RegisterRoutes(ctx context.CLIContext, r *mux.Router, cdc *codec.Codec) {
-	r.Handle("/markets/{marketID}/candles", auth.DefaultAuthMW(candlesHandler(ctx, cdc))).Methods("GET")
-	r.Handle("/markets/{marketID}/daily", auth.DefaultAuthMW(dailyHandler(ctx, cdc))).Methods("GET")
+	r.Handle("/markets/{marketID}/candles", candlesHandler(ctx, cdc)).Methods("GET")
+	r.Handle("/markets/{marketID}/daily", dailyHandler(ctx, cdc)).Methods("GET")
 }
 
 func candlesHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
