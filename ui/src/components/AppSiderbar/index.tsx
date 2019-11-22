@@ -6,7 +6,6 @@ import Candlestick from '../../assets/icons/candlestick.svg';
 import CandlestickBlue from '../../assets/icons/candlestick-blue.svg';
 import Wallet from '../../assets/icons/wallet.svg';
 import WalletBlue from '../../assets/icons/wallet-blue.svg';
-import Tendermint from '../../assets/icons/tendermint.svg';
 import {
   HOME,
   WALLET,
@@ -56,10 +55,6 @@ class AppSidebar extends Component<PropTypes> {
 
     return (
       <div className="app-sidebar">
-        <Item
-          imageUrl={ Tendermint }
-        />
-
         <Item
           imageUrl={isExchangeSelected ? CandlestickBlue : Candlestick}
           onClick={() => this.props.history.push(EXCHANGE)}

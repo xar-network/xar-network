@@ -93,9 +93,7 @@ type Balance = {
   amount: string
 }
 
-export type BalanceResponse = {
-  balances: Balance[]
-}
+export type BalanceResponse = Balance[]
 
 // asset_id: "2"
 // beneficiary: "0x7f751422e3ffcae90ae74049ff8aa5f3bc47335d"

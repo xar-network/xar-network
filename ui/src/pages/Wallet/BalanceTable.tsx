@@ -11,9 +11,6 @@ type StateProps = {
   balances: {
     [denom: string]: BalanceType
   }
-  assets: {
-    [denom: string]: AssetType
-  }
 }
 
 type DispatchProps = {
@@ -35,7 +32,7 @@ class BalanceTable extends Component<Props> {
   renderHeaderRow (): ReactNode {
     return (
       <TableHeaderRow>
-        <TableHeader>Asset</TableHeader>
+        <TableHeader>Denom</TableHeader>
         <TableHeader>Balance</TableHeader>
         <TableHeader>Available</TableHeader>
         <TableHeader>On Orders</TableHeader>
@@ -55,16 +52,14 @@ class BalanceTable extends Component<Props> {
   }
 
   renderTableRow (balance: BalanceType): ReactNode {
-    const { assets } = this.props;
     const { denom, locked, unlocked } = balance;
-    const { symbol, decimals, name } = assets[denom];
 
     return (
-      <TableRow key={symbol}>
-        <TableCell>{symbol} - {name}</TableCell>
-        <TableCell>{unlocked.plus(locked).dividedBy(10 ** decimals).toFixed(4)}</TableCell>
-        <TableCell>{unlocked.dividedBy(10 ** decimals).toFixed(4)}</TableCell>
-        <TableCell>{locked.dividedBy(10 ** decimals).toFixed(4)}</TableCell>
+      <TableRow key={denom}>
+        <TableCell>{denom}</TableCell>
+        <TableCell>{unlocked.toFixed(4)}</TableCell>
+        <TableCell>{unlocked.toFixed(4)}</TableCell>
+        <TableCell>{locked.toFixed(4)}</TableCell>
       </TableRow>
     )
   }
@@ -72,8 +67,7 @@ class BalanceTable extends Component<Props> {
 
 function mapStateToProps(state: REDUX_STATE): StateProps {
   return {
-    balances: state.user.balances,
-    assets: state.assets.assets,
+    balances: state.user.balances
   };
 }
 
