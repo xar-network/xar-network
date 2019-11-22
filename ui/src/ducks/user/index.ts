@@ -209,9 +209,8 @@ export const fetchBalance = () => async (dispatch: Dispatch<ActionType<BalanceTy
   try {
     const resp = await get('/user/balances');
     const json: BalanceResponse = await resp.json();
-
-    json.balances.forEach(balance => {
-      console.log(balance)
+    console.log(json)
+    json.forEach(balance => {
       dispatch(setBalance({
         denom: balance.denom,
         locked: bn(balance.at_risk),
@@ -250,7 +249,6 @@ export default function userReducer(state: UserStateType = initialState, action:
       return state;
   }
 }
-
 function handleAddOrders(state: UserStateType, action: ActionType<OrderType[]>): UserStateType {
   return {
     ...state,

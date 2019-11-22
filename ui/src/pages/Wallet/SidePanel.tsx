@@ -11,6 +11,7 @@ import BigNumber from "bignumber.js";
 type StateProps = {
   locked: BigNumber
   unlocked: BigNumber
+  denom: String
 }
 
 type DispatchProps = {
@@ -21,16 +22,16 @@ type Props = StateProps & DispatchProps & RouteComponentProps;
 
 class SidePanel extends Component<Props> {
   render() {
-    const { history, locked, unlocked } = this.props;
+    const { history, locked, unlocked, denom } = this.props;
     return (
       <div className="wallet__side-panel">
         <div className="wallet__side-panel__header">
           <div className="wallet__side-panel__header__text">Overview</div>
-          <div className="wallet__side-panel__header__conversion-dropdown">UCSDT</div>
+          <div className="wallet__side-panel__header__conversion-dropdown">{denom}</div>
         </div>
-        { this.renderBalance('Total Holdings', locked.plus(unlocked).dividedBy(10 ** 18).toFixed(4))}
-        { this.renderBalance('On Orders', locked.dividedBy(10 ** 18).toFixed(4))}
-        { this.renderBalance('Available Balance', unlocked.dividedBy(10 ** 18).toFixed(4))}
+        { this.renderBalance('Total Holdings', locked.plus(unlocked).toFixed(4))}
+        { this.renderBalance('On Orders', locked.toFixed(4))}
+        { this.renderBalance('Available Balance', unlocked.toFixed(4))}
       </div>
     )
   }
@@ -47,10 +48,11 @@ class SidePanel extends Component<Props> {
 
 function mapStateToProps (state: REDUX_STATE): StateProps {
   const { balances } = state.user;
-  const balance = balances['2'] || {};
+  const balance = balances['uzar'] || {};
   return {
     locked: balance.locked || bn(0),
     unlocked: balance.unlocked || bn(0),
+    denom: balance.denom || '',
   }
 }
 
