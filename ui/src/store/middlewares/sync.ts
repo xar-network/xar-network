@@ -27,11 +27,14 @@ const syncMiddleware = (store: Store) => {
 
     switch(action.type) {
       case '%INIT':
+        handleBatch(getState, action, dispatch);
         handleFetchBook(getState, action, dispatch);
         handleOrderHistory(getState, action, dispatch);
         handleBalance(getState, action, dispatch);
-        handleBatch(getState, action, dispatch);
         return;
+      case '%NOLOG':
+        handleBatch(getState, action, dispatch);
+        handleFetchBook(getState, action, dispatch);
       case SET_CHART_INTERVAL:
         return;
       default:
