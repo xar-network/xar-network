@@ -30,39 +30,21 @@ export type AssetStateType = {
 
 const initialState: AssetStateType = {
   symbolToAssetId: {
-    BTC: '3',
-    DEMO: '1',
-    TEST: '2',
-    USD: '4',
+    UCSDT: '1',
+    UFTM: '2',
   },
   assets: {
-    '4': {
-      symbol: 'USD',
-      name: 'US Dollar',
-      decimals: 18,
-      nativeDecimals: 2,
-      sources: [],
-      chainId: 'USD',
-    },
-    '3': {
-      symbol: 'BTC',
-      name: 'Bitcoin',
-      decimals: 18,
-      nativeDecimals: 8,
-      sources: [],
-      chainId: 'BTC',
-    },
     '1': {
-      symbol: 'DEMO',
-      name: 'DEX Demo Token',
+      symbol: 'UCSDT',
+      name: 'Collateralized Stable Debt Token',
       decimals: 18,
       nativeDecimals: 4,
       sources: [],
       chainId: '',
     },
     '2': {
-      symbol: 'TEST',
-      name: 'Test Token',
+      symbol: 'UFTM',
+      name: 'Fantom Token',
       decimals: 18,
       nativeDecimals: 4,
       sources: [],
