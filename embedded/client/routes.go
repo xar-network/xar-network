@@ -12,6 +12,7 @@ import (
 	"github.com/xar-network/xar-network/embedded/book"
 	"github.com/xar-network/xar-network/embedded/exchange"
 	"github.com/xar-network/xar-network/embedded/fill"
+	"github.com/xar-network/xar-network/embedded/market"
 	"github.com/xar-network/xar-network/embedded/order"
 	"github.com/xar-network/xar-network/embedded/price"
 )
@@ -25,6 +26,7 @@ func RegisterRoutes(ctx context.CLIContext, r *mux.Router, cdc *codec.Codec, ena
 	auth.RegisterRoutes(ctx, sub, cdc)
 	exchange.RegisterRoutes(ctx, sub, cdc)
 	fill.RegisterRoutes(ctx, sub, cdc)
+	market.RegisterRoutes(ctx, sub, cdc)
 	order.RegisterRoutes(ctx, sub, cdc)
 	balance.RegisterRoutes(ctx, sub, cdc, enableFaucet)
 	price.RegisterRoutes(ctx, sub, cdc)
