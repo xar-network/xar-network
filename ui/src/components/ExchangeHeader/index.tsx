@@ -139,20 +139,9 @@ function mapStateToProps(state: REDUX_STATE) {
     assets: { assets, symbolToAssetId },
   } = state;
 
-  console.log(markets)
-  console.log(selectedMarket)
-
-  console.log(assets)
-  console.log(symbolToAssetId)
-
   const market = markets[selectedMarket] || { dayStats: {} };
   const baseAsset = assets[symbolToAssetId[market.baseSymbol]];
   const quoteAsset = assets[symbolToAssetId[market.quoteSymbol]];
-
-  console.log(markets)
-  console.log(baseAsset)
-  console.log(quoteAsset)
-
 
   return {
     dayStats: market.dayStats,

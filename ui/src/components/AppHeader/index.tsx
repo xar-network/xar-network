@@ -45,6 +45,7 @@ class AppHeader extends Component<PropTypes> {
         <div className="app-header__content">
           <Switch>
             <Route path={EXCHANGE} component={ExchangeHeader} />
+            <Route path={HOME} component={ExchangeHeader} />
           </Switch>
         </div>
         {this.props.isLoggedIn !== true && <div className="app-header__login">
