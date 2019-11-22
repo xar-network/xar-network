@@ -59,7 +59,7 @@ export const addUserOrders = (orders: OrderType[]): ActionType<OrderType[]> => (
 });
 
 export const login = (password: string) => async (dispatch: Dispatch): Promise<Response> => {
-  const resp = await post('/auth/login', { username: 'validator', password });
+  const resp = await post('/auth/login', { username: 'zafx', password });
 
   if (resp.status === 204) {
     const addrRes = await get('/auth/me');
@@ -170,12 +170,13 @@ export const checkLogin = () => async (dispatch: Dispatch) => {
     const resp = await get('/user/balances');
     switch (resp.status) {
       case 401:
+        dispatch({ type: '%NOLOG' });
         return dispatch(setLogin(false));
       case 200:
         const addrRes = await get('/auth/me');
         const addrJSON: { address: string} = await addrRes.json();
-        dispatch({ type: '%INIT' });
         dispatch(setAddress(addrJSON.address));
+        dispatch({ type: '%INIT' });
         dispatch(setLogin(true));
     }
   } catch (e) {
