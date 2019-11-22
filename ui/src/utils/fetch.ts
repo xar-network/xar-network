@@ -29,6 +29,24 @@ export const get = async (url: string): Promise<Response> => {
   return fetch(`${BASE_API}${url}`);
 };
 
+export const postZar = async (url: string, body: any, xAccessToken: string, xKey: string): Promise<Response> => {
+  return fetch(`http://localhost:8081${url}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Basic RTgwRjM3RjUyQkM0QzY0RUJCRkU0QURCQkNDNzU2RDUyRDI3MDQ0NUJCQTRCMjhEODkwRTg1MjQzNjlFNEJFMjo1Njg0NjJDNEI4MDhGQkRDRTZFRTE3MjhBQTNEN0M2RTgwMjQxMzMyMzk3NUQzRUI4MTM3MkFBNTEwRDUwQ0U3',
+      'Content-Type': 'application/json',
+      'X-access-token': xAccessToken,
+      'X-key': xKey,
+    },
+    body: body,
+  });
+};
+
+export const getZar = async (url: string): Promise<Response> => {
+  // const token = await getCSRFToken();
+  return fetch(`http://localhost:8081${url}`);
+};
+
 export type OrderJSON = {
   price: string
   quantity: string

@@ -1,17 +1,18 @@
 import { Dispatch } from "redux";
 import { ActionType } from '../types';
-import {post, get, GetUserOrderResponse, BalanceResponse} from "../../utils/fetch";
+import {post, get, postZar, GetUserOrderResponse, BalanceResponse} from "../../utils/fetch";
 import { unlockAccount } from '../../utils/zar-util';
 import {addOrders, OrderType} from "../exchange";
 import BigNumber from "bignumber.js";
 import {bn} from "../../utils/bn";
 
-import crypto from 'crypto'
-import sha256 from 'sha256';
-import bip39 from 'bip39';
+const crypto = require('crypto');
+const sha256 = require('sha256');
+const bip39 = require('bip39');
 
 export const ADD_USER_ORDERS = 'app/user/addUserOrders';
 export const ADD_USER_ADDRESS = 'app/user/addUserAddress';
+export const ADD_USER_KEYSTORE = 'app/user/addUserKeystore';
 export const SET_ORDER_HISTORY_FILTER = 'app/user/setOrderHistoryFilter';
 export const SET_BALANCE = 'app/user/setBalance';
 export const SET_LOGIN = 'app/user/setLogin';
@@ -58,7 +59,7 @@ export const addUserOrders = (orders: OrderType[]): ActionType<OrderType[]> => (
 });
 
 export const login = (password: string) => async (dispatch: Dispatch): Promise<Response> => {
-  const resp = await post('/auth/login', { username: 'zafx', password });
+  const resp = await post('/auth/login', { username: 'validator', password });
 
   if (resp.status === 204) {
     const addrRes = await get('/auth/me');
@@ -71,12 +72,24 @@ export const login = (password: string) => async (dispatch: Dispatch): Promise<R
 };
 
 export const loginZAR = (email: string, password: string) => async (dispatch: Dispatch): Promise<Response> => {
-  const resp = await post('http://localhost:8081/api/v1/login', _encrypt({ email_address: email, password }, '/api/v1/login'));
+  const resp = await postZar('/api/v1/login', _encrypt({ email_address: email, password }, '/api/v1/login'), '', '');
+
+
+  // ok, so the call is successful. Now we need to figure out session management using this.
+  // dispatch(setAddress(addrJSON.address));
+  // dispatch({ type: '%INIT' });
+
+
   return resp;
 };
 
 export const loginKeystore = (keystore: string, password: string) => async (dispatch: Dispatch) => {
-  const resp = unlockAccount({ keystore, password });
+  const resp = await unlockAccount({ keystore, password });
+
+  dispatch(setAddress(resp.address));
+  dispatch(setKeystore(keystore));
+  dispatch({ type: '%INIT' });
+
   return resp;
 };
 
@@ -102,7 +115,7 @@ function _encrypt(postData:Object, url:string) {
     u: sha256(url.toLowerCase()),
     p: sha256(sha256(url.toLowerCase())),
     t: new Date().getTime(),
-    s: ''
+    s: undefined
   };
   const signSeed = JSON.stringify(signData);
   const signSignature = sha256(signSeed);
@@ -147,6 +160,11 @@ export const setAddress = (payload: string): ActionType<string> => ({
   payload,
 });
 
+export const setKeystore = (payload: string): ActionType<string> => ({
+  type: ADD_USER_KEYSTORE,
+  payload,
+});
+
 export const checkLogin = () => async (dispatch: Dispatch) => {
   try {
     const resp = await get('/user/balances');
@@ -181,6 +199,11 @@ export const fetchUserOrders = () => async (dispatch: Dispatch<ActionType<OrderT
 export const addUserAddress = (address: string) => ({
   type: ADD_USER_ADDRESS,
   payload: address,
+});
+
+export const addUserKeystore = (keystore: string) => ({
+  type: ADD_USER_KEYSTORE,
+  payload: keystore,
 });
 
 export const fetchBalance = () => async (dispatch: Dispatch<ActionType<BalanceType>>) => {

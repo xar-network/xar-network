@@ -8,6 +8,9 @@ export const unlockAccount = async (params:any) => {
     const client = new ZarClient(zarApi)
     await client.initChain()
 
+    console.log(params.keystore)
+    console.log(params.password)
+
     const acc = await client.recoverAccountFromKeystore(params.keystore, params.password);
     return acc
   } catch (err) {

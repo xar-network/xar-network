@@ -2,6 +2,7 @@ import React, {Component, ChangeEvent, ClipboardEvent, KeyboardEvent} from 'reac
 import './input.scss';
 
 type PropTypes = {
+  id?: string
   className?: string
   label?: string
   placeholder?: string
@@ -21,6 +22,7 @@ type PropTypes = {
 class Input extends Component<PropTypes> {
   render() {
     const {
+      id,
       className = '',
       label,
       placeholder,
@@ -42,6 +44,7 @@ class Input extends Component<PropTypes> {
         { label && <div className="input__label">{label}</div> }
         <div className="input__wrapper">
           <input
+            id={id}
             className="input__input"
             type={type}
             placeholder={placeholder}

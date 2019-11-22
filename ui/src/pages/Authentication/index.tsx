@@ -17,8 +17,8 @@ type DispatchProps = {
   loginZARAccount: (email: string, pw: string) => Promise<Response>,
   createZARaccount: (email: string, pw: string, firstname: string, lastname: string) => Promise<Response>,
 
-  loginKeystore: (keystore: string, pw: string) => Promise<Response>,
-  createKeystore: (pw: string) => Promise<Response>,
+  loginKeystore: (keystore: string, pw: string) => any,
+  createKeystore: (pw: string) => any,
 }
 
 type Props = DispatchProps & RouteComponentProps;
@@ -30,7 +30,7 @@ type State = {
   lastname: string,
   method: string,
   keystore: string,
-
+  fileName: string,
   errorMessage: string,
   isLoggingIn: boolean,
 }
@@ -45,6 +45,7 @@ class Authentication extends Component<Props, State> {
     keystore: '',
     errorMessage: '',
     isLoggingIn: false,
+    fileName: '',
   };
 
   loginKeystore = async () => {
@@ -70,17 +71,12 @@ class Authentication extends Component<Props, State> {
 
     const resp = await this.props.loginKeystore(keystore, password);
 
-    if (resp.status !== 204) {
-      this.setState({
-        isLoggingIn: false,
-        errorMessage: await resp.text(),
-      });
-    } else {
-      this.setState({
-        isLoggingIn: false,
-      });
-      this.props.history.push(WALLET);
-    }
+    console.log(resp.address)
+    console.log(resp.privateKey)
+
+    this.setState({
+      isLoggingIn: false,
+    });
   }
 
   loginZAR = async () => {
@@ -105,6 +101,9 @@ class Authentication extends Component<Props, State> {
     });
 
     const resp = await this.props.loginZARAccount(email, password);
+
+
+    console.log(resp)
 
     if (resp.status !== 204) {
       this.setState({
@@ -141,6 +140,39 @@ class Authentication extends Component<Props, State> {
       this.props.history.push(WALLET);
     }
   };
+
+  onUploadKeystoreFile = (evt:any) => {
+
+    const element = document.getElementById("text-button-file") as HTMLInputElement
+    var files = element.files;
+    let file = {} as File;
+
+    if(files) {
+      file = files[0]
+    }
+
+    if (file) {
+
+      if(file.type !== 'application/json') {
+        this.setState({ errorMessage: 'Invalid file' });
+        return false
+      }
+
+      const that = this
+
+      const reader: FileReader = new FileReader();
+      reader.readAsText(file, "UTF-8");
+      reader.onload = function () {
+        if(reader.result) {
+          const str = reader.result as string
+          that.setState({ keystore: str, fileName: file.name });
+        }
+      }
+      reader.onerror = function (evt) {
+        that.setState({ errorMessage: 'Invalid file' });
+      }
+    }
+  }
 
   render (): ReactNode {
     const { method } = this.state;
@@ -202,13 +234,10 @@ class Authentication extends Component<Props, State> {
           Connect an encrypted wallet file and input your password
         </div>
         <Input
+          id="text-button-file"
           label="Keystore File"
           type="file"
-          onChange={e => this.setState({
-            keystore: e.target.value,
-            errorMessage: '',
-          })}
-          value={this.state.keystore}
+          onChange={e => this.onUploadKeystoreFile(e)}
           autoFocus
         />
         <Input
