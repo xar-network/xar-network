@@ -138,8 +138,8 @@ class ExchangeHeader extends Component<PropTypes> {
         )}
         Item={(item: ItemType): ReactNode => {
           return (
-            <div onClick={item.toggleDropdown} >
-              <div className="exchange-header__item__text">{item.label}</div>
+            <div key={item.label} onClick={item.toggleDropdown} >
+              <div  className="exchange-header__item__text">{item.label}</div>
             </div>
           );
         }}

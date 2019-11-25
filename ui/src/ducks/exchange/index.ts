@@ -14,6 +14,7 @@ export const SELECT_BATCH = 'app/exchange/selectBatch';
 export const ADD_BATCH_BY_MARKET_ID = 'app/exchange/addBatchByMarketId';
 export const ADD_ORDERS = 'app/exchange/addOrders';
 export const UPDATE_DAILY_STATS_BY_MARKET_ID = 'app/exchange/updateDailyStatsByMarketId';
+export const SET_MARKET = 'app/exchange/setMarket';
 
 export enum INTERVAL {
   '1m' = '1',
@@ -70,6 +71,17 @@ export type BatchType = {
   clearingQuantity?: BN
 }
 
+export type Market = {
+  ID: string
+  BaseAssetDenom: string
+  QuoteAssetDenom: string
+  Name: string
+}
+
+export type MarketResonse = {
+  markets: Market[]
+}
+
 export type MarketType = {
   quoteDenom: string
   baseDenom: string
@@ -124,12 +136,36 @@ const initialState = {
   selectedChartType: CHART_TYPE.TradingView,
   selectedBatch: '',
   pairToMarketId: {
-    'DEMO/TEST': '1',
+    'uftm/uzar': '1',
   },
   markets: {
     '1': {
       quoteDenom: 'uzar',
       baseDenom: 'uftm',
+      dayStats: makeDayStats({}),
+      batches: {},
+      bids: [],
+      asks: [],
+    },
+    '2': {
+      quoteDenom: 'ueur',
+      baseDenom: 'uzar',
+      dayStats: makeDayStats({}),
+      batches: {},
+      bids: [],
+      asks: [],
+    },
+    '3': {
+      quoteDenom: 'uusd',
+      baseDenom: 'uzar',
+      dayStats: makeDayStats({}),
+      batches: {},
+      bids: [],
+      asks: [],
+    },
+    '4': {
+      quoteDenom: 'ubtc',
+      baseDenom: 'uzar',
       dayStats: makeDayStats({}),
       batches: {},
       bids: [],
@@ -147,6 +183,11 @@ export const setChartInterval = (interval: INTERVAL): ActionType<INTERVAL> => ({
 export const setChartType = (type: CHART_TYPE): ActionType<CHART_TYPE> => ({
   type: SET_CHART_TYPE,
   payload: type,
+});
+
+export const setMarket  = (payload: MarketType): ActionType<MarketType> => ({
+  type: SET_MARKET,
+  payload,
 });
 
 export const setSpreadType = (type: SPREAD_TYPE): ActionType<SPREAD_TYPE> => ({
@@ -421,3 +462,21 @@ function makeDayStats (extended: UpdateDayStatsType): DayStatsType {
     prevPrice: bn(extended.prevPrice || 0),
   }
 }
+
+export const fetchMarkets = () => async (dispatch: Dispatch<ActionType<MarketType>>) => {
+  try {
+    const resp = await get('/markets');
+    const json: MarketResonse = await resp.json();
+    console.log(json)
+    /*json.markets.forEach(market => {
+      dispatch(setMarket({
+        marketId: market.ID,
+        baseDenom: market.BaseAssetDenom,
+        quoteDenom: market.QuoteAssetDenom,
+        name: market.Name,
+      }))
+    })*/
+  } catch (e) {
+    console.log(e);
+  }
+};

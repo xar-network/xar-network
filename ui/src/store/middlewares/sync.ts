@@ -10,6 +10,7 @@ import {
 } from "../../ducks/exchange";
 import {get, OrderbookResponse} from "../../utils/fetch";
 import {fetchBalance, fetchUserOrders} from "../../ducks/user";
+import {fetchMarkets} from "../../ducks/exchange";
 import {ThunkDispatch} from "redux-thunk";
 
 let watchDepthTimeout: any;
@@ -18,6 +19,7 @@ let watchWithdrawalsTimeout: any;
 let watchBalanceTimeout: any;
 let watchDepositStatusTimeout: any;
 let watchBatchTimeout: any;
+let watchMarketsTimeout: any;
 
 const syncMiddleware = (store: Store) => {
   return (next: Dispatch) => (action: ActionType<any>) => {
@@ -31,10 +33,12 @@ const syncMiddleware = (store: Store) => {
         handleFetchBook(getState, action, dispatch);
         handleOrderHistory(getState, action, dispatch);
         handleBalance(getState, action, dispatch);
+        handleMarkets(getState, action, dispatch);
         return;
       case '%NOLOG':
         handleBatch(getState, action, dispatch);
         handleFetchBook(getState, action, dispatch);
+        handleMarkets(getState, action, dispatch);
       case SET_CHART_INTERVAL:
         return;
       default:
@@ -104,5 +108,16 @@ function handleBalance(getState: () => REDUX_STATE, action: ActionType<any>, dis
   async function getDaily() {
     await dispatch(fetchBalance());
     watchBalanceTimeout = setTimeout(getDaily, 2000);
+  }
+}
+
+function handleMarkets(getState: () => REDUX_STATE, action: ActionType<any>, dispatch: ThunkDispatch<REDUX_STATE, any, ActionType<any>>) {
+  if (!watchMarketsTimeout) {
+    watchMarketsTimeout = setTimeout(getDaily, 0);
+  }
+
+  async function getDaily() {
+    await dispatch(fetchMarkets());
+    watchMarketsTimeout = setTimeout(getDaily, 2000);
   }
 }

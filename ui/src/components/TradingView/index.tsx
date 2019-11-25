@@ -56,7 +56,7 @@ class TradingView extends Component<Props> {
 
     const widgetOptions: ChartingLibraryWidgetOptions = {
       ...baseWidgetOption,
-      symbol: 'UFTM/UCSDT',
+      symbol: 'uftm/uzar',
       interval: '1',
       // debug: true,
     };
