@@ -7,7 +7,6 @@ import * as am4core from "@amcharts/amcharts4/core";
 import { BigNumber as BN } from "bignumber.js";
 import {bn} from "../../utils/bn";
 import {Order} from "../../ducks/exchange";
-import {AssetType} from "../../ducks/assets";
 
 type DepthChartData = {
   price: string
@@ -17,8 +16,8 @@ type DepthChartData = {
 type Props = {
   bids: Order[]
   asks: Order[]
-  quoteAsset: AssetType | undefined
-  baseAsset: AssetType | undefined
+  quoteDenom: string
+  baseDenom: string
   clearingPrice: BN
   bidRation: BN
   askRation: BN
@@ -117,10 +116,6 @@ class DepthChart extends Component<Props> {
   }
 
   hydrateChartWithData() {
-    const { quoteAsset, baseAsset } = this.props;
-
-    if (!quoteAsset || !baseAsset) return;
-
     this.readyChart();
     if (!this.chart || !this.buySeries || !this.sellSeries || !this.priceAxis || !this.amountAxis) {
       return;
@@ -210,12 +205,9 @@ class DepthChart extends Component<Props> {
 function mapStateToProps(state: REDUX_STATE): Props {
   const {
     exchange: { selectedMarket, markets },
-    assets: { assets, symbolToAssetId },
   } = state;
   const market = markets[selectedMarket] || {};
-  const { bids = [], asks = [], quoteSymbol, baseSymbol } = market;
-  const quoteAsset = assets[symbolToAssetId[quoteSymbol]] || {};
-  const baseAsset = assets[symbolToAssetId[baseSymbol]] || {};
+  const { bids = [], asks = [], quoteDenom, baseDenom } = market;
   const quoteDecimals = 8 || 0;
   const { depths: bidDepth } = reduceDepthFromOrders(bids, 8, 8);
   const { depths: askDepth } = reduceDepthFromOrders(asks, 8, 8);
@@ -224,8 +216,8 @@ function mapStateToProps(state: REDUX_STATE): Props {
   return {
     bids: bidDepth,
     asks: askDepth,
-    quoteAsset,
-    baseAsset,
+    quoteDenom,
+    baseDenom,
     clearingPrice: clearingPrice.div(10 ** quoteDecimals),
     bidRation,
     askRation,

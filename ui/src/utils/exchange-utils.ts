@@ -10,7 +10,6 @@ type ReduceDepthFromOrdersReturnTypes = {
 export const reduceDepthFromOrders = (orders: Order[], decimals: number, nativeDecimals: number): ReduceDepthFromOrdersReturnTypes => {
   let max = bn(0);
   const depths: {[p: string]: BN} = {};
-  const { assets: { assets } } = store.getState();
 
   orders.forEach((order) => {
     const key = order.price.div(10 ** 8).toFixed(Math.min(4, 8));

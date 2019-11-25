@@ -3,7 +3,6 @@ import {connect} from 'react-redux';
 import c from 'classnames';
 import {Module, ModuleContent, ModuleHeader, ModuleHeaderButton,} from "../../components/Module";
 import {REDUX_STATE} from "../../ducks";
-import {AssetType} from "../../ducks/assets";
 import {RouteComponentProps, withRouter} from "react-router";
 import {Dispatch} from "redux";
 import {BalanceType} from "../../ducks/user";
@@ -23,8 +22,8 @@ type StateProps = {
   balances: {
     [assetId: string]: BalanceType
   }
-  assets: {
-    [k: string]: AssetType
+  denoms: {
+    [k: string]: string
   }
   address: string
 }
@@ -106,12 +105,13 @@ function mapStateToProps (state: REDUX_STATE): StateProps {
     user: {
       address,
       balances,
+      denoms,
     }
   } = state;
   return {
     balances,
     address,
-    assets: state.assets.assets,
+    denoms,
   }
 }
 

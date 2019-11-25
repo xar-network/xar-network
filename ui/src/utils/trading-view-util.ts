@@ -19,10 +19,7 @@ export const TVDatafeed: IBasicDataFeed = {
   searchSymbols() {},
 
   resolveSymbol: (symbolName, onSymbolResolvedCallback, onResolveErrorCallback) => {
-    const { assets: { assets, symbolToAssetId } } = store.getState();
-    const [ _, quoteSymbol ] = symbolName.split('/');
-    const quoteAssetId = symbolToAssetId[quoteSymbol];
-    const quoteAsset = assets[quoteAssetId];
+    const [ _, quoteDenom ] = symbolName.split('/');
 
     const symbol_stub: LibrarySymbolInfo = {
       name: symbolName,
@@ -50,17 +47,11 @@ export const TVDatafeed: IBasicDataFeed = {
 
   getBars: async (symbolInfo, resolution, from, to, onHistoryCallback, onErrorCallback, firstDataRequest) => {
     const {
-      assets: { assets, symbolToAssetId },
       exchange: { pairToMarketId },
     } = store.getState();
 
-    const [ baseSymbol, quoteSymbol ] = symbolInfo.name.split('/');
-    const baseAssetId = symbolToAssetId[baseSymbol];
-    const baseAsset = assets[baseAssetId];
-    const quoteAssetId = symbolToAssetId[quoteSymbol];
-    const quoteAsset = assets[quoteAssetId];
-
-    const marketId = pairToMarketId[`${baseSymbol}/${quoteSymbol}`]
+    const [ baseDenom, quoteDenom ] = symbolInfo.name.split('/');
+    const marketId = pairToMarketId[`${baseDenom}/${quoteDenom}`]
 
     //if (!baseAsset) return onErrorCallback(`Cannot get bars for ${baseSymbol}`);
     //if (!quoteAsset) return onErrorCallback(`Cannot get bars for ${quoteSymbol}`);
@@ -68,8 +59,8 @@ export const TVDatafeed: IBasicDataFeed = {
     try {
       const rawCandles = await chartDataProvider.fetchCandles(
         marketId,
-        baseSymbol,
-        quoteSymbol,
+        baseDenom,
+        quoteDenom,
         resolution,
         2000,
         to * 1000,

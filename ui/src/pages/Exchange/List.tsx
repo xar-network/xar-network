@@ -17,7 +17,6 @@ import {
 import {REDUX_STATE} from "../../ducks";
 import {ActionType} from "../../ducks/types";
 import {BatchType, selectBatch} from "../../ducks/exchange";
-import {AssetType} from "../../ducks/assets";
 import {getHHMMSS} from "../../utils/date-util";
 import {findQuantityOverPrice, findQuantityUnderPrice} from "../../utils/exchange-utils";
 
@@ -30,8 +29,8 @@ type StateProps = {
   batches: {
     [blockId: string]: BatchType
   }
-  baseAsset?: AssetType
-  quoteAsset?: AssetType
+  baseDenom?: string
+  quoteDenom?: string
 }
 
 type DispatchProps = {
@@ -94,9 +93,7 @@ class List extends Component<PropTypes, State> {
   }
 
   renderRow(batch: BatchType): React.ReactNode {
-    const { baseAsset, quoteAsset, selectBatch} = this.props;
-
-    if (!baseAsset || !quoteAsset) return null;
+    const { selectBatch} = this.props;
 
     const {
       blockId,
@@ -138,21 +135,17 @@ class List extends Component<PropTypes, State> {
 function mapStateToProps(state: REDUX_STATE): StateProps {
   const {
     exchange: { selectedMarket, markets },
-    assets: { assets, symbolToAssetId },
   } = state;
   const {
     batches = {},
-    quoteSymbol = '',
-    baseSymbol = '',
+    quoteDenom = '',
+    baseDenom = '',
   } = markets[selectedMarket] || {};
-
-  const baseAsset = assets[symbolToAssetId[baseSymbol]];
-  const quoteAsset = assets[symbolToAssetId[quoteSymbol]];
 
   return {
     batches,
-    baseAsset,
-    quoteAsset,
+    baseDenom,
+    quoteDenom,
   }
 }
 

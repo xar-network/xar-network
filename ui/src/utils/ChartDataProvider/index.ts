@@ -97,13 +97,9 @@ class ChartDataProvider {
       .map(async ([ subscribeUID, sub ]) => {
         const { baseSymbol, quoteSymbol, resolution } = deserializeUID(subscribeUID);
         const {
-          exchange: { pairToMarketId },
-          assets: { assets, symbolToAssetId },
+          exchange: { pairToMarketId, markets },
         } = store.getState();
         const marketId = pairToMarketId[`${baseSymbol}/${quoteSymbol}`];
-        const asset = assets[symbolToAssetId[quoteSymbol]];
-
-        if (!asset) return;
 
         const currentTimestamp = new Date().getTime();
         const last = sub.recentCandles.last();
@@ -119,7 +115,7 @@ class ChartDataProvider {
           lastTimestamp,
         );
 
-        const tvCandles = formatTVCandles(rawCandles, 1 / (10 ** asset.decimals));
+        const tvCandles = formatTVCandles(rawCandles, 1 / (10 ** 8));
 
         tvCandles.forEach(candle => {
           if (lastTimestamp <= candle.time) {

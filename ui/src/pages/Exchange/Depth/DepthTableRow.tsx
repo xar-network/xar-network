@@ -3,15 +3,14 @@ import BigNumber from "bignumber.js";
 import {SPREAD_TYPE} from "../../../ducks/exchange";
 import {TableCell, TableRow} from "../../../components/ui/Table";
 import c from "classnames";
-import {AssetType} from "../../../ducks/assets";
 
 type Props = {
   price: BigNumber
   quantity: BigNumber
   max: BigNumber
   side: SPREAD_TYPE
-  baseAsset: AssetType
-  quoteAsset: AssetType
+  baseDenom: string
+  quoteDenom: string
 }
 
 type State = {
@@ -51,12 +50,8 @@ class DepthTableRow extends Component<Props, State> {
       max,
       price,
       quantity,
-      quoteAsset,
-      baseAsset,
     } = this.props;
     const { shouldHighlight } = this.state;
-
-    if (!baseAsset || !quoteAsset) return null;
 
     const priceN = price;
     let quantityN = quantity.div(10 ** 8);

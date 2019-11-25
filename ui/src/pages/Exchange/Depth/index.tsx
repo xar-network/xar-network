@@ -9,7 +9,6 @@ import {Order, setSpreadType, SPREAD_TYPE} from "../../../ducks/exchange";
 import {ActionType} from "../../../ducks/types";
 import {reduceDepthFromOrders, sortOrders} from '../../../utils/exchange-utils';
 import BigNumber, {BigNumber as BN} from 'bignumber.js';
-import {AssetType} from "../../../ducks/assets";
 import DepthTableRow from "./DepthTableRow";
 import {bn} from "../../../utils/bn";
 import Tooltip from "../../../components/ui/Tooltip";
@@ -19,8 +18,8 @@ type StatePropTypes = {
   max: BN
   bids: Order[]
   asks: Order[]
-  baseAsset: AssetType | undefined
-  quoteAsset: AssetType | undefined
+  baseDenom: string
+  quoteDenom: string
   lastPrice: BigNumber | undefined
   prevPrice: BigNumber | undefined
 }
@@ -58,10 +57,9 @@ class Index extends Component<PropTypes> {
     const {
       lastPrice,
       prevPrice,
-      quoteAsset,
     } = this.props;
 
-    if (!quoteAsset || !lastPrice || lastPrice.isZero() || !prevPrice || prevPrice.isZero()) {
+    if (!lastPrice || lastPrice.isZero() || !prevPrice || prevPrice.isZero()) {
       return (
         <div className="exchange__depth__spread exchange__depth__spread--loading">
           <TableRow>
@@ -134,11 +132,9 @@ class Index extends Component<PropTypes> {
   renderRow(price: BN, quantity: BN, side: SPREAD_TYPE): ReactNode {
     const {
       max,
-      quoteAsset,
-      baseAsset,
+      quoteDenom,
+      baseDenom,
     } = this.props;
-
-    if (!baseAsset || !quoteAsset) return null;
 
     return (
       <DepthTableRow
@@ -147,8 +143,8 @@ class Index extends Component<PropTypes> {
         quantity={quantity}
         max={max}
         side={side}
-        baseAsset={baseAsset}
-        quoteAsset={quoteAsset}
+        baseDenom={baseDenom}
+        quoteDenom={quoteDenom}
       />
     );
   }
@@ -184,13 +180,10 @@ class Index extends Component<PropTypes> {
 function mapStateToProps(state: REDUX_STATE): StatePropTypes {
   const {
     exchange: { selectedMarket, markets, selectedSpreadType },
-    assets: { assets, symbolToAssetId },
   } = state;
 
   const market = markets[selectedMarket];
-  const { bids = [], asks = [], baseSymbol = '', quoteSymbol = '' } = market || {};
-  const quoteAsset = assets[symbolToAssetId[quoteSymbol]] || {};
-  const baseAsset = assets[symbolToAssetId[baseSymbol]] || {};
+  const { bids = [], asks = [], baseDenom = '', quoteDenom = '' } = market || {};
   const { max: bidMax, depths: bidDepth } = reduceDepthFromOrders(bids, 8, 8);
   const { max: askMax, depths: askDepth } = reduceDepthFromOrders(asks, 8, 8);
 
@@ -199,8 +192,8 @@ function mapStateToProps(state: REDUX_STATE): StatePropTypes {
     bids: bidDepth,
     asks: askDepth,
     max: BN.max(bidMax, askMax).multipliedBy(1.25),
-    quoteAsset,
-    baseAsset,
+    quoteDenom,
+    baseDenom,
     lastPrice: market.dayStats ? market.dayStats.lastPrice : bn(0),
     prevPrice: market.dayStats ? market.dayStats.prevPrice : bn(0),
   }

@@ -4,7 +4,6 @@ import {REDUX_STATE} from "../../ducks";
 import {Dispatch} from "redux";
 import {Table, TableCell, TableHeader, TableHeaderRow, TableRow} from "../../components/ui/Table";
 import {BalanceType} from "../../ducks/user";
-import {AssetType} from "../../ducks/assets";
 import "./style/balance-table.scss";
 
 type StateProps = {

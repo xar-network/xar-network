@@ -91,7 +91,7 @@ function mapStateToProps (state: REDUX_STATE): StateProps {
   const market = markets[selectedMarket] || {};
 
   return {
-    marketSymbol: `${market.baseSymbol}/${market.quoteSymbol}`,
+    marketSymbol: `${market.baseDenom}/${market.quoteDenom}`,
     selectedInterval,
   };
 }

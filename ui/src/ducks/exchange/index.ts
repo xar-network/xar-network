@@ -71,8 +71,8 @@ export type BatchType = {
 }
 
 export type MarketType = {
-  quoteSymbol: string
-  baseSymbol: string
+  quoteDenom: string
+  baseDenom: string
   dayStats: DayStatsType
   bids: Order[]
   asks: Order[]
@@ -124,12 +124,12 @@ const initialState = {
   selectedChartType: CHART_TYPE.TradingView,
   selectedBatch: '',
   pairToMarketId: {
-    'UFTM/UCSDT': '1',
+    'DEMO/TEST': '1',
   },
   markets: {
-    1: {
-      quoteSymbol: 'UFTM',
-      baseSymbol: 'UCSDT',
+    '1': {
+      quoteDenom: 'uzar',
+      baseDenom: 'uftm',
       dayStats: makeDayStats({}),
       batches: {},
       bids: [],

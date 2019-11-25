@@ -7,7 +7,6 @@ import {WALLET} from "../../constants/routes";
 import {RouteComponentProps, withRouter} from "react-router";
 import {connect} from "react-redux";
 import {REDUX_STATE} from "../../ducks";
-import {AssetType} from "../../ducks/assets";
 import Dropdown from "../../components/ui/Dropdown";
 import Input from "../../components/ui/Input";
 import CheckIcon from "../../assets/icons/check-green.svg";
@@ -25,8 +24,8 @@ const FeeOptions = [
 ];
 
 type StateProps = {
-  assets: {
-    [k: string]: AssetType
+  denoms: {
+    [k: string]: string
   }
   address: string
 }
@@ -34,7 +33,7 @@ type StateProps = {
 type Props = StateProps & RouteComponentProps
 
 type State = {
-  selectedAsset: string | null
+  selectedDenom: string | null
   recipientAddress: string
   selectedFee: FeeType
   amount: string
@@ -45,7 +44,7 @@ type State = {
 
 class Transfer extends Component<Props, State> {
   state = {
-    selectedAsset: '',
+    selectedDenom: '',
     recipientAddress: '',
     selectedFee: FeeType.Normal,
     amount: '',
@@ -57,13 +56,13 @@ class Transfer extends Component<Props, State> {
   isValid(): boolean {
     const {
       selectedFee,
-      selectedAsset,
+      selectedDenom,
       amount,
       recipientAddress,
       isSending,
     } = this.state;
 
-    return !!selectedAsset.length && !!selectedFee && !!amount && !!recipientAddress && !isSending;
+    return !!selectedFee && !!amount && !!recipientAddress && !isSending;
   }
 
   send = () => {
@@ -144,13 +143,12 @@ class Transfer extends Component<Props, State> {
   }
 
   renderCompleted(): ReactNode {
-    const { assets, history } = this.props;
+    const { denoms, history } = this.props;
     const {
-      selectedAsset,
+      selectedDenom,
       recipientAddress,
       amount,
     } = this.state;
-    const asset = assets[selectedAsset] || {};
 
     return (
       <div className="wallet__content__body deposit deposit--done">
@@ -161,7 +159,7 @@ class Transfer extends Component<Props, State> {
             </div>
           </div>
           <div className="deposit__body__text">
-            {`Your have initiated a transfer of ${amount} ${asset.symbol} to ${recipientAddress}. The transaction will take about 5 minutes to complete.`}
+            {`Your have initiated a transfer of ${amount} ${denoms[selectedDenom]} to ${recipientAddress}. The transaction will take about 5 minutes to complete.`}
           </div>
           <div className="deposit__footer">
             <Button
@@ -178,24 +176,23 @@ class Transfer extends Component<Props, State> {
 
 
   renderReview(): ReactNode {
-    const { assets } = this.props;
+    const { denoms } = this.props;
     const {
-      selectedAsset,
+      selectedDenom,
       selectedFee,
       recipientAddress,
       amount,
       isSending,
     } = this.state;
-    const asset = assets[selectedAsset] || {};
 
     const feedIndex = FeeOptions.findIndex(({ value }) => value === selectedFee);
 
     return (
       <div className="transfer__form">
-        { this.renderReviewRow('Asset Type', `${asset.symbol} - ${asset.name}`)}
+        { this.renderReviewRow('Asset Type', `${denoms[selectedDenom]}`)}
         { this.renderReviewRow('Recipient Address', recipientAddress)}
         { this.renderReviewRow('Fee', FeeOptions[feedIndex].label)}
-        { this.renderReviewRow('Amount', `${amount} ${asset.symbol}`)}
+        { this.renderReviewRow('Amount', `${amount} ${denoms[selectedDenom]}`)}
         <div className="transfer__form__actions">
           <Button
             type="primary"
@@ -211,32 +208,31 @@ class Transfer extends Component<Props, State> {
   }
 
   renderSend(): ReactNode {
-    const { assets } = this.props;
+    const { denoms } = this.props;
     const {
-      selectedAsset,
+      selectedDenom,
       selectedFee,
       recipientAddress,
       amount,
     } = this.state;
-    const assetItems = Object.entries(assets)
-      .filter(([ _, asset ]) => asset.sources.length)
-      .map(([ assetId, asset ]) => ({
-        label: `${asset.symbol} - ${asset.name}`,
-        value: assetId,
+    const denomItems = Object.entries(denoms)
+      .map(([ denom ]) => ({
+        label: `${denom}`,
+        value: denom,
       }));
 
-    const currentIndex = assetItems.findIndex(({ value }) => value === selectedAsset);
+    const currentIndex = denomItems.findIndex(({ value }) => value === selectedDenom);
     const feedIndex = FeeOptions.findIndex(({ value }) => value === selectedFee);
 
     return (
       <div className="transfer__form">
         <div className="transfer__form__row">
-          <div className="transfer__form__label">Asset Type</div>
+          <div className="transfer__form__label">Denom</div>
           <Dropdown
             className="transfer__form__content transfer__asset-dropdown"
-            items={assetItems}
+            items={denomItems}
             currentIndex={currentIndex}
-            onSelect={id => this.setState({ selectedAsset: id })}
+            onSelect={id => this.setState({ selectedDenom: id })}
           />
         </div>
         <div className="transfer__form__row">
@@ -285,12 +281,12 @@ class Transfer extends Component<Props, State> {
 
 function mapStateToProps(state: REDUX_STATE): StateProps {
   const {
-    assets: { assets },
+    user: { denoms },
     user: { address },
   } = state;
 
   return {
-    assets,
+    denoms,
     address,
   };
 }

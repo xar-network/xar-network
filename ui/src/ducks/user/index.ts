@@ -35,6 +35,9 @@ export type UserStateType = {
   balances: {
     [denom: string]: BalanceType
   }
+  denoms: {
+    [denom: string]: string
+  }
   address: string
   isLoggedIn?: boolean
 }
@@ -44,6 +47,7 @@ const initialState = {
   orders: [],
   transactions: [],
   balances: {},
+  denoms: {},
   address: '',
   isLoggedIn: undefined,
 };

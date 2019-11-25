@@ -3,7 +3,6 @@ import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
 import {connect} from "react-redux";
 import {REDUX_STATE} from "../../ducks";
-import {AssetType} from "../../ducks/assets";
 import {BatchType, Order} from "../../ducks/exchange";
 import {bn} from "../../utils/bn";
 import {reduceDepthFromOrders, sortOrders} from "../../utils/exchange-utils";
@@ -31,8 +30,8 @@ type OwnProps = {
 }
 
 type StateProps = {
-  baseAsset?: AssetType
-  quoteAsset?: AssetType
+  baseDenom?: string
+  quoteDenom?: string
   bids: Order[]
   asks: Order[]
   batch?: BatchType
@@ -79,9 +78,9 @@ class BatchExecutionChart extends Component<Props> {
   }
 
   readyChart() {
-    const { quoteAsset } = this.props;
+    const { quoteDenom } = this.props;
 
-    if (!this.chart && quoteAsset) {
+    if (!this.chart && quoteDenom) {
       const chart = am4core.create('batchchart-wrapper', am4charts.XYChart);
 
       const amountAxis = chart.xAxes.push(new am4charts.ValueAxis());
@@ -167,9 +166,9 @@ class BatchExecutionChart extends Component<Props> {
   }
 
   hydrateChartWithData() {
-    const {quoteAsset, baseAsset, batch} = this.props;
+    const {quoteDenom, baseDenom, batch} = this.props;
 
-    if (!quoteAsset || !baseAsset || !batch) return;
+    if (!quoteDenom || !baseDenom || !batch) return;
 
     this.readyChart();
     if (!this.chart || !this.bidSeries || !this.askSeries || !this.priceAxis || !this.amountAxis || !this.clearingPriceSeries) {
@@ -275,13 +274,10 @@ function mapStateToProps (state: REDUX_STATE, ownProps: OwnProps): StateProps {
       selectedMarket,
       markets,
     },
-    assets: { assets, symbolToAssetId },
   } = state;
 
   const market = markets[selectedMarket];
-  const { baseSymbol = '', quoteSymbol = '', batches = {} } = market || {};
-  const baseAsset = assets[symbolToAssetId[baseSymbol]];
-  const quoteAsset = assets[symbolToAssetId[quoteSymbol]];
+  const { baseDenom = '', quoteDenom = '', batches = {} } = market || {};
   const batch = batches[ownProps.batchId];
 
   const { depths: bidDepth } = reduceDepthFromOrders(
@@ -297,8 +293,8 @@ function mapStateToProps (state: REDUX_STATE, ownProps: OwnProps): StateProps {
 
   // const { clearingPrice } = estimateBatch(bidDepth, askDepth, 8, 8);
   return {
-    baseAsset,
-    quoteAsset,
+    baseDenom,
+    quoteDenom,
     bids: bidDepth,
     asks: askDepth,
     batch,

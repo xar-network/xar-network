@@ -7,13 +7,12 @@ import {REDUX_STATE} from '../../ducks';
 import {OrderType} from '../../ducks/exchange';
 import {ActionType} from '../../ducks/types';
 import {fetchUserOrders, ORDER_HISTORY_FILTERS, setOrderHistoryFilter} from '../../ducks/user';
-import {AssetType} from '../../ducks/assets';
 
 type StateProps = {
   orders: OrderType[]
   orderHistoryFilter: ORDER_HISTORY_FILTERS
-  baseAsset: AssetType | undefined
-  quoteAsset: AssetType | undefined
+  baseDenom: string
+  quoteDenom: string
 }
 
 type DispatchProps = {
@@ -33,8 +32,8 @@ class History extends Component<Props> {
       setOrderHistoryFilter,
       orderHistoryFilter,
       orders,
-      baseAsset,
-      quoteAsset,
+      baseDenom,
+      quoteDenom,
     } = this.props;
     const filteredOrders = orders/*.filter(({status}) => {
       switch (orderHistoryFilter) {
@@ -47,7 +46,7 @@ class History extends Component<Props> {
       }
     });*/
 
-    if (!baseAsset || !quoteAsset) return <noscript />;
+    if (!baseDenom || !quoteDenom) return <noscript />;
 
     return (
       <Module className="exchange__history">
@@ -72,8 +71,8 @@ class History extends Component<Props> {
               <TableHeader>Pair</TableHeader>
               <TableHeader>Type</TableHeader>
               <TableHeader>Side</TableHeader>
-              <TableHeader>{`Price (${quoteAsset.symbol})`}</TableHeader>
-              <TableHeader>{`Amount (${baseAsset.symbol})`}</TableHeader>
+              <TableHeader>{`Price (${quoteDenom})`}</TableHeader>
+              <TableHeader>{`Amount (${baseDenom})`}</TableHeader>
               <TableHeader>Filled</TableHeader>
               <TableHeader>Status</TableHeader>
             </TableHeaderRow>
@@ -95,14 +94,14 @@ class History extends Component<Props> {
   }
 
   renderRow = (order: OrderType): React.ReactNode => {
-    const { baseAsset, quoteAsset } = this.props;
+    const { baseDenom, quoteDenom } = this.props;
 
-    if (!baseAsset || !quoteAsset || !order) return <noscript />;
+    if (!baseDenom || !quoteDenom || !order) return <noscript />;
 
     return (
       <TableRow key={order.id}>
         <TableCell>{ order.created_block }</TableCell>
-        <TableCell>{`${baseAsset.symbol}/${quoteAsset.symbol}`}</TableCell>
+        <TableCell>{`${baseDenom}/${quoteDenom}`}</TableCell>
         <TableCell>LIMIT</TableCell>
         <TableCell>{ order.direction }</TableCell>
         <TableCell>
@@ -139,17 +138,14 @@ function mapStateToProps(state: REDUX_STATE): StateProps {
       orderHistoryFilter,
     },
     exchange: { orders, selectedMarket, markets },
-    assets: { assets, symbolToAssetId },
   } = state;
   const market = markets[selectedMarket] || {};
-  const { baseSymbol, quoteSymbol } = market;
-  const quoteAsset = assets[symbolToAssetId[quoteSymbol]] || {};
-  const baseAsset = assets[symbolToAssetId[baseSymbol]] || {};
+  const { baseDenom, quoteDenom } = market;
   return {
     orders: history.map(id => orders[id]),
     orderHistoryFilter,
-    quoteAsset,
-    baseAsset,
+    quoteDenom,
+    baseDenom,
   }
 }
 

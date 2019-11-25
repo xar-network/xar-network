@@ -3,13 +3,12 @@ import { connect } from 'react-redux';
 import { REDUX_STATE } from '../../ducks';
 import './exchange-header.scss';
 import Numeral from "../Numeral";
-import {AssetType} from "../../ducks/assets";
 import {DayStatsType, MarketType} from "../../ducks/exchange";
 import Dropdown, { ItemType } from '../ui/Dropdown'
 
 type StatePropTypes = {
-  baseAsset?: AssetType
-  quoteAsset?: AssetType
+  baseDenom?: string
+  quoteDenom?: string
   dayStats?: DayStatsType
   markets?: any
 };
@@ -21,16 +20,13 @@ type PropTypes = StatePropTypes & DispatchPropTypes;
 class ExchangeHeader extends Component<PropTypes> {
   render() {
     const {
-      quoteAsset,
-      baseAsset,
+      quoteDenom,
+      baseDenom,
       dayStats,
       markets,
     } = this.props;
 
-    if (!quoteAsset || !baseAsset || !dayStats || !markets) return <div />;
-
-    const quoteSymbol = quoteAsset.symbol;
-    const baseSymbol = baseAsset.symbol;
+    if (!quoteDenom || !baseDenom || !dayStats || !markets) return <div />;
 
     const {
       lastPrice,
@@ -52,7 +48,7 @@ class ExchangeHeader extends Component<PropTypes> {
 
     return (
       <div className="exchange-header">
-        { this.renderItem('Trading Pair', this.renderMarketsSelect(markets) /*`${baseSymbol}/${quoteSymbol}`*/) }
+        { this.renderItem('Trading Pair', this.renderMarketsSelect(markets)) }
         {
           this.renderItem(
             'Last Price',
@@ -124,28 +120,11 @@ class ExchangeHeader extends Component<PropTypes> {
 
     while(markets[index] != null) {
       marketsArray.push({
-        label: markets[index].baseSymbol + '/' + markets[index].quoteSymbol,
-        value: markets[index].baseSymbol + '/' + markets[index].quoteSymbol
+        label: markets[index].baseDenom + '/' + markets[index].quoteDenom,
+        value: markets[index].baseDenom + '/' + markets[index].quoteDenom
       })
       index++
     }
-
-    marketsArray.push({
-      label: 'UUSD/UBTC',
-      value: 'UUSD/UBTC'
-    })
-    marketsArray.push({
-      label: 'UUSD/UFTM',
-      value: 'UUSD/UFTM'
-    })
-    marketsArray.push({
-      label: 'UUSD/UCSDT',
-      value: 'UUSD/UCSDT'
-    })
-    marketsArray.push({
-      label: 'UUSD/UETH',
-      value: 'UUSD/UETH'
-    })
 
     return (
       <Dropdown
@@ -193,17 +172,16 @@ function mapStateToProps(state: REDUX_STATE) {
       selectedMarket,
       markets,
     },
-    assets: { assets, symbolToAssetId },
   } = state;
 
   const market = markets[selectedMarket] || { dayStats: {} };
-  const baseAsset = assets[symbolToAssetId[market.baseSymbol]];
-  const quoteAsset = assets[symbolToAssetId[market.quoteSymbol]];
+  const baseDenom = market.baseDenom;
+  const quoteDenom = market.quoteDenom
 
   return {
     dayStats: market.dayStats,
-    baseAsset,
-    quoteAsset,
+    baseDenom,
+    quoteDenom,
     markets,
   }
 }

@@ -10,14 +10,13 @@ import {REDUX_STATE} from "../../ducks";
 import {ActionType} from "../../ducks/types";
 import {Spinner} from "../../components/ui/LoadingIndicator";
 import {bn} from "../../utils/bn";
-import {AssetType} from "../../ducks/assets";
 import {AUTHENTICATE} from "../../constants/routes";
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 
 type StateProps = {
   selectedMarket: string
-  baseAsset: AssetType | undefined
-  quoteAsset: AssetType | undefined
+  baseDenom: string
+  quoteDenom: string
   isLoggedIn?: boolean
 }
 
@@ -85,11 +84,6 @@ class OrderForm extends Component<Props, State> {
       bidAmount = '0',
       askAmount = '0',
     } = this.state;
-    const {
-      quoteAsset,
-    } = this.props;
-
-    if (!quoteAsset) return;
 
     switch (type) {
       case ORDER_SIDE.buy:
@@ -112,9 +106,6 @@ class OrderForm extends Component<Props, State> {
   onAmountChange = (e: ChangeEvent<HTMLInputElement>, type: ORDER_SIDE) => {
     const amount = e.currentTarget.value;
     const { bidPrice = '0', askPrice = '0' } = this.state;
-    const { quoteAsset } = this.props;
-
-    if (!quoteAsset) return;
 
     switch (type) {
       case ORDER_SIDE.buy:
@@ -141,9 +132,6 @@ class OrderForm extends Component<Props, State> {
   onTotalChange = (e: ChangeEvent<HTMLInputElement>, type: ORDER_SIDE) => {
     const total = e.currentTarget.value;
     const { bidPrice = '0', askPrice = '0' } = this.state;
-    const { baseAsset } = this.props;
-
-    if (!baseAsset) return;
 
     switch (type) {
       case ORDER_SIDE.buy:
@@ -170,10 +158,8 @@ class OrderForm extends Component<Props, State> {
   bid = async () => {
     if (!this.isValid(ORDER_SIDE.buy)) return;
 
-    const { baseAsset, quoteAsset, selectedMarket } = this.props;
+    const { selectedMarket } = this.props;
     const { bidAmount, bidPrice } = this.state;
-
-    if (!baseAsset || !quoteAsset) return;
 
     this.setState({ isPlacingBid: true });
 
@@ -223,10 +209,8 @@ class OrderForm extends Component<Props, State> {
   ask = async () => {
     if (!this.isValid(ORDER_SIDE.sell)) return;
 
-    const { baseAsset, quoteAsset, selectedMarket } = this.props;
+    const { selectedMarket } = this.props;
     const { askAmount, askPrice } = this.state;
-
-    if (!baseAsset || !quoteAsset) return;
 
     this.setState({ isPlacingAsk: true });
 
@@ -314,10 +298,10 @@ class OrderForm extends Component<Props, State> {
   }
 
   renderBuy(): ReactNode {
-    const { baseAsset, quoteAsset} = this.props;
+    const { baseDenom, quoteDenom} = this.props;
     const { bidPrice, bidAmount, bidTotal, isPlacingBid, bidErrorMessage } = this.state;
 
-    if (!baseAsset || !quoteAsset) return null;
+    if (!baseDenom || !quoteDenom) return null;
 
     return (
       <div className="exchange__order-form__content__buy">
@@ -326,7 +310,7 @@ class OrderForm extends Component<Props, State> {
           min="0"
           label="Price"
           placeholder="0.00"
-          suffix={quoteAsset.symbol}
+          suffix={quoteDenom}
           onChange={e => this.onPriceChange(e, ORDER_SIDE.buy)}
           value={bidPrice}
           step="0.01"
@@ -336,7 +320,7 @@ class OrderForm extends Component<Props, State> {
           min="0"
           label="Amount"
           placeholder="0.00"
-          suffix={baseAsset.symbol}
+          suffix={baseDenom}
           onChange={e => this.onAmountChange(e, ORDER_SIDE.buy)}
           value={bidAmount}
           step="0.01"
@@ -346,7 +330,7 @@ class OrderForm extends Component<Props, State> {
           min="0"
           label="Total"
           placeholder="0.00"
-          suffix={quoteAsset.symbol}
+          suffix={quoteDenom}
           onChange={e => this.onTotalChange(e, ORDER_SIDE.buy)}
           value={bidTotal}
           step="0.01"
@@ -371,7 +355,7 @@ class OrderForm extends Component<Props, State> {
             disabled={!this.isValid(ORDER_SIDE.buy)}
             onClick={this.bid}
           >
-            { isPlacingBid ? 'Placing Order...' : `Buy ${baseAsset.symbol}` }
+            { isPlacingBid ? 'Placing Order...' : `Buy ${baseDenom}` }
           </Button>
         </div>
         { isPlacingBid && this.renderSpinner() }
@@ -380,10 +364,10 @@ class OrderForm extends Component<Props, State> {
   }
 
   renderSell() {
-    const { baseAsset, quoteAsset} = this.props;
+    const { baseDenom, quoteDenom} = this.props;
     const { askPrice, askAmount, askTotal, isPlacingAsk, askErrorMessage } = this.state;
 
-    if (!baseAsset || !quoteAsset) return;
+    if (!baseDenom || !quoteDenom) return;
 
     return (
       <div className="exchange__order-form__content__sell">
@@ -392,7 +376,7 @@ class OrderForm extends Component<Props, State> {
           min="0"
           label="Price"
           placeholder="0.00"
-          suffix={quoteAsset.symbol}
+          suffix={quoteDenom}
           value={askPrice}
           onChange={e => this.onPriceChange(e, ORDER_SIDE.sell)}
           step="0.01"
@@ -401,7 +385,7 @@ class OrderForm extends Component<Props, State> {
           type="number"
           label="Amount"
           placeholder="0.00"
-          suffix={baseAsset.symbol}
+          suffix={baseDenom}
           min="0"
           value={askAmount}
           onChange={e => this.onAmountChange(e, ORDER_SIDE.sell)}
@@ -411,7 +395,7 @@ class OrderForm extends Component<Props, State> {
           type="number"
           label="Total"
           placeholder="0.00"
-          suffix={quoteAsset.symbol}
+          suffix={quoteDenom}
           min="0"
           value={askTotal}
           onChange={e => this.onTotalChange(e, ORDER_SIDE.sell)}
@@ -437,7 +421,7 @@ class OrderForm extends Component<Props, State> {
             disabled={!this.isValid(ORDER_SIDE.sell)}
             onClick={this.ask}
           >
-            { isPlacingAsk ? 'Placing Order...' : `Sell ${baseAsset.symbol}` }
+            { isPlacingAsk ? 'Placing Order...' : `Sell ${baseDenom}` }
           </Button>
         </div>
         { isPlacingAsk && this.renderSpinner() }
@@ -457,19 +441,16 @@ class OrderForm extends Component<Props, State> {
 function mapStateToProps (state: REDUX_STATE) {
   const {
     exchange: { selectedMarket, markets },
-    assets: { assets, symbolToAssetId },
     user
   } = state;
 
   const market = markets[selectedMarket] || {};
-  const { baseSymbol, quoteSymbol } = market;
-  const quoteAsset = assets[symbolToAssetId[quoteSymbol]] || {};
-  const baseAsset = assets[symbolToAssetId[baseSymbol]] || {};
+  const { baseDenom, quoteDenom } = market;
 
   return {
     selectedMarket,
-    quoteAsset,
-    baseAsset,
+    quoteDenom,
+    baseDenom,
     isLoggedIn: user.isLoggedIn,
   }
 }
