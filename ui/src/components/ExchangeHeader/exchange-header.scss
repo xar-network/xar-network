@@ -7,8 +7,9 @@
 
   &__item {
     @extend %column-nowrap;
-    justify-content: center;
+    justify-content: flex-start;
     padding: .625rem;
+    height: 300px;
 
     &__caret {
       position: absolute;
@@ -76,6 +77,7 @@
             margin-top: .375rem;
             background-color: rgba($white, .05);
             border-radius: .125rem;
+            max-height: 14px;
 
             &:after {
               @extend %loading-placeholder;

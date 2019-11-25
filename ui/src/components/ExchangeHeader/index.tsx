@@ -52,7 +52,7 @@ class ExchangeHeader extends Component<PropTypes> {
 
     return (
       <div className="exchange-header">
-        { this.renderItem('Trading Pair', this.renderMarketsSelect(markets) /*`${baseSymbol}/${quoteSymbol}`*/) }
+        { this.renderItem('Trading Pair', this.renderMarketsSelect(markets), '',  false, true) }
         {
           this.renderItem(
             'Last Price',
@@ -168,7 +168,7 @@ class ExchangeHeader extends Component<PropTypes> {
     )
   }
 
-  renderItem(label: string, value: ReactNode, modifier: string = '', isLoading: boolean = false): ReactNode {
+  renderItem(label: string, value: ReactNode, modifier: string = '', isLoading: boolean = false, isDropdown: boolean = false): ReactNode {
     if (isLoading) {
      return (
        <div className={`exchange-header__item exchange-header__item--loading`}>
