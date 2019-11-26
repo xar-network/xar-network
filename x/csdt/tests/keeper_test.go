@@ -207,56 +207,87 @@ func TestKeeper_GetCSDTs(t *testing.T) {
 		keeper.SetCSDT(ctx, csdt)
 	}
 
-	// Check nil params returns all CSDTs
-	returnedCsdts, err := keeper.GetCSDTs(ctx, "", sdk.Dec{})
-	require.NoError(t, err)
-	require.Equal(t,
-		CSDTs{
-			{addrs[0], "ubtc", i(10), i(20)},
-			{addrs[1], "uftm", i(4000), i(2000)},
-			{addrs[0], "uftm", i(4000), i(5)}},
-		returnedCsdts,
-	)
-	// Check correct CSDTs filtered by collateral and sorted
-	returnedCsdts, err = keeper.GetCSDTs(ctx, "uftm", d("0.00000001"))
-	require.NoError(t, err)
-	require.Equal(t,
-		CSDTs{
-			{addrs[1], "uftm", i(4000), i(2000)},
-			{addrs[0], "uftm", i(4000), i(5)}},
-		returnedCsdts,
-	)
-	returnedCsdts, err = keeper.GetCSDTs(ctx, "uftm", sdk.Dec{})
-	require.NoError(t, err)
-	require.Equal(t,
-		CSDTs{
-			{addrs[1], "uftm", i(4000), i(2000)},
-			{addrs[0], "uftm", i(4000), i(5)}},
-		returnedCsdts,
-	)
-	returnedCsdts, err = keeper.GetCSDTs(ctx, "uftm", d("0.9"))
-	require.NoError(t, err)
-	require.Equal(t,
-		CSDTs{
-			{addrs[1], "uftm", i(4000), i(2000)}},
-		returnedCsdts,
-	)
-	// Check high price returns no CSDTs
-	returnedCsdts, err = keeper.GetCSDTs(ctx, "uftm", d("999999999.99"))
-	require.NoError(t, err)
-	require.Equal(t,
-		CSDTs(nil),
-		returnedCsdts,
-	)
-	// Check unauthorized collateral denom returns error
-	_, err = keeper.GetCSDTs(ctx, "a non existent coin", d("0.34023"))
-	require.Error(t, err)
-	// Check price without collateral returns error
-	_, err = keeper.GetCSDTs(ctx, "", d("0.34023"))
-	require.Error(t, err)
+	tests := []struct {
+		name            string
+		collateralDenom string
+		price           sdk.Dec
+		expectError     bool
+		expected        CSDTs
+	}{
+		{
+			"nilParamsReturnNilCsdts",
+			"",
+			sdk.Dec{},
+			false,
+			CSDTs{
+				{addrs[0], "ubtc", i(10), i(20)},
+				{addrs[1], "uftm", i(4000), i(2000)},
+				{addrs[0], "uftm", i(4000), i(5)}},
+		},
+		{
+			"csdtsFilteredByCollateralAndSortedNoPrice",
+			"uftm",
+			sdk.Dec{},
+			false,
+			CSDTs{
+				{addrs[1], "uftm", i(4000), i(2000)},
+				{addrs[0], "uftm", i(4000), i(5)}},
+		},
+		{
+			"csdtsFilteredByCollateralAndSortedMinimalPrice",
+			"uftm",
+			d("0.00000001"),
+			false,
+			CSDTs{
+				{addrs[1], "uftm", i(4000), i(2000)},
+				{addrs[0], "uftm", i(4000), i(5)}},
+		},
+		{
+			"csdtsFilteredByCollateralAndSorted",
+			"uftm",
+			d("0.74"),
+			false,
+			CSDTs{
+				{addrs[1], "uftm", i(4000), i(2000)}},
+		},
+		{
+			"highPriceReturnsNoCsdts",
+			"uftm",
+			d("999999999.99"),
+			false,
+			CSDTs(nil),
+		},
+		{
+			"unauthorisedCollateralDenomReturnsError",
+			"a non existent coin",
+			d("0.34023"),
+			true,
+			CSDTs(nil),
+		},
+		{
+			"priceWithoutCollateralReturnsError",
+			"",
+			d("0.34023"),
+			true,
+			CSDTs(nil),
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			returnedCsdts, err := keeper.GetCSDTs(ctx, tc.collateralDenom, tc.price)
+			if tc.expectError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.expected, returnedCsdts)
+			}
+		})
+	}
+
 	// Check deleting a CSDT removes it
 	keeper.DeleteCSDT(ctx, csdts[0])
-	returnedCsdts, err = keeper.GetCSDTs(ctx, "", sdk.Dec{})
+	returnedCsdts, err := keeper.GetCSDTs(ctx, "", sdk.Dec{})
 	require.NoError(t, err)
 	require.Equal(t,
 		CSDTs{
