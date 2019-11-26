@@ -46,6 +46,35 @@ You can edit the `~/.xard/config/xard.toml` file in order to enable the anti spa
 minimum-gas-prices = ""
 ```
 
+Edit the `~/.xard/config/xard.toml` file and make the following changes
+
+```
+# Time to wait before flushing messages out on the connection
+flush_throttle_timeout = "25ms"
+```
+
+```
+timeout_propose = "2s"
+timeout_propose_delta = "500ms"
+timeout_prevote = "1s"
+timeout_prevote_delta = "500ms"
+timeout_precommit = "1s"
+timeout_precommit_delta = "500ms"
+timeout_commit = "1s"
+```
+
+```
+# Reactor sleep duration parameters
+peer_gossip_sleep_duration = "25ms"
+```
+
+flush_throttle_timeout should be set to 25ms
+timeout_propose should be set to 2s
+timeout_commit should be set to 1s
+peer_gossip_sleep_duration should be set to 25ms
+
+See the [genesis repo](https://github.com/xar-network/genesis) for an example config.toml
+
 Your full node has been initialized!
 
 ## Genesis & Seeds
@@ -73,9 +102,7 @@ xard start
 
 ### Add Seed Nodes
 
-Your node needs to know how to find peers. You'll need to add healthy seed nodes to `$HOME/.xard/config/config.toml`. The [`launch`](https://github.com/xar-network/launch) repo contains links to some seed nodes.
-
-For more information on seeds and peers, you can [read this](https://github.com/tendermint/tendermint/blob/develop/docs/tendermint-core/using-tendermint.md#peers).
+Your node needs to know how to find peers. You'll need to add healthy seed nodes to `$HOME/.xard/config/config.toml`.
 
 ## A Note on Gas and Fees
 
@@ -83,7 +110,7 @@ For more information on seeds and peers, you can [read this](https://github.com/
 On Xar Hub mainnet, the accepted denom is `uftm`, where `1ftm = 1.000.000uftm`
 :::
 
-Transactions on the Cosmos Hub network need to include a transaction fee in order to be processed. This fee pays for the gas required to run the transaction. The formula is the following:
+Transactions on the network need to include a transaction fee in order to be processed. This fee pays for the gas required to run the transaction. The formula is the following:
 
 ```
 fees = ceil(gas * gasPrices)
