@@ -22,6 +22,7 @@ import {
   AUTHENTICATE
 } from '../../constants/routes';
 import {checkLogin, login} from '../../ducks/user';
+import {selectMarket, SelectedMarketType} from '../../ducks/exchange';
 import { ActionType } from "../../ducks/types";
 import { REDUX_STATE } from "../../ducks";
 import './main.scss';
@@ -34,6 +35,7 @@ type StateProps = {
 type DispatchProps = {
   login: () => void
   checkLogin: () => void
+  selectMarket: (id: SelectedMarketType) => void
 }
 
 type PropsType = StateProps & DispatchProps
@@ -92,6 +94,7 @@ function mapDispatchToProps(dispatch: ThunkDispatch<REDUX_STATE, any, ActionType
   return {
     login: () => dispatch(login('password')),
     checkLogin: () => dispatch(checkLogin()),
+    selectMarket: (marketId: SelectedMarketType) => dispatch(selectMarket(marketId)),
   };
 }
 

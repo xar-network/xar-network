@@ -39,6 +39,15 @@ class TradingView extends Component<Props> {
           });
       }
     }
+    if (nextProps.marketSymbol !== this.props.marketSymbol) {
+      if (widget) {
+        widget
+          .chart()
+          .setSymbol(nextProps.marketSymbol, () => {
+            // console.log('Symbol changed');
+          });
+      }
+    }
   }
 
   getWidget(): IChartingLibraryWidget | null {
@@ -53,10 +62,9 @@ class TradingView extends Component<Props> {
     if (!tv) {
       return null;
     }
-
     const widgetOptions: ChartingLibraryWidgetOptions = {
       ...baseWidgetOption,
-      symbol: 'uftm/uzar',
+      symbol: this.props.marketSymbol,
       interval: '1',
       // debug: true,
     };

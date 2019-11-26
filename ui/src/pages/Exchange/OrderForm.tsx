@@ -421,7 +421,7 @@ class OrderForm extends Component<Props, State> {
             disabled={!this.isValid(ORDER_SIDE.sell)}
             onClick={this.ask}
           >
-            { isPlacingAsk ? 'Placing Order...' : `Sell ${baseDenom}` }
+            { isPlacingAsk ? 'Placing Order...' : `Sell ${quoteDenom}` }
           </Button>
         </div>
         { isPlacingAsk && this.renderSpinner() }

@@ -53,12 +53,10 @@ function handleFetchBook(getState: () => REDUX_STATE, action: ActionType<any>, d
   if (!watchDepthTimeout) {
     watchDepthTimeout = setTimeout(getDepth, 0);
   }
-
-  const { exchange: { selectedMarket } } = getState();
-
   async function getDepth() {
     try {
-      const resp = await get(`/markets/${1}/book`);
+      const { exchange: { selectedMarket } } = getState();
+      const resp = await get(`/markets/${selectedMarket}/book`);
       const json: OrderbookResponse = await resp.json();
 
       dispatch(setOpenBidsByMarketId(json.bids, selectedMarket));

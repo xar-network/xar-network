@@ -15,6 +15,7 @@ export const ADD_BATCH_BY_MARKET_ID = 'app/exchange/addBatchByMarketId';
 export const ADD_ORDERS = 'app/exchange/addOrders';
 export const UPDATE_DAILY_STATS_BY_MARKET_ID = 'app/exchange/updateDailyStatsByMarketId';
 export const SET_MARKET = 'app/exchange/setMarket';
+export const SET_SELECTED_MARKET = 'app/exchange/setSelectedMarket';
 
 export enum INTERVAL {
   '1m' = '1',
@@ -137,6 +138,9 @@ const initialState = {
   selectedBatch: '',
   pairToMarketId: {
     'uftm/uzar': '1',
+    'ueur/uzar': '2',
+    'uusd/uzar': '3',
+    'ubtc/uzar': '4'
   },
   markets: {
     '1': {
@@ -148,24 +152,24 @@ const initialState = {
       asks: [],
     },
     '2': {
-      quoteDenom: 'ueur',
-      baseDenom: 'uzar',
+      quoteDenom: 'uzar',
+      baseDenom: 'ueur',
       dayStats: makeDayStats({}),
       batches: {},
       bids: [],
       asks: [],
     },
     '3': {
-      quoteDenom: 'uusd',
-      baseDenom: 'uzar',
+      quoteDenom: 'uzar',
+      baseDenom: 'uusd',
       dayStats: makeDayStats({}),
       batches: {},
       bids: [],
       asks: [],
     },
     '4': {
-      quoteDenom: 'ubtc',
-      baseDenom: 'uzar',
+      quoteDenom: 'uzar',
+      baseDenom: 'ubtc',
       dayStats: makeDayStats({}),
       batches: {},
       bids: [],
@@ -212,6 +216,18 @@ export const setOpenBidsByMarketId = (bids: OrderJSON[], marketId: string): Acti
   payload: {
     marketId,
     bids,
+  },
+});
+
+
+export type SelectedMarketType = {
+  marketId: string
+}
+
+export const setSelectedMarket = (marketId: string): ActionType<SelectedMarketType> => ({
+  type: SET_SELECTED_MARKET,
+  payload: {
+    marketId,
   },
 });
 
@@ -286,6 +302,12 @@ export default function exchangeReducer(state: ExchangeStateType = initialState,
       return {
         ...state,
         selectedChartType: action.payload,
+      };
+    case SET_SELECTED_MARKET:
+      console.log(action)
+      return {
+        ...state,
+        selectedMarket: action.payload.marketId,
       };
     case SELECT_BATCH:
       return {
@@ -479,4 +501,8 @@ export const fetchMarkets = () => async (dispatch: Dispatch<ActionType<MarketTyp
   } catch (e) {
     console.log(e);
   }
+};
+
+export const selectMarket = (market: SelectedMarketType) => async (dispatch: Dispatch<ActionType<SelectedMarketType>>) => {
+  dispatch(setSelectedMarket(market.marketId))
 };
