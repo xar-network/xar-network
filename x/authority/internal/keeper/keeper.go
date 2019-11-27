@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
-	"github.com/cosmos/cosmos-sdk/x/supply/exported"
 	"github.com/xar-network/xar-network/x/authority/internal/types"
 	"github.com/xar-network/xar-network/x/issuer"
 	"github.com/xar-network/xar-network/x/market"
@@ -84,10 +83,13 @@ func (k Keeper) CreateMarket(ctx sdk.Context, authority sdk.AccAddress, baseAsse
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func (k Keeper) SetSupply(ctx sdk.Context, authority sdk.AccAddress, supply exported.SupplyI) sdk.Result {
+func (k Keeper) AddSupply(ctx sdk.Context, authority sdk.AccAddress, amount sdk.Coins) sdk.Result {
 	k.MustBeAuthority(ctx, authority)
 
+	supply := k.sk.GetSupply(ctx)
+	supply = supply.Inflate(amount)
 	k.sk.SetSupply(ctx, supply)
+
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 

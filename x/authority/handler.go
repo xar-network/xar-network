@@ -32,6 +32,8 @@ func newHandler(k Keeper) sdk.Handler {
 			return k.CreateMarket(ctx, msg.Authority, msg.BaseAsset, msg.QuoteAsset)
 		case types.MsgDestroyIssuer:
 			return k.DestroyIssuer(ctx, msg.Authority, msg.Issuer)
+		case types.MsgAddSupply:
+			return k.AddSupply(ctx, msg.Authority, msg.Supply)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized authority Msg type: %v", msg.Type())
 			return sdk.ErrUnknownRequest(errMsg).Result()

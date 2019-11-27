@@ -29,7 +29,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 			getCmdCreateOracle(cdc),
 			getCmdCreateMarket(cdc),
 			getCmdDestroyIssuer(cdc),
-			getCmdSetSupply(cdc),
+			getCmdAddSupply(cdc),
 		)...,
 	)
 
@@ -116,11 +116,11 @@ func getCmdCreateMarket(cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-func getCmdSetSupply(cdc *codec.Codec) *cobra.Command {
+func getCmdAddSupply(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:     "set-supply [authority_key_or_address] [supply]",
-		Example: "xarcli authority create-market masterkey 100000uftm",
-		Short:   "Set the supply for a denomination",
+		Use:     "add-supply [authority_key_or_address] [supply]",
+		Example: "xarcli authority add-supply masterkey 100000uftm",
+		Short:   "Add the supply for a denomination",
 		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
@@ -133,7 +133,7 @@ func getCmdSetSupply(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			msg := types.MsgSetSupply{
+			msg := types.MsgAddSupply{
 				Supply:    coins,
 				Authority: cliCtx.GetFromAddress(),
 			}

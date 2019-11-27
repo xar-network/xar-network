@@ -9,7 +9,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgCreateOracle{}, "authority/MsgCreateOracle", nil)
 	cdc.RegisterConcrete(MsgDestroyIssuer{}, "authority/MsgDestroyIssuer", nil)
 	cdc.RegisterConcrete(MsgCreateMarket{}, "authority/MsgCreateMarket", nil)
-	cdc.RegisterConcrete(MsgSetSupply{}, "authority/MsgSetSupply", nil)
+	cdc.RegisterConcrete(MsgAddSupply{}, "authority/MsgAddSupply", nil)
 }
 
 func init() {
