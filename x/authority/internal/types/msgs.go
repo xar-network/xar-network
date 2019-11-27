@@ -6,6 +6,8 @@ var (
 	_ sdk.Msg = MsgCreateIssuer{}
 	_ sdk.Msg = MsgDestroyIssuer{}
 	_ sdk.Msg = MsgCreateOracle{}
+	_ sdk.Msg = MsgCreateMarket{}
+	_ sdk.Msg = MsgSetSupply{}
 )
 
 type (
@@ -27,6 +29,10 @@ type (
 		BaseAsset  string
 		QuoteAsset string
 	}
+	MsgSetSupply struct {
+		Authority sdk.AccAddress
+		Supply    sdk.Coins
+	}
 )
 
 func (msg MsgDestroyIssuer) Type() string { return "destroyIssuer" }
@@ -36,6 +42,8 @@ func (msg MsgCreateIssuer) Type() string { return "createIssuer" }
 func (msg MsgCreateOracle) Type() string { return "createOracle" }
 
 func (msg MsgCreateMarket) Type() string { return "createMarket" }
+
+func (msg MsgSetSupply) Type() string { return "setSupply" }
 
 func (msg MsgDestroyIssuer) ValidateBasic() sdk.Error {
 	if msg.Issuer.Empty() {
@@ -95,6 +103,15 @@ func (msg MsgCreateIssuer) ValidateBasic() sdk.Error {
 	return nil
 }
 
+func (msg MsgSetSupply) ValidateBasic() sdk.Error {
+
+	if msg.Authority.Empty() {
+		return sdk.ErrInvalidAddress("missing authority address")
+	}
+
+	return nil
+}
+
 func (msg MsgDestroyIssuer) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Authority}
 }
@@ -108,6 +125,10 @@ func (msg MsgCreateOracle) GetSigners() []sdk.AccAddress {
 }
 
 func (msg MsgCreateMarket) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.Authority}
+}
+
+func (msg MsgSetSupply) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Authority}
 }
 
@@ -127,6 +148,10 @@ func (msg MsgCreateOracle) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
+func (msg MsgSetSupply) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
 func (msg MsgDestroyIssuer) Route() string { return ModuleName }
 
 func (msg MsgCreateIssuer) Route() string { return ModuleName }
@@ -134,3 +159,5 @@ func (msg MsgCreateIssuer) Route() string { return ModuleName }
 func (msg MsgCreateOracle) Route() string { return ModuleName }
 
 func (msg MsgCreateMarket) Route() string { return ModuleName }
+
+func (msg MsgSetSupply) Route() string { return ModuleName }

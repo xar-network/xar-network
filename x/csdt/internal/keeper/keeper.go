@@ -16,12 +16,13 @@ type Keeper struct {
 	storeKey       sdk.StoreKey
 	oracle         oracleKeeper
 	bank           bankKeeper
+	sk             supplyKeeper
 	paramsSubspace params.Subspace
 	cdc            *codec.Codec
 }
 
 // NewKeeper creates a new keeper
-func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace, oracle oracleKeeper, bank bankKeeper) Keeper {
+func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace, oracle oracleKeeper, bank bankKeeper, supply supplyKeeper) Keeper {
 	subspace = subspace.WithKeyTable(types.CreateParamsKeyTable())
 	return Keeper{
 		storeKey:       storeKey,
@@ -29,6 +30,7 @@ func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace
 		bank:           bank,
 		paramsSubspace: subspace,
 		cdc:            cdc,
+		sk:             supply,
 	}
 }
 
@@ -111,16 +113,33 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 	var err sdk.Error
 	if changeInCollateral.IsNegative() {
 		_, err = k.bank.AddCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral.Neg())))
+		if err != nil {
+			panic(err) // this shouldn't happen because coin balance was checked earlier
+		}
 	} else {
 		_, err = k.bank.SubtractCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
+		if err != nil {
+			panic(err) // this shouldn't happen because coin balance was checked earlier
+		}
 	}
-	if err != nil {
-		panic(err) // this shouldn't happen because coin balance was checked earlier
-	}
-	if changeInDebt.IsNegative() {
+	if changeInDebt.IsNegative() { //Depositing stable coin from owner to CSDT (decrease supply)
 		_, err = k.bank.SubtractCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg())))
-	} else {
+		if err != nil {
+			panic(err) // this shouldn't happen because coin balance was checked earlier
+		}
+		// update total supply
+		supply := k.sk.GetSupply(ctx)
+		supply = supply.Deflate(sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg())))
+		k.sk.SetSupply(ctx, supply)
+	} else { //Withdrawing stable coins to owner (minting)
 		_, err = k.bank.AddCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt)))
+		if err != nil {
+			panic(err) // this shouldn't happen because coin balance was checked earlier
+		}
+		// update total supply
+		supply := k.sk.GetSupply(ctx)
+		supply = supply.Inflate(sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt)))
+		k.sk.SetSupply(ctx, supply)
 	}
 	if err != nil {
 		panic(err) // this shouldn't happen because coin balance was checked earlier

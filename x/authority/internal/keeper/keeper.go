@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/cosmos/cosmos-sdk/x/supply/exported"
 	"github.com/xar-network/xar-network/x/authority/internal/types"
 	"github.com/xar-network/xar-network/x/issuer"
 	"github.com/xar-network/xar-network/x/market"
@@ -18,13 +20,15 @@ type Keeper struct {
 	ik       issuer.Keeper
 	ok       oracle.Keeper
 	mk       market.Keeper
+	sk       supply.Keeper
 }
 
-func NewKeeper(storeKey sdk.StoreKey, issuerKeeper issuer.Keeper, oracleKeeper oracle.Keeper, marketKeeper market.Keeper) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, issuerKeeper issuer.Keeper, oracleKeeper oracle.Keeper, marketKeeper market.Keeper, supplyKeeper supply.Keeper) Keeper {
 	return Keeper{
 		ik:       issuerKeeper,
 		ok:       oracleKeeper,
 		mk:       marketKeeper,
+		sk:       supplyKeeper,
 		storeKey: storeKey,
 	}
 }
@@ -77,6 +81,13 @@ func (k Keeper) CreateMarket(ctx sdk.Context, authority sdk.AccAddress, baseAsse
 	k.MustBeAuthority(ctx, authority)
 
 	k.mk.Create(ctx, baseAsset, quoteAsset)
+	return sdk.Result{Events: ctx.EventManager().Events()}
+}
+
+func (k Keeper) SetSupply(ctx sdk.Context, authority sdk.AccAddress, supply exported.SupplyI) sdk.Result {
+	k.MustBeAuthority(ctx, authority)
+
+	k.sk.SetSupply(ctx, supply)
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 

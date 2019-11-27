@@ -29,6 +29,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 			getCmdCreateOracle(cdc),
 			getCmdCreateMarket(cdc),
 			getCmdDestroyIssuer(cdc),
+			getCmdSetSupply(cdc),
 		)...,
 	)
 
@@ -108,6 +109,33 @@ func getCmdCreateMarket(cdc *codec.Codec) *cobra.Command {
 				BaseAsset:  args[1],
 				QuoteAsset: args[2],
 				Authority:  cliCtx.GetFromAddress(),
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
+
+func getCmdSetSupply(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:     "set-supply [authority_key_or_address] [supply]",
+		Example: "xarcli authority create-market masterkey 100000uftm",
+		Short:   "Set the supply for a denomination",
+		Args:    cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
+
+			// parse coins trying to be sent
+			coins, err := sdk.ParseCoins(args[1])
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgSetSupply{
+				Supply:    coins,
+				Authority: cliCtx.GetFromAddress(),
 			}
 
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})

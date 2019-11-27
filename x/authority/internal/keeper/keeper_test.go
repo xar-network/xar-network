@@ -159,7 +159,7 @@ func createTestComponents(t *testing.T) (sdk.Context, Keeper, issuer.Keeper) {
 	// Empty supply
 	sk.SetSupply(ctx, supply.NewSupply(sdk.NewCoins()))
 
-	keeper := NewKeeper(keyAuthority, ik, ok, mk)
+	keeper := NewKeeper(keyAuthority, ik, ok, mk, sk)
 
 	return ctx, keeper, ik
 }

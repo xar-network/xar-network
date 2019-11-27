@@ -257,7 +257,7 @@ func NewXarApp(
 	app.issueKeeper = issue.NewKeeper(keys[issue.StoreKey], issueSubspace, app.bankKeeper, issue.DefaultCodespace)
 	app.oracleKeeper = oracle.NewKeeper(keys[oracle.StoreKey], app.cdc, oracle.DefaultCodespace)
 	app.recordKeeper = record.NewKeeper(app.cdc, keys[record.StoreKey], recordSubspace, record.DefaultCodespace)
-	app.csdtKeeper = csdt.NewKeeper(app.cdc, keys[csdt.StoreKey], csdtSubspace, app.oracleKeeper, app.bankKeeper)
+	app.csdtKeeper = csdt.NewKeeper(app.cdc, keys[csdt.StoreKey], csdtSubspace, app.oracleKeeper, app.bankKeeper, app.supplyKeeper)
 	app.auctionKeeper = auction.NewKeeper(app.cdc, app.csdtKeeper, keys[auction.StoreKey])
 	app.liquidatorKeeper = liquidator.NewKeeper(app.cdc, keys[liquidator.StoreKey], liquidatorSubspace, app.csdtKeeper, app.auctionKeeper, app.csdtKeeper)
 
@@ -268,7 +268,7 @@ func NewXarApp(
 	app.interestKeeper = interest.NewKeeper(app.cdc, keys[interest.StoreKey], interestSubspace, app.supplyKeeper, auth.FeeCollectorName)
 	app.lpKeeper = liquidityprovider.NewKeeper(app.accountKeeper, app.supplyKeeper)
 	app.issuerKeeper = issuer.NewKeeper(keys[issuer.StoreKey], app.lpKeeper, app.interestKeeper)
-	app.authorityKeeper = authority.NewKeeper(keys[authority.StoreKey], app.issuerKeeper, app.oracleKeeper, app.marketKeeper)
+	app.authorityKeeper = authority.NewKeeper(keys[authority.StoreKey], app.issuerKeeper, app.oracleKeeper, app.marketKeeper, app.supplyKeeper)
 
 	// create evidence keeper with evidence router
 	app.evidenceKeeper = evidence.NewKeeper(app.cdc, keys[evidence.StoreKey], evidenceSubspace, evidence.DefaultCodespace)

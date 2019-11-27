@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/supply/exported"
 	"github.com/xar-network/xar-network/x/oracle"
 )
 
@@ -18,4 +19,9 @@ type oracleKeeper interface {
 	AddAsset(sdk.Context, string, string)
 	SetPrice(sdk.Context, sdk.AccAddress, string, sdk.Dec, sdk.Int) (oracle.PostedPrice, sdk.Error)
 	SetCurrentPrices(sdk.Context) sdk.Error
+}
+
+type supplyKeeper interface {
+	GetSupply(ctx sdk.Context) (supply exported.SupplyI)
+	SetSupply(ctx sdk.Context, supply exported.SupplyI)
 }
