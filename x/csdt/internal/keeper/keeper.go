@@ -128,18 +128,22 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 			panic(err) // this shouldn't happen because coin balance was checked earlier
 		}
 		// update total supply
-		supply := k.sk.GetSupply(ctx)
-		supply = supply.Deflate(sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg())))
-		k.sk.SetSupply(ctx, supply)
+		if ctx.BlockHeight() > 101137 {
+			supply := k.sk.GetSupply(ctx)
+			supply = supply.Deflate(sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg())))
+			k.sk.SetSupply(ctx, supply)
+		}
 	} else { //Withdrawing stable coins to owner (minting)
 		_, err = k.bank.AddCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt)))
 		if err != nil {
 			panic(err) // this shouldn't happen because coin balance was checked earlier
 		}
 		// update total supply
-		supply := k.sk.GetSupply(ctx)
-		supply = supply.Inflate(sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt)))
-		k.sk.SetSupply(ctx, supply)
+		if ctx.BlockHeight() > 101137 {
+			supply := k.sk.GetSupply(ctx)
+			supply = supply.Inflate(sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt)))
+			k.sk.SetSupply(ctx, supply)
+		}
 	}
 	if err != nil {
 		panic(err) // this shouldn't happen because coin balance was checked earlier
