@@ -5,7 +5,7 @@
 - `xard`: The Xar Daemon, runs a full-node of the `xar` application.
 - `xarcli`: The Xar command-line interface, which enables interaction with a Xar full-node.
 
-`xar` is built on the Cosmos SDK using the following modules:
+`xar` is built on the Cosmos & Fantom SDK using the following modules:
 
 - `x/auth`: Accounts and signatures.
 - `x/bank`: Token transfers.
