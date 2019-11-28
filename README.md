@@ -1,6 +1,5 @@
 # XAR Network
 
-[![CircleCI](https://circleci.com/gh/xar-network/xar-network/tree/master.svg?style=shield)](https://circleci.com/gh/xar-network/xar-network/tree/master)
 [![codecov](https://codecov.io/gh/xar-network/xar-network/branch/master/graph/badge.svg)](https://codecov.io/gh/xar-network/xar-network)
 [![Go Report Card](https://goreportcard.com/badge/github.com/xar-network/xar-network)](https://goreportcard.com/report/github.com/xar-network/xar-network)
 [![license](https://img.shields.io/github/license/xar-network/xar-network.svg)](https://github.com/xar-network/xar-network/blob/master/LICENSE)
@@ -11,6 +10,8 @@
 This repository hosts `Xar`.
 
 `Xar` is a Fantom compatible stable coin issuance platform for the South African Rand. `Xar` is based off of Xar wrapped around the Cosmos SDK which is wrapped around Fantom's TxFlow consensus.
+
+`Xar` is a Fantom compatible stable token issuance platform for Collateralised Stable Debt Tokens (CSDTs).  `Xar` is based off of the Cosmos SDK which is wrapped around Fantom's TxFlow consensus.
 
 **Note**: Requires [Go 1.13+](https://golang.org/dl/)
 
