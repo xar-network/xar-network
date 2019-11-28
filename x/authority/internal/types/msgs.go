@@ -8,6 +8,7 @@ var (
 	_ sdk.Msg = MsgCreateOracle{}
 	_ sdk.Msg = MsgCreateMarket{}
 	_ sdk.Msg = MsgAddSupply{}
+	_ sdk.Msg = MsgSetSupply{}
 )
 
 type (
@@ -33,6 +34,10 @@ type (
 		Authority sdk.AccAddress
 		Supply    sdk.Coins
 	}
+	MsgSetSupply struct {
+		Authority sdk.AccAddress
+		Supply    sdk.Coins
+	}
 )
 
 func (msg MsgDestroyIssuer) Type() string { return "destroyIssuer" }
@@ -44,6 +49,17 @@ func (msg MsgCreateOracle) Type() string { return "createOracle" }
 func (msg MsgCreateMarket) Type() string { return "createMarket" }
 
 func (msg MsgAddSupply) Type() string { return "addSupply" }
+
+func (msg MsgSetSupply) Type() string { return "setSupply" }
+
+func (msg MsgSetSupply) ValidateBasic() sdk.Error {
+
+	if msg.Authority.Empty() {
+		return sdk.ErrInvalidAddress("missing authority address")
+	}
+
+	return nil
+}
 
 func (msg MsgDestroyIssuer) ValidateBasic() sdk.Error {
 	if msg.Issuer.Empty() {
@@ -112,6 +128,10 @@ func (msg MsgAddSupply) ValidateBasic() sdk.Error {
 	return nil
 }
 
+func (msg MsgSetSupply) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.Authority}
+}
+
 func (msg MsgDestroyIssuer) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Authority}
 }
@@ -130,6 +150,10 @@ func (msg MsgCreateMarket) GetSigners() []sdk.AccAddress {
 
 func (msg MsgAddSupply) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Authority}
+}
+
+func (msg MsgSetSupply) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 func (msg MsgDestroyIssuer) GetSignBytes() []byte {
@@ -151,6 +175,8 @@ func (msg MsgCreateOracle) GetSignBytes() []byte {
 func (msg MsgAddSupply) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
+
+func (msg MsgSetSupply) Route() string { return ModuleName }
 
 func (msg MsgDestroyIssuer) Route() string { return ModuleName }
 
