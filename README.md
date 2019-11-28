@@ -5,7 +5,6 @@
 [![license](https://img.shields.io/github/license/xar-network/xar-network.svg)](https://github.com/xar-network/xar-network/blob/master/LICENSE)
 [![LoC](https://tokei.rs/b1/github/xar-network/xar-network)](https://github.com/xar-network/xar-network)
 [![GolangCI](https://golangci.com/badges/github.com/xar-network/xar-network.svg)](https://golangci.com/r/github.com/xar-network/xar-network)
-[![riot.im](https://img.shields.io/badge/riot.im-JOIN%20CHAT-green.svg)](https://riot.im/app/#/room/#cosmos-sdk:matrix.org)
 
 This repository hosts `Xar`.
 
