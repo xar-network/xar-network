@@ -3,11 +3,13 @@ package market
 import (
 	"fmt"
 
+	"github.com/xar-network/xar-network/types/errs"
 	"github.com/xar-network/xar-network/types/store"
 	"github.com/xar-network/xar-network/x/market/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/params/subspace"
 )
 
 const (
@@ -18,46 +20,26 @@ const (
 type IteratorCB func(mkt types.Market) bool
 
 type Keeper struct {
-	storeKey sdk.StoreKey
-	cdc      *codec.Codec
+	storeKey      sdk.StoreKey
+	cdc           *codec.Codec
+	paramSubspace subspace.Subspace
 }
 
-func NewKeeper(sk sdk.StoreKey, cdc *codec.Codec) Keeper {
+func NewKeeper(sk sdk.StoreKey, cdc *codec.Codec, paramstore subspace.Subspace) Keeper {
 	return Keeper{
-		storeKey: sk,
-		cdc:      cdc,
-	}
-}
-
-func (k Keeper) Create(ctx sdk.Context, baseAsset string, quoteAsset string) types.Market {
-	id := store.IncrementSeq(ctx, k.storeKey, []byte(seqKey))
-	market := types.NewMarket(id, baseAsset, quoteAsset)
-	err := store.SetNotExists(ctx, k.storeKey, k.cdc, marketKey(id), market)
-	// should never happen, implies consensus
-	// or storage bug
-	if err != nil {
-		panic(err)
-	}
-	return market
-}
-
-func (k Keeper) Inject(ctx sdk.Context, market types.Market) {
-	seq := store.GetSeq(ctx, k.storeKey, []byte(seqKey))
-
-	if !market.ID.Dec().Equals(seq) {
-		panic("Invalid asset ID.")
-	}
-
-	store.IncrementSeq(ctx, k.storeKey, []byte(seqKey))
-	if err := store.SetNotExists(ctx, k.storeKey, k.cdc, marketKey(market.ID), market); err != nil {
-		panic(err)
+		storeKey:      sk,
+		cdc:           cdc,
+		paramSubspace: paramstore.WithKeyTable(types.ParamKeyTable()),
 	}
 }
 
 func (k Keeper) Get(ctx sdk.Context, id store.EntityID) (types.Market, sdk.Error) {
-	var m types.Market
-	err := store.Get(ctx, k.storeKey, k.cdc, marketKey(id), &m)
-	return m, err
+	params := k.GetParams(ctx)
+	market := params.Markets[id.Uint64()]
+	if (market == types.Market{}) {
+		return types.Market{}, errs.ErrNotFound("not found")
+	}
+	return market, nil
 }
 
 func (k Keeper) Pair(ctx sdk.Context, id store.EntityID) (string, sdk.Error) {
@@ -69,27 +51,29 @@ func (k Keeper) Pair(ctx sdk.Context, id store.EntityID) (string, sdk.Error) {
 }
 
 func (k Keeper) Has(ctx sdk.Context, id store.EntityID) bool {
-	return store.Has(ctx, k.storeKey, marketKey(id))
+	_, err := k.Get(ctx, id)
+	//err == nil could have side effects, should check the error type
+	return err == nil
 }
 
 func (k Keeper) Iterator(ctx sdk.Context, cb IteratorCB) {
-	kv := ctx.KVStore(k.storeKey)
-	iter := sdk.KVStorePrefixIterator(kv, []byte(valKey))
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		mktB := iter.Value()
-		var mkt types.Market
-		k.cdc.MustUnmarshalBinaryBare(mktB, &mkt)
-
+	params := k.GetParams(ctx)
+	for _, mkt := range params.Markets {
 		if !cb(mkt) {
 			break
 		}
 	}
 }
 
-func marketKey(id store.EntityID) []byte {
-	return store.PrefixKeyString(valKey, id.Bytes())
+// SetParams sets the auth module's parameters.
+func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
+	k.paramSubspace.SetParamSet(ctx, &params)
+}
+
+// GetParams gets the auth module's parameters.
+func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
+	k.paramSubspace.GetParamSet(ctx, &params)
+	return
 }
 
 func NewHandler(k Keeper) sdk.Handler {

@@ -68,7 +68,7 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) GenesisState {
-	/*params := keeper.GetParams(ctx)
+	params := keeper.GetParams(ctx)
 
 	var genAuctions GenesisAuctions
 	iterator := keeper.GetAuctionIterator(ctx)
@@ -79,6 +79,5 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) GenesisState {
 		genAuctions = append(genAuctions, auction)
 
 	}
-	return NewGenesisState(params, genAuctions)*/
-	return GenesisState{}
+	return NewGenesisState(params, genAuctions)
 }

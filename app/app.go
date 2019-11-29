@@ -242,6 +242,7 @@ func NewXarApp(
 	recordSubspace := app.paramsKeeper.Subspace(record.DefaultParamspace)
 	interestSubspace := app.paramsKeeper.Subspace(interest.DefaultParamspace)
 	auctionSubspace := app.paramsKeeper.Subspace(auction.DefaultParamspace)
+	marketSubspace := app.paramsKeeper.Subspace(market.DefaultParamspace)
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
@@ -262,7 +263,7 @@ func NewXarApp(
 	app.auctionKeeper = auction.NewKeeper(app.cdc, app.csdtKeeper, keys[auction.StoreKey], auctionSubspace)
 	app.liquidatorKeeper = liquidator.NewKeeper(app.cdc, keys[liquidator.StoreKey], liquidatorSubspace, app.csdtKeeper, app.auctionKeeper, app.csdtKeeper)
 
-	app.marketKeeper = market.NewKeeper(keys[markettypes.StoreKey], app.cdc)
+	app.marketKeeper = market.NewKeeper(keys[markettypes.StoreKey], app.cdc, marketSubspace)
 	app.orderKeeper = order.NewKeeper(app.bankKeeper, app.marketKeeper, keys[ordertypes.StoreKey], queue, app.cdc)
 	app.execKeeper = execution.NewKeeper(queue, app.marketKeeper, app.orderKeeper, app.bankKeeper)
 

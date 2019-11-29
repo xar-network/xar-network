@@ -10,10 +10,10 @@ import (
 )
 
 type GenesisState struct {
-	Markets []types.Market
+	Markets types.Markets
 }
 
-func NewGenesisState(markets []types.Market) GenesisState {
+func NewGenesisState(markets types.Markets) GenesisState {
 	return GenesisState{Markets: markets}
 }
 
@@ -37,7 +37,7 @@ func ValidateGenesis(data GenesisState) error {
 
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		Markets: []types.Market{
+		Markets: types.Markets{
 			{
 				ID:              store.NewEntityID(1),
 				BaseAssetDenom:  "uftm",
@@ -62,17 +62,11 @@ func DefaultGenesisState() GenesisState {
 	}
 }
 
-func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
-	for _, asset := range data.Markets {
-		keeper.Inject(ctx, asset)
-	}
+func InitGenesis(ctx sdk.Context, k Keeper, data GenesisState) {
+	k.SetParams(ctx, types.NewParams(data.Markets))
 }
 
 func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
-	var markets []types.Market
-	k.Iterator(ctx, func(asset types.Market) bool {
-		markets = append(markets, asset)
-		return true
-	})
-	return GenesisState{Markets: markets}
+	params := k.GetParams(ctx)
+	return GenesisState{Markets: params.Markets}
 }

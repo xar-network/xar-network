@@ -3,41 +3,61 @@ package tests
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
-	"github.com/xar-network/xar-network/testutil"
-	"github.com/xar-network/xar-network/testutil/mockapp"
-	"github.com/xar-network/xar-network/testutil/testflags"
-	"github.com/xar-network/xar-network/types/store"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/xar-network/xar-network/x/market"
 	"github.com/xar-network/xar-network/x/market/types"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	cstore "github.com/cosmos/cosmos-sdk/store"
+	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
+	dbm "github.com/tendermint/tm-db"
+	"github.com/xar-network/xar-network/types/store"
 )
 
-func TestKeeper(t *testing.T) {
-	testflags.UnitTest(t)
-	app := mockapp.New(t)
-	asset1, err := app.AssetKeeper.Create(app.Ctx, "test asset", "TST1", testutil.RandAddr(), sdk.NewUint(1000000))
-	require.NoError(t, err)
-	asset2, err := app.AssetKeeper.Create(app.Ctx, "test asset", "TST2", testutil.RandAddr(), sdk.NewUint(1000000))
-	require.NoError(t, err)
-	mkt := app.MarketKeeper.Create(app.Ctx, asset1.ID, asset2.ID)
-	expMkt := types.Market{
-		ID:           store.NewEntityID(1),
-		BaseAssetID:  asset1.ID,
-		QuoteAssetID: asset2.ID,
-	}
+func TestKeeperCoverage(t *testing.T) {
 
-	assert.EqualValues(t, expMkt, mkt)
+	cdc := makeTestCodec()
 
-	retMkt, err := app.MarketKeeper.Get(app.Ctx, mkt.ID)
-	require.NoError(t, err)
-	assert.EqualValues(t, expMkt, retMkt)
+	logger := log.NewNopLogger() // Default
+	//logger = log.NewTMLogger(os.Stdout) // Override to see output
 
-	assert.True(t, app.MarketKeeper.Has(app.Ctx, mkt.ID))
+	var (
+		keyParams  = sdk.NewKVStoreKey(params.StoreKey)
+		keyMarket  = sdk.NewKVStoreKey(market.StoreKey)
+		tkeyParams = sdk.NewTransientStoreKey(params.TStoreKey)
+	)
 
-	pair, err := app.MarketKeeper.Pair(app.Ctx, mkt.ID)
-	require.NoError(t, err)
-	assert.Equal(t, "TST1/TST2", pair)
+	db := dbm.NewMemDB()
+	ms := cstore.NewCommitMultiStore(db)
+	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
+
+	err := ms.LoadLatestVersion()
+	require.Nil(t, err)
+
+	ctx := sdk.NewContext(ms, abci.Header{ChainID: "xar-chain"}, true, logger)
+
+	var (
+		pk = params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
+		mk = market.NewKeeper(keyMarket, cdc, pk.Subspace(market.DefaultParamspace))
+	)
+	mk.SetParams(ctx, types.NewParams(market.DefaultGenesisState().Markets))
+	market, err := mk.Get(ctx, store.NewEntityID(1))
+	require.Nil(t, err)
+	require.Equal(t, "ueur", market.BaseAssetDenom)
+	pair, err := mk.Pair(ctx, store.NewEntityID(1))
+	require.Nil(t, err)
+	require.Equal(t, "ueur/uzar", pair)
+}
+
+func makeTestCodec() (cdc *codec.Codec) {
+	cdc = codec.New()
+
+	sdk.RegisterCodec(cdc)
+	codec.RegisterCrypto(cdc)
+
+	return
 }
