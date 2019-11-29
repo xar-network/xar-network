@@ -42,15 +42,20 @@ func TestKeeperCoverage(t *testing.T) {
 
 	var (
 		pk = params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
-		mk = market.NewKeeper(keyMarket, cdc, pk.Subspace(market.DefaultParamspace))
+		mk = market.NewKeeper(keyMarket, cdc, pk.Subspace(market.DefaultParamspace), market.DefaultCodespace)
 	)
-	mk.SetParams(ctx, types.NewParams(market.DefaultGenesisState().Markets))
+	mk.SetParams(ctx, types.NewParams(market.DefaultGenesisState().Markets, "cosmos1wdhk6e2wv9kk2j88d92"))
 	market, err := mk.Get(ctx, store.NewEntityID(1))
 	require.Nil(t, err)
 	require.Equal(t, "ueur", market.BaseAssetDenom)
 	pair, err := mk.Pair(ctx, store.NewEntityID(1))
 	require.Nil(t, err)
 	require.Equal(t, "ueur/uzar", pair)
+	addr := sdk.AccAddress([]byte("someName"))
+	msg := types.NewMsgCreateMarket(addr, "new1", "new2")
+	res := mk.CreateMarket(ctx, msg)
+	require.Equal(t, true, res.IsOK())
+	t.Logf("%s", mk.GetParams(ctx).String())
 }
 
 func makeTestCodec() (cdc *codec.Codec) {

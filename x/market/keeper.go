@@ -23,13 +23,15 @@ type Keeper struct {
 	storeKey      sdk.StoreKey
 	cdc           *codec.Codec
 	paramSubspace subspace.Subspace
+	codespace     sdk.CodespaceType
 }
 
-func NewKeeper(sk sdk.StoreKey, cdc *codec.Codec, paramstore subspace.Subspace) Keeper {
+func NewKeeper(sk sdk.StoreKey, cdc *codec.Codec, paramstore subspace.Subspace, codespace sdk.CodespaceType) Keeper {
 	return Keeper{
 		storeKey:      sk,
 		cdc:           cdc,
 		paramSubspace: paramstore.WithKeyTable(types.ParamKeyTable()),
+		codespace:     codespace,
 	}
 }
 
@@ -56,6 +58,19 @@ func (k Keeper) Has(ctx sdk.Context, id store.EntityID) bool {
 	return err == nil
 }
 
+func (k Keeper) CreateMarket(ctx sdk.Context, msg types.MsgCreateMarket) sdk.Result {
+	params := k.GetParams(ctx)
+	if params.POA == msg.POA.String() {
+		id := uint64(len(params.Markets))
+		market := types.NewMarket(store.NewEntityID(id).Inc(), msg.BaseAsset, msg.QuoteAsset)
+		params.Markets = append(params.Markets, market)
+		k.SetParams(ctx, params)
+	} else {
+		panic(types.ErrNoPOA(k.codespace))
+	}
+	return sdk.Result{Events: ctx.EventManager().Events()}
+}
+
 func (k Keeper) Iterator(ctx sdk.Context, cb IteratorCB) {
 	params := k.GetParams(ctx)
 	for _, mkt := range params.Markets {
@@ -74,10 +89,4 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 	k.paramSubspace.GetParamSet(ctx, &params)
 	return
-}
-
-func NewHandler(k Keeper) sdk.Handler {
-	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
-		return sdk.ErrUnknownRequest(fmt.Sprintf("unrecognized market message type: %T", msg)).Result()
-	}
 }

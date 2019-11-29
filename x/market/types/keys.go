@@ -12,4 +12,6 @@ const (
 
 	// DefaultParamspace default name for parameter store
 	DefaultParamspace = ModuleName
+
+	ModuleAuth = "marketauth"
 )
