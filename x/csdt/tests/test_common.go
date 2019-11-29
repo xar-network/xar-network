@@ -2,10 +2,11 @@ package csdt
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/mock"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
-
 	"github.com/xar-network/xar-network/x/csdt"
 	"github.com/xar-network/xar-network/x/csdt/internal/keeper"
 	"github.com/xar-network/xar-network/x/csdt/internal/types"
@@ -31,9 +32,13 @@ func setUpMockAppWithoutGenesis() (*mock.App, keeper.Keeper) {
 	// Create keepers
 	keyCSDT := sdk.NewKVStoreKey("csdt")
 	keyPriceFeed := sdk.NewKVStoreKey(oracle.StoreKey)
+	keySupply := sdk.NewKVStoreKey("supply")
+	keyAccount := sdk.NewKVStoreKey("account")
 	priceFeedKeeper := oracle.NewKeeper(keyPriceFeed, mapp.Cdc, oracle.DefaultCodespace)
 	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, map[string]bool{})
-	csdtKeeper := keeper.NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace("csdtSubspace"), priceFeedKeeper, bankKeeper)
+	accountKeeper := auth.NewAccountKeeper(mapp.Cdc, keyAccount, mapp.ParamsKeeper.Subspace("accountSubspace"), auth.ProtoBaseAccount)
+	supplyKeeper := supply.NewKeeper(mapp.Cdc, keySupply, accountKeeper, bankKeeper, map[string][]string{})
+	csdtKeeper := keeper.NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace("csdtSubspace"), priceFeedKeeper, bankKeeper, supplyKeeper)
 
 	// Register routes
 	mapp.Router().AddRoute("csdt", csdt.NewHandler(csdtKeeper))
