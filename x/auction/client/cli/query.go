@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
-	"github.com/xar-network/xar-network/x/auction/internal/keeper"
+	"github.com/xar-network/xar-network/x/auction/internal/types"
 )
 
 // GetCmdGetAuctions queries the auctions in the store
@@ -21,7 +21,7 @@ func GetCmdGetAuctions(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				fmt.Printf("error when getting auctions - %s", err)
 				return nil
 			}
-			var out keeper.QueryResAuctions
+			var out types.QueryResAuctions
 			cdc.MustUnmarshalJSON(res, &out)
 			if len(out) == 0 {
 				out = append(out, "There are currently no auctions")

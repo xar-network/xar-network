@@ -6,22 +6,25 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/params/subspace"
 	"github.com/xar-network/xar-network/x/auction/internal/types"
 )
 
 type Keeper struct {
-	bankKeeper bankKeeper
-	storeKey   sdk.StoreKey
-	cdc        *codec.Codec
+	bankKeeper    bankKeeper
+	storeKey      sdk.StoreKey
+	cdc           *codec.Codec
+	paramSubspace subspace.Subspace
 	// TODO codespace
 }
 
 // NewKeeper returns a new auction keeper.
-func NewKeeper(cdc *codec.Codec, bankKeeper bankKeeper, storeKey sdk.StoreKey) Keeper {
+func NewKeeper(cdc *codec.Codec, bankKeeper bankKeeper, storeKey sdk.StoreKey, paramstore subspace.Subspace) Keeper {
 	return Keeper{
-		bankKeeper: bankKeeper,
-		storeKey:   storeKey,
-		cdc:        cdc,
+		bankKeeper:    bankKeeper,
+		storeKey:      storeKey,
+		cdc:           cdc,
+		paramSubspace: paramstore.WithKeyTable(types.ParamKeyTable()),
 	}
 }
 
@@ -30,7 +33,7 @@ func NewKeeper(cdc *codec.Codec, bankKeeper bankKeeper, storeKey sdk.StoreKey) K
 // StartForwardAuction starts a normal auction. Known as flap in maker.
 func (k Keeper) StartForwardAuction(ctx sdk.Context, seller sdk.AccAddress, lot sdk.Coin, initialBid sdk.Coin) (types.ID, sdk.Error) {
 	// create auction
-	auction, initiatorOutput := types.NewForwardAuction(seller, lot, initialBid, types.EndTime(ctx.BlockHeight())+types.MaxAuctionDuration)
+	auction, initiatorOutput := types.NewForwardAuction(seller, lot, initialBid, types.EndTime(ctx.BlockHeight())+types.DefaultMaxAuctionDuration)
 	// start the auction
 	auctionID, err := k.startAuction(ctx, &auction, initiatorOutput)
 	if err != nil {
@@ -42,7 +45,7 @@ func (k Keeper) StartForwardAuction(ctx sdk.Context, seller sdk.AccAddress, lot 
 // StartReverseAuction starts an auction where sellers compete by offering decreasing prices. Known as flop in maker.
 func (k Keeper) StartReverseAuction(ctx sdk.Context, buyer sdk.AccAddress, bid sdk.Coin, initialLot sdk.Coin) (types.ID, sdk.Error) {
 	// create auction
-	auction, initiatorOutput := types.NewReverseAuction(buyer, bid, initialLot, types.EndTime(ctx.BlockHeight())+types.MaxAuctionDuration)
+	auction, initiatorOutput := types.NewReverseAuction(buyer, bid, initialLot, types.EndTime(ctx.BlockHeight())+types.DefaultMaxAuctionDuration)
 	// start the auction
 	auctionID, err := k.startAuction(ctx, &auction, initiatorOutput)
 	if err != nil {
@@ -55,7 +58,7 @@ func (k Keeper) StartReverseAuction(ctx sdk.Context, buyer sdk.AccAddress, bid s
 func (k Keeper) StartForwardReverseAuction(ctx sdk.Context, seller sdk.AccAddress, lot sdk.Coin, maxBid sdk.Coin, otherPerson sdk.AccAddress) (types.ID, sdk.Error) {
 	// create auction
 	initialBid := sdk.NewInt64Coin(maxBid.Denom, 0) // set the bidding coin denomination from the specified max bid
-	auction, initiatorOutput := types.NewForwardReverseAuction(seller, lot, initialBid, types.EndTime(ctx.BlockHeight())+types.MaxAuctionDuration, maxBid, otherPerson)
+	auction, initiatorOutput := types.NewForwardReverseAuction(seller, lot, initialBid, types.EndTime(ctx.BlockHeight())+types.DefaultMaxAuctionDuration, maxBid, otherPerson)
 	// start the auction
 	auctionID, err := k.startAuction(ctx, &auction, initiatorOutput)
 	if err != nil {
@@ -80,7 +83,7 @@ func (k Keeper) startAuction(ctx sdk.Context, auction types.Auction, initiatorOu
 	}
 
 	// store auction
-	k.setAuction(ctx, auction)
+	k.SetAuction(ctx, auction)
 	k.incrementNextAuctionID(ctx)
 	return newAuctionID, nil
 }
@@ -116,7 +119,7 @@ func (k Keeper) PlaceBid(ctx sdk.Context, auctionID types.ID, bidder sdk.AccAddr
 	}
 
 	// store updated auction
-	k.setAuction(ctx, auction)
+	k.SetAuction(ctx, auction)
 
 	return nil
 }
@@ -186,9 +189,9 @@ func (k Keeper) incrementNextAuctionID(ctx sdk.Context) sdk.Error {
 	return nil
 }
 
-// setAuction puts the auction into the database and adds it to the queue
+// SetAuction puts the auction into the database and adds it to the queue
 // it overwrites any pre-existing auction with same ID
-func (k Keeper) setAuction(ctx sdk.Context, auction types.Auction) {
+func (k Keeper) SetAuction(ctx sdk.Context, auction types.Auction) {
 	// remove the auction from the queue if it is already in there
 	existingAuction, found := k.GetAuction(ctx, auction.GetID())
 	if found {
@@ -295,4 +298,10 @@ func getQueueElementKey(endTime types.EndTime, auctionID types.ID) []byte {
 		sdk.Uint64ToBigEndian(uint64(endTime)), // TODO check this gives correct ordering
 		sdk.Uint64ToBigEndian(uint64(auctionID)),
 	}, keyDelimiter)
+}
+
+func (k Keeper) DecodeAuction(ctx sdk.Context, auctionBytes []byte) types.Auction {
+	var auction types.Auction
+	k.cdc.MustUnmarshalBinaryBare(auctionBytes, &auction)
+	return auction
 }

@@ -52,8 +52,10 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data GenesisState) {
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) GenesisState {
-	// TODO implement this
-	return DefaultGenesisState()
+	params := keeper.GetParams(ctx)
+	return GenesisState{
+		LiquidatorModuleParams: params,
+	}
 }
 
 // ValidateGenesis performs basic validation of genesis data returning an error for any failed validation criteria.

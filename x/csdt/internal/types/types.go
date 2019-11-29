@@ -43,12 +43,6 @@ func (csdts CSDTs) String() string {
 	return out
 }
 
-type QueryCsdtsParams struct {
-	CollateralDenom       string         // get CSDTs with this collateral denom
-	Owner                 sdk.AccAddress // get CSDTs belonging to this owner
-	UnderCollateralizedAt sdk.Dec        // get CSDTs that will be below the liquidation ratio when the collateral is at this price.
-}
-
 // byCollateralRatio is used to sort CSDTs
 type ByCollateralRatio CSDTs
 
