@@ -35,15 +35,16 @@ func (p Params) ParamSetPairs() params.ParamSetPairs {
 }
 
 // NewParams creates a new AssetParams object
-func NewParams(assets []Asset) Params {
+func NewParams(assets []Asset, nominees []string) Params {
 	return Params{
-		Assets: assets,
+		Assets:   assets,
+		Nominees: nominees,
 	}
 }
 
 // DefaultParams default params for oracle
 func DefaultParams() Params {
-	return NewParams(Assets{})
+	return NewParams(Assets{}, []string{})
 }
 
 // String implements fmt.stringer
@@ -51,6 +52,9 @@ func (p Params) String() string {
 	out := "Params:\n"
 	for _, a := range p.Assets {
 		out += a.String()
+	}
+	for _, a := range p.Nominees {
+		out += a
 	}
 	return strings.TrimSpace(out)
 }

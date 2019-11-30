@@ -10,7 +10,7 @@ import (
 
 // GetParams gets params from the store
 func (k Keeper) GetParams(ctx sdk.Context) types.Params {
-	return types.NewParams(k.GetAssetParams(ctx))
+	return types.NewParams(k.GetAssetParams(ctx), k.GetNomineeParams(ctx))
 }
 
 // SetParams updates params in the store
@@ -25,6 +25,13 @@ func (k Keeper) GetAssetParams(ctx sdk.Context) types.Assets {
 	return assets
 }
 
+// GetNomineeParams get nominee params from store
+func (k Keeper) GetNomineeParams(ctx sdk.Context) []string {
+	var nominees []string
+	k.paramstore.Get(ctx, types.KeyNominees, &nominees)
+	return nominees
+}
+
 // GetOracles returns the oracles in the oracle store
 func (k Keeper) GetOracles(ctx sdk.Context, assetCode string) (types.Oracles, error) {
 
@@ -37,7 +44,10 @@ func (k Keeper) GetOracles(ctx sdk.Context, assetCode string) (types.Oracles, er
 }
 
 // AddOracle returns the oracle in the oracle store
-func (k Keeper) AddOracle(ctx sdk.Context, assetCode string, address sdk.AccAddress) error {
+func (k Keeper) AddOracle(ctx sdk.Context, nominee string, assetCode string, address sdk.AccAddress) error {
+	if !k.IsNominee(ctx, nominee) {
+		return fmt.Errorf("not a valid nominee %s", nominee)
+	}
 	_, err := k.GetOracle(ctx, assetCode, address)
 	if err == nil {
 		return fmt.Errorf("oracle %s already exists for asset %s", address, assetCode)
@@ -64,7 +74,10 @@ func (k Keeper) AddOracle(ctx sdk.Context, assetCode string, address sdk.AccAddr
 }
 
 // AddOracle returns the oracle in the oracle store
-func (k Keeper) SetOracles(ctx sdk.Context, assetCode string, addresses types.Oracles) error {
+func (k Keeper) SetOracles(ctx sdk.Context, nominee string, assetCode string, addresses types.Oracles) error {
+	if !k.IsNominee(ctx, nominee) {
+		return fmt.Errorf("not a valid nominee %s", nominee)
+	}
 	assets := k.GetAssetParams(ctx)
 	updateAssets := assets[:0]
 	found := false
@@ -85,7 +98,10 @@ func (k Keeper) SetOracles(ctx sdk.Context, assetCode string, addresses types.Or
 }
 
 // AddOracle returns the oracle in the oracle store
-func (k Keeper) SetAsset(ctx sdk.Context, assetCode string, asset types.Asset) error {
+func (k Keeper) SetAsset(ctx sdk.Context, nominee string, assetCode string, asset types.Asset) error {
+	if !k.IsNominee(ctx, nominee) {
+		return fmt.Errorf("not a valid nominee %s", nominee)
+	}
 	assets := k.GetAssetParams(ctx)
 	updateAssets := assets[:0]
 	found := false
@@ -106,7 +122,10 @@ func (k Keeper) SetAsset(ctx sdk.Context, assetCode string, asset types.Asset) e
 }
 
 // AddOracle returns the oracle in the oracle store
-func (k Keeper) AddAsset(ctx sdk.Context, assetCode string, asset types.Asset) error {
+func (k Keeper) AddAsset(ctx sdk.Context, nominee string, assetCode string, asset types.Asset) error {
+	if !k.IsNominee(ctx, nominee) {
+		return fmt.Errorf("not a valid nominee %s", nominee)
+	}
 	_, exists := k.GetAsset(ctx, assetCode)
 	if exists {
 		return fmt.Errorf("asset %s already exists", assetCode)

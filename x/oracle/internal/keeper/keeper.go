@@ -183,3 +183,14 @@ func (k Keeper) ValidatePostPrice(ctx sdk.Context, msg types.MsgPostPrice) sdk.E
 func (k Keeper) Codespace() sdk.CodespaceType {
 	return k.codespace
 }
+
+func (k Keeper) IsNominee(ctx sdk.Context, nominee string) bool {
+	params := k.GetParams(ctx)
+	nominees := params.Nominees
+	for _, v := range nominees {
+		if v == nominee {
+			return true
+		}
+	}
+	return false
+}
