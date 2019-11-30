@@ -1,4 +1,4 @@
-package tests
+package market
 
 import (
 	"testing"
@@ -6,7 +6,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/xar-network/xar-network/x/market"
 	"github.com/xar-network/xar-network/x/market/types"
 
 	cstore "github.com/cosmos/cosmos-sdk/store"
@@ -26,7 +25,7 @@ func TestKeeperCoverage(t *testing.T) {
 
 	var (
 		keyParams  = sdk.NewKVStoreKey(params.StoreKey)
-		keyMarket  = sdk.NewKVStoreKey(market.StoreKey)
+		keyMarket  = sdk.NewKVStoreKey(StoreKey)
 		tkeyParams = sdk.NewTransientStoreKey(params.TStoreKey)
 	)
 
@@ -42,9 +41,9 @@ func TestKeeperCoverage(t *testing.T) {
 
 	var (
 		pk = params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
-		mk = market.NewKeeper(keyMarket, cdc, pk.Subspace(market.DefaultParamspace), market.DefaultCodespace)
+		mk = NewKeeper(keyMarket, cdc, pk.Subspace(DefaultParamspace), DefaultCodespace)
 	)
-	mk.SetParams(ctx, types.NewParams(market.DefaultGenesisState().Markets, []string{"cosmos1wdhk6e2wv9kk2j88d92"}))
+	mk.SetParams(ctx, types.NewParams(DefaultGenesisState().Markets, []string{"cosmos1wdhk6e2wv9kk2j88d92"}))
 
 	// Get market with ID 1
 	market, err := mk.Get(ctx, store.NewEntityID(1))

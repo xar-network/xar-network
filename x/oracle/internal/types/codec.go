@@ -7,6 +7,7 @@ import (
 // RegisterCodec registers concrete types on the Amino codec
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgPostPrice{}, "oracle/MsgPostPrice", nil)
+	cdc.RegisterConcrete(MsgAddOracle{}, "oracle/MsgAddOracle", nil)
 }
 
 // generic sealed codec to be used throughout module

@@ -28,7 +28,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	cmd.AddCommand(
 		client.PostCommands(
 			GetCmdPostPrice(cdc),
-			getCmdCreateOracle(cdc),
+			getCmdAddOracle(cdc),
 		)...,
 	)
 
@@ -66,7 +66,7 @@ func GetCmdPostPrice(cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-func getCmdCreateOracle(cdc *codec.Codec) *cobra.Command {
+func getCmdAddOracle(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "add-oracle [nominee_key] [denom] [oracle_address]",
 		Example: "xarcli oracle add-oracle nominee xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu",
