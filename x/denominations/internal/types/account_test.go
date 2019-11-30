@@ -11,7 +11,7 @@ func TestFreeze(t *testing.T) {
 	_, pub1, addr1 := KeyTestPubAddr()
 
 	// Not enough starting coins to move
-	account1 := NewCustomAccount(addr1, nil, nil, pub1, 1, 2)
+	account1 := NewFreezeAccount(addr1, nil, nil, pub1, 1, 2)
 	err := account1.FreezeCoins(NewTestCoins("abc", 1))
 	require.NotNil(t, err)
 	err = account1.FreezeCoins(NewTestCoins("abc", 0))
@@ -21,7 +21,7 @@ func TestFreeze(t *testing.T) {
 	coinSymbol := "ab1"
 	coins := NewTestCoins(coinSymbol, 100)
 	frozenCoins := NewTestCoins(coinSymbol, 0)
-	account2 := NewCustomAccount(addr1, coins, frozenCoins, pub1, 1, 2)
+	account2 := NewFreezeAccount(addr1, coins, frozenCoins, pub1, 1, 2)
 
 	err = account2.FreezeCoins(NewTestCoins(coinSymbol, 0))
 	require.NotNil(t, err)

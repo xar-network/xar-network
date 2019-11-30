@@ -29,6 +29,7 @@ func TestKeeperCoverage(t *testing.T) {
 		keyParams  = sdk.NewKVStoreKey(params.StoreKey)
 		keyAcc     = sdk.NewKVStoreKey(auth.StoreKey)
 		keySupply  = sdk.NewKVStoreKey(supply.StoreKey)
+		keyDenom   = sdk.NewKVStoreKey(denominations.StoreKey)
 		tkeyParams = sdk.NewTransientStoreKey(params.TStoreKey)
 	)
 
@@ -37,6 +38,7 @@ func TestKeeperCoverage(t *testing.T) {
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyDenom, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 
 	err := ms.LoadLatestVersion()
@@ -60,24 +62,106 @@ func TestKeeperCoverage(t *testing.T) {
 	acc = ak.NewAccountWithAddress(ctx, addrerr)
 	ak.SetAccount(ctx, acc)
 
-	dk := denominations.NewKeeper(ak, sk, pk.Subspace(denominations.DefaultParamspace), denominations.DefaultCodespace)
-
+	dk := denominations.NewKeeper(keyDenom, cdc, ak, sk, pk.Subspace(denominations.DefaultParamspace), denominations.DefaultCodespace)
 	sk.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
-	dk.SetParams(ctx, types.NewParams("cosmos1wdhk6e2wv9kk2j88d92"))
 
-	msg := types.NewMsgMint(addr, sdk.NewCoins(sdk.NewCoin("unew", sdk.NewInt(100))))
-	msgb := types.NewMsgBurn(addr, sdk.NewCoins(sdk.NewCoin("unew", sdk.NewInt(100))))
-	res := dk.Mint(ctx, msg)
-	t.Errorf("%s", sk.GetSupply(ctx))
-	require.Equal(t, true, res.IsOK())
-	res = dk.Burn(ctx, msgb)
-	t.Errorf("%s", sk.GetSupply(ctx))
-	require.Equal(t, true, res.IsOK())
-
-	msgbe := types.NewMsgBurn(addrerr, sdk.NewCoins(sdk.NewCoin("unew", sdk.NewInt(100))))
-	res = dk.Burn(ctx, msgbe)
-	t.Errorf("%s", sk.GetSupply(ctx))
+	res := dk.BurnCoins(ctx, addrerr, sdk.NewInt(100), "uftm")
 	require.Equal(t, false, res.IsOK())
+
+	token := types.NewToken(
+		"Max Mintable", "max",
+		"MAX",
+		sdk.NewInt(3175000000000000),
+		sdk.NewInt(3175000000000000),
+		addr,
+		true,
+	)
+
+	// Issue a new token
+	res = dk.IssueToken(ctx, addr, *token)
+	require.Equal(t, true, res.IsOK())
+
+	token = types.NewToken(
+		"Fantom", "uftm",
+		"FTM",
+		sdk.NewInt(1),
+		sdk.NewInt(3175000000000000),
+		addr,
+		true,
+	)
+
+	// Issue a new token
+	res = dk.IssueToken(ctx, addr, *token)
+	require.Equal(t, true, res.IsOK())
+
+	// Try to issue again and fail
+	res = dk.IssueToken(ctx, addr, *token)
+	require.Equal(t, false, res.IsOK())
+
+	// Issue a new token with total supply exceeding max supply
+	token = types.NewToken(
+		"Over max", "ovr",
+		"ovr",
+		sdk.NewInt(4175000000000000),
+		sdk.NewInt(3175000000000000),
+		addr,
+		true,
+	)
+	res = dk.IssueToken(ctx, addr, *token)
+	require.Equal(t, false, res.IsOK())
+
+	// Issue a new token with total supply exceeding max supply
+	token = types.NewToken(
+		"Unmintable", "unm",
+		"UNM",
+		sdk.NewInt(1),
+		sdk.NewInt(3175000000000000),
+		addrerr,
+		false,
+	)
+	res = dk.IssueToken(ctx, addrerr, *token)
+	require.Equal(t, true, res.IsOK())
+
+	// Try to mint unmintable coin
+	res = dk.MintCoins(ctx, addr, sdk.NewInt(1), "unm")
+	require.Equal(t, false, res.IsOK())
+
+	// Try to mint over max supply
+	res = dk.MintCoins(ctx, addr, sdk.NewInt(1), "max")
+	require.Equal(t, false, res.IsOK())
+
+	// Try a normal mint
+	res = dk.MintCoins(ctx, addr, sdk.NewInt(1), "uftm")
+	require.Equal(t, true, res.IsOK())
+
+	// Burn over max supply
+	func() {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("BurnCoins should have panicked!")
+			}
+		}()
+		// This function should cause a panic
+		dk.BurnCoins(ctx, addr, sdk.NewInt(3), "uftm")
+	}()
+
+	// Try a normal burn
+	res = dk.BurnCoins(ctx, addr, sdk.NewInt(1), "uftm")
+	require.Equal(t, true, res.IsOK())
+
+	// Freeze coins the address doesn't have
+	res = dk.FreezeCoins(ctx, addr, addrerr, sdk.NewInt(1), "uftm")
+	require.Equal(t, false, res.IsOK())
+
+	// Freeze coins the address has
+	res = dk.FreezeCoins(ctx, addrerr, addrerr, sdk.NewInt(1), "unm")
+	require.Equal(t, true, res.IsOK())
+
+	// Unfreeze coins the address has
+	res = dk.UnfreezeCoins(ctx, addrerr, addrerr, sdk.NewInt(1), "unm")
+	require.Equal(t, true, res.IsOK())
+
+	t.Errorf("%s", sk.GetSupply(ctx).String())
 }
 
 func MakeTestCodec() (cdc *codec.Codec) {
@@ -87,6 +171,7 @@ func MakeTestCodec() (cdc *codec.Codec) {
 	codec.RegisterCrypto(cdc)
 	supply.RegisterCodec(cdc)
 	auth.RegisterCodec(cdc)
+	denominations.RegisterCodec(cdc)
 
 	return
 }

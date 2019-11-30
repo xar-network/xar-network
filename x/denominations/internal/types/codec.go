@@ -13,6 +13,8 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgBurnCoins{}, "denominations/MsgBurnCoins", nil)
 	cdc.RegisterConcrete(MsgFreezeCoins{}, "denominations/MsgFreezeCoins", nil)
 	cdc.RegisterConcrete(MsgUnfreezeCoins{}, "denominations/MsgUnfreezeCoins", nil)
+
+	cdc.RegisterConcrete(&FreezeAccount{}, "denominations/FreezeAccount", nil)
 }
 
 func init() {

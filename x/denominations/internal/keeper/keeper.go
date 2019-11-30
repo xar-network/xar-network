@@ -162,6 +162,11 @@ func (k Keeper) IssueToken(ctx sdk.Context, from sdk.AccAddress, token types.Tok
 		return sdk.ErrInvalidCoins(token.TotalSupply.String()).Result()
 	}
 
+	supply := token.TotalSupply.AmountOf(token.Symbol)
+	if supply.GT(token.MaxSupply) {
+		return sdk.ErrInvalidCoins(token.MaxSupply.String()).Result()
+	}
+
 	acc := k.ak.GetAccount(ctx, from)
 	if acc == nil {
 		return sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", from.String())).Result()
@@ -238,7 +243,7 @@ func (k Keeper) MintCoins(ctx sdk.Context, from sdk.AccAddress, amount sdk.Int, 
 	}
 
 	// Max supply reached
-	if token.MaxSupply.GT(newCoins.AmountOf(denom)) {
+	if token.MaxSupply.LT(newCoins.AmountOf(denom)) {
 		return sdk.ErrInvalidCoins("max supply reached").Result()
 	}
 
@@ -304,7 +309,7 @@ func (k Keeper) BurnCoins(ctx sdk.Context, from sdk.AccAddress, amount sdk.Int, 
 	}
 
 	// Max supply reached
-	if token.MaxSupply.GT(newCoins.AmountOf(denom)) {
+	if token.MaxSupply.LT(newCoins.AmountOf(denom)) {
 		return sdk.ErrInvalidCoins("max supply reached").Result()
 	}
 
@@ -356,7 +361,6 @@ func (k Keeper) FreezeCoins(ctx sdk.Context, from sdk.AccAddress, address sdk.Ac
 		return sdk.ErrInvalidCoins(denom).Result()
 	}
 
-	// Does the owner exist
 	acc := k.ak.GetAccount(ctx, address)
 	if acc == nil {
 		return sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", from.String())).Result()
@@ -373,17 +377,18 @@ func (k Keeper) FreezeCoins(ctx sdk.Context, from sdk.AccAddress, address sdk.Ac
 	}
 
 	// Todo: Validate you are allowed access to account?
-	var customAccount, ok = k.ak.GetAccount(ctx, address).(types.CustomAccount)
+	baseAccount := k.ak.GetAccount(ctx, address)
+	var freezeAccount, ok = baseAccount.(*types.FreezeAccount)
 	if !ok {
-		return sdk.ErrInternal("failed to get correct account type to freeze coins").Result()
+		freezeAccount = types.NewFreezeAccount(baseAccount, nil)
 	}
-	er := customAccount.FreezeCoins(sdk.NewCoins(sdk.NewCoin(denom, amount)))
+	er := freezeAccount.FreezeCoins(sdk.NewCoins(sdk.NewCoin(denom, amount)))
 	if er != nil {
 		return sdk.ErrInternal(fmt.Sprintf("failed to freeze coins: '%s'", err)).Result()
 	}
 
 	// Save changes to account
-	k.ak.SetAccount(ctx, customAccount)
+	k.ak.SetAccount(ctx, freezeAccount)
 
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
@@ -432,9 +437,9 @@ func (k Keeper) UnfreezeCoins(ctx sdk.Context, from sdk.AccAddress, address sdk.
 	}
 
 	// Todo: Validate you are allowed access to account?
-	var customAccount, ok = k.ak.GetAccount(ctx, address).(types.CustomAccount)
+	var customAccount, ok = k.ak.GetAccount(ctx, address).(*types.FreezeAccount)
 	if !ok {
-		return sdk.ErrInternal("failed to get correct account type to freeze coins").Result()
+		return sdk.ErrInternal("failed to get correct account type to unfreeze coins").Result()
 	}
 	er := customAccount.UnfreezeCoins(sdk.NewCoins(sdk.NewCoin(denom, amount)))
 	if er != nil {
