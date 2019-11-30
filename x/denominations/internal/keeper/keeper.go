@@ -145,3 +145,304 @@ func (k Keeper) IsSymbolPresent(ctx sdk.Context, symbol string) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has([]byte(symbol))
 }
+
+func (k Keeper) IssueToken(ctx sdk.Context, from sdk.AccAddress, token types.Token) sdk.Result {
+	defer func() {
+		if r := recover(); r != nil {
+			err := fmt.Sprintf("had to recover when issuing new token: %v", r)
+			ctx.Logger().Error(err)
+		}
+	}()
+
+	if k.IsSymbolPresent(ctx, token.Symbol) {
+		return sdk.ErrInvalidCoins(token.Symbol).Result()
+	}
+
+	if !token.TotalSupply.IsValid() {
+		return sdk.ErrInvalidCoins(token.TotalSupply.String()).Result()
+	}
+
+	acc := k.ak.GetAccount(ctx, from)
+	if acc == nil {
+		return sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", from.String())).Result()
+	}
+
+	err := k.sk.MintCoins(ctx, types.ModuleName, token.TotalSupply)
+	if err != nil {
+		return err.Result()
+	}
+
+	err = k.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, from, token.TotalSupply)
+	if err != nil {
+		return err.Result()
+	}
+	er := k.SetToken(ctx, token.Symbol, &token)
+	if er != nil {
+		return sdk.ErrInternal(fmt.Sprintf("failed to store new token: '%s'", er)).Result()
+	}
+
+	newSymbolLog := fmt.Sprintf("new_symbol=%s", token.Symbol)
+	ctx.Logger().Info(newSymbolLog)
+	return sdk.Result{
+		Log: newSymbolLog,
+	}
+}
+
+func (k Keeper) MintCoins(ctx sdk.Context, from sdk.AccAddress, amount sdk.Int, denom string) sdk.Result {
+	// Check if denom exists
+	if !k.IsSymbolPresent(ctx, denom) {
+		return sdk.ErrInvalidCoins(denom).Result()
+	}
+
+	// Check if owner is assigned
+	owner, err := k.GetOwner(ctx, denom)
+	if err != nil {
+		return sdk.ErrUnknownAddress(
+			fmt.Sprintf("Could not find the owner for the symbol '%s'", denom)).Result()
+	}
+
+	// Make sure minter is owner
+	if !from.Equals(owner) { // Checks if the msg sender is the same as the current owner
+		return sdk.ErrUnauthorized("Incorrect Owner").Result() // If not, throw an error
+	}
+
+	coins := sdk.NewCoins(sdk.NewCoin(denom, amount))
+
+	// Are the coins valid
+	if !coins.IsValid() {
+		return sdk.ErrInvalidCoins(denom).Result()
+	}
+
+	// Does the owner exist
+	acc := k.ak.GetAccount(ctx, from)
+	if acc == nil {
+		return sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", from.String())).Result()
+	}
+
+	token, terr := k.GetToken(ctx, denom)
+	if terr != nil {
+		return sdk.ErrInvalidCoins(terr.Error()).Result()
+	}
+
+	// Is the token mintable
+	if !token.Mintable {
+		return sdk.ErrInvalidCoins("not mintable").Result()
+	}
+
+	// Any overflow
+	newCoins := token.TotalSupply.Add(coins)
+	if newCoins.IsAnyNegative() {
+		return sdk.ErrInsufficientCoins(
+			fmt.Sprintf("insufficient account funds; %s < %s", token.TotalSupply, amount),
+		).Result()
+	}
+
+	// Max supply reached
+	if token.MaxSupply.GT(newCoins.AmountOf(denom)) {
+		return sdk.ErrInvalidCoins("max supply reached").Result()
+	}
+
+	er := k.sk.MintCoins(ctx, types.ModuleName, coins)
+	if er != nil {
+		return er.Result()
+	}
+
+	er = k.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, from, coins)
+	if er != nil {
+		return er.Result()
+	}
+
+	err = k.SetTotalSupply(ctx, denom, newCoins)
+	if err != nil {
+		return sdk.ErrInternal(fmt.Sprintf("failed to set total supply when minting coins: '%s'", err)).Result()
+	}
+	return sdk.Result{Events: ctx.EventManager().Events()}
+}
+
+func (k Keeper) BurnCoins(ctx sdk.Context, from sdk.AccAddress, amount sdk.Int, denom string) sdk.Result {
+	// Check if denom exists
+	if !k.IsSymbolPresent(ctx, denom) {
+		return sdk.ErrInvalidCoins(denom).Result()
+	}
+
+	// Check if owner is assigned
+	owner, err := k.GetOwner(ctx, denom)
+	if err != nil {
+		return sdk.ErrUnknownAddress(
+			fmt.Sprintf("Could not find the owner for the symbol '%s'", denom)).Result()
+	}
+
+	// Make sure minter is owner
+	if !from.Equals(owner) { // Checks if the msg sender is the same as the current owner
+		return sdk.ErrUnauthorized("Incorrect Owner").Result() // If not, throw an error
+	}
+
+	coins := sdk.NewCoins(sdk.NewCoin(denom, amount))
+
+	// Are the coins valid
+	if !coins.IsValid() {
+		return sdk.ErrInvalidCoins(denom).Result()
+	}
+
+	// Does the owner exist
+	acc := k.ak.GetAccount(ctx, from)
+	if acc == nil {
+		return sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", from.String())).Result()
+	}
+
+	token, terr := k.GetToken(ctx, denom)
+	if terr != nil {
+		return sdk.ErrInvalidCoins(terr.Error()).Result()
+	}
+
+	// Any overflow
+	newCoins := token.TotalSupply.Sub(coins)
+	if newCoins.IsAnyNegative() {
+		return sdk.ErrInsufficientCoins(
+			fmt.Sprintf("insufficient account funds; %s < %s", token.TotalSupply, amount),
+		).Result()
+	}
+
+	// Max supply reached
+	if token.MaxSupply.GT(newCoins.AmountOf(denom)) {
+		return sdk.ErrInvalidCoins("max supply reached").Result()
+	}
+
+	_, hasNeg := acc.GetCoins().SafeSub(coins)
+	if hasNeg {
+		return sdk.ErrInsufficientCoins(fmt.Sprintf("insufficient account funds; %s < %s", acc.GetCoins(), coins)).Result()
+	}
+
+	er := k.sk.SendCoinsFromAccountToModule(ctx, from, types.ModuleName, coins)
+	if er != nil {
+		return er.Result()
+	}
+
+	er = k.sk.BurnCoins(ctx, types.ModuleName, coins)
+	if er != nil {
+		return er.Result()
+	}
+
+	err = k.SetTotalSupply(ctx, denom, newCoins)
+	if err != nil {
+		return sdk.ErrInternal(fmt.Sprintf("failed to set total supply when minting coins: '%s'", err)).Result()
+	}
+
+	return sdk.Result{Events: ctx.EventManager().Events()}
+}
+
+func (k Keeper) FreezeCoins(ctx sdk.Context, from sdk.AccAddress, address sdk.AccAddress, amount sdk.Int, denom string) sdk.Result {
+	// Check if denom exists
+	if !k.IsSymbolPresent(ctx, denom) {
+		return sdk.ErrInvalidCoins(denom).Result()
+	}
+
+	// Check if owner is assigned
+	owner, err := k.GetOwner(ctx, denom)
+	if err != nil {
+		return sdk.ErrUnknownAddress(
+			fmt.Sprintf("Could not find the owner for the symbol '%s'", denom)).Result()
+	}
+
+	// Make sure minter is owner
+	if !from.Equals(owner) { // Checks if the msg sender is the same as the current owner
+		return sdk.ErrUnauthorized("Incorrect Owner").Result() // If not, throw an error
+	}
+
+	coins := sdk.NewCoins(sdk.NewCoin(denom, amount))
+
+	// Are the coins valid
+	if !coins.IsValid() {
+		return sdk.ErrInvalidCoins(denom).Result()
+	}
+
+	// Does the owner exist
+	acc := k.ak.GetAccount(ctx, address)
+	if acc == nil {
+		return sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", from.String())).Result()
+	}
+
+	_, terr := k.GetToken(ctx, denom)
+	if terr != nil {
+		return sdk.ErrInvalidCoins(terr.Error()).Result()
+	}
+
+	_, hasNeg := acc.GetCoins().SafeSub(coins)
+	if hasNeg {
+		return sdk.ErrInsufficientCoins(fmt.Sprintf("insufficient account funds; %s < %s", acc.GetCoins(), coins)).Result()
+	}
+
+	// Todo: Validate you are allowed access to account?
+	var customAccount, ok = k.ak.GetAccount(ctx, address).(types.CustomAccount)
+	if !ok {
+		return sdk.ErrInternal("failed to get correct account type to freeze coins").Result()
+	}
+	er := customAccount.FreezeCoins(sdk.NewCoins(sdk.NewCoin(denom, amount)))
+	if er != nil {
+		return sdk.ErrInternal(fmt.Sprintf("failed to freeze coins: '%s'", err)).Result()
+	}
+
+	// Save changes to account
+	k.ak.SetAccount(ctx, customAccount)
+
+	return sdk.Result{Events: ctx.EventManager().Events()}
+}
+
+func (k Keeper) UnfreezeCoins(ctx sdk.Context, from sdk.AccAddress, address sdk.AccAddress, amount sdk.Int, denom string) sdk.Result {
+	// Check if denom exists
+	if !k.IsSymbolPresent(ctx, denom) {
+		return sdk.ErrInvalidCoins(denom).Result()
+	}
+
+	// Check if owner is assigned
+	owner, err := k.GetOwner(ctx, denom)
+	if err != nil {
+		return sdk.ErrUnknownAddress(
+			fmt.Sprintf("Could not find the owner for the symbol '%s'", denom)).Result()
+	}
+
+	// Make sure minter is owner
+	if !from.Equals(owner) { // Checks if the msg sender is the same as the current owner
+		return sdk.ErrUnauthorized("Incorrect Owner").Result() // If not, throw an error
+	}
+
+	coins := sdk.NewCoins(sdk.NewCoin(denom, amount))
+
+	// Are the coins valid
+	if !coins.IsValid() {
+		return sdk.ErrInvalidCoins(denom).Result()
+	}
+
+	// Does the owner exist
+	acc := k.ak.GetAccount(ctx, address)
+	if acc == nil {
+		return sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", from.String())).Result()
+	}
+
+	_, terr := k.GetToken(ctx, denom)
+	if terr != nil {
+		return sdk.ErrInvalidCoins(terr.Error()).Result()
+	}
+
+	newCoins := acc.GetCoins().Add(coins)
+	if newCoins.IsAnyNegative() {
+		return sdk.ErrInsufficientCoins(
+			fmt.Sprintf("insufficient account funds; %s < %s", newCoins, amount),
+		).Result()
+	}
+
+	// Todo: Validate you are allowed access to account?
+	var customAccount, ok = k.ak.GetAccount(ctx, address).(types.CustomAccount)
+	if !ok {
+		return sdk.ErrInternal("failed to get correct account type to freeze coins").Result()
+	}
+	er := customAccount.UnfreezeCoins(sdk.NewCoins(sdk.NewCoin(denom, amount)))
+	if er != nil {
+		return sdk.ErrInternal(fmt.Sprintf("failed to unfreeze coins: '%s'", err)).Result()
+	}
+
+	// Save changes to account
+	k.ak.SetAccount(ctx, customAccount)
+
+	return sdk.Result{Events: ctx.EventManager().Events()}
+}

@@ -3,28 +3,22 @@ package cli
 import (
 	"bufio"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/input"
-	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/prometheus/common/log"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/xar-network/xar-network/x/denominations/rand"
 
 	"github.com/xar-network/xar-network/x/denominations/internal/types"
 )
 
-func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
+func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	txRootCmd := &cobra.Command{
 		Use:                        "token",
 		Short:                      "Asset Management transaction sub-commands",
@@ -119,31 +113,26 @@ func GetCmdIssueToken(cdc *codec.Codec) *cobra.Command {
 		Short: "create a new asset",
 		// Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			cliCtx.BroadcastMode = flags.BroadcastBlock // wait in order to query later
-
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			address := getAccountAddress(cliCtx)
 
 			name := fetchStringFlag(cmd, "token-name")
 			originalSymbol := fetchStringFlag(cmd, "symbol")
 			symbol := strings.ToLower(rand.GenerateNewSymbol(originalSymbol))
-			totalSupply := fetchInt64Flag(cmd, "total-supply")
+			totalSupply := sdk.NewInt(fetchInt64Flag(cmd, "total-supply"))
+			maxSupply := sdk.NewInt(fetchInt64Flag(cmd, "max-supply"))
 			mintable := fetchBoolFlag(cmd, "mintable")
 			log.Debugf("token is mintable? %t", mintable)
 
-			msg := types.NewMsgIssueToken(address, name, symbol, originalSymbol, totalSupply, mintable)
+			msg := types.NewMsgIssueToken(address, name, symbol, originalSymbol, totalSupply, maxSupply, mintable)
 			err := msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
-
-			response, result := GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
-
-			printIssuedSymbol(response, cliCtx)
-
-			return result
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
 
@@ -191,9 +180,9 @@ func GetCmdMintCoins(cdc *codec.Codec) *cobra.Command {
 		Short: "mint more coins for the specified token",
 		// Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			// if err := cliCtx.EnsureAccountExists(); err != nil {
 			// 	return err
@@ -220,11 +209,11 @@ func GetCmdMintCoins(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-func getCommonParameters(cliCtx client.CLIContext, cmd *cobra.Command) (sdk.AccAddress, string, int64) {
+func getCommonParameters(cliCtx client.CLIContext, cmd *cobra.Command) (sdk.AccAddress, string, sdk.Int) {
 	// find given account
 	address := getAccountAddress(cliCtx)
 	symbol := fetchStringFlag(cmd, "symbol")
-	amount := fetchInt64Flag(cmd, "amount")
+	amount := sdk.NewInt(fetchInt64Flag(cmd, "amount"))
 	return address, symbol, amount
 }
 
@@ -235,9 +224,9 @@ func GetCmdBurnCoins(cdc *codec.Codec) *cobra.Command {
 		Short: "destroy the given amount of token/coins, reducing the total supply",
 		// Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			address, symbol, amount := getCommonParameters(cliCtx, cmd)
 
@@ -263,18 +252,22 @@ func GetCmdBurnCoins(cdc *codec.Codec) *cobra.Command {
 // GetCmdFreezeCoins is the CLI command for sending a FreezeCoins transaction
 func GetCmdFreezeCoins(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   `freeze --amount [amount] --symbol [ABC-123] --from [account]`,
+		Use:   `freeze [freeze_address] --amount [amount] --symbol [ABC-123] --from [account]`,
 		Short: "move specified amount of token/coins into frozen status, preventing their sale",
 		// Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			address, symbol, amount := getCommonParameters(cliCtx, cmd)
+			freezeAddress, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
 
-			msg := types.NewMsgFreezeCoins(amount, symbol, address)
-			err := msg.ValidateBasic()
+			msg := types.NewMsgFreezeCoins(amount, symbol, address, freezeAddress)
+			err = msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
@@ -295,18 +288,22 @@ func GetCmdFreezeCoins(cdc *codec.Codec) *cobra.Command {
 // GetCmdUnfreezeCoins is the CLI command for sending a FreezeCoins transaction
 func GetCmdUnfreezeCoins(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   `unfreeze --amount [amount] --symbol [ABC-123] --from [account]`,
+		Use:   `unfreeze [freeze_address] --amount [amount] --symbol [ABC-123] --from [account]`,
 		Short: "move specified amount of token into frozen status, preventing their sale",
 		// Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			address, symbol, amount := getCommonParameters(cliCtx, cmd)
+			freezeAddress, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
 
-			msg := types.NewMsgUnfreezeCoins(amount, symbol, address)
-			err := msg.ValidateBasic()
+			msg := types.NewMsgUnfreezeCoins(amount, symbol, address, freezeAddress)
+			err = msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
@@ -322,90 +319,4 @@ func GetCmdUnfreezeCoins(cdc *codec.Codec) *cobra.Command {
 		"what is the shorthand symbol, eg ABC-123, for the existing token", true)
 
 	return cmd
-}
-
-// GenerateOrBroadcastMsgs creates a StdTx given a series of messages. If
-// the provided context has generate-only enabled, the tx will only be printed
-// to STDOUT in a fully offline manner. Otherwise, the tx will be signed and
-// broadcast.
-func GenerateOrBroadcastMsgs(cliCtx context.CLIContext, txBldr authtypes.TxBuilder, msgs []sdk.Msg) (*sdk.TxResponse, error) {
-	if cliCtx.GenerateOnly {
-		return nil, utils.PrintUnsignedStdTx(txBldr, cliCtx, msgs)
-	}
-
-	return CompleteAndBroadcastTxCLI(txBldr, cliCtx, msgs)
-}
-
-// CompleteAndBroadcastTxCLI implements a utility function that facilitates
-// sending a series of messages in a signed transaction given a TxBuilder and a
-// QueryContext. It ensures that the account exists, has a proper number and
-// sequence set. In addition, it builds and signs a transaction with the
-// supplied messages. Finally, it broadcasts the signed transaction to a node
-// and returns the response and/or error
-func CompleteAndBroadcastTxCLI(txBldr authtypes.TxBuilder, cliCtx context.CLIContext, msgs []sdk.Msg) (*sdk.TxResponse, error) {
-	txBldr, err := utils.PrepareTxBuilder(txBldr, cliCtx)
-	if err != nil {
-		return nil, err
-	}
-
-	fromName := cliCtx.GetFromName()
-
-	if txBldr.SimulateAndExecute() || cliCtx.Simulate {
-		txBldr, err = utils.EnrichWithGas(txBldr, cliCtx, msgs)
-		if err != nil {
-			return nil, err
-		}
-
-		gasEst := utils.GasEstimateResponse{GasEstimate: txBldr.Gas()}
-		_, _ = fmt.Fprintf(os.Stderr, "%s\n", gasEst.String())
-	}
-
-	if cliCtx.Simulate {
-		return nil, nil
-	}
-
-	if !cliCtx.SkipConfirm {
-		stdSignMsg, err := txBldr.BuildSignMsg(msgs)
-		if err != nil {
-			return nil, err
-		}
-
-		var json []byte
-		if viper.GetBool(flags.FlagIndentResponse) {
-			json, err = cliCtx.Codec.MarshalJSONIndent(stdSignMsg, "", "  ")
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			json = cliCtx.Codec.MustMarshalJSON(stdSignMsg)
-		}
-
-		_, _ = fmt.Fprintf(os.Stderr, "%s\n\n", json)
-
-		buf := bufio.NewReader(os.Stdin)
-		ok, err := input.GetConfirmation("confirm transaction before signing and broadcasting", buf)
-		if err != nil || !ok {
-			_, _ = fmt.Fprintf(os.Stderr, "%s\n", "cancelled transaction")
-			return nil, err
-		}
-	}
-
-	passphrase, err := keys.GetPassphrase(fromName)
-	if err != nil {
-		return nil, err
-	}
-
-	// build and sign the transaction
-	txBytes, err := txBldr.BuildAndSign(fromName, passphrase, msgs)
-	if err != nil {
-		return nil, err
-	}
-
-	// broadcast to a Tendermint node
-	res, err := cliCtx.BroadcastTx(txBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	return &res, cliCtx.PrintOutput(res)
 }

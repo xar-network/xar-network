@@ -33,16 +33,18 @@ type Token struct {
 	Symbol         string         `json:"symbol"`          // unique token trade symbol eg FTM-000
 	OriginalSymbol string         `json:"original_symbol"` // token symbol eg FTM
 	TotalSupply    sdk.Coins      `json:"total_supply"`    // Total token supply
+	MaxSupply      sdk.Int        `json:"max_supply"`      // Maximum mintable supply
 	Mintable       bool           `json:"mintable"`
 }
 
 // NewToken returns a new token
-func NewToken(name, symbol, originalSymbol string, totalSupply int64, owner sdk.AccAddress, mintable bool) *Token {
+func NewToken(name, symbol, originalSymbol string, totalSupply sdk.Int, maxSupply sdk.Int, owner sdk.AccAddress, mintable bool) *Token {
 	return &Token{
 		Name:           name,
 		Symbol:         symbol,
 		OriginalSymbol: originalSymbol,
-		TotalSupply:    sdk.Coins{sdk.NewInt64Coin(symbol, totalSupply)},
+		TotalSupply:    sdk.Coins{sdk.NewCoin(symbol, totalSupply)},
+		MaxSupply:      maxSupply,
 		Owner:          owner,
 		Mintable:       mintable,
 	}
@@ -55,5 +57,6 @@ Name: %s
 Symbol: %s
 Original Symbol: %s
 Total Supply %s
-Mintable: %v`, t.Owner, t.Name, t.Symbol, t.OriginalSymbol, t.TotalSupply, t.Mintable))
+Max Supply %s
+Mintable: %v`, t.Owner, t.Name, t.Symbol, t.OriginalSymbol, t.TotalSupply, t.MaxSupply, t.Mintable))
 }

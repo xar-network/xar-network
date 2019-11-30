@@ -8,7 +8,7 @@ import (
 )
 
 type GenesisState struct {
-	TokenRecords []Token `json:"token_records"`
+	TokenRecords []types.Token `json:"token_records"`
 }
 
 func ValidateGenesis(data GenesisState) error {
@@ -38,23 +38,22 @@ func NewGenesisState(poa string) GenesisState {
 
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		TokenRecords: []Token{},
+		TokenRecords: []types.Token{},
 	}
 }
 
 func InitGenesis(ctx sdk.Context, k Keeper, data GenesisState) {
 	for _, record := range data.TokenRecords {
 		record := record
-		err := keeper.SetToken(ctx, record.Symbol, &record)
+		err := k.SetToken(ctx, record.Symbol, &record)
 		if err != nil {
 			panic(fmt.Sprintf("failed to set token for symbol: %s. Error: %s", record.Symbol, err))
 		}
 	}
-	return []abci.ValidatorUpdate{}
 }
 
 func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
-	var records []Token
+	var records []types.Token
 	iterator := k.GetTokensIterator(ctx)
 	for ; iterator.Valid(); iterator.Next() {
 
