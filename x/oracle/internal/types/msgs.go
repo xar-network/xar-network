@@ -1,6 +1,8 @@
 package types
 
 import (
+	"time"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -15,7 +17,7 @@ type MsgPostPrice struct {
 	From      sdk.AccAddress `json:"from" yaml:"from"`
 	AssetCode string         `json:"asset_code" yaml:"asset_code"`
 	Price     sdk.Dec        `json:"price" yaml:"price"`
-	Expiry    sdk.Int        `json:"expiry" yaml:"expiry"`
+	Expiry    time.Time      // expiry time
 }
 
 // NewMsgPostPrice creates a new post price msg
@@ -23,7 +25,7 @@ func NewMsgPostPrice(
 	from sdk.AccAddress,
 	assetCode string,
 	price sdk.Dec,
-	expiry sdk.Int) MsgPostPrice {
+	expiry time.Time) MsgPostPrice {
 	return MsgPostPrice{
 		From:      from,
 		AssetCode: assetCode,
@@ -60,7 +62,7 @@ func (msg MsgPostPrice) ValidateBasic() sdk.Error {
 	if msg.Price.LT(sdk.ZeroDec()) {
 		return sdk.ErrInternal("invalid (negative) price")
 	}
-	if msg.Expiry.LT(sdk.ZeroInt()) {
+	if msg.Expiry.After(time.Now()) {
 		return sdk.ErrInternal("invalid (negative) expiry")
 	}
 	// TODO check coin denoms

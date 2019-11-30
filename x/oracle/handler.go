@@ -35,6 +35,10 @@ func HandleMsgPostPrice(
 	if err != nil {
 		return err.Result()
 	}
+	_, er := k.GetOracle(ctx, msg.AssetCode, msg.From)
+	if er != nil {
+		return types.ErrInvalidOracle(k.Codespace()).Result()
+	}
 	k.SetPrice(ctx, msg.From, msg.AssetCode, msg.Price, msg.Expiry)
 	return sdk.Result{}
 }

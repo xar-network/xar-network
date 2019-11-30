@@ -3,6 +3,7 @@ package cli
 import (
 	"bufio"
 	"fmt"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -11,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
+	tmtime "github.com/tendermint/tendermint/types/time"
 	"github.com/xar-network/xar-network/x/oracle/internal/types"
 )
 
@@ -45,11 +47,12 @@ func GetCmdPostPrice(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			expiry, ok := sdk.NewIntFromString(args[3])
+			expiryInt, ok := sdk.NewIntFromString(args[2])
 			if !ok {
-				fmt.Printf("invalid expiry - %s \n", string(args[3]))
+				fmt.Printf("invalid expiry - %s \n", args[2])
 				return nil
 			}
+			expiry := tmtime.Canonical(time.Unix(expiryInt.Int64(), 0))
 			msg := types.NewMsgPostPrice(cliCtx.GetFromAddress(), args[1], price, expiry)
 			err = msg.ValidateBasic()
 			if err != nil {

@@ -2,6 +2,7 @@ package types
 
 import (
 	"testing"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -10,7 +11,7 @@ import (
 func TestMsgSort(t *testing.T) {
 	from := sdk.AccAddress([]byte("someName"))
 	price, _ := sdk.NewDecFromStr("0.01155578")
-	expiry := sdk.NewInt(1000)
+	expiry := time.Now()
 
 	msg := NewMsgPostPrice(from, "uftm", price, expiry)
 
