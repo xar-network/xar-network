@@ -4,13 +4,13 @@ import (
 	"bytes"
 )
 
-// GenesisState - pricefeed state that must be provided at genesis
+// GenesisState - oracle state that must be provided at genesis
 type GenesisState struct {
 	Params       Params        `json:"asset_params" yaml:"asset_params"`
 	PostedPrices []PostedPrice `json:"posted_prices" yaml:"posted_prices"`
 }
 
-// NewGenesisState creates a new genesis state for the pricefeed module
+// NewGenesisState creates a new genesis state for the oracle module
 func NewGenesisState(p Params, pp []PostedPrice) GenesisState {
 	return GenesisState{
 		Params:       p,
@@ -18,7 +18,7 @@ func NewGenesisState(p Params, pp []PostedPrice) GenesisState {
 	}
 }
 
-// DefaultGenesisState defines default GenesisState for pricefeed
+// DefaultGenesisState defines default GenesisState for oracle
 func DefaultGenesisState() GenesisState {
 	return NewGenesisState(
 		DefaultParams(),

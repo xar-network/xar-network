@@ -10,7 +10,6 @@ import (
 
 var (
 	// KeyAssets store key for assets
-	KeyOracles  = []byte("oracleoracles")
 	KeyAssets   = []byte("oracleassets")
 	KeyNominees = []byte("oraclenominees")
 )
@@ -20,18 +19,18 @@ func ParamKeyTable() params.KeyTable {
 	return params.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-// Params params for pricefeed. Can be altered via governance
+// Params params for oracle. Can be altered via governance
 type Params struct {
-	Assets   []Asset  `json:"assets" yaml:"assets"` //  Array containing the assets supported by the pricefeed
-	Oracles  []Oracle `json:"oracles" yaml:"oracles"`
+	Assets   []Asset  `json:"assets" yaml:"assets"` //  Array containing the assets supported by the oracle
 	Nominees []string `json:"nominees" yaml:"nominees"`
 }
 
 // ParamSetPairs implements the ParamSet interface and returns all the key/value pairs
-// pairs of pricefeed module's parameters.
+// pairs of oracle module's parameters.
 func (p Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
 		{Key: KeyAssets, Value: &p.Assets},
+		{Key: KeyNominees, Value: &p.Nominees},
 	}
 }
 
@@ -42,7 +41,7 @@ func NewParams(assets []Asset) Params {
 	}
 }
 
-// DefaultParams default params for pricefeed
+// DefaultParams default params for oracle
 func DefaultParams() Params {
 	return NewParams(Assets{})
 }

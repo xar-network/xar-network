@@ -16,7 +16,7 @@ type Keeper struct {
 	storeKey sdk.StoreKey
 	// Codec for binary encoding/decoding
 	cdc *codec.Codec
-	// The reference to the Paramstore to get and set pricefeed specific params
+	// The reference to the Paramstore to get and set oracle specific params
 	paramstore params.Subspace
 	// Reserved codespace
 	codespace sdk.CodespaceType
@@ -24,7 +24,7 @@ type Keeper struct {
 
 // NewKeeper returns a new keeper for the oralce module. It handles:
 // - adding oracles
-// - adding/removing assets from the pricefeed
+// - adding/removing assets from the oracle
 func NewKeeper(
 	storeKey sdk.StoreKey, cdc *codec.Codec, paramstore params.Subspace, codespace sdk.CodespaceType,
 ) Keeper {
@@ -85,11 +85,11 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 		prices := k.GetRawPrices(ctx, assetCode)
 		var notExpiredPrices []types.CurrentPrice
 		// filter out expired prices
-		for _, v := range prices {
-			if v.Expiry.After(ctx.BlockTime()) {
+		for _, x := range prices {
+			if x.Expiry.After(ctx.BlockTime()) {
 				notExpiredPrices = append(notExpiredPrices, types.CurrentPrice{
-					AssetCode: v.AssetCode,
-					Price:     v.Price,
+					AssetCode: x.AssetCode,
+					Price:     x.Price,
 				})
 			}
 		}

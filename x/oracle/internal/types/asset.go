@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Asset struct that represents an asset in the pricefeed
+// Asset struct that represents an asset in the oracle
 type Asset struct {
 	AssetCode  string  `json:"asset_code" yaml:"asset_code"`
 	BaseAsset  string  `json:"base_asset" yaml:"base_asset"`
@@ -50,6 +50,12 @@ func (o Oracle) String() string {
 	return fmt.Sprintf(`Address: %s`, o.Address)
 }
 
+func NewOracle(address sdk.AccAddress) Oracle {
+	return Oracle{
+		Address: address,
+	}
+}
+
 // Oracles array type for oracle
 type Oracles []Oracle
 
@@ -62,7 +68,7 @@ func (os Oracles) String() string {
 	return strings.TrimSpace(out)
 }
 
-// CurrentPrice struct that contains the metadata of a current price for a particular asset in the pricefeed module.
+// CurrentPrice struct that contains the metadata of a current price for a particular asset in the oracle module.
 type CurrentPrice struct {
 	AssetCode string  `json:"asset_code" yaml:"asset_code"`
 	Price     sdk.Dec `json:"price" yaml:"price"`

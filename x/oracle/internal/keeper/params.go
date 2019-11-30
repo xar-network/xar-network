@@ -25,7 +25,7 @@ func (k Keeper) GetAssetParams(ctx sdk.Context) types.Assets {
 	return assets
 }
 
-// GetOracles returns the oracles in the pricefeed store
+// GetOracles returns the oracles in the oracle store
 func (k Keeper) GetOracles(ctx sdk.Context, assetCode string) (types.Oracles, error) {
 
 	for _, a := range k.GetAssetParams(ctx) {
@@ -34,6 +34,90 @@ func (k Keeper) GetOracles(ctx sdk.Context, assetCode string) (types.Oracles, er
 		}
 	}
 	return types.Oracles{}, fmt.Errorf("asset %s not found", assetCode)
+}
+
+// AddOracle returns the oracle in the oracle store
+func (k Keeper) AddOracle(ctx sdk.Context, assetCode string, address sdk.AccAddress) error {
+	_, err := k.GetOracle(ctx, assetCode, address)
+	if err == nil {
+		return fmt.Errorf("oracle %s already exists for asset %s", address, assetCode)
+	}
+
+	assets := k.GetAssetParams(ctx)
+	updateAssets := assets[:0]
+	found := false
+	for _, a := range assets {
+		if assetCode == a.AssetCode {
+			oracle := types.NewOracle(address)
+			a.Oracles = append(a.Oracles, oracle)
+			found = true
+		}
+		updateAssets = append(updateAssets, a)
+	}
+	if found {
+		params := k.GetParams(ctx)
+		params.Assets = updateAssets
+		k.SetParams(ctx, params)
+		return nil
+	}
+	return fmt.Errorf("asset %s not found", assetCode)
+}
+
+// AddOracle returns the oracle in the oracle store
+func (k Keeper) SetOracles(ctx sdk.Context, assetCode string, addresses types.Oracles) error {
+	assets := k.GetAssetParams(ctx)
+	updateAssets := assets[:0]
+	found := false
+	for _, a := range assets {
+		if assetCode == a.AssetCode {
+			a.Oracles = addresses
+			found = true
+		}
+		updateAssets = append(updateAssets, a)
+	}
+	if found {
+		params := k.GetParams(ctx)
+		params.Assets = updateAssets
+		k.SetParams(ctx, params)
+		return nil
+	}
+	return fmt.Errorf("asset %s not found", assetCode)
+}
+
+// AddOracle returns the oracle in the oracle store
+func (k Keeper) SetAsset(ctx sdk.Context, assetCode string, asset types.Asset) error {
+	assets := k.GetAssetParams(ctx)
+	updateAssets := assets[:0]
+	found := false
+	for _, a := range assets {
+		if assetCode == a.AssetCode {
+			a = asset
+			found = true
+		}
+		updateAssets = append(updateAssets, a)
+	}
+	if found {
+		params := k.GetParams(ctx)
+		params.Assets = updateAssets
+		k.SetParams(ctx, params)
+		return nil
+	}
+	return fmt.Errorf("asset %s not found", assetCode)
+}
+
+// AddOracle returns the oracle in the oracle store
+func (k Keeper) AddAsset(ctx sdk.Context, assetCode string, asset types.Asset) error {
+	_, exists := k.GetAsset(ctx, assetCode)
+	if exists {
+		return fmt.Errorf("asset %s already exists", assetCode)
+	}
+	assets := k.GetAssetParams(ctx)
+	assets = append(assets, asset)
+
+	params := k.GetParams(ctx)
+	params.Assets = assets
+	k.SetParams(ctx, params)
+	return nil
 }
 
 // GetOracle returns the oracle from the store or an error if not found
@@ -50,7 +134,7 @@ func (k Keeper) GetOracle(ctx sdk.Context, assetCode string, address sdk.AccAddr
 	return types.Oracle{}, fmt.Errorf("oracle %s not found for asset %s", address, assetCode)
 }
 
-// GetAsset returns the asset if it is in the pricefeed system
+// GetAsset returns the asset if it is in the oracle system
 func (k Keeper) GetAsset(ctx sdk.Context, assetCode string) (types.Asset, bool) {
 	assets := k.GetAssetParams(ctx)
 

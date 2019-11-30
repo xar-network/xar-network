@@ -12,7 +12,7 @@ import (
 	"github.com/xar-network/xar-network/x/oracle/internal/types"
 )
 
-// TestKeeper_SetGetAsset tests adding assets to the pricefeed, getting assets from the store
+// TestKeeper_SetGetAsset tests adding assets to the oracle, getting assets from the store
 func TestKeeper_SetGetAsset(t *testing.T) {
 	helper := getMockApp(t, 0, types.GenesisState{}, nil)
 	header := abci.Header{
@@ -126,6 +126,13 @@ func TestKeeper_GetSetCurrentPrice(t *testing.T) {
 	require.NoError(t, err)
 	// Get Current price
 	price := helper.keeper.GetCurrentPrice(ctx, "tstusd")
+	prices := helper.keeper.GetRawPrices(ctx, "tstusd")
+	for _, v := range prices {
+		if v.Expiry.After(ctx.BlockTime()) {
+			t.Errorf("[%s]", v.String())
+		}
+	}
+
 	require.Equal(t, price.Price.Equal(sdk.MustNewDecFromStr("0.34")), true)
 
 	// Even number of oracles
