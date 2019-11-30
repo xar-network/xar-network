@@ -8,8 +8,11 @@ import (
 var ModuleCdc *codec.Codec
 
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(MsgMint{}, "denominations/MsgMint", nil)
-	cdc.RegisterConcrete(MsgBurn{}, "denominations/MsgBurn", nil)
+	cdc.RegisterConcrete(MsgIssueToken{}, "denominations/MsgIssueToken", nil)
+	cdc.RegisterConcrete(MsgMintCoins{}, "denominations/MsgMintCoins", nil)
+	cdc.RegisterConcrete(MsgBurnCoins{}, "denominations/MsgBurnCoins", nil)
+	cdc.RegisterConcrete(MsgFreezeCoins{}, "denominations/MsgFreezeCoins", nil)
+	cdc.RegisterConcrete(MsgUnfreezeCoins{}, "denominations/MsgUnfreezeCoins", nil)
 }
 
 func init() {
