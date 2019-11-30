@@ -1,5 +1,7 @@
 Cosmos-SDK
-XAR-Network
+Xar-Network
+Kava
+Hashgard
 License: Apache2.0
 
                                  Apache License
@@ -191,6 +193,9 @@ License: Apache2.0
       identification within third-party archives.
 
    Copyright 2016 All in Bits, Inc
+   Copyright 2018 public-chain
+   Copyright 2019 Kava Labs, Inc
+   Copyright 2019 Xar Network
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

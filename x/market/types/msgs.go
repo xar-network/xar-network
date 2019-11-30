@@ -7,9 +7,9 @@ var (
 )
 
 type MsgCreateMarket struct {
-	Nominee    sdk.AccAddress
-	BaseAsset  string
-	QuoteAsset string
+	Nominee    sdk.AccAddress `json:"nominee" yaml:"nominee"`
+	BaseAsset  string         `json:"base_asset" yaml:"base_asset"`
+	QuoteAsset string         `json:"quote_asset" yaml:"quote_asset"`
 }
 
 func NewMsgCreateMarket(

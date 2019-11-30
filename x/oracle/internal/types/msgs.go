@@ -12,10 +12,10 @@ const (
 // MsgPostPrice struct representing a posted price message.
 // Used by oracles to input prices to the oracle
 type MsgPostPrice struct {
-	From      sdk.AccAddress // client that sent in this address
-	AssetCode string         // asset code used by exchanges/api
-	Price     sdk.Dec        // price in decimal (max precision 18)
-	Expiry    sdk.Int        // block height
+	From      sdk.AccAddress `json:"from" yaml:"from"`
+	AssetCode string         `json:"asset_code" yaml:"asset_code"`
+	Price     sdk.Dec        `json:"price" yaml:"price"`
+	Expiry    sdk.Int        `json:"expiry" yaml:"expiry"`
 }
 
 // NewMsgPostPrice creates a new post price msg

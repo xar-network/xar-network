@@ -7,10 +7,10 @@ import (
 // MsgCreateOrModifyCSDT creates, adds/removes collateral/stable coin from a csdt
 // TODO Make this more user friendly - maybe split into four functions.
 type MsgCreateOrModifyCSDT struct {
-	Sender           sdk.AccAddress
-	CollateralDenom  string
-	CollateralChange sdk.Int
-	DebtChange       sdk.Int
+	Sender           sdk.AccAddress `json:"sender" yaml:"sender"`
+	CollateralDenom  string         `json:"collateral_denom" yaml:"collateral_denom"`
+	CollateralChange sdk.Int        `json:"collateral_change" yaml:"collateral_change"`
+	DebtChange       sdk.Int        `json:"debt_change" yaml:"debt_change"`
 }
 
 // NewMsgPlaceBid returns a new MsgPlaceBid.

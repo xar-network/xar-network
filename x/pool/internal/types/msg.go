@@ -6,8 +6,8 @@ import (
 
 // MsgDepositFund inserts a given amount into the pool
 type MsgDepositFund struct {
-	Sender sdk.AccAddress
-	Amount sdk.Coin
+	Sender sdk.AccAddress `json:"sender" yaml:"sender"`
+	Amount sdk.Coin       `json:"amount" yaml:"amount"`
 }
 
 func NewMsgDepositFund(sender sdk.AccAddress, amount sdk.Coin) MsgDepositFund {

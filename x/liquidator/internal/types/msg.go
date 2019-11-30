@@ -16,9 +16,9 @@ Design options and problems:
 */
 
 type MsgSeizeAndStartCollateralAuction struct {
-	Sender          sdk.AccAddress // only needed to pay the tx fees
-	CsdtOwner       sdk.AccAddress
-	CollateralDenom string
+	Sender          sdk.AccAddress `json:"sender" yaml:"sender"`
+	CsdtOwner       sdk.AccAddress `json:"owner" yaml:"owner"`
+	CollateralDenom string         `json:"collateral_denom" yaml:"collateral_denom"`
 }
 
 // Route return the message type used for routing the message.

@@ -9,12 +9,12 @@ import (
 )
 
 type MsgPost struct {
-	Owner       sdk.AccAddress
-	MarketID    store.EntityID
-	Direction   matcheng.Direction
-	Price       sdk.Uint
-	Quantity    sdk.Uint
-	TimeInForce uint16
+	Owner       sdk.AccAddress     `json:"owner" yaml:"owner"`
+	MarketID    store.EntityID     `json:"market_id" yaml:"market_id"`
+	Direction   matcheng.Direction `json:"direction" yaml:"direction"`
+	Price       sdk.Uint           `json:"price" yaml:"price"`
+	Quantity    sdk.Uint           `json:"quantity" yaml:"quantity"`
+	TimeInForce uint16             `json:"time_in_force" yaml:"time_in_force"`
 }
 
 func NewMsgPost(owner sdk.AccAddress, marketID store.EntityID, direction matcheng.Direction, price sdk.Uint, quantity sdk.Uint, tif uint16) MsgPost {
@@ -64,8 +64,8 @@ func (msg MsgPost) GetSigners() []sdk.AccAddress {
 }
 
 type MsgCancel struct {
-	Owner   sdk.AccAddress
-	OrderID store.EntityID
+	Owner   sdk.AccAddress `json:"owner" yaml:"owner"`
+	OrderID store.EntityID `json:"order_id" yaml:"order_id"`
 }
 
 func NewMsgCancel(owner sdk.AccAddress, orderID store.EntityID) MsgCancel {

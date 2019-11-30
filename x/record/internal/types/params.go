@@ -9,12 +9,12 @@ import (
 
 // Param for record
 type RecordParams struct {
-	Name        string `json:"name"`
-	Author      string `json:"author"`
-	Hash        string `json:"hash"`
-	RecordNo    string `json:"record_number"`
-	RecordType  string `json:"record_type"`
-	Description string `json:"description"`
+	Name        string `json:"name" yaml:"name"`
+	Author      string `json:"author" yaml:"author"`
+	Hash        string `json:"hash" yaml:"hash"`
+	RecordNo    string `json:"record_number" yaml:"record_number"`
+	RecordType  string `json:"record_type" yaml:"record_type"`
+	Description string `json:"description" yaml:"description"`
 }
 
 // Record tags

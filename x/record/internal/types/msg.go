@@ -20,8 +20,8 @@ type MsgFlag interface {
 // MsgRecord to allow a registered recordr
 // to record new coins.
 type MsgRecord struct {
-	Sender        sdk.AccAddress `json:"sender"`
-	*RecordParams `json:"params"`
+	Sender        sdk.AccAddress `json:"sender" yaml:"sender"`
+	*RecordParams `json:"params" yaml:"params"`
 }
 
 //New MsgRecord Instance

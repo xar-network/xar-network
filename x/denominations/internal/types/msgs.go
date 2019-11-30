@@ -6,13 +6,13 @@ import (
 
 // MsgIssueToken defines a IssueToken message
 type MsgIssueToken struct {
-	SourceAddress  sdk.AccAddress `json:"source_address"`
-	Name           string         `json:"name"`
-	Symbol         string         `json:"symbol"`
-	OriginalSymbol string         `json:"original_symbol"`
-	TotalSupply    sdk.Int        `json:"total_supply"`
-	MaxSupply      sdk.Int        `json:"max_supply"`
-	Mintable       bool           `json:"mintable"`
+	SourceAddress  sdk.AccAddress `json:"source_address" yaml:"source_address"`
+	Name           string         `json:"name" yaml:"name"`
+	Symbol         string         `json:"symbol" yaml:"symbol"`
+	OriginalSymbol string         `json:"original_symbol" yaml:"original_symbol"`
+	TotalSupply    sdk.Int        `json:"total_supply" yaml:"total_supply"`
+	MaxSupply      sdk.Int        `json:"max_supply" yaml:"max_supply"`
+	Mintable       bool           `json:"mintable" yaml:"mintable"`
 }
 
 // NewMsgIssueToken is a constructor function for MsgIssueToken
@@ -64,9 +64,9 @@ func (msg MsgIssueToken) GetSigners() []sdk.AccAddress {
 
 // MsgMintCoins defines the MintCoins message
 type MsgMintCoins struct {
-	Amount sdk.Int        `json:"amount"`
-	Symbol string         `json:"symbol"`
-	Owner  sdk.AccAddress `json:"owner"`
+	Amount sdk.Int        `json:"amount" yaml:"amount"`
+	Symbol string         `json:"symbol" yaml:"symbol"`
+	Owner  sdk.AccAddress `json:"owner" yaml:"owner"`
 }
 
 // NewMsgMintCoins is the constructor function for MsgMintCoins
@@ -110,9 +110,9 @@ func (msg MsgMintCoins) GetSigners() []sdk.AccAddress {
 
 // MsgBurnCoins defines the BurnCoins message
 type MsgBurnCoins struct {
-	Amount sdk.Int        `json:"amount"`
-	Symbol string         `json:"symbol"`
-	Owner  sdk.AccAddress `json:"owner"`
+	Amount sdk.Int        `json:"amount" yaml:"amount"`
+	Symbol string         `json:"symbol" yaml:"symbol"`
+	Owner  sdk.AccAddress `json:"owner" yaml:"owner"`
 }
 
 // NewMsgBurnCoins is the constructor function for MsgBurnCoins
@@ -156,10 +156,10 @@ func (msg MsgBurnCoins) GetSigners() []sdk.AccAddress {
 
 // MsgFreezeCoins defines the FreezeCoins message
 type MsgFreezeCoins struct {
-	Amount  sdk.Int        `json:"amount"`
-	Symbol  string         `json:"symbol"`
-	Owner   sdk.AccAddress `json:"owner"`
-	Address sdk.AccAddress `json:"address"`
+	Amount  sdk.Int        `json:"amount" yaml:"amount"`
+	Symbol  string         `json:"symbol" yaml:"symbol"`
+	Owner   sdk.AccAddress `json:"owner" yaml:"owner"`
+	Address sdk.AccAddress `json:"address" yaml:"address"`
 }
 
 // NewMsgFreezeCoins is the constructor function for MsgFreezeCoins
@@ -204,10 +204,10 @@ func (msg MsgFreezeCoins) GetSigners() []sdk.AccAddress {
 
 // MsgUnfreezeCoins defines the UnfreezeCoins message
 type MsgUnfreezeCoins struct {
-	Amount  sdk.Int        `json:"amount"`
-	Symbol  string         `json:"symbol"`
-	Owner   sdk.AccAddress `json:"owner"`
-	Address sdk.AccAddress `json:"address"`
+	Amount  sdk.Int        `json:"amount" yaml:"amount"`
+	Symbol  string         `json:"symbol" yaml:"symbol"`
+	Owner   sdk.AccAddress `json:"owner" yaml:"owner"`
+	Address sdk.AccAddress `json:"address" yaml:"address"`
 }
 
 // NewMsgUnfreezeCoins is the constructor function for MsgUnfreezeCoins
