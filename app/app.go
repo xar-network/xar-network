@@ -32,11 +32,8 @@ import (
 	"github.com/xar-network/xar-network/x/nft"
 
 	//Public issuance
-	"github.com/xar-network/xar-network/x/authority"
-	"github.com/xar-network/xar-network/x/interest"
+	"github.com/xar-network/xar-network/x/denominations"
 	"github.com/xar-network/xar-network/x/issue"
-	"github.com/xar-network/xar-network/x/issuer"
-	"github.com/xar-network/xar-network/x/liquidityprovider"
 
 	"github.com/xar-network/xar-network/x/auction"
 	"github.com/xar-network/xar-network/x/csdt"
@@ -91,10 +88,8 @@ var (
 		liquidator.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		record.AppModuleBasic{},
-		interest.AppModuleBasic{},
-		liquidityprovider.AppModuleBasic{},
-		issuer.AppModuleBasic{},
-		authority.AppModule{},
+
+		denominations.AppModuleBasic{},
 
 		market.AppModuleBasic{},
 		order.AppModuleBasic{},
@@ -102,14 +97,13 @@ var (
 
 	// module account permissions
 	maccPerms = map[string][]string{
-		auth.FeeCollectorName:        nil,
-		distr.ModuleName:             nil,
-		mint.ModuleName:              {supply.Minter},
-		staking.BondedPoolName:       {supply.Burner, supply.Staking},
-		staking.NotBondedPoolName:    {supply.Burner, supply.Staking},
-		gov.ModuleName:               {supply.Burner},
-		liquidityprovider.ModuleName: {supply.Minter, supply.Burner},
-		interest.ModuleName:          {supply.Minter},
+		auth.FeeCollectorName:     nil,
+		distr.ModuleName:          nil,
+		mint.ModuleName:           {supply.Minter},
+		staking.BondedPoolName:    {supply.Burner, supply.Staking},
+		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
+		gov.ModuleName:            {supply.Burner},
+		denominations.ModuleName:  {supply.Minter, supply.Burner},
 	}
 )
 
@@ -161,10 +155,7 @@ type xarApp struct {
 
 	NFTKeeper nft.Keeper
 
-	interestKeeper  interest.Keeper
-	lpKeeper        liquidityprovider.Keeper
-	issuerKeeper    issuer.Keeper
-	authorityKeeper authority.Keeper
+	denominationsKeeper denominations.Keeper
 
 	marketKeeper market.Keeper
 	orderKeeper  order.Keeper
@@ -209,9 +200,8 @@ func NewXarApp(
 		supply.StoreKey, mint.StoreKey, distr.StoreKey, slashing.StoreKey,
 		gov.StoreKey, params.StoreKey, issue.StoreKey, oracle.StoreKey,
 		auction.StoreKey, csdt.StoreKey, liquidator.StoreKey, nft.StoreKey,
-		interest.StoreKey, authority.StoreKey, issuer.StoreKey,
-		record.StoreKey, evidence.StoreKey, market.StoreKey,
-		ordertypes.StoreKey,
+		denominations.StoreKey, record.StoreKey, evidence.StoreKey,
+		market.StoreKey, ordertypes.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -240,7 +230,9 @@ func NewXarApp(
 	csdtSubspace := app.paramsKeeper.Subspace(csdt.DefaultParamspace)
 	liquidatorSubspace := app.paramsKeeper.Subspace(liquidator.DefaultParamspace)
 	recordSubspace := app.paramsKeeper.Subspace(record.DefaultParamspace)
-	interestSubspace := app.paramsKeeper.Subspace(interest.DefaultParamspace)
+
+	denominationsSubspace := app.paramsKeeper.Subspace(denominations.DefaultParamspace)
+
 	auctionSubspace := app.paramsKeeper.Subspace(auction.DefaultParamspace)
 	marketSubspace := app.paramsKeeper.Subspace(market.DefaultParamspace)
 
@@ -263,14 +255,11 @@ func NewXarApp(
 	app.auctionKeeper = auction.NewKeeper(app.cdc, app.csdtKeeper, keys[auction.StoreKey], auctionSubspace)
 	app.liquidatorKeeper = liquidator.NewKeeper(app.cdc, keys[liquidator.StoreKey], liquidatorSubspace, app.csdtKeeper, app.auctionKeeper, app.csdtKeeper)
 
-	app.marketKeeper = market.NewKeeper(keys[markettypes.StoreKey], app.cdc, marketSubspace)
+	app.marketKeeper = market.NewKeeper(keys[markettypes.StoreKey], app.cdc, marketSubspace, market.DefaultCodespace)
 	app.orderKeeper = order.NewKeeper(app.bankKeeper, app.marketKeeper, keys[ordertypes.StoreKey], queue, app.cdc)
 	app.execKeeper = execution.NewKeeper(queue, app.marketKeeper, app.orderKeeper, app.bankKeeper)
 
-	app.interestKeeper = interest.NewKeeper(app.cdc, keys[interest.StoreKey], interestSubspace, app.supplyKeeper, auth.FeeCollectorName)
-	app.lpKeeper = liquidityprovider.NewKeeper(app.accountKeeper, app.supplyKeeper)
-	app.issuerKeeper = issuer.NewKeeper(keys[issuer.StoreKey], app.lpKeeper, app.interestKeeper)
-	app.authorityKeeper = authority.NewKeeper(keys[authority.StoreKey], app.issuerKeeper, app.oracleKeeper, app.marketKeeper, app.supplyKeeper)
+	app.denominationsKeeper = denominations.NewKeeper(app.accountKeeper, app.supplyKeeper, denominationsSubspace, denominations.DefaultCodespace)
 
 	// create evidence keeper with evidence router
 	app.evidenceKeeper = evidence.NewKeeper(app.cdc, keys[evidence.StoreKey], evidenceSubspace, evidence.DefaultCodespace)
@@ -318,10 +307,7 @@ func NewXarApp(
 		oracle.NewAppModule(app.oracleKeeper),
 		record.NewAppModule(app.recordKeeper),
 
-		interest.NewAppModule(app.interestKeeper),
-		liquidityprovider.NewAppModule(app.lpKeeper),
-		issuer.NewAppModule(app.issuerKeeper),
-		authority.NewAppModule(app.authorityKeeper),
+		denominations.NewAppModule(app.denominationsKeeper),
 
 		market.NewAppModule(app.marketKeeper),
 		order.NewAppModule(app.orderKeeper),
@@ -331,7 +317,6 @@ func NewXarApp(
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(
-		interest.ModuleName,
 		mint.ModuleName,
 		distr.ModuleName,
 		slashing.ModuleName,
@@ -342,8 +327,6 @@ func NewXarApp(
 		gov.ModuleName,
 		staking.ModuleName,
 		oracle.ModuleName,
-		authority.ModuleName,
-		interest.ModuleName,
 		issue.ModuleName,
 	)
 
@@ -354,8 +337,7 @@ func NewXarApp(
 		slashing.ModuleName, gov.ModuleName, mint.ModuleName, supply.ModuleName,
 		crisis.ModuleName, issue.ModuleName,
 		auction.ModuleName, csdt.ModuleName, liquidator.ModuleName, oracle.ModuleName,
-		interest.ModuleName, authority.ModuleName, liquidityprovider.ModuleName, issuer.ModuleName,
-		nft.ModuleName, record.ModuleName, genutil.ModuleName,
+		denominations.ModuleName, nft.ModuleName, record.ModuleName, genutil.ModuleName,
 		evidence.ModuleName, markettypes.ModuleName,
 	)
 	app.QueryRouter().
