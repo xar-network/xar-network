@@ -69,6 +69,11 @@ func NewGenesisState(csdtModuleParams types.CsdtModuleParams, globalDebt sdk.Int
 // InitGenesis sets the genesis state in the keeper.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, data GenesisState) {
 	k.SetParams(ctx, data.CsdtModuleParams)
+
+	for _, csdt := range data.CSDTs {
+		k.SetCSDT(ctx, csdt)
+	}
+
 	k.SetGlobalDebt(ctx, data.GlobalDebt)
 }
 

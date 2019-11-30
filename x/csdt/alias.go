@@ -12,8 +12,10 @@ import (
 )
 
 type (
-	Keeper = keeper.Keeper
-	CSDT    = types.CSDT
+	Keeper           = keeper.Keeper
+	CSDT             = types.CSDT
+	CSDTs            = types.CSDTs
+	CsdtModuleParams = types.CsdtModuleParams
 )
 
 const (

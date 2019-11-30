@@ -1,46 +1,100 @@
 package types
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/cosmos/cosmos-sdk/x/params/subspace"
 )
 
-/*
-How this uses the sdk params module:
- - Put all the params for this module in one struct `LiquidatorModuleParams`
- - Store this in the keeper's paramSubspace under one key
- - Provide a function to load the param struct all at once `keeper.GetParams(ctx)`
-It's possible to set individual key value pairs within a paramSubspace, but reading and setting them is awkward (an empty variable needs to be created, then Get writes the value into it)
-This approach will be awkward if we ever need to write individual parameters (because they're stored all together). If this happens do as the sdk modules do - store parameters separately with custom get/set func for each.
-*/
+// Parameter keys
+var (
+	KeyDebtAuctionSize  = []byte("DebtAuctionSize")
+	KeyCollateralParams = []byte("CollateralParams")
+)
 
-type LiquidatorModuleParams struct {
+// LiquidatorParams store params for the liquidator module
+type LiquidatorParams struct {
 	DebtAuctionSize sdk.Int
 	//SurplusAuctionSize sdk.Int
 	CollateralParams []CollateralParams
 }
 
+// NewLiquidatorParams returns a new params object for the liquidator module
+func NewLiquidatorParams(debtAuctionSize sdk.Int, collateralParams []CollateralParams) LiquidatorParams {
+	return LiquidatorParams{
+		DebtAuctionSize:  debtAuctionSize,
+		CollateralParams: collateralParams,
+	}
+}
+
+// String implements fmt.Stringer
+func (p LiquidatorParams) String() string {
+	out := fmt.Sprintf(`Params:
+		Debt Auction Size: %s
+		Collateral Params: `,
+		p.DebtAuctionSize,
+	)
+	for _, cp := range p.CollateralParams {
+		out += fmt.Sprintf(`
+		%s`, cp.String())
+	}
+	return out
+}
+
+// CollateralParams params storing information about each collateral for the liquidator module
 type CollateralParams struct {
 	Denom       string  // Coin name of collateral type
 	AuctionSize sdk.Int // Max amount of collateral to sell off in any one auction. Known as lump in Maker.
 	// LiquidationPenalty
 }
 
-func CreateParamsKeyTable() params.KeyTable {
-	return params.NewKeyTable(
-		ModuleParamsKey, LiquidatorModuleParams{},
-	)
+// String implements stringer interface
+func (cp CollateralParams) String() string {
+	return fmt.Sprintf(`
+  Denom:        %s
+  AuctionSize: %s`, cp.Denom, cp.AuctionSize)
 }
 
-// Helper methods to search the list of collateral params for a particular denom. Wouldn't be needed if amino supported maps.
+// ParamKeyTable for the liquidator module
+func ParamKeyTable() subspace.KeyTable {
+	return subspace.NewKeyTable().RegisterParamSet(&LiquidatorParams{})
+}
 
-func (p LiquidatorModuleParams) GetCollateralParams(collateralDenom string) CollateralParams {
-	// search for matching denom, return
+// ParamSetPairs implements the ParamSet interface and returns all the key/value pairs
+// pairs of liquidator module's parameters.
+// nolint
+func (p *LiquidatorParams) ParamSetPairs() subspace.ParamSetPairs {
+	return subspace.ParamSetPairs{
+		subspace.NewParamSetPair(KeyDebtAuctionSize, &p.DebtAuctionSize),
+		subspace.NewParamSetPair(KeyCollateralParams, &p.CollateralParams),
+	}
+}
+
+// DefaultParams for the liquidator module
+func DefaultParams() LiquidatorParams {
+	return LiquidatorParams{
+		DebtAuctionSize:  sdk.NewInt(1000),
+		CollateralParams: []CollateralParams{},
+	}
+}
+
+func (p LiquidatorParams) Validate() error {
+	if p.DebtAuctionSize.IsNegative() {
+		return fmt.Errorf("debt auction size should be positive, is %s", p.DebtAuctionSize)
+	}
+	denomDupMap := make(map[string]int)
 	for _, cp := range p.CollateralParams {
-		if cp.Denom == collateralDenom {
-			return cp
+		_, found := denomDupMap[cp.Denom]
+		if found {
+			return fmt.Errorf("duplicate denom: %s", cp.Denom)
+		}
+		denomDupMap[cp.Denom] = 1
+		if cp.AuctionSize.IsNegative() {
+			return fmt.Errorf(
+				"auction size for each collateral should be positive, is %s for %s", cp.AuctionSize, cp.Denom,
+			)
 		}
 	}
-	// panic if not found, to be safe
-	panic("collateral params not found in module params")
+	return nil
 }

@@ -14,21 +14,27 @@ import (
 // Keeper csdt Keeper
 type Keeper struct {
 	storeKey       sdk.StoreKey
-	oracle         oracleKeeper
-	bank           bankKeeper
-	sk             supplyKeeper
-	paramsSubspace params.Subspace
 	cdc            *codec.Codec
+	paramsSubspace params.Subspace
+	oracle         types.OracleKeeper
+	bank           types.BankKeeper
+	sk             types.SupplyKeeper
 }
 
 // NewKeeper creates a new keeper
-func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace, oracle oracleKeeper, bank bankKeeper, supply supplyKeeper) Keeper {
-	subspace = subspace.WithKeyTable(types.CreateParamsKeyTable())
+func NewKeeper(
+	cdc *codec.Codec,
+	storeKey sdk.StoreKey,
+	subspace params.Subspace,
+	oracle types.OracleKeeper,
+	bank types.BankKeeper,
+	supply types.SupplyKeeper,
+) Keeper {
 	return Keeper{
 		storeKey:       storeKey,
 		oracle:         oracle,
 		bank:           bank,
-		paramsSubspace: subspace,
+		paramsSubspace: subspace.WithKeyTable(types.ParamKeyTable()),
 		cdc:            cdc,
 		sk:             supply,
 	}
@@ -64,20 +70,30 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 	// Get CSDT (or create if not exists)
 	csdt, found := k.GetCSDT(ctx, owner, collateralDenom)
 	if !found {
-		csdt = types.CSDT{Owner: owner, CollateralDenom: collateralDenom, CollateralAmount: sdk.ZeroInt(), Debt: sdk.ZeroInt()}
+		csdt = types.CSDT{
+			Owner:            owner,
+			CollateralDenom:  collateralDenom,
+			CollateralAmount: sdk.NewCoins(sdk.NewCoin(collateralDenom, sdk.ZeroInt())),
+			Debt:             sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.ZeroInt())),
+			AccumulatedFees:  sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.ZeroInt())),
+		}
 	}
 	// Add/Subtract collateral and debt
-	csdt.CollateralAmount = csdt.CollateralAmount.Add(changeInCollateral)
-	if csdt.CollateralAmount.IsNegative() {
+	collateralCoins := sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral))
+	debtCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt))
+
+	csdt.CollateralAmount = csdt.CollateralAmount.Add(collateralCoins)
+	if csdt.CollateralAmount.IsAnyNegative() {
 		return sdk.ErrInternal(" can't withdraw more collateral than exists in CSDT")
 	}
-	csdt.Debt = csdt.Debt.Add(changeInDebt)
-	if csdt.Debt.IsNegative() {
+	csdt.Debt = csdt.Debt.Add(debtCoins)
+	if csdt.Debt.IsAnyNegative() {
 		return sdk.ErrInternal("can't pay back more debt than exists in CSDT")
 	}
+	// If we have prices denominated in non csdt pairs, this changes the model
 	isUnderCollateralized := csdt.IsUnderCollateralized(
 		k.oracle.GetCurrentPrice(ctx, csdt.CollateralDenom).Price,
-		p.GetCollateralParams(csdt.CollateralDenom).LiquidationRatio,
+		p.GetCollateralParam(csdt.CollateralDenom).LiquidationRatio,
 	)
 	if isUnderCollateralized {
 		return sdk.ErrInternal("Change to CSDT would put it below liquidation ratio")
@@ -90,7 +106,7 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 	if gDebt.IsNegative() {
 		return sdk.ErrInternal("global debt can't be negative") // This should never happen if debt per CSDT can't be negative
 	}
-	if gDebt.GT(p.GlobalDebtLimit) {
+	if gDebt.GT(p.GlobalDebtLimit.AmountOf(types.StableDenom)) {
 		return sdk.ErrInternal("change to CSDT would put the system over the global debt limit")
 	}
 
@@ -103,7 +119,7 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 	if collateralState.TotalDebt.IsNegative() {
 		return sdk.ErrInternal("total debt for this collateral type can't be negative") // This should never happen if debt per CSDT can't be negative
 	}
-	if collateralState.TotalDebt.GT(p.GetCollateralParams(csdt.CollateralDenom).DebtLimit) {
+	if collateralState.TotalDebt.GT(p.GetCollateralParam(csdt.CollateralDenom).DebtLimit.AmountOf(types.StableDenom)) {
 		return sdk.ErrInternal("change to CSDT would put the system over the debt limit for this collateral type")
 	}
 
@@ -128,22 +144,20 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 			panic(err) // this shouldn't happen because coin balance was checked earlier
 		}
 		// update total supply
-		if ctx.BlockHeight() > 101137 {
-			supply := k.sk.GetSupply(ctx)
-			supply = supply.Deflate(sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg())))
-			k.sk.SetSupply(ctx, supply)
-		}
+		supply := k.sk.GetSupply(ctx)
+		supply = supply.Deflate(sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg())))
+		k.sk.SetSupply(ctx, supply)
+
 	} else { //Withdrawing stable coins to owner (minting)
 		_, err = k.bank.AddCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt)))
 		if err != nil {
 			panic(err) // this shouldn't happen because coin balance was checked earlier
 		}
 		// update total supply
-		if ctx.BlockHeight() > 101137 {
-			supply := k.sk.GetSupply(ctx)
-			supply = supply.Inflate(sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt)))
-			k.sk.SetSupply(ctx, supply)
-		}
+		supply := k.sk.GetSupply(ctx)
+		supply = supply.Inflate(sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt)))
+		k.sk.SetSupply(ctx, supply)
+
 	}
 	if err != nil {
 		panic(err) // this shouldn't happen because coin balance was checked earlier
@@ -180,7 +194,7 @@ func (k Keeper) PartialSeizeCSDT(ctx sdk.Context, owner sdk.AccAddress, collater
 	p := k.GetParams(ctx)
 	isUnderCollateralized := csdt.IsUnderCollateralized(
 		k.oracle.GetCurrentPrice(ctx, csdt.CollateralDenom).Price,
-		p.GetCollateralParams(csdt.CollateralDenom).LiquidationRatio,
+		p.GetCollateralParam(csdt.CollateralDenom).LiquidationRatio,
 	)
 	if !isUnderCollateralized {
 		return sdk.ErrInternal("CSDT is not currently under the liquidation ratio")
@@ -190,8 +204,9 @@ func (k Keeper) PartialSeizeCSDT(ctx sdk.Context, owner sdk.AccAddress, collater
 	if collateralToSeize.IsNegative() {
 		return sdk.ErrInternal("cannot seize negative collateral")
 	}
-	csdt.CollateralAmount = csdt.CollateralAmount.Sub(collateralToSeize)
-	if csdt.CollateralAmount.IsNegative() {
+	collateralCoins := sdk.NewCoins(sdk.NewCoin(csdt.CollateralDenom, collateralToSeize))
+	csdt.CollateralAmount = csdt.CollateralAmount.Sub(collateralCoins)
+	if csdt.CollateralAmount.IsAnyNegative() {
 		return sdk.ErrInternal("can't seize more collateral than exists in CSDT")
 	}
 
@@ -199,8 +214,9 @@ func (k Keeper) PartialSeizeCSDT(ctx sdk.Context, owner sdk.AccAddress, collater
 	if debtToSeize.IsNegative() {
 		return sdk.ErrInternal("cannot seize negative debt")
 	}
-	csdt.Debt = csdt.Debt.Sub(debtToSeize)
-	if csdt.Debt.IsNegative() {
+	debtCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, debtToSeize))
+	csdt.Debt = csdt.Debt.Sub(debtCoins)
+	if csdt.Debt.IsAnyNegative() {
 		return sdk.ErrInternal("can't seize more debt than exists in CSDT")
 	}
 
@@ -246,19 +262,6 @@ func (k Keeper) GetStableDenom() string {
 }
 func (k Keeper) GetGovDenom() string {
 	return types.GovDenom
-}
-
-// ---------- Module Parameters ----------
-
-func (k Keeper) GetParams(ctx sdk.Context) types.CsdtModuleParams {
-	var p types.CsdtModuleParams
-	k.paramsSubspace.Get(ctx, types.ModuleParamsKey, &p)
-	return p
-}
-
-// This is only needed to be able to setup the store from the genesis file. The keeper should not change any of the params itself.
-func (k Keeper) SetParams(ctx sdk.Context, csdtModuleParams types.CsdtModuleParams) {
-	k.paramsSubspace.Set(ctx, types.ModuleParamsKey, &csdtModuleParams)
 }
 
 // ---------- Store Wrappers ----------
@@ -342,7 +345,7 @@ func (k Keeper) GetCSDTs(ctx sdk.Context, collateralDenom string, price sdk.Dec)
 	if !price.IsNil() && !price.IsNegative() {
 		var filteredCSDTs types.CSDTs
 		for _, csdt := range csdts {
-			if csdt.IsUnderCollateralized(price, p.GetCollateralParams(collateralDenom).LiquidationRatio) {
+			if csdt.IsUnderCollateralized(price, p.GetCollateralParam(collateralDenom).LiquidationRatio) {
 				filteredCSDTs = append(filteredCSDTs, csdt)
 			} else {
 				break // break early because list is sorted
@@ -538,6 +541,6 @@ func stripGovCoin(coins sdk.Coins) sdk.Coins {
 }
 
 // GetOracle allows testing
-func (k Keeper) GetOracle() oracleKeeper {
+func (k Keeper) GetOracle() types.OracleKeeper {
 	return k.oracle
 }

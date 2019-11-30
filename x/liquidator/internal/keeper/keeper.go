@@ -13,13 +13,20 @@ type Keeper struct {
 	cdc            *codec.Codec
 	paramsSubspace params.Subspace
 	storeKey       sdk.StoreKey
-	csdtKeeper     csdtKeeper
-	auctionKeeper  auctionKeeper
-	bankKeeper     bankKeeper
+	csdtKeeper     types.CsdtKeeper
+	auctionKeeper  types.AuctionKeeper
+	bankKeeper     types.BankKeeper
 }
 
-func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace, csdtKeeper csdtKeeper, auctionKeeper auctionKeeper, bankKeeper bankKeeper) Keeper {
-	subspace = subspace.WithKeyTable(types.CreateParamsKeyTable())
+func NewKeeper(
+	cdc *codec.Codec,
+	storeKey sdk.StoreKey,
+	subspace params.Subspace,
+	csdtKeeper types.CsdtKeeper,
+	auctionKeeper types.AuctionKeeper,
+	bankKeeper types.BankKeeper,
+) Keeper {
+	subspace = subspace.WithKeyTable(types.ParamKeyTable())
 	return Keeper{
 		cdc:            cdc,
 		paramsSubspace: subspace,
@@ -42,8 +49,17 @@ func (k Keeper) SeizeAndStartCollateralAuction(ctx sdk.Context, owner sdk.AccAdd
 	}
 
 	// Calculate amount of collateral to sell in this auction
-	params := k.GetParams(ctx).GetCollateralParams(csdt.CollateralDenom)
-	collateralToSell := sdk.MinInt(csdt.CollateralAmount, params.AuctionSize)
+	paramsMap := make(map[string]types.CollateralParams)
+	params := k.GetParams(ctx).CollateralParams
+	for _, cp := range params {
+		paramsMap[cp.Denom] = cp
+	}
+	collateralParams, found := paramsMap[collateralDenom]
+	if !found {
+		return 0, sdk.ErrInternal("collateral denom not found")
+	}
+
+	collateralToSell := sdk.MinInt(csdt.CollateralAmount, collateralParams.AuctionSize)
 	// Calculate the corresponding maximum amount of stable coin to raise TODO test maths
 	stableToRaise := sdk.NewDecFromInt(collateralToSell).Quo(sdk.NewDecFromInt(csdt.CollateralAmount)).Mul(sdk.NewDecFromInt(csdt.Debt)).RoundInt()
 
@@ -170,19 +186,6 @@ func (k Keeper) SettleDebt(ctx sdk.Context) sdk.Error {
 	// Subtract stable coin from moduleAccout
 	k.bankKeeper.SubtractCoins(ctx, k.csdtKeeper.GetLiquidatorAccountAddress(), sdk.Coins{sdk.NewCoin(k.csdtKeeper.GetStableDenom(), settleAmount)})
 	return nil
-}
-
-// ---------- Module Parameters ----------
-
-func (k Keeper) GetParams(ctx sdk.Context) types.LiquidatorModuleParams {
-	var params types.LiquidatorModuleParams
-	k.paramsSubspace.Get(ctx, types.ModuleParamsKey, &params)
-	return params
-}
-
-// This is only needed to be able to setup the store from the genesis file. The keeper should not change any of the params itself.
-func (k Keeper) SetParams(ctx sdk.Context, params types.LiquidatorModuleParams) {
-	k.paramsSubspace.Set(ctx, types.ModuleParamsKey, &params)
 }
 
 // ---------- Store Wrappers ----------
