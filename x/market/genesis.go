@@ -10,8 +10,8 @@ import (
 )
 
 type GenesisState struct {
-	Markets  types.Markets
-	Nominees []string
+	Markets  types.Markets `json:"markets" yaml:"markets"`
+	Nominees []string      `json:"nominees" yaml:"nominees"`
 }
 
 func NewGenesisState(markets types.Markets, nominees []string) GenesisState {

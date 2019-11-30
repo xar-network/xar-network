@@ -7,8 +7,8 @@ import (
 
 // GenesisState state at gensis
 type GenesisState struct {
-	Assets  []types.Asset  `json:"assets" yaml:"assets"`
-	Oracles []types.Oracle `json:"oracles" yaml:"oracles"`
+	Assets   []types.Asset `json:"assets" yaml:"assets"`
+	Nominees []string      `json:"nominees" yaml:"nominees"`
 }
 
 // InitGenesis sets distribution information for genesis.
