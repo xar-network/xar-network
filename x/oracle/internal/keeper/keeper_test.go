@@ -126,13 +126,6 @@ func TestKeeper_GetSetCurrentPrice(t *testing.T) {
 	require.NoError(t, err)
 	// Get Current price
 	price := helper.keeper.GetCurrentPrice(ctx, "tstusd")
-	prices := helper.keeper.GetRawPrices(ctx, "tstusd")
-	for _, v := range prices {
-		if v.Expiry.After(ctx.BlockTime()) {
-			t.Errorf("[%s]", v.String())
-		}
-	}
-
 	require.Equal(t, price.Price.Equal(sdk.MustNewDecFromStr("0.34")), true)
 
 	// Even number of oracles

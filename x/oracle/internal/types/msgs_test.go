@@ -19,9 +19,9 @@ func TestMsgSort(t *testing.T) {
 	stdTx := auth.NewStdTx([]sdk.Msg{msg}, fee, []auth.StdSignature{}, "")
 	signBytes := auth.StdSignBytes("xar-chain-dora", 4, 1, stdTx.Fee, stdTx.Msgs, stdTx.Memo)
 
-	t.Errorf("%s", signBytes)
+	t.Logf("%s", signBytes)
 	signed := auth.StdSignBytes(
 		"xar-chain-dora", 4, 1, auth.NewStdFee(200000, nil), []sdk.Msg{msg}, "",
 	)
-	t.Errorf("%s", signed)
+	t.Logf("%s", signed)
 }

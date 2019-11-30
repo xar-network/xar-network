@@ -24,6 +24,7 @@ func getMockApp(t *testing.T, numGenAccs int, genState types.GenesisState, genAc
 	mApp := mock.NewApp()
 	types.RegisterCodec(mApp.Cdc)
 	keyPricefeed := sdk.NewKVStoreKey(types.StoreKey)
+
 	pk := mApp.ParamsKeeper
 	keeper := NewKeeper(keyPricefeed, mApp.Cdc, pk.Subspace(types.DefaultParamspace), types.DefaultCodespace)
 
