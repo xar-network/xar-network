@@ -7,18 +7,18 @@ var (
 )
 
 type MsgCreateMarket struct {
-	POA        sdk.AccAddress
+	Nominee    sdk.AccAddress
 	BaseAsset  string
 	QuoteAsset string
 }
 
 func NewMsgCreateMarket(
-	poa sdk.AccAddress,
+	nominee sdk.AccAddress,
 	baseAsset string,
 	quoteAsset string,
 ) MsgCreateMarket {
 	return MsgCreateMarket{
-		POA:        poa,
+		Nominee:    nominee,
 		BaseAsset:  baseAsset,
 		QuoteAsset: quoteAsset,
 	}
@@ -37,15 +37,15 @@ func (msg MsgCreateMarket) ValidateBasic() sdk.Error {
 		return sdk.ErrInvalidAddress("missing base asset")
 	}
 
-	if msg.POA.Empty() {
-		return sdk.ErrInvalidAddress("missing POA address")
+	if msg.Nominee.Empty() {
+		return sdk.ErrInvalidAddress("missing nominee address")
 	}
 
 	return nil
 }
 
 func (msg MsgCreateMarket) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.POA}
+	return []sdk.AccAddress{msg.Nominee}
 }
 
 func (msg MsgCreateMarket) GetSignBytes() []byte {

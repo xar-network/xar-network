@@ -59,15 +59,15 @@ func (k Keeper) Has(ctx sdk.Context, id store.EntityID) bool {
 }
 
 func (k Keeper) CreateMarket(ctx sdk.Context, msg types.MsgCreateMarket) sdk.Result {
-	params := k.GetParams(ctx)
-	if params.POA == msg.POA.String() {
-		id := uint64(len(params.Markets))
-		market := types.NewMarket(store.NewEntityID(id).Inc(), msg.BaseAsset, msg.QuoteAsset)
-		params.Markets = append(params.Markets, market)
-		k.SetParams(ctx, params)
-	} else {
-		panic(types.ErrNoPOA(k.codespace))
+	if !k.IsNominee(ctx, msg.Nominee.String()) {
+		return sdk.ErrInternal(fmt.Sprintf("not a nominee: '%s'", msg.Nominee.String())).Result()
 	}
+	params := k.GetParams(ctx)
+	id := uint64(len(params.Markets))
+	market := types.NewMarket(store.NewEntityID(id).Inc(), msg.BaseAsset, msg.QuoteAsset)
+	params.Markets = append(params.Markets, market)
+	k.SetParams(ctx, params)
+
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
@@ -89,4 +89,15 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 	k.paramSubspace.GetParamSet(ctx, &params)
 	return
+}
+
+func (k Keeper) IsNominee(ctx sdk.Context, nominee string) bool {
+	params := k.GetParams(ctx)
+	nominees := params.Nominees
+	for _, v := range nominees {
+		if v == nominee {
+			return true
+		}
+	}
+	return false
 }

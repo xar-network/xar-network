@@ -44,17 +44,30 @@ func TestKeeperCoverage(t *testing.T) {
 		pk = params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
 		mk = market.NewKeeper(keyMarket, cdc, pk.Subspace(market.DefaultParamspace), market.DefaultCodespace)
 	)
-	mk.SetParams(ctx, types.NewParams(market.DefaultGenesisState().Markets, "cosmos1wdhk6e2wv9kk2j88d92"))
+	mk.SetParams(ctx, types.NewParams(market.DefaultGenesisState().Markets, []string{"cosmos1wdhk6e2wv9kk2j88d92"}))
+
+	// Get market with ID 1
 	market, err := mk.Get(ctx, store.NewEntityID(1))
 	require.Nil(t, err)
 	require.Equal(t, "ueur", market.BaseAssetDenom)
+
+	// Get pair for market 1
 	pair, err := mk.Pair(ctx, store.NewEntityID(1))
 	require.Nil(t, err)
 	require.Equal(t, "ueur/uzar", pair)
+
+	// Create market as a nominee
 	addr := sdk.AccAddress([]byte("someName"))
 	msg := types.NewMsgCreateMarket(addr, "new1", "new2")
 	res := mk.CreateMarket(ctx, msg)
 	require.Equal(t, true, res.IsOK())
+
+	// Create market as a nominee
+	addr = sdk.AccAddress([]byte("someInvalidName"))
+	msg = types.NewMsgCreateMarket(addr, "new1", "new2")
+	res = mk.CreateMarket(ctx, msg)
+	require.Equal(t, false, res.IsOK())
+
 	t.Logf("%s", mk.GetParams(ctx).String())
 }
 

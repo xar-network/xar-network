@@ -11,13 +11,13 @@ import (
 // Parameter keys
 var (
 	// ParamStoreKeyAuctionParams Param store key for auction params
-	KeyMarkets = []byte(ModuleName)
-	KeyAuth    = []byte(ModuleAuth)
+	KeyMarkets  = []byte(ModuleName)
+	KeyNominees = []byte(ModuleNominees)
 )
 
 type Params struct {
-	Markets []Market
-	POA     string
+	Markets  []Market
+	Nominees []string
 }
 
 // ParamKeyTable Key declaration for parameters
@@ -31,29 +31,31 @@ func ParamKeyTable() subspace.KeyTable {
 func (p *Params) ParamSetPairs() subspace.ParamSetPairs {
 	return subspace.ParamSetPairs{
 		subspace.NewParamSetPair(KeyMarkets, &p.Markets),
-		subspace.NewParamSetPair(KeyAuth, &p.POA),
+		subspace.NewParamSetPair(KeyNominees, &p.Nominees),
 	}
 }
 
 // NewParams creates a new Params object
-func NewParams(markets []Market, poa string) Params {
+func NewParams(markets []Market, nominees []string) Params {
 	return Params{
-		Markets: markets,
-		POA:     poa,
+		Markets:  markets,
+		Nominees: nominees,
 	}
 }
 
 // DefaultParams default params
 func DefaultParams() Params {
-	return NewParams(Markets{}, "")
+	return NewParams(Markets{}, []string{})
 }
 
 // String implements fmt.stringer
 func (p Params) String() string {
 	out := "Params:\n"
-	out += "PoA: " + p.POA + "\n"
 	for _, a := range p.Markets {
 		out += a.String()
+	}
+	for _, n := range p.Nominees {
+		out += n
 	}
 	return strings.TrimSpace(out)
 }

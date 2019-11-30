@@ -10,12 +10,12 @@ import (
 )
 
 type GenesisState struct {
-	Markets types.Markets
-	POA     string
+	Markets  types.Markets
+	Nominees []string
 }
 
-func NewGenesisState(markets types.Markets, poa string) GenesisState {
-	return GenesisState{Markets: markets, POA: poa}
+func NewGenesisState(markets types.Markets, nominees []string) GenesisState {
+	return GenesisState{Markets: markets, Nominees: nominees}
 }
 
 func ValidateGenesis(data GenesisState) error {
@@ -60,15 +60,15 @@ func DefaultGenesisState() GenesisState {
 				QuoteAssetDenom: "uzar",
 			},
 		},
-		POA: "",
+		Nominees: []string{},
 	}
 }
 
 func InitGenesis(ctx sdk.Context, k Keeper, data GenesisState) {
-	k.SetParams(ctx, types.NewParams(data.Markets, ""))
+	k.SetParams(ctx, types.NewParams(data.Markets, []string{}))
 }
 
 func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
 	params := k.GetParams(ctx)
-	return GenesisState{Markets: params.Markets, POA: params.POA}
+	return GenesisState{Markets: params.Markets, Nominees: params.Nominees}
 }
