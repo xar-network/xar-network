@@ -68,3 +68,56 @@ func (msg MsgPostPrice) ValidateBasic() sdk.Error {
 	// TODO check coin denoms
 	return nil
 }
+
+// MsgAddOracle struct representing a new nominee based oracle
+type MsgAddOracle struct {
+	Oracle  sdk.AccAddress `json:"oracle" yaml:"oracle"`
+	Nominee sdk.AccAddress `json:"nominee" yaml:"nominee"`
+	Denom   string         `json:"denom" yaml:"denom"`
+}
+
+// MsgAddOracle creates a new add oracle message
+func NewMsgAddOracle(
+	nominee sdk.AccAddress,
+	denom string,
+	oracle sdk.AccAddress,
+) MsgAddOracle {
+	return MsgAddOracle{
+		Oracle:  oracle,
+		Denom:   denom,
+		Nominee: nominee,
+	}
+}
+
+// Route Implements Msg.
+func (msg MsgAddOracle) Route() string { return RouterKey }
+
+// Type Implements Msg
+func (msg MsgAddOracle) Type() string { return "add_oracle" }
+
+// GetSignBytes Implements Msg.
+func (msg MsgAddOracle) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
+}
+
+// GetSigners Implements Msg.
+func (msg MsgAddOracle) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.Nominee}
+}
+
+// ValidateBasic does a simple validation check that doesn't require access to any other information.
+func (msg MsgAddOracle) ValidateBasic() sdk.Error {
+	if msg.Oracle.Empty() {
+		return sdk.ErrInvalidAddress("missing oracle address")
+	}
+
+	if msg.Oracle.Empty() {
+		return sdk.ErrInvalidCoins("missing denom")
+	}
+
+	if msg.Nominee.Empty() {
+		return sdk.ErrInvalidAddress("missing nominee address")
+	}
+	return nil
+}

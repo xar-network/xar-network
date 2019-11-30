@@ -14,6 +14,8 @@ func NewHandler(k Keeper) sdk.Handler {
 		switch msg := msg.(type) {
 		case types.MsgPostPrice:
 			return HandleMsgPostPrice(ctx, k, msg)
+		case types.MsgAddOracle:
+			return handleMsgAddOracle(ctx, k, msg)
 		default:
 			errMsg := fmt.Sprintf("unrecognized oracle message type: %T", msg)
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -40,6 +42,24 @@ func HandleMsgPostPrice(
 		return types.ErrInvalidOracle(k.Codespace()).Result()
 	}
 	k.SetPrice(ctx, msg.From, msg.AssetCode, msg.Price, msg.Expiry)
+	return sdk.Result{}
+}
+
+func handleMsgAddOracle(
+	ctx sdk.Context,
+	k Keeper,
+	msg types.MsgAddOracle) sdk.Result {
+
+	// TODO cleanup message validation and errors
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err.Result()
+	}
+	_, er := k.GetOracle(ctx, msg.Denom, msg.Oracle)
+	if er == nil {
+		return types.ErrInvalidOracle(k.Codespace()).Result()
+	}
+	k.AddOracle(ctx, msg.Nominee.String(), msg.Denom, msg.Oracle)
 	return sdk.Result{}
 }
 
