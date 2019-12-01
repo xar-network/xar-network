@@ -49,7 +49,7 @@ func InitGenesis(ctx sdk.Context, k Keeper, data GenesisState) {
 
 	for _, record := range data.TokenRecords {
 		record := record
-		err := k.SetToken(ctx, record.Symbol, &record)
+		err := k.SetToken(ctx, record.Owner, record.Symbol, &record)
 		if err != nil {
 			panic(fmt.Sprintf("failed to set token for symbol: %s. Error: %s", record.Symbol, err))
 		}

@@ -7,6 +7,7 @@ import (
 // MsgIssueToken defines a IssueToken message
 type MsgIssueToken struct {
 	SourceAddress  sdk.AccAddress `json:"source_address" yaml:"source_address"`
+	Owner          sdk.AccAddress `json:"owner" yaml:"owner"`
 	Name           string         `json:"name" yaml:"name"`
 	Symbol         string         `json:"symbol" yaml:"symbol"`
 	OriginalSymbol string         `json:"original_symbol" yaml:"original_symbol"`
@@ -16,10 +17,11 @@ type MsgIssueToken struct {
 }
 
 // NewMsgIssueToken is a constructor function for MsgIssueToken
-func NewMsgIssueToken(sourceAddress sdk.AccAddress, name, symbol string, originalSymbol string,
+func NewMsgIssueToken(sourceAddress, owner sdk.AccAddress, name, symbol string, originalSymbol string,
 	totalSupply sdk.Int, maxSupply sdk.Int, mintable bool) MsgIssueToken {
 	return MsgIssueToken{
 		SourceAddress:  sourceAddress,
+		Owner:          owner,
 		Name:           name,
 		Symbol:         symbol,
 		OriginalSymbol: originalSymbol,
@@ -39,6 +41,9 @@ func (msg MsgIssueToken) Type() string { return "issue_token" }
 func (msg MsgIssueToken) ValidateBasic() sdk.Error {
 	if msg.SourceAddress.Empty() {
 		return sdk.ErrInvalidAddress(msg.SourceAddress.String())
+	}
+	if msg.Owner.Empty() {
+		return sdk.ErrInvalidAddress(msg.Owner.String())
 	}
 	if len(msg.Name) == 0 || len(msg.Symbol) == 0 || len(msg.OriginalSymbol) == 0 {
 		return sdk.ErrUnknownRequest("Name and/or Symbols cannot be empty")

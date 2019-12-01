@@ -46,11 +46,11 @@ func handleMsgIssueToken(ctx sdk.Context, k Keeper, msg types.MsgIssueToken) sdk
 		msg.OriginalSymbol,
 		msg.TotalSupply,
 		msg.MaxSupply,
-		msg.SourceAddress,
+		msg.Owner,
 		msg.Mintable,
 	)
 
-	return k.IssueToken(ctx, msg.SourceAddress, *token)
+	return k.IssueToken(ctx, msg.SourceAddress, msg.Owner, *token)
 }
 
 // handle message to mint coins

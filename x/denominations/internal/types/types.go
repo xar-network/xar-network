@@ -50,6 +50,29 @@ func NewToken(name, symbol, originalSymbol string, totalSupply sdk.Int, maxSuppl
 	}
 }
 
+// ValidateBasic does a simple validation check that doesn't require access to any other information.
+func (t Token) ValidateBasic() sdk.Error {
+	if t.Owner.Empty() {
+		return sdk.ErrInternal(fmt.Sprintf("invalid TokenRecord: Value: %s. Error: Missing Owner", t.Owner))
+	}
+	if t.Symbol == "" {
+		return sdk.ErrInternal(fmt.Sprintf("invalid TokenRecord: Owner: %s. Error: Missing Symbol", t.Symbol))
+	}
+	if t.TotalSupply == nil || t.TotalSupply.Len() == 0 {
+		return sdk.ErrInternal(fmt.Sprintf("invalid TokenRecord: Symbol: %s. Error: Missing TotalSupply", t.TotalSupply))
+	}
+	if t.MaxSupply.IsZero() {
+		return sdk.ErrInternal(fmt.Sprintf("invalid TokenRecord: Symbol: %s. Error: Missing TotalSupply", t.TotalSupply))
+	}
+	if t.Name == "" {
+		return sdk.ErrInternal(fmt.Sprintf("invalid TokenRecord: Symbol: %s. Error: Missing Name", t.Name))
+	}
+	if t.OriginalSymbol == "" {
+		return sdk.ErrInternal(fmt.Sprintf("invalid TokenRecord: Symbol: %s. Error: Missing OriginalSymbol", t.OriginalSymbol))
+	}
+	return nil
+}
+
 // String implements fmt.Stringer
 func (t Token) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`Owner: %s

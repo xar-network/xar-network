@@ -108,16 +108,20 @@ func getAccountAddress(cliCtx client.CLIContext) sdk.AccAddress {
 // GetCmdIssueToken is the CLI command for sending a IssueToken transaction
 func GetCmdIssueToken(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use: `issue --token-name [name] --total-supply [amount]
+		Use: `issue [owner_address] --token-name [name] --total-supply [amount]
 			--symbol [ABC] --mintable --from [account]`,
 		Short: "create a new asset",
-		// Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			address := getAccountAddress(cliCtx)
+			ownerAddr, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
 
 			name := fetchStringFlag(cmd, "token-name")
 			originalSymbol := fetchStringFlag(cmd, "symbol")
@@ -127,8 +131,8 @@ func GetCmdIssueToken(cdc *codec.Codec) *cobra.Command {
 			mintable := fetchBoolFlag(cmd, "mintable")
 			log.Debugf("token is mintable? %t", mintable)
 
-			msg := types.NewMsgIssueToken(address, name, symbol, originalSymbol, totalSupply, maxSupply, mintable)
-			err := msg.ValidateBasic()
+			msg := types.NewMsgIssueToken(address, ownerAddr, name, symbol, originalSymbol, totalSupply, maxSupply, mintable)
+			err = msg.ValidateBasic()
 			if err != nil {
 				return err
 			}

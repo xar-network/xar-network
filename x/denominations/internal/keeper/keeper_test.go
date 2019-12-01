@@ -57,11 +57,18 @@ func TestKeeperCoverage(t *testing.T) {
 	acc := ak.NewAccountWithAddress(ctx, addr)
 	ak.SetAccount(ctx, acc)
 
+	naddr := sdk.AccAddress([]byte("nominee"))
+	nacc := ak.NewAccountWithAddress(ctx, naddr)
+	ak.SetAccount(ctx, nacc)
+
 	addrerr := sdk.AccAddress([]byte("error"))
 	acc = ak.NewAccountWithAddress(ctx, addrerr)
 	ak.SetAccount(ctx, acc)
 
 	dk := NewKeeper(keyDenom, cdc, ak, sk, pk.Subspace(types.DefaultParamspace), types.DefaultCodespace)
+	params := types.NewParams([]string{"cosmos1dehk66twv4js5dq8xr"})
+	dk.SetParams(ctx, params)
+
 	sk.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 
 	res := dk.BurnCoins(ctx, addrerr, sdk.NewInt(100), "uftm")
@@ -77,7 +84,7 @@ func TestKeeperCoverage(t *testing.T) {
 	)
 
 	// Issue a new token
-	res = dk.IssueToken(ctx, addr, *token)
+	res = dk.IssueToken(ctx, naddr, addr, *token)
 	require.Equal(t, true, res.IsOK())
 
 	token = types.NewToken(
@@ -90,11 +97,11 @@ func TestKeeperCoverage(t *testing.T) {
 	)
 
 	// Issue a new token
-	res = dk.IssueToken(ctx, addr, *token)
+	res = dk.IssueToken(ctx, naddr, addr, *token)
 	require.Equal(t, true, res.IsOK())
 
 	// Try to issue again and fail
-	res = dk.IssueToken(ctx, addr, *token)
+	res = dk.IssueToken(ctx, naddr, addr, *token)
 	require.Equal(t, false, res.IsOK())
 
 	// Issue a new token with total supply exceeding max supply
@@ -106,7 +113,7 @@ func TestKeeperCoverage(t *testing.T) {
 		addr,
 		true,
 	)
-	res = dk.IssueToken(ctx, addr, *token)
+	res = dk.IssueToken(ctx, naddr, addr, *token)
 	require.Equal(t, false, res.IsOK())
 
 	// Issue a new token with total supply exceeding max supply
@@ -118,7 +125,7 @@ func TestKeeperCoverage(t *testing.T) {
 		addrerr,
 		false,
 	)
-	res = dk.IssueToken(ctx, addrerr, *token)
+	res = dk.IssueToken(ctx, naddr, addrerr, *token)
 	require.Equal(t, true, res.IsOK())
 
 	// Try to mint unmintable coin

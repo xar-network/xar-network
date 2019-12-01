@@ -56,12 +56,22 @@ func (k Keeper) GetToken(ctx sdk.Context, symbol string) (*types.Token, error) {
 }
 
 // SetToken sets the entire Token metadata struct by symbol. Owner must be set. Returns success
-func (k Keeper) SetToken(ctx sdk.Context, symbol string, token *types.Token) error {
+func (k Keeper) SetToken(ctx sdk.Context, owner sdk.Address, symbol string, token *types.Token) error {
 	if token == nil {
 		return errors.New("unable to store nil/empty token")
 	}
 	if token.Owner.Empty() {
 		return fmt.Errorf("unable to store token because owner for symbol '%s' is empty", symbol)
+	}
+	err := token.ValidateBasic()
+	if err != nil {
+		return err
+	}
+	tkn, _ := k.GetToken(ctx, symbol)
+	if tkn != nil {
+		if !tkn.Owner.Equals(owner) {
+			return errors.New("only owner can update the token")
+		}
 	}
 	store := ctx.KVStore(k.storeKey)
 	store.Set([]byte(symbol), k.cdc.MustMarshalBinaryBare(*token))
@@ -78,13 +88,13 @@ func (k Keeper) ResolveName(ctx sdk.Context, symbol string) (string, error) {
 }
 
 // SetName - sets the name string that a symbol resolves to
-func (k Keeper) SetName(ctx sdk.Context, symbol string, name string) error {
+func (k Keeper) SetName(ctx sdk.Context, owner sdk.Address, symbol string, name string) error {
 	token, err := k.GetToken(ctx, symbol)
-	if err == nil {
-		token.Name = name
-		return k.SetToken(ctx, symbol, token)
+	if err != nil {
+		return err
 	}
-	return fmt.Errorf("failed to set token name for symbol '%s' because: %s", symbol, err)
+	token.Name = name
+	return k.SetToken(ctx, owner, symbol, token)
 }
 
 // HasOwner - returns whether or not the symbol already has an owner
@@ -106,13 +116,13 @@ func (k Keeper) GetOwner(ctx sdk.Context, symbol string) (sdk.AccAddress, error)
 }
 
 // SetOwner - sets the current owner of a symbol
-func (k Keeper) SetOwner(ctx sdk.Context, symbol string, owner sdk.AccAddress) error {
+func (k Keeper) SetOwner(ctx sdk.Context, owner sdk.Address, symbol string, newOwner sdk.AccAddress) error {
 	token, err := k.GetToken(ctx, symbol)
-	if err == nil {
-		token.Owner = owner
-		return k.SetToken(ctx, symbol, token)
+	if err != nil {
+		return err
 	}
-	return fmt.Errorf("unable to set owner for symbol '%s' because: %s", symbol, err)
+	token.Owner = newOwner
+	return k.SetToken(ctx, owner, symbol, token)
 }
 
 // GetTotalSupply - gets the current total supply of a symbol
@@ -125,13 +135,14 @@ func (k Keeper) GetTotalSupply(ctx sdk.Context, symbol string) (sdk.Coins, error
 }
 
 // SetTotalSupply - sets the current total supply of a symbol
-func (k Keeper) SetTotalSupply(ctx sdk.Context, symbol string, totalSupply sdk.Coins) error {
+func (k Keeper) SetTotalSupply(ctx sdk.Context, owner sdk.Address, symbol string, totalSupply sdk.Coins) error {
 	token, err := k.GetToken(ctx, symbol)
-	if err == nil {
-		token.TotalSupply = totalSupply
-		return k.SetToken(ctx, symbol, token)
+	if err != nil {
+		return err
 	}
-	return fmt.Errorf("failed to set total supply for symbol '%s' because: %s", symbol, err)
+
+	token.TotalSupply = totalSupply
+	return k.SetToken(ctx, owner, symbol, token)
 }
 
 // GetTokensIterator - Get an iterator over all symbols in which the keys are the symbols and the values are the token
@@ -146,13 +157,10 @@ func (k Keeper) IsSymbolPresent(ctx sdk.Context, symbol string) bool {
 	return store.Has([]byte(symbol))
 }
 
-func (k Keeper) IssueToken(ctx sdk.Context, from sdk.AccAddress, token types.Token) sdk.Result {
-	defer func() {
-		if r := recover(); r != nil {
-			err := fmt.Sprintf("had to recover when issuing new token: %v", r)
-			ctx.Logger().Error(err)
-		}
-	}()
+func (k Keeper) IssueToken(ctx sdk.Context, nominee, owner sdk.AccAddress, token types.Token) sdk.Result {
+	if !k.IsNominee(ctx, nominee.String()) {
+		return sdk.ErrUnknownAddress(fmt.Sprintf("account is not a nominee %s", nominee.String())).Result()
+	}
 
 	if k.IsSymbolPresent(ctx, token.Symbol) {
 		return sdk.ErrInvalidCoins(token.Symbol).Result()
@@ -167,9 +175,9 @@ func (k Keeper) IssueToken(ctx sdk.Context, from sdk.AccAddress, token types.Tok
 		return sdk.ErrInvalidCoins(token.MaxSupply.String()).Result()
 	}
 
-	acc := k.ak.GetAccount(ctx, from)
+	acc := k.ak.GetAccount(ctx, owner)
 	if acc == nil {
-		return sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", from.String())).Result()
+		return sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", owner.String())).Result()
 	}
 
 	err := k.sk.MintCoins(ctx, types.ModuleName, token.TotalSupply)
@@ -177,11 +185,11 @@ func (k Keeper) IssueToken(ctx sdk.Context, from sdk.AccAddress, token types.Tok
 		return err.Result()
 	}
 
-	err = k.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, from, token.TotalSupply)
+	err = k.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, token.TotalSupply)
 	if err != nil {
 		return err.Result()
 	}
-	er := k.SetToken(ctx, token.Symbol, &token)
+	er := k.SetToken(ctx, owner, token.Symbol, &token)
 	if er != nil {
 		return sdk.ErrInternal(fmt.Sprintf("failed to store new token: '%s'", er)).Result()
 	}
@@ -257,7 +265,7 @@ func (k Keeper) MintCoins(ctx sdk.Context, from sdk.AccAddress, amount sdk.Int, 
 		return er.Result()
 	}
 
-	err = k.SetTotalSupply(ctx, denom, newCoins)
+	err = k.SetTotalSupply(ctx, from, denom, newCoins)
 	if err != nil {
 		return sdk.ErrInternal(fmt.Sprintf("failed to set total supply when minting coins: '%s'", err)).Result()
 	}
@@ -328,7 +336,7 @@ func (k Keeper) BurnCoins(ctx sdk.Context, from sdk.AccAddress, amount sdk.Int, 
 		return er.Result()
 	}
 
-	err = k.SetTotalSupply(ctx, denom, newCoins)
+	err = k.SetTotalSupply(ctx, from, denom, newCoins)
 	if err != nil {
 		return sdk.ErrInternal(fmt.Sprintf("failed to set total supply when minting coins: '%s'", err)).Result()
 	}
