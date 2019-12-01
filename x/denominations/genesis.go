@@ -9,6 +9,7 @@ import (
 
 type GenesisState struct {
 	TokenRecords []types.Token `json:"token_records"`
+	Nominees     []string      `json:"nominees" yaml:"nominees"`
 }
 
 func ValidateGenesis(data GenesisState) error {
@@ -32,17 +33,20 @@ func ValidateGenesis(data GenesisState) error {
 	return nil
 }
 
-func NewGenesisState(poa string) GenesisState {
-	return GenesisState{TokenRecords: nil}
+func NewGenesisState(nominees []string) GenesisState {
+	return GenesisState{TokenRecords: nil, Nominees: nominees}
 }
 
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
 		TokenRecords: []types.Token{},
+		Nominees:     []string{},
 	}
 }
 
 func InitGenesis(ctx sdk.Context, k Keeper, data GenesisState) {
+	k.SetParams(ctx, types.NewParams(data.Nominees))
+
 	for _, record := range data.TokenRecords {
 		record := record
 		err := k.SetToken(ctx, record.Symbol, &record)
@@ -63,7 +67,7 @@ func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
 			panic(fmt.Sprintf("failed to find token for symbol: %s. Error: %s", symbol, err))
 		}
 		records = append(records, *token)
-
 	}
-	return GenesisState{TokenRecords: records}
+	params := k.GetParams(ctx)
+	return GenesisState{TokenRecords: records, Nominees: params.Nominees}
 }

@@ -32,8 +32,9 @@ func TestMsgIssueToken(t *testing.T) {
 		originalSymbol       = "ZAP"
 		symbol               = "zap"
 		total          int64 = 1
+		max            int64 = 10
 		owner                = sdk.AccAddress([]byte("me"))
-		msg                  = NewMsgIssueToken(owner, name, symbol, originalSymbol, total, false)
+		msg                  = NewMsgIssueToken(owner, name, symbol, originalSymbol, sdk.NewInt(total), sdk.NewInt(max), false)
 	)
 
 	require.Equal(t, msg.Route(), RouterKey)
@@ -46,10 +47,13 @@ func TestMsgIssueTokenValidation(t *testing.T) {
 		originalSymbol       = "ZAP"
 		symbol               = "zap"
 		total          int64 = 1
+		max            int64 = 10
 		totalInvalid   int64 = 0
+		maxInvalid     int64 = 0
 		acc                  = sdk.AccAddress([]byte("me"))
 		name2                = "a"
 		total2         int64 = 2
+		max2           int64 = 20
 		acc2                 = sdk.AccAddress([]byte("you"))
 	)
 
@@ -57,15 +61,15 @@ func TestMsgIssueTokenValidation(t *testing.T) {
 		valid bool
 		tx    MsgInterface
 	}{
-		{true, NewMsgIssueToken(acc, name, symbol, originalSymbol, total, false)},
-		{true, NewMsgIssueToken(acc, name, symbol, originalSymbol, total, false)},
-		{false, NewMsgIssueToken(acc, name, symbol, originalSymbol, totalInvalid, false)},
-		{true, NewMsgIssueToken(acc2, name2, symbol, originalSymbol, total2, false)},
-		{true, NewMsgIssueToken(acc2, name2, symbol, originalSymbol, total, false)},
-		{true, NewMsgIssueToken(acc, name2, symbol, originalSymbol, total2, false)},
-		{false, NewMsgIssueToken(nil, name, symbol, originalSymbol, total2, false)},
-		{false, NewMsgIssueToken(acc2, "", symbol, originalSymbol, total2, false)},
-		{false, NewMsgIssueToken(acc2, name, symbol, originalSymbol, totalInvalid, false)},
+		{true, NewMsgIssueToken(acc, name, symbol, originalSymbol, sdk.NewInt(total), sdk.NewInt(max), false)},
+		{true, NewMsgIssueToken(acc, name, symbol, originalSymbol, sdk.NewInt(total), sdk.NewInt(max), false)},
+		{false, NewMsgIssueToken(acc, name, symbol, originalSymbol, sdk.NewInt(totalInvalid), sdk.NewInt(maxInvalid), false)},
+		{true, NewMsgIssueToken(acc2, name2, symbol, originalSymbol, sdk.NewInt(total2), sdk.NewInt(max2), false)},
+		{true, NewMsgIssueToken(acc2, name2, symbol, originalSymbol, sdk.NewInt(total), sdk.NewInt(max), false)},
+		{true, NewMsgIssueToken(acc, name2, symbol, originalSymbol, sdk.NewInt(total2), sdk.NewInt(max2), false)},
+		{false, NewMsgIssueToken(nil, name, symbol, originalSymbol, sdk.NewInt(total2), sdk.NewInt(max2), false)},
+		{false, NewMsgIssueToken(acc2, "", symbol, originalSymbol, sdk.NewInt(total2), sdk.NewInt(max2), false)},
+		{false, NewMsgIssueToken(acc2, name, symbol, originalSymbol, sdk.NewInt(totalInvalid), sdk.NewInt(maxInvalid), false)},
 	}
 
 	validateError(cases, t)
@@ -77,13 +81,15 @@ func TestMsgIssueTokenGetSignBytes(t *testing.T) {
 		originalSymbol       = "ZAP"
 		symbol               = "zap"
 		total          int64 = 1
+		max            int64 = 10
 		owner                = sdk.AccAddress([]byte("me"))
-		msg                  = NewMsgIssueToken(owner, name, symbol, originalSymbol, total, false)
+		msg                  = NewMsgIssueToken(owner, name, symbol, originalSymbol, sdk.NewInt(total), sdk.NewInt(max), false)
 	)
 	actual := msg.GetSignBytes()
 
-	expected := `{"type":"assetmanagement/IssueToken",` +
+	expected := `{"type":"denominations/MsgIssueToken",` +
 		`"value":{` +
+		`"max_supply":"10",` +
 		`"mintable":false,` +
 		`"name":"Zap",` +
 		`"original_symbol":"ZAP",` +
@@ -99,7 +105,7 @@ func TestMsgMintCoins(t *testing.T) {
 		amount int64 = 10
 		symbol       = "ZAP-001"
 		owner        = sdk.AccAddress([]byte("me"))
-		msg          = NewMsgMintCoins(amount, symbol, owner)
+		msg          = NewMsgMintCoins(sdk.NewInt(amount), symbol, owner)
 	)
 
 	require.Equal(t, msg.Route(), RouterKey)
@@ -119,13 +125,13 @@ func TestMsgMintCoinsValidation(t *testing.T) {
 		valid bool
 		tx    MsgInterface
 	}{
-		{true, NewMsgMintCoins(amount, symbol, owner)},
-		{true, NewMsgMintCoins(amount, symbol2, owner2)},
-		{false, NewMsgMintCoins(-1, symbol, owner)},
-		{false, NewMsgMintCoins(0, symbol, owner)},
-		{true, NewMsgMintCoins(1, symbol, owner)},
-		{false, NewMsgMintCoins(amount, symbol, nil)},
-		{false, NewMsgMintCoins(amount, "", owner)},
+		{true, NewMsgMintCoins(sdk.NewInt(amount), symbol, owner)},
+		{true, NewMsgMintCoins(sdk.NewInt(amount), symbol2, owner2)},
+		{false, NewMsgMintCoins(sdk.NewInt(-1), symbol, owner)},
+		{false, NewMsgMintCoins(sdk.NewInt(0), symbol, owner)},
+		{true, NewMsgMintCoins(sdk.NewInt(1), symbol, owner)},
+		{false, NewMsgMintCoins(sdk.NewInt(amount), symbol, nil)},
+		{false, NewMsgMintCoins(sdk.NewInt(amount), "", owner)},
 	}
 
 	validateError(cases, t)
@@ -136,11 +142,11 @@ func TestMsgMintCoinsGetSignBytes(t *testing.T) {
 		amount int64 = 10
 		symbol       = "ZAP-001"
 		owner        = sdk.AccAddress([]byte("me"))
-		msg          = NewMsgMintCoins(amount, symbol, owner)
+		msg          = NewMsgMintCoins(sdk.NewInt(amount), symbol, owner)
 	)
 	actual := msg.GetSignBytes()
 
-	expected := `{"type":"assetmanagement/MintCoins","value":{` +
+	expected := `{"type":"denominations/MsgMintCoins","value":{` +
 		`"amount":"10",` +
 		`"owner":"cosmos1d4js690r9j",` +
 		`"symbol":"ZAP-001"}}`
@@ -153,7 +159,7 @@ func TestMsgBurnCoins(t *testing.T) {
 		amount int64 = 10
 		symbol       = "ZAP-001"
 		owner        = sdk.AccAddress([]byte("me"))
-		msg          = NewMsgBurnCoins(amount, symbol, owner)
+		msg          = NewMsgBurnCoins(sdk.NewInt(amount), symbol, owner)
 	)
 
 	require.Equal(t, msg.Route(), RouterKey)
@@ -173,13 +179,13 @@ func TestMsgBurnCoinsValidation(t *testing.T) {
 		valid bool
 		tx    MsgInterface
 	}{
-		{true, NewMsgBurnCoins(amount, symbol, owner)},
-		{true, NewMsgBurnCoins(amount, symbol2, owner2)},
-		{false, NewMsgBurnCoins(-1, symbol, owner)},
-		{false, NewMsgBurnCoins(0, symbol, owner)},
-		{true, NewMsgBurnCoins(1, symbol, owner)},
-		{false, NewMsgBurnCoins(amount, symbol, nil)},
-		{false, NewMsgBurnCoins(amount, "", owner)},
+		{true, NewMsgBurnCoins(sdk.NewInt(amount), symbol, owner)},
+		{true, NewMsgBurnCoins(sdk.NewInt(amount), symbol2, owner2)},
+		{false, NewMsgBurnCoins(sdk.NewInt(-1), symbol, owner)},
+		{false, NewMsgBurnCoins(sdk.NewInt(0), symbol, owner)},
+		{true, NewMsgBurnCoins(sdk.NewInt(1), symbol, owner)},
+		{false, NewMsgBurnCoins(sdk.NewInt(amount), symbol, nil)},
+		{false, NewMsgBurnCoins(sdk.NewInt(amount), "", owner)},
 	}
 
 	validateError(cases, t)
@@ -190,11 +196,11 @@ func TestMsgBurnCoinsGetSignBytes(t *testing.T) {
 		amount int64 = 100
 		symbol       = "ZAP-999"
 		owner        = sdk.AccAddress([]byte("me"))
-		msg          = NewMsgBurnCoins(amount, symbol, owner)
+		msg          = NewMsgBurnCoins(sdk.NewInt(amount), symbol, owner)
 	)
 	actual := msg.GetSignBytes()
 
-	expected := `{"type":"assetmanagement/BurnCoins","value":{` +
+	expected := `{"type":"denominations/MsgBurnCoins","value":{` +
 		`"amount":"100",` +
 		`"owner":"cosmos1d4js690r9j",` +
 		`"symbol":"ZAP-999"}}`
@@ -207,7 +213,7 @@ func TestMsgFreezeCoins(t *testing.T) {
 		amount int64 = 10
 		symbol       = "ZAP-001"
 		owner        = sdk.AccAddress([]byte("me"))
-		msg          = NewMsgFreezeCoins(amount, symbol, owner)
+		msg          = NewMsgFreezeCoins(sdk.NewInt(amount), symbol, owner, owner)
 	)
 
 	require.Equal(t, msg.Route(), RouterKey)
@@ -227,13 +233,13 @@ func TestMsgFreezeCoinsValidation(t *testing.T) {
 		valid bool
 		tx    MsgInterface
 	}{
-		{true, NewMsgFreezeCoins(amount, symbol, owner)},
-		{true, NewMsgFreezeCoins(amount, symbol2, owner2)},
-		{false, NewMsgFreezeCoins(-1, symbol, owner)},
-		{false, NewMsgFreezeCoins(0, symbol, owner)},
-		{true, NewMsgFreezeCoins(1, symbol, owner)},
-		{false, NewMsgFreezeCoins(amount, symbol, nil)},
-		{false, NewMsgFreezeCoins(amount, "", owner)},
+		{true, NewMsgFreezeCoins(sdk.NewInt(amount), symbol, owner, owner)},
+		{true, NewMsgFreezeCoins(sdk.NewInt(amount), symbol2, owner2, owner2)},
+		{false, NewMsgFreezeCoins(sdk.NewInt(-1), symbol, owner, owner)},
+		{false, NewMsgFreezeCoins(sdk.NewInt(0), symbol, owner, owner)},
+		{true, NewMsgFreezeCoins(sdk.NewInt(1), symbol, owner, owner)},
+		{false, NewMsgFreezeCoins(sdk.NewInt(amount), symbol, nil, nil)},
+		{false, NewMsgFreezeCoins(sdk.NewInt(amount), "", owner, owner)},
 	}
 
 	validateError(cases, t)
@@ -244,11 +250,12 @@ func TestMsgFreezeCoinsGetSignBytes(t *testing.T) {
 		amount int64 = 100
 		symbol       = "FRZ-999"
 		owner        = sdk.AccAddress([]byte("me"))
-		msg          = NewMsgFreezeCoins(amount, symbol, owner)
+		msg          = NewMsgFreezeCoins(sdk.NewInt(amount), symbol, owner, owner)
 	)
 	actual := msg.GetSignBytes()
 
-	expected := `{"type":"assetmanagement/FreezeCoins","value":{` +
+	expected := `{"type":"denominations/MsgFreezeCoins","value":{` +
+		`"address":"cosmos1d4js690r9j",` +
 		`"amount":"100",` +
 		`"owner":"cosmos1d4js690r9j",` +
 		`"symbol":"FRZ-999"}}`
@@ -261,7 +268,7 @@ func TestMsgUnfreezeCoins(t *testing.T) {
 		amount int64 = 10
 		symbol       = "UFZ-001"
 		owner        = sdk.AccAddress([]byte("me"))
-		msg          = NewMsgUnfreezeCoins(amount, symbol, owner)
+		msg          = NewMsgUnfreezeCoins(sdk.NewInt(amount), symbol, owner, owner)
 	)
 
 	require.Equal(t, msg.Route(), RouterKey)
@@ -281,13 +288,13 @@ func TestMsgUnfreezeCoinsValidation(t *testing.T) {
 		valid bool
 		tx    MsgInterface
 	}{
-		{true, NewMsgUnfreezeCoins(amount, symbol, owner)},
-		{true, NewMsgUnfreezeCoins(amount, symbol2, owner2)},
-		{false, NewMsgUnfreezeCoins(-1, symbol, owner)},
-		{false, NewMsgUnfreezeCoins(0, symbol, owner)},
-		{true, NewMsgUnfreezeCoins(1, symbol, owner)},
-		{false, NewMsgUnfreezeCoins(amount, symbol, nil)},
-		{false, NewMsgUnfreezeCoins(amount, "", owner)},
+		{true, NewMsgUnfreezeCoins(sdk.NewInt(amount), symbol, owner, owner)},
+		{true, NewMsgUnfreezeCoins(sdk.NewInt(amount), symbol2, owner2, owner2)},
+		{false, NewMsgUnfreezeCoins(sdk.NewInt(-1), symbol, owner, owner)},
+		{false, NewMsgUnfreezeCoins(sdk.NewInt(0), symbol, owner, owner)},
+		{true, NewMsgUnfreezeCoins(sdk.NewInt(1), symbol, owner, owner)},
+		{false, NewMsgUnfreezeCoins(sdk.NewInt(amount), symbol, nil, nil)},
+		{false, NewMsgUnfreezeCoins(sdk.NewInt(amount), "", owner, owner)},
 	}
 
 	validateError(cases, t)
@@ -298,11 +305,12 @@ func TestMsgUnfreezeCoinsGetSignBytes(t *testing.T) {
 		amount int64 = 100
 		symbol       = "UFZ-999"
 		owner        = sdk.AccAddress([]byte("me"))
-		msg          = NewMsgUnfreezeCoins(amount, symbol, owner)
+		msg          = NewMsgUnfreezeCoins(sdk.NewInt(amount), symbol, owner, owner)
 	)
 	actual := msg.GetSignBytes()
 
-	expected := `{"type":"assetmanagement/UnfreezeCoins","value":{` +
+	expected := `{"type":"denominations/MsgUnfreezeCoins","value":{` +
+		`"address":"cosmos1d4js690r9j",` +
 		`"amount":"100",` +
 		`"owner":"cosmos1d4js690r9j",` +
 		`"symbol":"UFZ-999"}}`

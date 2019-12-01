@@ -5,7 +5,7 @@ const (
 
 	QuerierRoute = ModuleName
 
-	ModuleAuth = "denominationsauth"
+	ModuleNominees = "nominees"
 	// StoreKey Top level store key where all module items will be stored
 	StoreKey = ModuleName
 

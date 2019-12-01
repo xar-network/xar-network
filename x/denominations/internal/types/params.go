@@ -9,12 +9,11 @@ import (
 
 // Parameter keys
 var (
-	// ParamStoreKeyAuctionParams Param store key for auction params
-	KeyAuth = []byte(ModuleAuth)
+	KeyNominees = []byte(ModuleNominees)
 )
 
 type Params struct {
-	POA string
+	Nominees []string
 }
 
 // ParamKeyTable Key declaration for parameters
@@ -27,26 +26,28 @@ func ParamKeyTable() subspace.KeyTable {
 // nolint
 func (p *Params) ParamSetPairs() subspace.ParamSetPairs {
 	return subspace.ParamSetPairs{
-		subspace.NewParamSetPair(KeyAuth, &p.POA),
+		subspace.NewParamSetPair(KeyNominees, &p.Nominees),
 	}
 }
 
 // NewParams creates a new Params object
-func NewParams(poa string) Params {
+func NewParams(nominees []string) Params {
 	return Params{
-		POA: poa,
+		Nominees: nominees,
 	}
 }
 
 // DefaultParams default params
 func DefaultParams() Params {
-	return NewParams("")
+	return NewParams([]string{})
 }
 
 // String implements fmt.stringer
 func (p Params) String() string {
 	out := "Params:\n"
-	out += "PoA: " + p.POA + "\n"
+	for _, n := range p.Nominees {
+		out += n
+	}
 	return strings.TrimSpace(out)
 }
 

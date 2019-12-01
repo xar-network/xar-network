@@ -451,3 +451,14 @@ func (k Keeper) UnfreezeCoins(ctx sdk.Context, from sdk.AccAddress, address sdk.
 
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
+
+func (k Keeper) IsNominee(ctx sdk.Context, nominee string) bool {
+	params := k.GetParams(ctx)
+	nominees := params.Nominees
+	for _, v := range nominees {
+		if v == nominee {
+			return true
+		}
+	}
+	return false
+}
