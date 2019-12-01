@@ -5,7 +5,6 @@
 [![codecov](https://codecov.io/gh/xar-network/xar-network/branch/master/graph/badge.svg)](https://codecov.io/gh/xar-network/xar-network)
 [![Go Report Card](https://goreportcard.com/badge/github.com/xar-network/xar-network)](https://goreportcard.com/report/github.com/xar-network/xar-network)
 [![GolangCI](https://golangci.com/badges/github.com/xar-network/xar-network.svg)](https://golangci.com/r/github.com/xar-network/xar-network)
-[![API Reference](https://godoc.org/github.com/xar-network/xar-network?status.svg)](https://godoc.org/github.com/xar-network/xar-network)
 
 This repository hosts `Xar`.
 
