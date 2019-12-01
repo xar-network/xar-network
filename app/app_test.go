@@ -9,12 +9,21 @@ import (
 	tdb "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/simapp"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-/*func TestXardExport(t *testing.T) {
+func TestXardGeneric(t *testing.T) {
+	db := tdb.NewMemDB()
+	mkdb := tdb.NewMemDB()
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
+	setGenesis(gapp)
+
+	modAccPerms := GetMaccPerms()
+	require.Equal(t, 7, len(modAccPerms))
+}
+
+func TestXardExport(t *testing.T) {
 	db := tdb.NewMemDB()
 	mkdb := tdb.NewMemDB()
 	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
@@ -24,7 +33,19 @@ import (
 	newGapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
 	_, _, err := newGapp.ExportAppStateAndValidators(false, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
-}*/
+}
+
+func TestXardExportZeroHeight(t *testing.T) {
+	db := tdb.NewMemDB()
+	mkdb := tdb.NewMemDB()
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
+	setGenesis(gapp)
+
+	// Making a new app object with the db, so that initchain hasn't been called
+	newGapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
+	_, _, err := newGapp.ExportAppStateAndValidators(true, []string{})
+	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
+}
 
 // ensure that black listed addresses are properly set in bank keeper
 func TestBlackListedAddrs(t *testing.T) {
@@ -38,7 +59,8 @@ func TestBlackListedAddrs(t *testing.T) {
 }
 
 func setGenesis(gapp *xarApp) error {
-	genesisState := simapp.NewDefaultGenesisState()
+	//genesisState := simapp.NewDefaultGenesisState()
+	genesisState := ModuleBasics.DefaultGenesis()
 	stateBytes, err := codec.MarshalJSONIndent(gapp.cdc, genesisState)
 	if err != nil {
 		return err
