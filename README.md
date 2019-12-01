@@ -2,11 +2,8 @@
 
 [![version](https://img.shields.io/github/tag/xar-network/xar-network.svg)](https://github.com/xar-network/xar-network/releases/latest)
 [![Build Status](https://img.shields.io/travis/xar-network/xar-network.svg?style=flat-square&logo=travis)](https://travis-ci.org/xar-network/xar-network)
-[![CircleCI](https://circleci.com/gh/xar-network/xar-network/tree/master.svg?style=shield)](https://circleci.com/gh/xar-network/xar-network/tree/hub_2_invariants)
 [![codecov](https://codecov.io/gh/xar-network/xar-network/branch/master/graph/badge.svg)](https://codecov.io/gh/xar-network/xar-network)
 [![Go Report Card](https://goreportcard.com/badge/github.com/xar-network/xar-network)](https://goreportcard.com/report/github.com/xar-network/xar-network)
-[![license](https://img.shields.io/github/license/xar-network/xar-network.svg)](https://github.com/xar-network/xar-network/blob/master/LICENSE)
-[![LoC](https://tokei.rs/b1/github/xar-network/xar-network)](https://github.com/xar-network/xar-network)
 [![GolangCI](https://golangci.com/badges/github.com/xar-network/xar-network.svg)](https://golangci.com/r/github.com/xar-network/xar-network)
 [![API Reference](https://godoc.org/github.com/xar-network/xar-network?status.svg)](https://godoc.org/github.com/xar-network/xar-network)
 
