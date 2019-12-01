@@ -18,7 +18,7 @@ env:
 # install: skip
 
 script:
-  - go build -v ./...
+  - go build -v ./cmd/xard
 
 after_success:
   - |

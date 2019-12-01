@@ -11,7 +11,6 @@ import (
 	"github.com/xar-network/xar-network/app"
 	"github.com/xar-network/xar-network/execution"
 	"github.com/xar-network/xar-network/types"
-	"github.com/xar-network/xar-network/x/asset"
 	"github.com/xar-network/xar-network/x/market"
 	"github.com/xar-network/xar-network/x/order"
 
@@ -30,7 +29,6 @@ type MockApp struct {
 	Cdc             *codec.Codec
 	Mq              types.Backend
 	Ctx             sdk.Context
-	AssetKeeper     asset.Keeper
 	MarketKeeper    market.Keeper
 	OrderKeeper     order.Keeper
 	BankKeeper      bank.Keeper
@@ -42,7 +40,7 @@ type Option func(t *testing.T, app *MockApp)
 func New(t *testing.T, options ...Option) *MockApp {
 	appDB := dbm.NewMemDB()
 	mkDataDB := dbm.NewMemDB()
-	dex := app.NewDexApp(log.NewNopLogger(), appDB, mkDataDB, &nopWriter{})
+	dex := app.NewXarApp(log.NewNopLogger(), appDB, mkDataDB, &nopWriter{})
 	dex.InitChain(abci.RequestInitChain{
 		AppStateBytes: []byte("{}"),
 	})
@@ -52,7 +50,6 @@ func New(t *testing.T, options ...Option) *MockApp {
 		Cdc:             dex.Cdc,
 		Mq:              dex.Mq,
 		Ctx:             ctx,
-		AssetKeeper:     dex.AssetKeeper,
 		MarketKeeper:    dex.MarketKeeper,
 		OrderKeeper:     dex.OrderKeeper,
 		BankKeeper:      dex.BankKeeper,
