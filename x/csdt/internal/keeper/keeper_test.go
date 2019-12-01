@@ -71,7 +71,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				Debt:             cs(c(StableDenom, 200)),
 			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}},
 			"1.00",
-			args{ownerAddr, "uftm", i(-601), i(0)},
+			args{ownerAddr, "uftm", i(-801), i(0)},
 			false,
 			state{CSDT{
 				Owner:            ownerAddr,
@@ -89,7 +89,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				Debt:             cs(c(StableDenom, 200)),
 			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}},
 			"1.00",
-			args{ownerAddr, "uftm", i(0), i(301)},
+			args{ownerAddr, "uftm", i(0), i(500)},
 			false,
 			state{CSDT{
 				Owner:            ownerAddr,
@@ -217,6 +217,7 @@ func TestKeeper_PartialSeizeCSDT(t *testing.T) {
 	const collateral = "uftm"
 	mapp, keeper, _, _ := setUpMockAppWithoutGenesis()
 	genAccs, addrs, _, _ := mock.CreateGenAccounts(2, cs(c(collateral, 100)))
+
 	testAddr := addrs[0]
 	mock.SetGenesis(mapp, genAccs)
 	// setup oracle
@@ -249,16 +250,17 @@ func TestKeeper_PartialSeizeCSDT(t *testing.T) {
 
 	// Create CSDT
 	keeper.SetParams(ctx, types.DefaultParams())
-	keeper.SetGlobalDebt(ctx, sdk.NewInt(1000000000000))
+	keeper.SetGlobalDebt(ctx, sdk.NewInt(0))
+	keeper.GetSupply().SetSupply(ctx, supply.NewSupply(sdk.NewCoins(sdk.NewCoin(collateral, sdk.NewInt(200)))))
+
 	err := keeper.ModifyCSDT(ctx, testAddr, collateral, i(10), i(5))
 	require.NoError(t, err)
 	// Reduce price
 	_, _ = keeper.GetOracle().SetPrice(
-		ctx, sdk.AccAddress{}, collateral,
-		sdk.MustNewDecFromStr("0.90"),
+		ctx, addrs[1], collateral,
+		sdk.MustNewDecFromStr("0.50"),
 		time.Now().Add(time.Hour*1))
 	_ = keeper.GetOracle().SetCurrentPrices(ctx)
-
 	// Seize entire CSDT
 	err = keeper.PartialSeizeCSDT(ctx, testAddr, collateral, i(10), i(5))
 
