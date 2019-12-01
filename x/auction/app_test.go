@@ -154,10 +154,8 @@ func setUpMockApp() (*mock.App, Keeper, []sdk.AccAddress, []crypto.PrivKey) {
 	// Add endblocker
 	mapp.SetEndBlocker(
 		func(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
-			tags := EndBlocker(ctx, auctionKeeper)
-			return abci.ResponseEndBlock{
-				Tags: tags,
-			}
+			EndBlocker(ctx, auctionKeeper)
+			return abci.ResponseEndBlock{}
 		},
 	)
 	// Mount and load the stores
