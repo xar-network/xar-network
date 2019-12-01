@@ -23,7 +23,7 @@ script:
 after_success:
   - |
     if [ -n "$GO_TEST" ]; then
-      go test ./cmd/xard -coverprofile=coverage.txt -covermode=atomic ./...
+      go test -coverprofile=coverage.txt -covermode=atomic ./cmd/xard
     elif [ -n "$GO_INTEGRATION_TEST" ]; then
       go test ./integration/
     fi
