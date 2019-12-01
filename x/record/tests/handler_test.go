@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/xar-network/xar-network/x/record"
-	"github.com/xar-network/xar-network/x/record/msgs"
+	"github.com/xar-network/xar-network/x/record/internal/types"
 )
 
 func TestHandlerNewMsgRecord(t *testing.T) {
@@ -18,13 +18,10 @@ func TestHandlerNewMsgRecord(t *testing.T) {
 
 	handler := record.NewHandler(keeper)
 
-	msg := msgs.NewMsgRecord(SenderAccAddr, &RecordParams)
+	msg := types.NewMsgRecord(SenderAccAddr, &RecordParams)
 	err := msg.ValidateBasic()
 	require.Nil(t, err)
 
 	res := handler(ctx, msg)
 	require.True(t, res.IsOK())
-
-	recordHash := string(res.Tags[3].Value)
-	require.NotNil(t, recordHash)
 }
