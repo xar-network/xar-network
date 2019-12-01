@@ -26,7 +26,10 @@ type Keeper struct {
 // - adding oracles
 // - adding/removing assets from the oracle
 func NewKeeper(
-	storeKey sdk.StoreKey, cdc *codec.Codec, paramstore params.Subspace, codespace sdk.CodespaceType,
+	storeKey sdk.StoreKey,
+	cdc *codec.Codec,
+	paramstore params.Subspace,
+	codespace sdk.CodespaceType,
 ) Keeper {
 	return Keeper{
 		paramstore: paramstore.WithKeyTable(types.ParamKeyTable()),

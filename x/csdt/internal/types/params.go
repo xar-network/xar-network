@@ -23,10 +23,14 @@ var (
 	KeyCollateralParams     = []byte("CollateralParams")
 	KeyDebtParams           = []byte("DebtParams")
 	KeyCircuitBreaker       = []byte("CircuitBreaker")
-	DefaultGlobalDebt       = sdk.Coins{}
+	DefaultGlobalDebt       = sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000)))
 	DefaultCircuitBreaker   = false
-	DefaultCollateralParams = CollateralParams{}
-	DefaultDebtParams       = DebtParams{}
+	DefaultCollateralParams = CollateralParams{CollateralParam{
+		Denom:            "uftm",
+		LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
+		DebtLimit:        sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000))),
+	}}
+	DefaultDebtParams = DebtParams{}
 )
 
 // Params governance parameters for cdp module

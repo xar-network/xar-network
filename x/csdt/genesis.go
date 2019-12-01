@@ -14,42 +14,42 @@ import (
 
 // GenesisState is the state that must be provided at genesis.
 type GenesisState struct {
-	CsdtModuleParams types.CsdtModuleParams `json:"params"`
-	GlobalDebt       sdk.Int                `json:"global_debt"`
-	CSDTs            types.CSDTs            `json:"csdts" yaml:"csdts"`
+	Params     types.Params `json:"params"`
+	GlobalDebt sdk.Int      `json:"global_debt"`
+	CSDTs      types.CSDTs  `json:"csdts" yaml:"csdts"`
 	// don't need to setup CollateralStates as they are created as needed
 }
 
 // DefaultGenesisState returns a default genesis state
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		types.CsdtModuleParams{
-			GlobalDebtLimit: sdk.NewInt(25000000000000),
-			CollateralParams: []types.CollateralParams{
+		types.Params{
+			GlobalDebtLimit: sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(25000000000000))),
+			CollateralParams: types.CollateralParams{
 				{
 					Denom:            "ubtc",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
-					DebtLimit:        sdk.NewInt(500000000000),
+					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 				},
 				{
 					Denom:            "ubnb",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
-					DebtLimit:        sdk.NewInt(500000000000),
+					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 				},
 				{
 					Denom:            "ueth",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
-					DebtLimit:        sdk.NewInt(500000000000),
+					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 				},
 				{
 					Denom:            "uftm",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
-					DebtLimit:        sdk.NewInt(500000000000),
+					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 				},
 				{
 					Denom:            "uzar",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.3"),
-					DebtLimit:        sdk.NewInt(500000000000),
+					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 				},
 			},
 		},
@@ -58,17 +58,17 @@ func DefaultGenesisState() GenesisState {
 	}
 }
 
-func NewGenesisState(csdtModuleParams types.CsdtModuleParams, globalDebt sdk.Int) GenesisState {
+func NewGenesisState(params types.Params, globalDebt sdk.Int) GenesisState {
 	return GenesisState{
-		CsdtModuleParams: csdtModuleParams,
-		GlobalDebt:       globalDebt,
-		CSDTs:            types.CSDTs{},
+		Params:     params,
+		GlobalDebt: globalDebt,
+		CSDTs:      types.CSDTs{},
 	}
 }
 
 // InitGenesis sets the genesis state in the keeper.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, data GenesisState) {
-	k.SetParams(ctx, data.CsdtModuleParams)
+	k.SetParams(ctx, data.Params)
 
 	for _, csdt := range data.CSDTs {
 		k.SetCSDT(ctx, csdt)
@@ -107,8 +107,8 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) GenesisState {
 	debt := k.GetGlobalDebt(ctx)
 
 	return GenesisState{
-		CsdtModuleParams: params,
-		GlobalDebt:       debt,
-		CSDTs:            csdts,
+		Params:     params,
+		GlobalDebt: debt,
+		CSDTs:      csdts,
 	}
 }

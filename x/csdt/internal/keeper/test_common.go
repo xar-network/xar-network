@@ -2,7 +2,6 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	"github.com/cosmos/cosmos-sdk/x/supply"
@@ -26,20 +25,24 @@ func setUpMockAppWithoutGenesis() (*mock.App, Keeper, []sdk.AccAddress, []crypto
 
 	// Register codecs
 	types.RegisterCodec(mapp.Cdc)
+	supply.RegisterCodec(mapp.Cdc)
 
 	// Create keepers
-	keyCSDT := sdk.NewKVStoreKey("csdt")
+	keyCSDT := sdk.NewKVStoreKey(types.StoreKey)
 	keyOracle := sdk.NewKVStoreKey(oracle.StoreKey)
-	keySupply := sdk.NewKVStoreKey("supply")
-	keyAccount := sdk.NewKVStoreKey("account")
+	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
+
+	maccPerms := map[string][]string{
+		types.ModuleName: {supply.Minter, supply.Burner},
+	}
+
 	oracleKeeper := oracle.NewKeeper(keyOracle, mapp.Cdc, mapp.ParamsKeeper.Subspace(oracle.DefaultParamspace), oracle.DefaultCodespace)
 	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, map[string]bool{})
-	accountKeeper := auth.NewAccountKeeper(mapp.Cdc, keyAccount, mapp.ParamsKeeper.Subspace("accountSubspace"), auth.ProtoBaseAccount)
-	supplyKeeper := supply.NewKeeper(mapp.Cdc, keySupply, accountKeeper, bankKeeper, map[string][]string{})
-	csdtKeeper := NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace("csdtSubspace"), oracleKeeper, bankKeeper, supplyKeeper)
+	supplyKeeper := supply.NewKeeper(mapp.Cdc, keySupply, mapp.AccountKeeper, bankKeeper, maccPerms)
+	csdtKeeper := NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace(types.DefaultParamspace), oracleKeeper, bankKeeper, supplyKeeper)
 
 	// Mount and load the stores
-	err := mapp.CompleteSetup(keyOracle, keyCSDT)
+	err := mapp.CompleteSetup(keyOracle, keyCSDT, keySupply)
 	if err != nil {
 		panic("mock app setup failed")
 	}

@@ -34,11 +34,16 @@ func setUpMockAppWithoutGenesis() (*mock.App, keeper.Keeper) {
 	keyPriceFeed := sdk.NewKVStoreKey(oracle.StoreKey)
 	keySupply := sdk.NewKVStoreKey("supply")
 	keyAccount := sdk.NewKVStoreKey("account")
-	priceFeedKeeper := oracle.NewKeeper(keyPriceFeed, mapp.Cdc, oracle.DefaultCodespace)
+	oracleKeeper := oracle.NewKeeper(keyPriceFeed, mapp.Cdc, oracle.DefaultCodespace)
 	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, map[string]bool{})
 	accountKeeper := auth.NewAccountKeeper(mapp.Cdc, keyAccount, mapp.ParamsKeeper.Subspace("accountSubspace"), auth.ProtoBaseAccount)
-	supplyKeeper := supply.NewKeeper(mapp.Cdc, keySupply, accountKeeper, bankKeeper, map[string][]string{})
-	csdtKeeper := keeper.NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace("csdtSubspace"), priceFeedKeeper, bankKeeper, supplyKeeper)
+
+	maccPerms := map[string][]string{
+		types.ModuleName: {supply.Minter, supply.Burner},
+	}
+
+	supplyKeeper := supply.NewKeeper(mapp.Cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
+	csdtKeeper := keeper.NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace("csdtSubspace"), oracleKeeper, bankKeeper, supplyKeeper)
 
 	// Register routes
 	mapp.Router().AddRoute("csdt", csdt.NewHandler(csdtKeeper))

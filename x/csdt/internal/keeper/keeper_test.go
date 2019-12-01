@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/mock"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/xar-network/xar-network/x/csdt/internal/types"
@@ -18,7 +19,7 @@ import (
 // How could one reduce the number of params in the test cases. Create a table driven test for each of the 4 add/withdraw collateral/debt?
 
 func TestKeeper_ModifyCSDT(t *testing.T) {
-	_, addrs := mock.GeneratePrivKeyAddressPairs(1)
+	_, addrs := mock.GeneratePrivKeyAddressPairs(2)
 	ownerAddr := addrs[0]
 
 	type state struct { // TODO this allows invalid state to be set up, should it?
@@ -50,7 +51,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 100)),
 				Debt:             cs(c(StableDenom, 2)),
-			}, cs(c("uftm", 10), c(StableDenom, 2)), i(2), CollateralState{"uftm", i(2)}},
+			}, cs(c("uftm", 10), c(StableDenom, 2)), i(2), CollateralState{Denom: "uftm", TotalDebt: i(2)}},
 			"10.345",
 			args{ownerAddr, "uftm", i(10), i(-1)},
 			true,
@@ -59,7 +60,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 110)),
 				Debt:             cs(c(StableDenom, 1)),
-			}, cs( /*  0uftm  */ c(StableDenom, 1)), i(1), CollateralState{"uftm", i(1)}},
+			}, cs( /*  0uftm  */ c(StableDenom, 1)), i(1), CollateralState{Denom: "uftm", TotalDebt: i(1)}},
 		},
 		{
 			"removeTooMuchCollateral",
@@ -68,7 +69,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 1000)),
 				Debt:             cs(c(StableDenom, 200)),
-			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{"uftm", i(200)}},
+			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}},
 			"1.00",
 			args{ownerAddr, "uftm", i(-601), i(0)},
 			false,
@@ -77,7 +78,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 1000)),
 				Debt:             cs(c(StableDenom, 200)),
-			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{"uftm", i(200)}},
+			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}},
 		},
 		{
 			"withdrawTooMuchStableCoin",
@@ -86,7 +87,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 1000)),
 				Debt:             cs(c(StableDenom, 200)),
-			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{"uftm", i(200)}},
+			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}},
 			"1.00",
 			args{ownerAddr, "uftm", i(0), i(301)},
 			false,
@@ -95,11 +96,11 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 1000)),
 				Debt:             cs(c(StableDenom, 200)),
-			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{"uftm", i(200)}},
+			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}},
 		},
 		{
 			"createCSDTAndWithdrawStable",
-			state{CSDT{}, cs(c("uftm", 10), c(StableDenom, 10)), i(0), CollateralState{"uftm", i(0)}},
+			state{CSDT{}, cs(c("uftm", 10), c(StableDenom, 10)), i(0), CollateralState{Denom: "uftm", TotalDebt: i(0)}},
 			"1.00",
 			args{ownerAddr, "uftm", i(5), i(2)},
 			true,
@@ -108,7 +109,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 5)),
 				Debt:             cs(c(StableDenom, 2)),
-			}, cs(c("uftm", 5), c(StableDenom, 12)), i(2), CollateralState{"uftm", i(2)}},
+			}, cs(c("uftm", 5), c(StableDenom, 12)), i(2), CollateralState{Denom: "uftm", TotalDebt: i(2)}},
 		},
 		{
 			"emptyCSDT",
@@ -117,11 +118,11 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 1000)),
 				Debt:             cs(c(StableDenom, 200)),
-			}, cs(c("uftm", 10), c(StableDenom, 201)), i(200), CollateralState{"uftm", i(200)}},
+			}, cs(c("uftm", 10), c(StableDenom, 201)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}},
 			"1.00",
 			args{ownerAddr, "uftm", i(-1000), i(-200)},
 			true,
-			state{CSDT{}, cs(c("uftm", 1010), c(StableDenom, 1)), i(0), CollateralState{"uftm", i(0)}},
+			state{CSDT{}, cs(c("uftm", 1010), c(StableDenom, 1)), i(0), CollateralState{Denom: "uftm", TotalDebt: i(0)}},
 		},
 		{
 			"invalidCollateralType",
@@ -147,12 +148,28 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 			mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 			ctx := mapp.BaseApp.NewContext(false, header)
 			// setup store state
-			keeper.GetOracle().AddAsset(ctx, "uftm", "uftm test", oracle.Asset{})
+			oracleParams := oracle.DefaultParams()
+			oracleParams.Assets = oracle.Assets{
+				oracle.Asset{
+					AssetCode:  "uftm",
+					BaseAsset:  "uftm",
+					QuoteAsset: StableDenom,
+					Oracles: oracle.Oracles{
+						oracle.Oracle{
+							Address: addrs[1],
+						},
+					},
+				},
+			}
+			oracleParams.Nominees = []string{addrs[1].String()}
+
+			keeper.GetOracle().SetParams(ctx, oracleParams)
 			_, _ = keeper.GetOracle().SetPrice(
-				ctx, sdk.AccAddress{}, "uftm",
+				ctx, addrs[1], "uftm",
 				sdk.MustNewDecFromStr(tc.price),
-				time.Now())
+				time.Now().Add(time.Hour*1))
 			_ = keeper.GetOracle().SetCurrentPrices(ctx)
+
 			if tc.priorState.CSDT.CollateralDenom != "" { // check if the prior CSDT should be created or not (see if an empty one was specified)
 				keeper.SetCSDT(ctx, tc.priorState.CSDT)
 			}
@@ -161,7 +178,10 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				keeper.SetCollateralState(ctx, tc.priorState.CollateralState)
 			}
 
+			keeper.GetSupply().SetSupply(ctx, supply.NewSupply(sdk.NewCoins(sdk.NewCoin(StableDenom, tc.priorState.GlobalDebt))))
+
 			// call func under test
+			keeper.SetParams(ctx, types.DefaultParams())
 			err := keeper.ModifyCSDT(ctx, tc.args.owner, tc.args.collateralDenom, tc.args.changeInCollateral, tc.args.changeInDebt)
 			mapp.EndBlock(abci.RequestEndBlock{})
 			mapp.Commit()
@@ -196,20 +216,40 @@ func TestKeeper_PartialSeizeCSDT(t *testing.T) {
 	// Setup
 	const collateral = "uftm"
 	mapp, keeper, _, _ := setUpMockAppWithoutGenesis()
-	genAccs, addrs, _, _ := mock.CreateGenAccounts(1, cs(c(collateral, 100)))
+	genAccs, addrs, _, _ := mock.CreateGenAccounts(2, cs(c(collateral, 100)))
 	testAddr := addrs[0]
 	mock.SetGenesis(mapp, genAccs)
 	// setup oracle
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
-	keeper.GetOracle().AddAsset(ctx, collateral, "test description", oracle.Asset{})
+
+	// setup store state
+	oracleParams := oracle.DefaultParams()
+	oracleParams.Assets = oracle.Assets{
+		oracle.Asset{
+			AssetCode:  collateral,
+			BaseAsset:  collateral,
+			QuoteAsset: StableDenom,
+			Oracles: oracle.Oracles{
+				oracle.Oracle{
+					Address: addrs[1],
+				},
+			},
+		},
+	}
+	oracleParams.Nominees = []string{addrs[1].String()}
+
+	keeper.GetOracle().SetParams(ctx, oracleParams)
 	_, _ = keeper.GetOracle().SetPrice(
-		ctx, sdk.AccAddress{}, collateral,
+		ctx, addrs[1], collateral,
 		sdk.MustNewDecFromStr("1.00"),
 		time.Now().Add(time.Hour*1))
 	_ = keeper.GetOracle().SetCurrentPrices(ctx)
+
 	// Create CSDT
+	keeper.SetParams(ctx, types.DefaultParams())
+	keeper.SetGlobalDebt(ctx, sdk.NewInt(1000000000000))
 	err := keeper.ModifyCSDT(ctx, testAddr, collateral, i(10), i(5))
 	require.NoError(t, err)
 	// Reduce price
@@ -241,9 +281,9 @@ func TestKeeper_GetCSDTs(t *testing.T) {
 	// setup CSDTs
 	_, addrs := mock.GeneratePrivKeyAddressPairs(2)
 	csdts := CSDTs{
-		{addrs[0], "uftm", i(4000), i(5)},
-		{addrs[1], "uftm", i(4000), i(2000)},
-		{addrs[0], "ubtc", i(10), i(20)},
+		{Owner: addrs[0], CollateralDenom: "uftm", CollateralAmount: cs(c("uftm", 4000)), Debt: cs(c(StableDenom, 5))},
+		{Owner: addrs[1], CollateralDenom: "uftm", CollateralAmount: cs(c("uftm", 4000)), Debt: cs(c(StableDenom, 2000))},
+		{Owner: addrs[0], CollateralDenom: "ubtc", CollateralAmount: cs(c("uftm", 10)), Debt: cs(c(StableDenom, 20))},
 	}
 	for _, csdt := range csdts {
 		keeper.SetCSDT(ctx, csdt)
@@ -262,9 +302,10 @@ func TestKeeper_GetCSDTs(t *testing.T) {
 			sdk.Dec{},
 			false,
 			CSDTs{
-				{addrs[0], "ubtc", i(10), i(20)},
-				{addrs[1], "uftm", i(4000), i(2000)},
-				{addrs[0], "uftm", i(4000), i(5)}},
+				{Owner: addrs[0], CollateralDenom: "ubtc", CollateralAmount: cs(c("uftm", 10)), Debt: cs(c(StableDenom, 20))},
+				{Owner: addrs[1], CollateralDenom: "uftm", CollateralAmount: cs(c("uftm", 4000)), Debt: cs(c(StableDenom, 2000))},
+				{Owner: addrs[0], CollateralDenom: "uftm", CollateralAmount: cs(c("uftm", 4000)), Debt: cs(c(StableDenom, 5))},
+			},
 		},
 		{
 			"csdtsFilteredByCollateralAndSortedNoPrice",
@@ -272,8 +313,9 @@ func TestKeeper_GetCSDTs(t *testing.T) {
 			sdk.Dec{},
 			false,
 			CSDTs{
-				{addrs[1], "uftm", i(4000), i(2000)},
-				{addrs[0], "uftm", i(4000), i(5)}},
+				{Owner: addrs[1], CollateralDenom: "uftm", CollateralAmount: cs(c("uftm", 4000)), Debt: cs(c(StableDenom, 2000))},
+				{Owner: addrs[0], CollateralDenom: "uftm", CollateralAmount: cs(c("uftm", 4000)), Debt: cs(c(StableDenom, 5))},
+			},
 		},
 		{
 			"csdtsFilteredByCollateralAndSortedMinimalPrice",
@@ -281,8 +323,9 @@ func TestKeeper_GetCSDTs(t *testing.T) {
 			d("0.00000001"),
 			false,
 			CSDTs{
-				{addrs[1], "uftm", i(4000), i(2000)},
-				{addrs[0], "uftm", i(4000), i(5)}},
+				{Owner: addrs[1], CollateralDenom: "uftm", CollateralAmount: cs(c("uftm", 4000)), Debt: cs(c(StableDenom, 2000))},
+				{Owner: addrs[0], CollateralDenom: "uftm", CollateralAmount: cs(c("uftm", 4000)), Debt: cs(c(StableDenom, 5))},
+			},
 		},
 		{
 			"csdtsFilteredByCollateralAndSorted",
@@ -290,7 +333,8 @@ func TestKeeper_GetCSDTs(t *testing.T) {
 			d("0.74"),
 			false,
 			CSDTs{
-				{addrs[1], "uftm", i(4000), i(2000)}},
+				{Owner: addrs[1], CollateralDenom: "uftm", CollateralAmount: cs(c("uftm", 4000)), Debt: cs(c(StableDenom, 2000))},
+			},
 		},
 		{
 			"highPriceReturnsNoCsdts",
@@ -317,6 +361,7 @@ func TestKeeper_GetCSDTs(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			keeper.SetParams(ctx, types.DefaultParams())
 			returnedCsdts, err := keeper.GetCSDTs(ctx, tc.collateralDenom, tc.price)
 			if tc.expectError {
 				require.Error(t, err)
@@ -333,19 +378,20 @@ func TestKeeper_GetCSDTs(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t,
 		CSDTs{
-			{addrs[0], "ubtc", i(10), i(20)},
-			{addrs[1], "uftm", i(4000), i(2000)}},
+			{Owner: addrs[0], CollateralDenom: "ubtc", CollateralAmount: cs(c("uftm", 10)), Debt: cs(c(StableDenom, 20))},
+			{Owner: addrs[1], CollateralDenom: "uftm", CollateralAmount: cs(c("uftm", 4000)), Debt: cs(c(StableDenom, 2000))},
+		},
 		returnedCsdts,
 	)
 }
 func TestKeeper_GetSetDeleteCSDT(t *testing.T) {
 	// setup keeper, create CSDT
-	mapp, keeper := setUpMockAppWithoutGenesis()
+	mapp, keeper, _, _ := setUpMockAppWithoutGenesis()
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
 	_, addrs := mock.GeneratePrivKeyAddressPairs(1)
-	csdt := CSDT{addrs[0], "uftm", i(412), i(56)}
+	csdt := CSDT{Owner: addrs[0], CollateralDenom: "uftm", CollateralAmount: cs(c("uftm", 412)), Debt: cs(c(StableDenom, 56))}
 
 	// write and read from store
 	keeper.SetCSDT(ctx, csdt)
@@ -364,7 +410,7 @@ func TestKeeper_GetSetDeleteCSDT(t *testing.T) {
 }
 func TestKeeper_GetSetGDebt(t *testing.T) {
 	// setup keeper, create GDebt
-	mapp, keeper := setUpMockAppWithoutGenesis()
+	mapp, keeper, _, _ := setUpMockAppWithoutGenesis()
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
@@ -380,11 +426,11 @@ func TestKeeper_GetSetGDebt(t *testing.T) {
 
 func TestKeeper_GetSetCollateralState(t *testing.T) {
 	// setup keeper, create CState
-	mapp, keeper := setUpMockAppWithoutGenesis()
+	mapp, keeper, _, _ := setUpMockAppWithoutGenesis()
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
-	collateralState := CollateralState{"uftm", i(15400)}
+	collateralState := CollateralState{Denom: "uftm", TotalDebt: i(15400)}
 
 	// write and read from store
 	keeper.SetCollateralState(ctx, collateralState)

@@ -1,17 +1,19 @@
-package csdt
+package keeper
 
 import (
 	"testing"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/xar-network/xar-network/x/csdt/internal/types"
+	"github.com/xar-network/xar-network/x/oracle"
 )
 
 func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 	// Setup
-	mapp, keeper := setUpMockAppWithoutGenesis()
+	mapp, keeper, _, _ := setUpMockAppWithoutGenesis()
 	genAccs, addrs, _, privKeys := mock.CreateGenAccounts(1, cs(c("uftm", 100)))
 	testAddr := addrs[0]
 	testPrivKey := privKeys[0]
@@ -20,11 +22,18 @@ func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
-	keeper.GetOracle().AddAsset(ctx, "uftm", "uftm test")
+	keeper.GetOracle().SetParams(ctx, oracle.DefaultParams())
+	keeper.GetOracle().AddAsset(ctx, "uftm", "uftm test", oracle.Asset{
+		AssetCode:  "uftm",
+		BaseAsset:  "uftm",
+		QuoteAsset: "csdt",
+		Oracles:    oracle.Oracles{},
+		Active:     true,
+	})
 	_, _ = keeper.GetOracle().SetPrice(
 		ctx, sdk.AccAddress{}, "uftm",
 		sdk.MustNewDecFromStr("1.00"),
-		sdk.NewInt(10))
+		time.Now().Add(time.Hour*1))
 	_ = keeper.GetOracle().SetCurrentPrices(ctx)
 	mapp.EndBlock(abci.RequestEndBlock{})
 	mapp.Commit()

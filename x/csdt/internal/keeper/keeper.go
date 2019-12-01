@@ -79,17 +79,33 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 		}
 	}
 	// Add/Subtract collateral and debt
-	collateralCoins := sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral))
-	debtCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt))
+	var collateralCoins sdk.Coins
+	var debtCoins sdk.Coins
 
-	csdt.CollateralAmount = csdt.CollateralAmount.Add(collateralCoins)
+	if changeInCollateral.IsNegative() {
+		collateralCoins = sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral.Neg()))
+		csdt.CollateralAmount = csdt.CollateralAmount.Sub(collateralCoins)
+	} else {
+		collateralCoins = sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral))
+		csdt.CollateralAmount = csdt.CollateralAmount.Add(collateralCoins)
+	}
+
 	if csdt.CollateralAmount.IsAnyNegative() {
 		return sdk.ErrInternal(" can't withdraw more collateral than exists in CSDT")
 	}
-	csdt.Debt = csdt.Debt.Add(debtCoins)
+
+	if changeInDebt.IsNegative() {
+		debtCoins = sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg()))
+		csdt.Debt = csdt.Debt.Sub(debtCoins)
+	} else {
+		debtCoins = sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt))
+		csdt.Debt = csdt.Debt.Add(debtCoins)
+	}
+
 	if csdt.Debt.IsAnyNegative() {
 		return sdk.ErrInternal("can't pay back more debt than exists in CSDT")
 	}
+
 	// If we have prices denominated in non csdt pairs, this changes the model
 	isUnderCollateralized := csdt.IsUnderCollateralized(
 		k.oracle.GetCurrentPrice(ctx, csdt.CollateralDenom).Price,
@@ -139,24 +155,29 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 		}
 	}
 	if changeInDebt.IsNegative() { //Depositing stable coin from owner to CSDT (decrease supply)
-		_, err = k.bank.SubtractCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg())))
-		if err != nil {
-			panic(err) // this shouldn't happen because coin balance was checked earlier
-		}
-		// update total supply
-		supply := k.sk.GetSupply(ctx)
-		supply = supply.Deflate(sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg())))
-		k.sk.SetSupply(ctx, supply)
+		depositCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg()))
 
-	} else { //Withdrawing stable coins to owner (minting)
-		_, err = k.bank.AddCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt)))
-		if err != nil {
-			panic(err) // this shouldn't happen because coin balance was checked earlier
+		er := k.sk.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, depositCoins)
+		if er != nil {
+			return er
 		}
-		// update total supply
-		supply := k.sk.GetSupply(ctx)
-		supply = supply.Inflate(sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt)))
-		k.sk.SetSupply(ctx, supply)
+
+		er = k.sk.BurnCoins(ctx, types.ModuleName, depositCoins)
+		if er != nil {
+			return er
+		}
+	} else { //Withdrawing stable coins to owner (minting)
+		withdrawCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt))
+
+		er := k.sk.MintCoins(ctx, types.ModuleName, withdrawCoins)
+		if er != nil {
+			return er
+		}
+
+		er = k.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, withdrawCoins)
+		if er != nil {
+			return er
+		}
 
 	}
 	if err != nil {
@@ -543,4 +564,9 @@ func stripGovCoin(coins sdk.Coins) sdk.Coins {
 // GetOracle allows testing
 func (k Keeper) GetOracle() types.OracleKeeper {
 	return k.oracle
+}
+
+// GetOracle allows testing
+func (k Keeper) GetSupply() types.SupplyKeeper {
+	return k.sk
 }

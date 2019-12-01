@@ -93,8 +93,8 @@ func getCsdtsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 }
 
 type ModifyCsdtRequestBody struct {
-	BaseReq rest.BaseReq `json:"base_req"`
-	Csdt     types.CSDT    `json:"csdt"`
+	BaseReq rest.BaseReq                `json:"base_req"`
+	Csdt    types.MsgCreateOrModifyCSDT `json:"csdt"`
 }
 
 func modifyCsdtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
@@ -111,7 +111,7 @@ func modifyCsdtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 
 		// Get the stored CSDT
 		querierParams := types.QueryCsdtsParams{
-			Owner:           requestBody.Csdt.Owner,
+			Owner:           requestBody.Csdt.Sender,
 			CollateralDenom: requestBody.Csdt.CollateralDenom,
 		}
 		querierParamsBz, err := cliCtx.Codec.MarshalJSON(querierParams)
@@ -131,16 +131,12 @@ func modifyCsdtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		// Calculate CSDT updates
-		collateralDelta := requestBody.Csdt.CollateralAmount.Sub(csdts[0].CollateralAmount)
-		debtDelta := requestBody.Csdt.Debt.Sub(csdts[0].Debt)
-
 		// Create and return msg
 		msg := types.NewMsgCreateOrModifyCSDT(
-			requestBody.Csdt.Owner,
+			requestBody.Csdt.Sender,
 			requestBody.Csdt.CollateralDenom,
-			collateralDelta,
-			debtDelta,
+			requestBody.Csdt.CollateralChange,
+			requestBody.Csdt.DebtChange,
 		)
 		utils.WriteGenerateStdTxResponse(w, cliCtx, requestBody.BaseReq, []sdk.Msg{msg})
 	}
