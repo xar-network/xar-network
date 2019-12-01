@@ -12,10 +12,11 @@ import (
 )
 
 type (
-	Keeper = keeper.Keeper
-	CSDT   = types.CSDT
-	CSDTs  = types.CSDTs
-	Params = types.Params
+	Keeper           = keeper.Keeper
+	CSDT             = types.CSDT
+	CSDTs            = types.CSDTs
+	Params           = types.Params
+	CollateralParams = types.CollateralParams
 )
 
 const (
@@ -24,6 +25,7 @@ const (
 	QuerierRoute      = types.QuerierRoute
 	DefaultParamspace = types.DefaultParamspace
 	StoreKey          = types.StoreKey
+	StableDenom       = types.StableDenom
 )
 
 var (

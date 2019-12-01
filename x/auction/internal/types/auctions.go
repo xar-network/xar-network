@@ -84,6 +84,20 @@ func (a BaseAuction) String() string {
 	)
 }
 
+// NewBaseAuction creates a new base auction
+func NewBaseAuction(seller sdk.AccAddress, lot sdk.Coin, initialBid sdk.Coin, EndTime EndTime) BaseAuction {
+	auction := BaseAuction{
+		// no ID
+		Initiator:  seller,
+		Lot:        lot,
+		Bidder:     seller,     // send the proceeds from the first bid back to the seller
+		Bid:        initialBid, // set this to zero most of the time
+		EndTime:    EndTime,
+		MaxEndTime: EndTime,
+	}
+	return auction
+}
+
 // ForwardAuction type for forward auctions
 type ForwardAuction struct {
 	BaseAuction

@@ -80,8 +80,13 @@ func setupTestKeepers() (sdk.Context, keepers) {
 		bank.DefaultCodespace,
 		blacklistedAddrs,
 	)
-	supplyKeeper := supply.NewKeeper(cdc, keySupply, accountKeeper, bankKeeper, nil)
-	oracleKeeper := oracle.NewKeeper(keyPriceFeed, cdc, paramsKeeper.Subspace(oracle.DefaultParamspace).WithKeyTable(oracle.ParamKeyTable()), oracle.DefaultCodespace)
+
+	maccPerms := map[string][]string{
+		csdt.ModuleName: {supply.Minter, supply.Burner},
+	}
+
+	supplyKeeper := supply.NewKeeper(cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
+	oracleKeeper := oracle.NewKeeper(keyPriceFeed, cdc, paramsKeeper.Subspace(oracle.DefaultParamspace), oracle.DefaultCodespace)
 	auctionKeeper := auction.NewKeeper(cdc, bankKeeper, keyAuction, paramsKeeper.Subspace(auction.DefaultParamspace)) // Note: csdt keeper stands in for bank keeper
 	csdtKeeper := csdt.NewKeeper(
 		cdc,
@@ -102,6 +107,7 @@ func setupTestKeepers() (sdk.Context, keepers) {
 
 	// Create context
 	ctx := sdk.NewContext(ms, abci.Header{ChainID: "testchain"}, false, log.NewNopLogger())
+	supplyKeeper.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 
 	return ctx, keepers{
 		paramsKeeper,
@@ -124,6 +130,7 @@ func makeTestCodec() *codec.Codec {
 	types.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
+	supply.RegisterCodec(cdc)
 	return cdc
 }
 
@@ -141,13 +148,13 @@ func defaultParams() types.LiquidatorParams {
 
 func csdtDefaultGenesis() csdt.GenesisState {
 	return csdt.GenesisState{
-		csdt.CsdtParams{
-			GlobalDebtLimit: sdk.NewInt(1000000),
-			CollateralParams: []csdt.CollateralParams{
+		csdt.Params{
+			GlobalDebtLimit: sdk.NewCoins(sdk.NewCoin(csdt.StableDenom, sdk.NewInt(1000000))),
+			CollateralParams: csdt.CollateralParams{
 				{
 					Denom:            "btc",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
-					DebtLimit:        sdk.NewInt(500000),
+					DebtLimit:        sdk.NewCoins(sdk.NewCoin(csdt.StableDenom, sdk.NewInt(500000))),
 				},
 			},
 		},
@@ -156,11 +163,12 @@ func csdtDefaultGenesis() csdt.GenesisState {
 	}
 }
 
-func oracleGenesis() oracle.GenesisState {
+func oracleGenesis(address string) oracle.GenesisState {
 	ap := oracle.Params{
 		Assets: []oracle.Asset{
 			oracle.Asset{AssetCode: "btc", BaseAsset: "btc", QuoteAsset: "usd"},
 		},
+		Nominees: []string{address},
 	}
 	return oracle.GenesisState{
 		Params: ap,

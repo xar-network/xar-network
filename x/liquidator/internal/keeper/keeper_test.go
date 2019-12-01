@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"testing"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/mock"
@@ -18,17 +19,19 @@ func TestKeeper_SeizeAndStartCollateralAuction(t *testing.T) {
 
 	_, addrs := mock.GeneratePrivKeyAddressPairs(1)
 
-	oracle.InitGenesis(ctx, k.oracleKeeper, oracleGenesis())
-	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("8000.00"), i(999999999))
+	oracle.InitGenesis(ctx, k.oracleKeeper, oracleGenesis(addrs[0].String()))
+	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("8000.00"), time.Now().Add(time.Hour*1))
 	k.oracleKeeper.SetCurrentPrices(ctx)
-	csdt.InitGenesis(ctx, k.csdtKeeper, k.oracleKeeper, csdtDefaultGenesis())
+	csdt.InitGenesis(ctx, k.csdtKeeper, csdtDefaultGenesis())
+
 	dp := defaultParams()
 	k.liquidatorKeeper.SetParams(ctx, dp)
 	k.bankKeeper.AddCoins(ctx, addrs[0], cs(c("btc", 100)))
 
-	k.csdtKeeper.ModifyCDP(ctx, addrs[0], "btc", i(3), i(16000))
+	err := k.csdtKeeper.ModifyCSDT(ctx, addrs[0], "btc", i(3), i(16000))
+	require.NoError(t, err)
 
-	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("7999.99"), i(999999999))
+	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("7999.99"), time.Now().Add(time.Hour*1))
 	k.oracleKeeper.SetCurrentPrices(ctx)
 
 	// Run test function
@@ -36,7 +39,7 @@ func TestKeeper_SeizeAndStartCollateralAuction(t *testing.T) {
 
 	// Check CDP
 	require.NoError(t, err)
-	csdt, found := k.csdtKeeper.GetCDP(ctx, addrs[0], "btc")
+	csdt, found := k.csdtKeeper.GetCSDT(ctx, addrs[0], "btc")
 	require.True(t, found)
 	require.Equal(t, csdt.CollateralAmount, i(2)) // original amount - params.CollateralAuctionSize
 	require.Equal(t, csdt.Debt, i(10667))         // original debt scaled by amount of collateral removed
@@ -92,31 +95,31 @@ func TestKeeper_StartDebtAuction(t *testing.T) {
 // 	require.True(t, found)
 // }
 
-func TestKeeper_partialSeizeCDP(t *testing.T) {
+func TestKeeper_partialSeizeCSDT(t *testing.T) {
 	// Setup
 	ctx, k := setupTestKeepers()
 
 	_, addrs := mock.GeneratePrivKeyAddressPairs(1)
 
-	oracle.InitGenesis(ctx, k.oracleKeeper, oracleGenesis())
+	oracle.InitGenesis(ctx, k.oracleKeeper, oracleGenesis(addrs[0].String()))
 
-	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("8000.00"), i(999999999))
+	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("8000.00"), time.Now().Add(time.Hour*1))
 	k.oracleKeeper.SetCurrentPrices(ctx)
 	k.bankKeeper.AddCoins(ctx, addrs[0], cs(c("btc", 100)))
-	csdt.InitGenesis(ctx, k.csdtKeeper, k.oracleKeeper, csdtDefaultGenesis())
+	csdt.InitGenesis(ctx, k.csdtKeeper, csdtDefaultGenesis())
 	k.liquidatorKeeper.SetParams(ctx, defaultParams())
 
-	k.csdtKeeper.ModifyCDP(ctx, addrs[0], "btc", i(3), i(16000))
+	k.csdtKeeper.ModifyCSDT(ctx, addrs[0], "btc", i(3), i(16000))
 
-	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("7999.99"), i(999999999))
+	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("7999.99"), time.Now().Add(time.Hour*1))
 	k.oracleKeeper.SetCurrentPrices(ctx)
 
 	// Run test function
-	err := k.liquidatorKeeper.partialSeizeCDP(ctx, addrs[0], "btc", i(2), i(10000))
+	err := k.liquidatorKeeper.partialSeizeCSDT(ctx, addrs[0], "btc", i(2), i(10000))
 
 	// Check
 	require.NoError(t, err)
-	csdt, found := k.csdtKeeper.GetCDP(ctx, addrs[0], "btc")
+	csdt, found := k.csdtKeeper.GetCSDT(ctx, addrs[0], "btc")
 	require.True(t, found)
 	require.Equal(t, i(1), csdt.CollateralAmount)
 	require.Equal(t, i(6000), csdt.Debt)

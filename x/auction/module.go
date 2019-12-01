@@ -17,6 +17,7 @@ import (
 	"github.com/xar-network/xar-network/x/auction/client/cli"
 	auctioncmd "github.com/xar-network/xar-network/x/auction/client/cli"
 	"github.com/xar-network/xar-network/x/auction/internal/keeper"
+	"github.com/xar-network/xar-network/x/auction/internal/types"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -52,7 +53,7 @@ func (AppModuleBasic) DefaultGenesis() json.RawMessage {
 
 // ValidateGenesis module validate genesis
 func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
-	var data GenesisState
+	var data types.GenesisState
 	err := ModuleCdc.UnmarshalJSON(bz, &data)
 	if err != nil {
 		return err
@@ -129,7 +130,7 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 
 // InitGenesis module init-genesis
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
-	var genesisState GenesisState
+	var genesisState types.GenesisState
 	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
 	InitGenesis(ctx, am.keeper, genesisState)
 	return []abci.ValidatorUpdate{}

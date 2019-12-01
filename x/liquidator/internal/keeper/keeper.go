@@ -59,9 +59,12 @@ func (k Keeper) SeizeAndStartCollateralAuction(ctx sdk.Context, owner sdk.AccAdd
 		return 0, sdk.ErrInternal("collateral denom not found")
 	}
 
-	collateralToSell := sdk.MinInt(csdt.CollateralAmount, collateralParams.AuctionSize)
+	collateralToSell := sdk.MinInt(csdt.CollateralAmount.AmountOf(csdt.CollateralDenom), collateralParams.AuctionSize)
 	// Calculate the corresponding maximum amount of stable coin to raise TODO test maths
-	stableToRaise := sdk.NewDecFromInt(collateralToSell).Quo(sdk.NewDecFromInt(csdt.CollateralAmount)).Mul(sdk.NewDecFromInt(csdt.Debt)).RoundInt()
+	stableToRaise := sdk.NewDecFromInt(collateralToSell).
+		Quo(sdk.NewDecFromInt(csdt.CollateralAmount.AmountOf(csdt.CollateralDenom))).
+		Mul(sdk.NewDecFromInt(csdt.Debt.AmountOf(k.csdtKeeper.GetStableDenom()))).
+		RoundInt()
 
 	// Seize the collateral and debt from the CSDT
 	err := k.partialSeizeCSDT(ctx, owner, collateralDenom, collateralToSell, stableToRaise)

@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
+	"github.com/xar-network/xar-network/x/auction/internal/types"
 )
 
 // TestApp contans several basic integration tests of creating an auction, placing a bid, and the auction closing.
@@ -43,7 +44,7 @@ func TestApp_ForwardAuction(t *testing.T) {
 
 	// Deliver empty blocks until the auction should be closed (bid placed on block 3)
 	// TODO is there a way of skipping ahead? This takes a while and prints a lot.
-	for h := mapp.LastBlockHeight() + 1; h < int64(BidDuration)+4; h++ {
+	for h := mapp.LastBlockHeight() + 1; h < int64(types.DefaultMaxBidDuration)+4; h++ {
 		mapp.BeginBlock(abci.RequestBeginBlock{Header: abci.Header{Height: h}})
 		mapp.EndBlock(abci.RequestEndBlock{Height: h})
 		mapp.Commit()
@@ -82,7 +83,7 @@ func TestApp_ReverseAuction(t *testing.T) {
 	mock.CheckBalance(t, mapp, buyer, sdk.NewCoins(sdk.NewInt64Coin("token1", 120), sdk.NewInt64Coin("token2", 90)))
 
 	// Deliver empty blocks until the auction should be closed (bid placed on block 3)
-	for h := mapp.LastBlockHeight() + 1; h < int64(BidDuration)+4; h++ {
+	for h := mapp.LastBlockHeight() + 1; h < int64(types.DefaultMaxBidDuration)+4; h++ {
 		mapp.BeginBlock(abci.RequestBeginBlock{Header: abci.Header{Height: h}})
 		mapp.EndBlock(abci.RequestEndBlock{Height: h})
 		mapp.Commit()
@@ -124,7 +125,7 @@ func TestApp_ForwardReverseAuction(t *testing.T) {
 	mock.CheckBalance(t, mapp, recipient, sdk.NewCoins(sdk.NewInt64Coin("token1", 105), sdk.NewInt64Coin("token2", 100)))
 
 	// Deliver empty blocks until the auction should be closed (bid placed on block 3)
-	for h := mapp.LastBlockHeight() + 1; h < int64(BidDuration)+4; h++ {
+	for h := mapp.LastBlockHeight() + 1; h < int64(types.DefaultMaxBidDuration)+4; h++ {
 		mapp.BeginBlock(abci.RequestBeginBlock{Header: abci.Header{Height: h}})
 		mapp.EndBlock(abci.RequestEndBlock{Height: h})
 		mapp.Commit()
@@ -143,8 +144,9 @@ func setUpMockApp() (*mock.App, Keeper, []sdk.AccAddress, []crypto.PrivKey) {
 
 	// Create keepers
 	keyAuction := sdk.NewKVStoreKey("auction")
-	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace)
-	auctionKeeper := NewKeeper(mapp.Cdc, bankKeeper, keyAuction)
+	blacklistedAddrs := make(map[string]bool)
+	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, blacklistedAddrs)
+	auctionKeeper := NewKeeper(mapp.Cdc, bankKeeper, keyAuction, mapp.ParamsKeeper.Subspace(DefaultParamspace))
 
 	// Register routes
 	mapp.Router().AddRoute("auction", NewHandler(auctionKeeper))

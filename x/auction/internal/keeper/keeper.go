@@ -11,7 +11,7 @@ import (
 )
 
 type Keeper struct {
-	bankKeeper    bankKeeper
+	bankKeeper    types.BankKeeper
 	storeKey      sdk.StoreKey
 	cdc           *codec.Codec
 	paramSubspace subspace.Subspace
@@ -19,7 +19,7 @@ type Keeper struct {
 }
 
 // NewKeeper returns a new auction keeper.
-func NewKeeper(cdc *codec.Codec, bankKeeper bankKeeper, storeKey sdk.StoreKey, paramstore subspace.Subspace) Keeper {
+func NewKeeper(cdc *codec.Codec, bankKeeper types.BankKeeper, storeKey sdk.StoreKey, paramstore subspace.Subspace) Keeper {
 	return Keeper{
 		bankKeeper:    bankKeeper,
 		storeKey:      storeKey,
