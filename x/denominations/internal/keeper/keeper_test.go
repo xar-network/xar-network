@@ -1,4 +1,4 @@
-package keeper
+package keeper_test
 
 import (
 	"testing"
@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/xar-network/xar-network/x/denominations/internal/keeper"
 	"github.com/xar-network/xar-network/x/denominations/internal/types"
 
 	cstore "github.com/cosmos/cosmos-sdk/store"
@@ -65,7 +66,7 @@ func TestKeeperCoverage(t *testing.T) {
 	acc = ak.NewAccountWithAddress(ctx, addrerr)
 	ak.SetAccount(ctx, acc)
 
-	dk := NewKeeper(keyDenom, cdc, ak, sk, pk.Subspace(types.DefaultParamspace), types.DefaultCodespace)
+	dk := keeper.NewKeeper(keyDenom, cdc, ak, sk, pk.Subspace(types.DefaultParamspace), types.DefaultCodespace)
 	params := types.NewParams([]string{"cosmos1dehk66twv4js5dq8xr"})
 	dk.SetParams(ctx, params)
 

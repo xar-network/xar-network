@@ -1,4 +1,4 @@
-package csdt
+package csdt_test
 
 import (
 	"testing"
@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/xar-network/xar-network/x/csdt"
 	"github.com/xar-network/xar-network/x/csdt/internal/types"
 	"github.com/xar-network/xar-network/x/oracle"
 )
@@ -32,7 +33,7 @@ func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 		oracle.Asset{
 			AssetCode:  "uftm",
 			BaseAsset:  "uftm",
-			QuoteAsset: StableDenom,
+			QuoteAsset: csdt.StableDenom,
 			Oracles: oracle.Oracles{
 				oracle.Oracle{
 					Address: addrs[0],
@@ -76,7 +77,7 @@ func d(str string) sdk.Dec                  { return sdk.MustNewDecFromStr(str) 
 func c(denom string, amount int64) sdk.Coin { return sdk.NewInt64Coin(denom, amount) }
 func cs(coins ...sdk.Coin) sdk.Coins        { return sdk.NewCoins(coins...) }
 
-func setUpMockAppWithoutGenesis() (*mock.App, Keeper) {
+func setUpMockAppWithoutGenesis() (*mock.App, csdt.Keeper) {
 	// Create uninitialized mock app
 	mapp := mock.NewApp()
 
@@ -96,10 +97,10 @@ func setUpMockAppWithoutGenesis() (*mock.App, Keeper) {
 	oracleKeeper := oracle.NewKeeper(keyOracle, mapp.Cdc, mapp.ParamsKeeper.Subspace(oracle.DefaultParamspace), oracle.DefaultCodespace)
 	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, map[string]bool{})
 	supplyKeeper := supply.NewKeeper(mapp.Cdc, keySupply, mapp.AccountKeeper, bankKeeper, maccPerms)
-	csdtKeeper := NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace(types.DefaultParamspace), oracleKeeper, bankKeeper, supplyKeeper)
+	csdtKeeper := csdt.NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace(types.DefaultParamspace), oracleKeeper, bankKeeper, supplyKeeper)
 
 	// Register routes
-	mapp.Router().AddRoute("csdt", NewHandler(csdtKeeper))
+	mapp.Router().AddRoute("csdt", csdt.NewHandler(csdtKeeper))
 	// Mount and load the stores
 	err := mapp.CompleteSetup(keyOracle, keyCSDT, keySupply)
 	if err != nil {

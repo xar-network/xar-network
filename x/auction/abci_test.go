@@ -1,4 +1,4 @@
-package auction
+package auction_test
 
 import (
 	"testing"
@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/xar-network/xar-network/x/auction"
 	"github.com/xar-network/xar-network/x/auction/internal/types"
 )
 
@@ -21,7 +22,7 @@ func TestKeeper_EndBlocker(t *testing.T) {
 
 	// run the endblocker, simulating a block height after auction expiry
 	expiryBlock := ctx.BlockHeight() + int64(types.DefaultMaxAuctionDuration)
-	EndBlocker(ctx.WithBlockHeight(expiryBlock), keeper)
+	auction.EndBlocker(ctx.WithBlockHeight(expiryBlock), keeper)
 
 	// check auction has been closed
 	_, found := keeper.GetAuction(ctx, 0)

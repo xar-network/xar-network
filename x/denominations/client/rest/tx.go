@@ -17,9 +17,11 @@ import (
 type issueTokenReq struct {
 	BaseReq       rest.BaseReq `json:"base_req"`
 	SourceAddress string       `json:"source_address"`
+	Owner         string       `json:"owner"`
 	Name          string       `json:"name"`
 	Symbol        string       `json:"symbol"`
 	TotalSupply   int64        `json:"total_supply"`
+	MaxSupply     int64        `json:"max_supply"`
 	Mintable      bool         `json:"mintable"`
 }
 
@@ -43,10 +45,16 @@ func issueTokenHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
+		owner, err := sdk.AccAddressFromBech32(req.Owner)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
 		symbol := strings.ToLower(rand.GenerateNewSymbol(req.Symbol))
 
 		// create the message
-		msg := types.NewMsgIssueToken(addr, req.Name, symbol, req.Symbol, req.TotalSupply, req.Mintable)
+		msg := types.NewMsgIssueToken(addr, owner, req.Name, symbol, req.Symbol, sdk.NewInt(req.TotalSupply), sdk.NewInt(req.MaxSupply), req.Mintable)
 		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -84,7 +92,7 @@ func mintHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// create the message
-		msg := types.NewMsgMintCoins(req.Amount, req.Symbol, addr)
+		msg := types.NewMsgMintCoins(sdk.NewInt(req.Amount), req.Symbol, addr)
 		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -122,7 +130,7 @@ func burnHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// create the message
-		msg := types.NewMsgBurnCoins(req.Amount, req.Symbol, addr)
+		msg := types.NewMsgBurnCoins(sdk.NewInt(req.Amount), req.Symbol, addr)
 		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -138,6 +146,7 @@ type freezeReq struct {
 	Amount  int64        `json:"amount"`
 	Symbol  string       `json:"symbol"`
 	Owner   string       `json:"owner"`
+	Address string       `json:"address"`
 }
 
 func freezeHandler(cliCtx context.CLIContext) http.HandlerFunc {
@@ -153,14 +162,20 @@ func freezeHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		addr, err := sdk.AccAddressFromBech32(req.Owner)
+		owner, err := sdk.AccAddressFromBech32(req.Owner)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		addr, err := sdk.AccAddressFromBech32(req.Address)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		// create the message
-		msg := types.NewMsgFreezeCoins(req.Amount, req.Symbol, addr)
+		msg := types.NewMsgFreezeCoins(sdk.NewInt(req.Amount), req.Symbol, owner, addr)
 		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -176,6 +191,7 @@ type unfreezeReq struct {
 	Amount  int64        `json:"amount"`
 	Symbol  string       `json:"symbol"`
 	Owner   string       `json:"owner"`
+	Address string       `json:"address"`
 }
 
 func unfreezeHandler(cliCtx context.CLIContext) http.HandlerFunc {
@@ -191,14 +207,20 @@ func unfreezeHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		addr, err := sdk.AccAddressFromBech32(req.Owner)
+		owner, err := sdk.AccAddressFromBech32(req.Owner)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		addr, err := sdk.AccAddressFromBech32(req.Address)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		// create the message
-		msg := types.NewMsgUnfreezeCoins(req.Amount, req.Symbol, addr)
+		msg := types.NewMsgUnfreezeCoins(sdk.NewInt(req.Amount), req.Symbol, owner, addr)
 		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

@@ -340,5 +340,5 @@ func handleMsgIssue(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssue) sdk.Re
 		),
 	)
 
-	return sdk.Result{Events: ctx.EventManager().Events()}
+	return sdk.Result{Data: []byte(coinIssueInfo.IssueId), Events: ctx.EventManager().Events()}
 }

@@ -10,9 +10,9 @@ import (
 // Defaults for auction params
 const (
 	// DefaultMaxAuctionDuration max length of auction, roughly 2 days in blocks
-	DefaultMaxAuctionDuration EndTime = 2 * 24 * 3600 / 1
+	DefaultMaxAuctionDuration EndTime = 2 * 24 * 1 // 3600 / 1
 	// DefaultBidDuration how long an auction gets extended when someone bids, roughly 3 hours in blocks
-	DefaultMaxBidDuration EndTime = 3 * 3600 / 1
+	DefaultMaxBidDuration EndTime = 3 * 1 //3600 / 1
 	// DefaultStartingAuctionID what the id of the first auction will be
 	DefaultStartingAuctionID ID = ID(0)
 )

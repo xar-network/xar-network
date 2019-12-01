@@ -8,6 +8,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/btcsuite/btcd v0.0.0-20190115013929-ed77733ec07d
 	github.com/cosmos/cosmos-sdk v0.34.4-0.20191114141721-d4c831e63ad3
+	github.com/cosmos/modules/incubator/nft v0.0.0-20191031141754-76e462805729
 	github.com/go-kit/kit v0.9.0
 	github.com/gobuffalo/packr v1.30.1
 	github.com/gorilla/mux v1.7.3

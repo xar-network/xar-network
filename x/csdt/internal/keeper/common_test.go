@@ -1,13 +1,11 @@
-package csdt
+package keeper_test
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	"github.com/cosmos/cosmos-sdk/x/supply"
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/xar-network/xar-network/x/csdt"
+	"github.com/tendermint/tendermint/crypto"
 	"github.com/xar-network/xar-network/x/csdt/internal/keeper"
 	"github.com/xar-network/xar-network/x/csdt/internal/types"
 	"github.com/xar-network/xar-network/x/oracle"
@@ -22,47 +20,39 @@ import (
 //  - DeliverTx delivers a tx
 //  - EndBlock signals the end of a block
 //  - Commit ?
-func setUpMockAppWithoutGenesis() (*mock.App, keeper.Keeper) {
+func setUpMockAppWithoutGenesis() (*mock.App, keeper.Keeper, []sdk.AccAddress, []crypto.PrivKey) {
 	// Create uninitialized mock app
 	mapp := mock.NewApp()
 
 	// Register codecs
 	types.RegisterCodec(mapp.Cdc)
+	supply.RegisterCodec(mapp.Cdc)
 
 	// Create keepers
-	keyCSDT := sdk.NewKVStoreKey("csdt")
-	keyPriceFeed := sdk.NewKVStoreKey(oracle.StoreKey)
-	keySupply := sdk.NewKVStoreKey("supply")
-	keyAccount := sdk.NewKVStoreKey("account")
-	oracleKeeper := oracle.NewKeeper(keyPriceFeed, mapp.Cdc, oracle.DefaultCodespace)
-	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, map[string]bool{})
-	accountKeeper := auth.NewAccountKeeper(mapp.Cdc, keyAccount, mapp.ParamsKeeper.Subspace("accountSubspace"), auth.ProtoBaseAccount)
+	keyCSDT := sdk.NewKVStoreKey(types.StoreKey)
+	keyOracle := sdk.NewKVStoreKey(oracle.StoreKey)
+	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 
 	maccPerms := map[string][]string{
 		types.ModuleName: {supply.Minter, supply.Burner},
 	}
 
-	supplyKeeper := supply.NewKeeper(mapp.Cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
-	csdtKeeper := keeper.NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace("csdtSubspace"), oracleKeeper, bankKeeper, supplyKeeper)
-
-	// Register routes
-	mapp.Router().AddRoute("csdt", csdt.NewHandler(csdtKeeper))
-
-	mapp.SetInitChainer(
-		func(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-			res := mapp.InitChainer(ctx, req)
-			csdt.InitGenesis(ctx, csdtKeeper, csdt.DefaultGenesisState()) // Create a default genesis state, then set the keeper store to it
-			return res
-		},
-	)
+	oracleKeeper := oracle.NewKeeper(keyOracle, mapp.Cdc, mapp.ParamsKeeper.Subspace(oracle.DefaultParamspace), oracle.DefaultCodespace)
+	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, map[string]bool{})
+	supplyKeeper := supply.NewKeeper(mapp.Cdc, keySupply, mapp.AccountKeeper, bankKeeper, maccPerms)
+	csdtKeeper := keeper.NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace(types.DefaultParamspace), oracleKeeper, bankKeeper, supplyKeeper)
 
 	// Mount and load the stores
-	err := mapp.CompleteSetup(keyPriceFeed, keyCSDT)
+	err := mapp.CompleteSetup(keyOracle, keyCSDT, keySupply)
 	if err != nil {
 		panic("mock app setup failed")
 	}
 
-	return mapp, csdtKeeper
+	// Create a bunch (ie 10) of pre-funded accounts to use for tests
+	genAccs, addrs, _, privKeys := mock.CreateGenAccounts(10, sdk.NewCoins(sdk.NewInt64Coin("token1", 100), sdk.NewInt64Coin("token2", 100)))
+	mock.SetGenesis(mapp, genAccs)
+
+	return mapp, csdtKeeper, addrs, privKeys
 }
 
 // Avoid cluttering test cases with long function name

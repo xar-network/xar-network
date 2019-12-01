@@ -1,11 +1,12 @@
-package types
+package types_test
 
 import (
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/stretchr/testify/require"
+	"github.com/xar-network/xar-network/x/denominations/internal/types"
 )
 
 func TestFreeze(t *testing.T) {
@@ -14,7 +15,7 @@ func TestFreeze(t *testing.T) {
 	acc1 := auth.NewBaseAccount(addr1, nil, pub1, 1, 2)
 
 	// Not enough starting coins to move
-	account1 := NewFreezeAccount(acc1, nil)
+	account1 := types.NewFreezeAccount(acc1, nil)
 	err := account1.FreezeCoins(NewTestCoins("abc", 1))
 	require.NotNil(t, err)
 	err = account1.FreezeCoins(NewTestCoins("abc", 0))
@@ -27,7 +28,7 @@ func TestFreeze(t *testing.T) {
 
 	acc2 := auth.NewBaseAccount(addr1, coins, pub1, 1, 2)
 
-	account2 := NewFreezeAccount(acc2, frozenCoins)
+	account2 := types.NewFreezeAccount(acc2, frozenCoins)
 
 	err = account2.FreezeCoins(NewTestCoins(coinSymbol, 0))
 	require.NotNil(t, err)
@@ -42,6 +43,6 @@ func TestFreeze(t *testing.T) {
 	// Can freeze
 	err = account2.FreezeCoins(NewTestCoins(coinSymbol, 1))
 	require.Nil(t, err)
-	require.Equal(t, true, types.NewInt(99).Equal(account2.Account.GetCoins().AmountOf(coinSymbol)))
-	require.Equal(t, true, types.NewInt(1).Equal(account2.FrozenCoins.AmountOf(coinSymbol)))
+	require.Equal(t, true, sdk.NewInt(99).Equal(account2.Account.GetCoins().AmountOf(coinSymbol)))
+	require.Equal(t, true, sdk.NewInt(1).Equal(account2.FrozenCoins.AmountOf(coinSymbol)))
 }

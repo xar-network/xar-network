@@ -1,17 +1,19 @@
-package keeper
+package keeper_test
 
 import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+	amino "github.com/tendermint/go-amino"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/xar-network/xar-network/x/auction/internal/keeper"
 	"github.com/xar-network/xar-network/x/auction/internal/types"
 )
 
 func TestKeeper_SetGetDeleteAuction(t *testing.T) {
-	// setup keeper, create auction
-	mapp, keeper, addresses, _ := setUpMockApp()
+	// setup k, create auction
+	mapp, k, addresses, _ := setUpMockApp()
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header}) // Without this it panics about "invalid memory address or nil pointer dereference"
 	ctx := mapp.BaseApp.NewContext(false, header)
@@ -20,8 +22,8 @@ func TestKeeper_SetGetDeleteAuction(t *testing.T) {
 	auction.SetID(id)
 
 	// write and read from store
-	keeper.SetAuction(ctx, &auction)
-	readAuction, found := keeper.GetAuction(ctx, id)
+	k.SetAuction(ctx, &auction)
+	readAuction, found := k.GetAuction(ctx, id)
 
 	// check before and after match
 	require.True(t, found)
@@ -29,27 +31,27 @@ func TestKeeper_SetGetDeleteAuction(t *testing.T) {
 	t.Log(auction)
 	t.Log(readAuction.GetID())
 	// check auction is in queue
-	iter := keeper.GetQueueIterator(ctx, 100000)
-	require.Equal(t, 1, len(convertIteratorToSlice(keeper, iter)))
+	iter := k.GetQueueIterator(ctx, 100000)
+	require.Equal(t, 1, len(convertIteratorToSlice(mapp.Cdc, k, iter)))
 	iter.Close()
 
 	// delete auction
-	keeper.deleteAuction(ctx, id)
+	k.DeleteAuction(ctx, id)
 
 	// check auction does not exist
-	_, found = keeper.GetAuction(ctx, id)
+	_, found = k.GetAuction(ctx, id)
 	require.False(t, found)
 	// check auction not in queue
-	iter = keeper.GetQueueIterator(ctx, 100000)
-	require.Equal(t, 0, len(convertIteratorToSlice(keeper, iter)))
+	iter = k.GetQueueIterator(ctx, 100000)
+	require.Equal(t, 0, len(convertIteratorToSlice(mapp.Cdc, k, iter)))
 	iter.Close()
 
 }
 
 // TODO convert to table driven test with more test cases
 func TestKeeper_ExpiredAuctionQueue(t *testing.T) {
-	// setup keeper
-	mapp, keeper, _, _ := setUpMockApp()
+	// setup k
+	mapp, k, _, _ := setUpMockApp()
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
@@ -62,26 +64,26 @@ func TestKeeper_ExpiredAuctionQueue(t *testing.T) {
 
 	// write and read queue
 	for _, v := range q {
-		keeper.insertIntoQueue(ctx, v.endTime, v.auctionID)
+		k.InsertIntoQueue(ctx, v.endTime, v.auctionID)
 	}
-	iter := keeper.GetQueueIterator(ctx, 1000)
+	iter := k.GetQueueIterator(ctx, 1000)
 
 	// check before and after match
 	i := 0
 	for ; iter.Valid(); iter.Next() {
 		var auctionID types.ID
-		keeper.cdc.MustUnmarshalBinaryLengthPrefixed(iter.Value(), &auctionID)
+		mapp.Cdc.MustUnmarshalBinaryLengthPrefixed(iter.Value(), &auctionID)
 		require.Equal(t, q[i].auctionID, auctionID)
 		i++
 	}
 
 }
 
-func convertIteratorToSlice(keeper Keeper, iterator sdk.Iterator) []types.ID {
+func convertIteratorToSlice(cdc *amino.Codec, k keeper.Keeper, iterator sdk.Iterator) []types.ID {
 	var queue []types.ID
 	for ; iterator.Valid(); iterator.Next() {
 		var auctionID types.ID
-		keeper.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &auctionID)
+		cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &auctionID)
 		queue = append(queue, auctionID)
 	}
 	return queue

@@ -24,6 +24,7 @@ import (
 	"github.com/xar-network/xar-network/x/issue/client/cli"
 	"github.com/xar-network/xar-network/x/issue/client/rest"
 	"github.com/xar-network/xar-network/x/issue/internal/keeper"
+	"github.com/xar-network/xar-network/x/issue/internal/types"
 )
 
 var (
@@ -98,11 +99,11 @@ type AppModule struct {
 	AppModuleSimulation
 
 	keeper        Keeper
-	accountKeeper keeper.AccountKeeper
+	accountKeeper types.AccountKeeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper Keeper, accountKeeper keeper.AccountKeeper) AppModule {
+func NewAppModule(keeper Keeper, accountKeeper types.AccountKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic:      AppModuleBasic{},
 		AppModuleSimulation: AppModuleSimulation{},

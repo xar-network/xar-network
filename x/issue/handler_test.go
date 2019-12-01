@@ -1,12 +1,12 @@
-package tests
+package issue_test
 
 import (
 	"testing"
 
-	"github.com/xar-network/xar-network/x/issue"
-	"github.com/xar-network/xar-network/x/issue/msgs"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/xar-network/xar-network/x/issue"
+	"github.com/xar-network/xar-network/x/issue/internal/types"
 )
 
 func TestHandlerNewMsgIssue(t *testing.T) {
@@ -18,10 +18,10 @@ func TestHandlerNewMsgIssue(t *testing.T) {
 
 	handler := issue.NewHandler(keeper)
 
-	res := handler(ctx, msgs.NewMsgIssue(SenderAccAddr, &IssueParams))
+	res := handler(ctx, types.NewMsgIssue(SenderAccAddr, &IssueParams))
 	require.True(t, res.IsOK())
 
 	var issueID string
-	keeper.Getcdc().MustUnmarshalBinaryLengthPrefixed(res.Data, &issueID)
+	issueID = string(res.Data)
 	require.NotNil(t, issueID)
 }

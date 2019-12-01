@@ -11,7 +11,7 @@ import (
 )
 
 type Keeper struct {
-	bankKeeper    types.BankKeeper
+	sk            types.SupplyKeeper
 	storeKey      sdk.StoreKey
 	cdc           *codec.Codec
 	paramSubspace subspace.Subspace
@@ -19,9 +19,9 @@ type Keeper struct {
 }
 
 // NewKeeper returns a new auction keeper.
-func NewKeeper(cdc *codec.Codec, bankKeeper types.BankKeeper, storeKey sdk.StoreKey, paramstore subspace.Subspace) Keeper {
+func NewKeeper(cdc *codec.Codec, supplyKeeper types.SupplyKeeper, storeKey sdk.StoreKey, paramstore subspace.Subspace) Keeper {
 	return Keeper{
-		bankKeeper:    bankKeeper,
+		sk:            supplyKeeper,
 		storeKey:      storeKey,
 		cdc:           cdc,
 		paramSubspace: paramstore.WithKeyTable(types.ParamKeyTable()),
@@ -77,7 +77,7 @@ func (k Keeper) startAuction(ctx sdk.Context, auction types.Auction, initiatorOu
 	auction.SetID(newAuctionID)
 
 	// subtract coins from initiator
-	_, err = k.bankKeeper.SubtractCoins(ctx, initiatorOutput.Address, sdk.NewCoins(initiatorOutput.Coin))
+	err = k.sk.SendCoinsFromAccountToModule(ctx, initiatorOutput.Address, types.ModuleName, sdk.NewCoins(initiatorOutput.Coin))
 	if err != nil {
 		return 0, err
 	}
@@ -105,14 +105,14 @@ func (k Keeper) PlaceBid(ctx sdk.Context, auctionID types.ID, bidder sdk.AccAddr
 	// TODO this will fail if someone tries to update their bid without the full bid amount sitting in their account
 	// sub outputs
 	for _, output := range coinOutputs {
-		_, err = k.bankKeeper.SubtractCoins(ctx, output.Address, sdk.NewCoins(output.Coin)) // TODO handle errors properly here. All coin transfers should be atomic. InputOutputCoins may work
+		err = k.sk.SendCoinsFromAccountToModule(ctx, output.Address, types.ModuleName, sdk.NewCoins(output.Coin))
 		if err != nil {
 			panic(err)
 		}
 	}
 	// add inputs
 	for _, input := range coinInputs {
-		_, err = k.bankKeeper.AddCoins(ctx, input.Address, sdk.NewCoins(input.Coin)) // TODO errors
+		err = k.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, input.Address, sdk.NewCoins(input.Coin))
 		if err != nil {
 			panic(err)
 		}
@@ -139,13 +139,13 @@ func (k Keeper) CloseAuction(ctx sdk.Context, auctionID types.ID) sdk.Error {
 	}
 	// payout to the last bidder
 	coinInput := auction.GetPayout()
-	_, err := k.bankKeeper.AddCoins(ctx, coinInput.Address, sdk.NewCoins(coinInput.Coin))
+	err := k.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, coinInput.Address, sdk.NewCoins(coinInput.Coin))
 	if err != nil {
 		return err
 	}
 
 	// delete auction from store (and queue)
-	k.deleteAuction(ctx, auctionID)
+	k.DeleteAuction(ctx, auctionID)
 
 	return nil
 }
@@ -204,7 +204,7 @@ func (k Keeper) SetAuction(ctx sdk.Context, auction types.Auction) {
 	store.Set(k.getAuctionKey(auction.GetID()), bz)
 
 	// add to the queue
-	k.insertIntoQueue(ctx, auction.GetEndTime(), auction.GetID())
+	k.InsertIntoQueue(ctx, auction.GetEndTime(), auction.GetID())
 }
 
 // getAuction gets an auction from the store by auctionID
@@ -221,8 +221,8 @@ func (k Keeper) GetAuction(ctx sdk.Context, auctionID types.ID) (types.Auction, 
 	return auction, true
 }
 
-// deleteAuction removes an auction from the store without any validation
-func (k Keeper) deleteAuction(ctx sdk.Context, auctionID types.ID) {
+// DeleteAuction removes an auction from the store without any validation
+func (k Keeper) DeleteAuction(ctx sdk.Context, auctionID types.ID) {
 	// remove from queue
 	auction, found := k.GetAuction(ctx, auctionID)
 	if found {
@@ -245,7 +245,7 @@ func (k Keeper) getAuctionKey(auctionID types.ID) []byte {
 }
 
 // Inserts a AuctionID into the queue at endTime
-func (k Keeper) insertIntoQueue(ctx sdk.Context, endTime types.EndTime, auctionID types.ID) {
+func (k Keeper) InsertIntoQueue(ctx sdk.Context, endTime types.EndTime, auctionID types.ID) {
 	// get the store
 	store := ctx.KVStore(k.storeKey)
 	// marshal thing to be inserted

@@ -73,12 +73,16 @@ type BaseKeeper struct {
 
 	// Reserved codespace
 	codespace sdk.CodespaceType
-	ik        InterestKeeper
+	ik        types.InterestKeeper
 }
 
 //New issue keeper Instance
-func NewKeeper(key sdk.StoreKey,
-	paramSpace params.Subspace, ck BankKeeper, codespace sdk.CodespaceType) BaseKeeper {
+func NewKeeper(
+	key sdk.StoreKey,
+	paramSpace params.Subspace,
+	ck BankKeeper,
+	codespace sdk.CodespaceType,
+	) BaseKeeper {
 	return BaseKeeper{
 		storeKey:   key,
 		paramSpace: paramSpace.WithKeyTable(types.ParamKeyTable()),

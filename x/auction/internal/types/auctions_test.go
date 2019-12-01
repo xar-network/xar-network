@@ -1,10 +1,11 @@
-package types
+package types_test
 
 import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+	"github.com/xar-network/xar-network/x/auction/internal/types"
 )
 
 // TODO can this be less verbose? Should PlaceBid() be split into smaller functions?
@@ -13,29 +14,29 @@ func TestForwardAuction_PlaceBid(t *testing.T) {
 	seller := sdk.AccAddress([]byte("a_seller"))
 	buyer1 := sdk.AccAddress([]byte("buyer1"))
 	buyer2 := sdk.AccAddress([]byte("buyer2"))
-	end := EndTime(10810)
-	now := EndTime(10)
+	end := types.EndTime(10810)
+	now := types.EndTime(10)
 
 	type args struct {
-		currentBlockHeight EndTime
+		currentBlockHeight types.EndTime
 		bidder             sdk.AccAddress
 		lot                sdk.Coin
 		bid                sdk.Coin
 	}
 	tests := []struct {
 		name            string
-		auction         ForwardAuction
+		auction         types.ForwardAuction
 		args            args
-		expectedOutputs []BankOutput
-		expectedInputs  []BankInput
-		expectedEndTime EndTime
+		expectedOutputs []types.BankOutput
+		expectedInputs  []types.BankInput
+		expectedEndTime types.EndTime
 		expectedBidder  sdk.AccAddress
 		expectedBid     sdk.Coin
 		expectpass      bool
 	}{
 		{
 			"normal",
-			ForwardAuction{BaseAuction{
+			types.ForwardAuction{types.BaseAuction{
 				Initiator:  seller,
 				Lot:        c("usdx", 100),
 				Bidder:     buyer1,
@@ -44,16 +45,16 @@ func TestForwardAuction_PlaceBid(t *testing.T) {
 				MaxEndTime: end,
 			}},
 			args{now, buyer2, c("usdx", 100), c("ftm", 10)},
-			[]BankOutput{{buyer2, c("ftm", 10)}},
-			[]BankInput{{buyer1, c("ftm", 6)}, {seller, c("ftm", 4)}},
-			now + DefaultMaxBidDuration,
+			[]types.BankOutput{{buyer2, c("ftm", 10)}},
+			[]types.BankInput{{buyer1, c("ftm", 6)}, {seller, c("ftm", 4)}},
+			now + types.DefaultMaxBidDuration,
 			buyer2,
 			c("ftm", 10),
 			true,
 		},
 		{
 			"lowBid",
-			ForwardAuction{BaseAuction{
+			types.ForwardAuction{types.BaseAuction{
 				Initiator:  seller,
 				Lot:        c("usdx", 100),
 				Bidder:     buyer1,
@@ -62,8 +63,8 @@ func TestForwardAuction_PlaceBid(t *testing.T) {
 				MaxEndTime: end,
 			}},
 			args{now, buyer2, c("usdx", 100), c("ftm", 5)},
-			[]BankOutput{},
-			[]BankInput{},
+			[]types.BankOutput{},
+			[]types.BankInput{},
 			end,
 			buyer1,
 			c("ftm", 6),
@@ -71,7 +72,7 @@ func TestForwardAuction_PlaceBid(t *testing.T) {
 		},
 		{
 			"equalBid",
-			ForwardAuction{BaseAuction{
+			types.ForwardAuction{types.BaseAuction{
 				Initiator:  seller,
 				Lot:        c("usdx", 100),
 				Bidder:     buyer1,
@@ -80,8 +81,8 @@ func TestForwardAuction_PlaceBid(t *testing.T) {
 				MaxEndTime: end,
 			}},
 			args{now, buyer2, c("usdx", 100), c("ftm", 6)},
-			[]BankOutput{},
-			[]BankInput{},
+			[]types.BankOutput{},
+			[]types.BankInput{},
 			end,
 			buyer1,
 			c("ftm", 6),
@@ -89,7 +90,7 @@ func TestForwardAuction_PlaceBid(t *testing.T) {
 		},
 		{
 			"timeout",
-			ForwardAuction{BaseAuction{
+			types.ForwardAuction{types.BaseAuction{
 				Initiator:  seller,
 				Lot:        c("usdx", 100),
 				Bidder:     buyer1,
@@ -98,8 +99,8 @@ func TestForwardAuction_PlaceBid(t *testing.T) {
 				MaxEndTime: end,
 			}},
 			args{end + 1, buyer2, c("usdx", 100), c("ftm", 10)},
-			[]BankOutput{},
-			[]BankInput{},
+			[]types.BankOutput{},
+			[]types.BankInput{},
 			end,
 			buyer1,
 			c("ftm", 6),
@@ -107,7 +108,7 @@ func TestForwardAuction_PlaceBid(t *testing.T) {
 		},
 		{
 			"hitMaxEndTime",
-			ForwardAuction{BaseAuction{
+			types.ForwardAuction{types.BaseAuction{
 				Initiator:  seller,
 				Lot:        c("usdx", 100),
 				Bidder:     buyer1,
@@ -116,8 +117,8 @@ func TestForwardAuction_PlaceBid(t *testing.T) {
 				MaxEndTime: end,
 			}},
 			args{end - 1, buyer2, c("usdx", 100), c("ftm", 10)},
-			[]BankOutput{{buyer2, c("ftm", 10)}},
-			[]BankInput{{buyer1, c("ftm", 6)}, {seller, c("ftm", 4)}},
+			[]types.BankOutput{{buyer2, c("ftm", 10)}},
+			[]types.BankInput{{buyer1, c("ftm", 6)}, {seller, c("ftm", 4)}},
 			end, // end time should be capped at MaxEndTime
 			buyer2,
 			c("ftm", 10),
@@ -150,29 +151,29 @@ func TestReverseAuction_PlaceBid(t *testing.T) {
 	buyer := sdk.AccAddress([]byte("a_buyer"))
 	seller1 := sdk.AccAddress([]byte("seller1"))
 	seller2 := sdk.AccAddress([]byte("seller2"))
-	end := EndTime(10810)
-	now := EndTime(10)
+	end := types.EndTime(10810)
+	now := types.EndTime(10)
 
 	type args struct {
-		currentBlockHeight EndTime
+		currentBlockHeight types.EndTime
 		bidder             sdk.AccAddress
 		lot                sdk.Coin
 		bid                sdk.Coin
 	}
 	tests := []struct {
 		name            string
-		auction         ReverseAuction
+		auction         types.ReverseAuction
 		args            args
-		expectedOutputs []BankOutput
-		expectedInputs  []BankInput
-		expectedEndTime EndTime
+		expectedOutputs []types.BankOutput
+		expectedInputs  []types.BankInput
+		expectedEndTime types.EndTime
 		expectedBidder  sdk.AccAddress
 		expectedLot     sdk.Coin
 		expectpass      bool
 	}{
 		{
 			"normal",
-			ReverseAuction{BaseAuction{
+			types.ReverseAuction{types.BaseAuction{
 				Initiator:  buyer,
 				Lot:        c("ftm", 10),
 				Bidder:     seller1,
@@ -181,16 +182,16 @@ func TestReverseAuction_PlaceBid(t *testing.T) {
 				MaxEndTime: end,
 			}},
 			args{now, seller2, c("ftm", 9), c("usdx", 100)},
-			[]BankOutput{{seller2, c("usdx", 100)}},
-			[]BankInput{{seller1, c("usdx", 100)}, {buyer, c("ftm", 1)}},
-			now + DefaultMaxBidDuration,
+			[]types.BankOutput{{seller2, c("usdx", 100)}},
+			[]types.BankInput{{seller1, c("usdx", 100)}, {buyer, c("ftm", 1)}},
+			now + types.DefaultMaxBidDuration,
 			seller2,
 			c("ftm", 9),
 			true,
 		},
 		{
 			"highBid",
-			ReverseAuction{BaseAuction{
+			types.ReverseAuction{types.BaseAuction{
 				Initiator:  buyer,
 				Lot:        c("ftm", 10),
 				Bidder:     seller1,
@@ -199,8 +200,8 @@ func TestReverseAuction_PlaceBid(t *testing.T) {
 				MaxEndTime: end,
 			}},
 			args{now, seller2, c("ftm", 11), c("usdx", 100)},
-			[]BankOutput{},
-			[]BankInput{},
+			[]types.BankOutput{},
+			[]types.BankInput{},
 			end,
 			seller1,
 			c("ftm", 10),
@@ -208,7 +209,7 @@ func TestReverseAuction_PlaceBid(t *testing.T) {
 		},
 		{
 			"equalBid",
-			ReverseAuction{BaseAuction{
+			types.ReverseAuction{types.BaseAuction{
 				Initiator:  buyer,
 				Lot:        c("ftm", 10),
 				Bidder:     seller1,
@@ -217,8 +218,8 @@ func TestReverseAuction_PlaceBid(t *testing.T) {
 				MaxEndTime: end,
 			}},
 			args{now, seller2, c("ftm", 10), c("usdx", 100)},
-			[]BankOutput{},
-			[]BankInput{},
+			[]types.BankOutput{},
+			[]types.BankInput{},
 			end,
 			seller1,
 			c("ftm", 10),
@@ -226,7 +227,7 @@ func TestReverseAuction_PlaceBid(t *testing.T) {
 		},
 		{
 			"timeout",
-			ReverseAuction{BaseAuction{
+			types.ReverseAuction{types.BaseAuction{
 				Initiator:  buyer,
 				Lot:        c("ftm", 10),
 				Bidder:     seller1,
@@ -235,8 +236,8 @@ func TestReverseAuction_PlaceBid(t *testing.T) {
 				MaxEndTime: end,
 			}},
 			args{end + 1, seller2, c("ftm", 9), c("usdx", 100)},
-			[]BankOutput{},
-			[]BankInput{},
+			[]types.BankOutput{},
+			[]types.BankInput{},
 			end,
 			seller1,
 			c("ftm", 10),
@@ -244,7 +245,7 @@ func TestReverseAuction_PlaceBid(t *testing.T) {
 		},
 		{
 			"hitMaxEndTime",
-			ReverseAuction{BaseAuction{
+			types.ReverseAuction{types.BaseAuction{
 				Initiator:  buyer,
 				Lot:        c("ftm", 10),
 				Bidder:     seller1,
@@ -253,8 +254,8 @@ func TestReverseAuction_PlaceBid(t *testing.T) {
 				MaxEndTime: end,
 			}},
 			args{end - 1, seller2, c("ftm", 9), c("usdx", 100)},
-			[]BankOutput{{seller2, c("usdx", 100)}},
-			[]BankInput{{seller1, c("usdx", 100)}, {buyer, c("ftm", 1)}},
+			[]types.BankOutput{{seller2, c("usdx", 100)}},
+			[]types.BankInput{{seller1, c("usdx", 100)}, {buyer, c("ftm", 1)}},
 			end, // end time should be capped at MaxEndTime
 			seller2,
 			c("ftm", 9),
@@ -288,22 +289,22 @@ func TestForwardReverseAuction_PlaceBid(t *testing.T) {
 	seller := sdk.AccAddress([]byte("a_seller"))
 	buyer1 := sdk.AccAddress([]byte("buyer1"))
 	buyer2 := sdk.AccAddress([]byte("buyer2"))
-	end := EndTime(10810)
-	now := EndTime(10)
+	end := types.EndTime(10810)
+	now := types.EndTime(10)
 
 	type args struct {
-		currentBlockHeight EndTime
+		currentBlockHeight types.EndTime
 		bidder             sdk.AccAddress
 		lot                sdk.Coin
 		bid                sdk.Coin
 	}
 	tests := []struct {
 		name            string
-		auction         ForwardReverseAuction
+		auction         types.ForwardReverseAuction
 		args            args
-		expectedOutputs []BankOutput
-		expectedInputs  []BankInput
-		expectedEndTime EndTime
+		expectedOutputs []types.BankOutput
+		expectedInputs  []types.BankInput
+		expectedEndTime types.EndTime
 		expectedBidder  sdk.AccAddress
 		expectedLot     sdk.Coin
 		expectedBid     sdk.Coin
@@ -311,7 +312,7 @@ func TestForwardReverseAuction_PlaceBid(t *testing.T) {
 	}{
 		{
 			"normalForwardBid",
-			ForwardReverseAuction{BaseAuction: BaseAuction{
+			types.ForwardReverseAuction{BaseAuction: types.BaseAuction{
 				Initiator:  seller,
 				Lot:        c("xrp", 100),
 				Bidder:     buyer1,
@@ -322,9 +323,9 @@ func TestForwardReverseAuction_PlaceBid(t *testing.T) {
 				OtherPerson: cdpOwner,
 			},
 			args{now, buyer2, c("xrp", 100), c("usdx", 6)},
-			[]BankOutput{{buyer2, c("usdx", 6)}},
-			[]BankInput{{buyer1, c("usdx", 5)}, {seller, c("usdx", 1)}},
-			now + DefaultMaxBidDuration,
+			[]types.BankOutput{{buyer2, c("usdx", 6)}},
+			[]types.BankInput{{buyer1, c("usdx", 5)}, {seller, c("usdx", 1)}},
+			now + types.DefaultMaxBidDuration,
 			buyer2,
 			c("xrp", 100),
 			c("usdx", 6),
@@ -332,7 +333,7 @@ func TestForwardReverseAuction_PlaceBid(t *testing.T) {
 		},
 		{
 			"normalSwitchOverBid",
-			ForwardReverseAuction{BaseAuction: BaseAuction{
+			types.ForwardReverseAuction{BaseAuction: types.BaseAuction{
 				Initiator:  seller,
 				Lot:        c("xrp", 100),
 				Bidder:     buyer1,
@@ -343,9 +344,9 @@ func TestForwardReverseAuction_PlaceBid(t *testing.T) {
 				OtherPerson: cdpOwner,
 			},
 			args{now, buyer2, c("xrp", 99), c("usdx", 10)},
-			[]BankOutput{{buyer2, c("usdx", 10)}},
-			[]BankInput{{buyer1, c("usdx", 5)}, {seller, c("usdx", 5)}, {cdpOwner, c("xrp", 1)}},
-			now + DefaultMaxBidDuration,
+			[]types.BankOutput{{buyer2, c("usdx", 10)}},
+			[]types.BankInput{{buyer1, c("usdx", 5)}, {seller, c("usdx", 5)}, {cdpOwner, c("xrp", 1)}},
+			now + types.DefaultMaxBidDuration,
 			buyer2,
 			c("xrp", 99),
 			c("usdx", 10),
@@ -353,7 +354,7 @@ func TestForwardReverseAuction_PlaceBid(t *testing.T) {
 		},
 		{
 			"normalReverseBid",
-			ForwardReverseAuction{BaseAuction: BaseAuction{
+			types.ForwardReverseAuction{BaseAuction: types.BaseAuction{
 				Initiator:  seller,
 				Lot:        c("xrp", 99),
 				Bidder:     buyer1,
@@ -364,9 +365,9 @@ func TestForwardReverseAuction_PlaceBid(t *testing.T) {
 				OtherPerson: cdpOwner,
 			},
 			args{now, buyer2, c("xrp", 90), c("usdx", 10)},
-			[]BankOutput{{buyer2, c("usdx", 10)}},
-			[]BankInput{{buyer1, c("usdx", 10)}, {cdpOwner, c("xrp", 9)}},
-			now + DefaultMaxBidDuration,
+			[]types.BankOutput{{buyer2, c("usdx", 10)}},
+			[]types.BankInput{{buyer1, c("usdx", 10)}, {cdpOwner, c("xrp", 9)}},
+			now + types.DefaultMaxBidDuration,
 			buyer2,
 			c("xrp", 90),
 			c("usdx", 10),

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"bytes"
-	"fmt"
 	"sort"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -144,16 +143,17 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 	// change owner's coins (increase or decrease)
 	var err sdk.Error
 	if changeInCollateral.IsNegative() {
-		_, err = k.bank.AddCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral.Neg())))
+		err = k.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral.Neg())))
 		if err != nil {
 			panic(err) // this shouldn't happen because coin balance was checked earlier
 		}
 	} else {
-		_, err = k.bank.SubtractCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
+		err = k.sk.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
 		if err != nil {
 			panic(err) // this shouldn't happen because coin balance was checked earlier
 		}
 	}
+
 	if changeInDebt.IsNegative() { //Depositing stable coin from owner to CSDT (decrease supply)
 		depositCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg()))
 
@@ -423,142 +423,6 @@ func (k Keeper) SetCollateralState(ctx sdk.Context, collateralstate types.Collat
 	// marshal and set
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(collateralstate)
 	store.Set(k.getCollateralStateKey(collateralstate.Denom), bz)
-}
-
-// ---------- Weird Bank Stuff ----------
-// This only exists because module accounts aren't really a thing yet.
-// Also because we need module accounts that allow for burning/minting.
-
-// These functions make the CSDT module act as a bank keeper, ie it fulfills the bank.Keeper interface.
-// It intercepts calls to send coins to/from the liquidator module account, otherwise passing the calls onto the normal bank keeper.
-
-// Not sure if module accounts are good, but they make the auction module more general:
-// - startAuction would just "mints" coins, relying on calling function to decrement them somewhere
-// - closeAuction would have to call something specific for the receiver module to accept coins (like liquidationKeeper.AddStableCoins)
-
-// The auction and liquidator modules can probably just use SendCoins to keep things safe (instead of AddCoins and SubtractCoins).
-// So they should define their own interfaces which this module should fulfill, rather than this fulfilling the entire bank.Keeper interface.
-
-// bank.Keeper interfaces:
-// type SendKeeper interface {
-// 	type ViewKeeper interface {
-// 		GetCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
-// 		HasCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) bool
-// 		Codespace() sdk.CodespaceType
-// 	}
-// 	SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) (sdk.Tags, sdk.Error)
-// 	GetSendEnabled(ctx sdk.Context) bool
-// 	SetSendEnabled(ctx sdk.Context, enabled bool)
-// }
-// type Keeper interface {
-// 	SendKeeper
-// 	SetCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) sdk.Error
-// 	SubtractCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) (sdk.Coins, sdk.Tags, sdk.Error)
-// 	AddCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) (sdk.Coins, sdk.Tags, sdk.Error)
-// 	InputOutputCoins(ctx sdk.Context, inputs []Input, outputs []Output) (sdk.Tags, sdk.Error)
-// 	DelegateCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) (sdk.Tags, sdk.Error)
-// 	UndelegateCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) (sdk.Tags, sdk.Error)
-
-var LiquidatorAccountAddress = sdk.AccAddress([]byte("whatever"))
-var liquidatorAccountKey = []byte("liquidatorAccount")
-
-func (k Keeper) GetLiquidatorAccountAddress() sdk.AccAddress {
-	return LiquidatorAccountAddress
-}
-
-type LiquidatorModuleAccount struct {
-	Coins sdk.Coins // keeps track of seized collateral, surplus csdt, and mints/burns gov coins
-}
-
-func (k Keeper) AddCoins(ctx sdk.Context, address sdk.AccAddress, amount sdk.Coins) (sdk.Coins, sdk.Error) {
-	// intercept module account
-	if address.Equals(LiquidatorAccountAddress) {
-		if !amount.IsValid() {
-			return nil, sdk.ErrInvalidCoins(amount.String())
-		}
-		// remove gov token from list
-		filteredCoins := stripGovCoin(amount)
-		// add coins to module account
-		lma := k.getLiquidatorModuleAccount(ctx)
-		updatedCoins := lma.Coins.Add(filteredCoins)
-		if updatedCoins.IsAnyNegative() {
-			return amount, sdk.ErrInsufficientCoins(fmt.Sprintf("insufficient account funds; %s < %s", lma.Coins, amount))
-		}
-		lma.Coins = updatedCoins
-		k.SetLiquidatorModuleAccount(ctx, lma)
-		return updatedCoins, nil
-	} else {
-		return k.bank.AddCoins(ctx, address, amount)
-	}
-}
-
-// TODO abstract stuff better
-func (k Keeper) SubtractCoins(ctx sdk.Context, address sdk.AccAddress, amount sdk.Coins) (sdk.Coins, sdk.Error) {
-	// intercept module account
-	if address.Equals(LiquidatorAccountAddress) {
-		if !amount.IsValid() {
-			return nil, sdk.ErrInvalidCoins(amount.String())
-		}
-		// remove gov token from list
-		filteredCoins := stripGovCoin(amount)
-		// subtract coins from module account
-		lma := k.getLiquidatorModuleAccount(ctx)
-		updatedCoins, isNegative := lma.Coins.SafeSub(filteredCoins)
-		if isNegative {
-			return amount, sdk.ErrInsufficientCoins(fmt.Sprintf("insufficient account funds; %s < %s", lma.Coins, amount))
-		}
-		lma.Coins = updatedCoins
-		k.SetLiquidatorModuleAccount(ctx, lma)
-		return updatedCoins, nil
-	} else {
-		return k.bank.SubtractCoins(ctx, address, amount)
-	}
-}
-
-// TODO Should this return anything for the gov coin balance? Currently returns nothing.
-func (k Keeper) GetCoins(ctx sdk.Context, address sdk.AccAddress) sdk.Coins {
-	if address.Equals(LiquidatorAccountAddress) {
-		return k.getLiquidatorModuleAccount(ctx).Coins
-	} else {
-		return k.bank.GetCoins(ctx, address)
-	}
-}
-
-// TODO test this with unsorted coins
-func (k Keeper) HasCoins(ctx sdk.Context, address sdk.AccAddress, amount sdk.Coins) bool {
-	if address.Equals(LiquidatorAccountAddress) {
-		return true
-	} else {
-		return k.getLiquidatorModuleAccount(ctx).Coins.IsAllGTE(stripGovCoin(amount))
-	}
-}
-
-func (k Keeper) getLiquidatorModuleAccount(ctx sdk.Context) LiquidatorModuleAccount {
-	// get store
-	store := ctx.KVStore(k.storeKey)
-	// get bytes
-	bz := store.Get(liquidatorAccountKey)
-	if bz == nil {
-		return LiquidatorModuleAccount{} // TODO is it safe to do this, or better to initialize the account explicitly
-	}
-	// unmarshal
-	var lma LiquidatorModuleAccount
-	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &lma)
-	return lma
-}
-func (k Keeper) SetLiquidatorModuleAccount(ctx sdk.Context, lma LiquidatorModuleAccount) {
-	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshalBinaryLengthPrefixed(lma)
-	store.Set(liquidatorAccountKey, bz)
-}
-func stripGovCoin(coins sdk.Coins) sdk.Coins {
-	filteredCoins := sdk.NewCoins()
-	for _, c := range coins {
-		if c.Denom != types.GovDenom {
-			filteredCoins = append(filteredCoins, c)
-		}
-	}
-	return filteredCoins
 }
 
 // GetOracle allows testing

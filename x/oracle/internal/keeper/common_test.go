@@ -1,4 +1,4 @@
-package keeper
+package keeper_test
 
 import (
 	"testing"
@@ -9,12 +9,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto"
 
+	"github.com/xar-network/xar-network/x/oracle/internal/keeper"
 	"github.com/xar-network/xar-network/x/oracle/internal/types"
 )
 
 type testHelper struct {
 	mApp     *mock.App
-	keeper   Keeper
+	keeper   keeper.Keeper
 	addrs    []sdk.AccAddress
 	pubKeys  []crypto.PubKey
 	privKeys []crypto.PrivKey
@@ -26,7 +27,7 @@ func getMockApp(t *testing.T, numGenAccs int, genState types.GenesisState, genAc
 	keyPricefeed := sdk.NewKVStoreKey(types.StoreKey)
 
 	pk := mApp.ParamsKeeper
-	keeper := NewKeeper(keyPricefeed, mApp.Cdc, pk.Subspace(types.DefaultParamspace), types.DefaultCodespace)
+	keeper := keeper.NewKeeper(keyPricefeed, mApp.Cdc, pk.Subspace(types.DefaultParamspace), types.DefaultCodespace)
 
 	require.NoError(t, mApp.CompleteSetup(keyPricefeed))
 

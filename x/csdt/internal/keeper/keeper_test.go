@@ -1,4 +1,4 @@
-package keeper
+package keeper_test
 
 import (
 	"fmt"
@@ -27,6 +27,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 		OwnerCoins      sdk.Coins
 		GlobalDebt      sdk.Int
 		CollateralState CollateralState
+		ModuleCoins     sdk.Coins
 	}
 	type args struct {
 		owner              sdk.AccAddress
@@ -51,7 +52,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 100)),
 				Debt:             cs(c(StableDenom, 2)),
-			}, cs(c("uftm", 10), c(StableDenom, 2)), i(2), CollateralState{Denom: "uftm", TotalDebt: i(2)}},
+			}, cs(c("uftm", 10), c(StableDenom, 2)), i(2), CollateralState{Denom: "uftm", TotalDebt: i(2)}, cs(c("uftm", 100))},
 			"10.345",
 			args{ownerAddr, "uftm", i(10), i(-1)},
 			true,
@@ -60,7 +61,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 110)),
 				Debt:             cs(c(StableDenom, 1)),
-			}, cs( /*  0uftm  */ c(StableDenom, 1)), i(1), CollateralState{Denom: "uftm", TotalDebt: i(1)}},
+			}, cs( /*  0uftm  */ c(StableDenom, 1)), i(1), CollateralState{Denom: "uftm", TotalDebt: i(1)}, cs(c("uftm", 110))},
 		},
 		{
 			"removeTooMuchCollateral",
@@ -69,7 +70,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 1000)),
 				Debt:             cs(c(StableDenom, 200)),
-			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}},
+			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}, cs(c("uftm", 1000))},
 			"1.00",
 			args{ownerAddr, "uftm", i(-801), i(0)},
 			false,
@@ -78,7 +79,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 1000)),
 				Debt:             cs(c(StableDenom, 200)),
-			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}},
+			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}, cs(c("uftm", 1000))},
 		},
 		{
 			"withdrawTooMuchStableCoin",
@@ -87,7 +88,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 1000)),
 				Debt:             cs(c(StableDenom, 200)),
-			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}},
+			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}, cs(c("uftm", 1000))},
 			"1.00",
 			args{ownerAddr, "uftm", i(0), i(500)},
 			false,
@@ -96,11 +97,11 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 1000)),
 				Debt:             cs(c(StableDenom, 200)),
-			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}},
+			}, cs(c("uftm", 10), c(StableDenom, 10)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}, cs(c("uftm", 1000))},
 		},
 		{
 			"createCSDTAndWithdrawStable",
-			state{CSDT{}, cs(c("uftm", 10), c(StableDenom, 10)), i(0), CollateralState{Denom: "uftm", TotalDebt: i(0)}},
+			state{CSDT{}, cs(c("uftm", 10), c(StableDenom, 10)), i(0), CollateralState{Denom: "uftm", TotalDebt: i(0)}, cs(c("uftm", 0))},
 			"1.00",
 			args{ownerAddr, "uftm", i(5), i(2)},
 			true,
@@ -109,7 +110,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 5)),
 				Debt:             cs(c(StableDenom, 2)),
-			}, cs(c("uftm", 5), c(StableDenom, 12)), i(2), CollateralState{Denom: "uftm", TotalDebt: i(2)}},
+			}, cs(c("uftm", 5), c(StableDenom, 12)), i(2), CollateralState{Denom: "uftm", TotalDebt: i(2)}, cs(c("uftm", 5))},
 		},
 		{
 			"emptyCSDT",
@@ -118,19 +119,19 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				CollateralDenom:  "uftm",
 				CollateralAmount: cs(c("uftm", 1000)),
 				Debt:             cs(c(StableDenom, 200)),
-			}, cs(c("uftm", 10), c(StableDenom, 201)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}},
+			}, cs(c("uftm", 10), c(StableDenom, 201)), i(200), CollateralState{Denom: "uftm", TotalDebt: i(200)}, cs(c("uftm", 1000))},
 			"1.00",
 			args{ownerAddr, "uftm", i(-1000), i(-200)},
 			true,
-			state{CSDT{}, cs(c("uftm", 1010), c(StableDenom, 1)), i(0), CollateralState{Denom: "uftm", TotalDebt: i(0)}},
+			state{CSDT{}, cs(c("uftm", 1010), c(StableDenom, 1)), i(0), CollateralState{Denom: "uftm", TotalDebt: i(0)}, cs(c("uftm", 0))},
 		},
 		{
 			"invalidCollateralType",
-			state{CSDT{}, cs(c("shitcoin", 5000000)), i(0), CollateralState{}},
+			state{CSDT{}, cs(c("shitcoin", 5000000)), i(0), CollateralState{}, cs(c("uftm", 0))},
 			"0.000001",
 			args{ownerAddr, "shitcoin", i(5000000), i(1)}, // ratio of 5:1
 			false,
-			state{CSDT{}, cs(c("shitcoin", 5000000)), i(0), CollateralState{}},
+			state{CSDT{}, cs(c("shitcoin", 5000000)), i(0), CollateralState{}, cs(c("uftm", 0))},
 		},
 	}
 	for _, tc := range tests {
@@ -142,6 +143,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				Address: ownerAddr,
 				Coins:   tc.priorState.OwnerCoins,
 			}
+
 			mock.SetGenesis(mapp, []exported.Account{&genAcc})
 			// create a new context
 			header := abci.Header{Height: mapp.LastBlockHeight() + 1}
@@ -179,6 +181,8 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 			}
 
 			keeper.GetSupply().SetSupply(ctx, supply.NewSupply(sdk.NewCoins(sdk.NewCoin(StableDenom, tc.priorState.GlobalDebt))))
+
+			keeper.GetSupply().MintCoins(ctx, types.ModuleName, tc.priorState.ModuleCoins)
 
 			// call func under test
 			keeper.SetParams(ctx, types.DefaultParams())

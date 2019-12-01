@@ -1,4 +1,4 @@
-package tests
+package order_test
 
 import (
 	"testing"
@@ -12,7 +12,6 @@ import (
 	"github.com/xar-network/xar-network/testutil/testflags"
 	"github.com/xar-network/xar-network/types/errs"
 	"github.com/xar-network/xar-network/types/store"
-	"github.com/xar-network/xar-network/x/asset/types"
 	types2 "github.com/xar-network/xar-network/x/market/types"
 	types4 "github.com/xar-network/xar-network/x/order/types"
 
@@ -26,8 +25,8 @@ type testCtx struct {
 	buyer    sdk.AccAddress
 	seller   sdk.AccAddress
 	app      *mockapp.MockApp
-	asset1   types.Asset
-	asset2   types.Asset
+	asset1   string
+	asset2   string
 	market   types2.Market
 }
 

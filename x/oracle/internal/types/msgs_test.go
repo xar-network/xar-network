@@ -1,4 +1,4 @@
-package types
+package types_test
 
 import (
 	"testing"
@@ -6,6 +6,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/stretchr/testify/require"
+	"github.com/xar-network/xar-network/x/oracle/internal/types"
 )
 
 func TestMsgSort(t *testing.T) {
@@ -13,7 +15,7 @@ func TestMsgSort(t *testing.T) {
 	price, _ := sdk.NewDecFromStr("0.01155578")
 	expiry := time.Now()
 
-	msg := NewMsgPostPrice(from, "uftm", price, expiry)
+	msg := types.NewMsgPostPrice(from, "uftm", price, expiry)
 
 	fee := auth.NewStdFee(200000, nil)
 	stdTx := auth.NewStdTx([]sdk.Msg{msg}, fee, []auth.StdSignature{}, "")
@@ -24,4 +26,36 @@ func TestMsgSort(t *testing.T) {
 		"xar-chain-dora", 4, 1, auth.NewStdFee(200000, nil), []sdk.Msg{msg}, "",
 	)
 	t.Logf("%s", signed)
+}
+
+func TestMsgPlaceBid_ValidateBasic(t *testing.T) {
+	addr := sdk.AccAddress([]byte("someName"))
+	// oracles := []Oracle{Oracle{
+	// 	OracleAddress: addr.String(),
+	// }}
+	price, _ := sdk.NewDecFromStr("0.3005")
+	expiry := time.Now().Add(time.Hour * 2)
+	negativeExpiry := time.Now()
+	negativePrice, _ := sdk.NewDecFromStr("-3.05")
+
+	tests := []struct {
+		name       string
+		msg        types.MsgPostPrice
+		expectPass bool
+	}{
+		{"normal", types.MsgPostPrice{addr, "xrp", price, expiry}, true},
+		{"emptyAddr", types.MsgPostPrice{sdk.AccAddress{}, "xrp", price, expiry}, false},
+		{"emptyAsset", types.MsgPostPrice{addr, "", price, expiry}, false},
+		{"negativePrice", types.MsgPostPrice{addr, "xrp", negativePrice, expiry}, false},
+		{"negativeExpiry", types.MsgPostPrice{addr, "xrp", price, negativeExpiry}, false},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.expectPass {
+				require.Nil(t, tc.msg.ValidateBasic())
+			} else {
+				require.NotNil(t, tc.msg.ValidateBasic())
+			}
+		})
+	}
 }

@@ -1,11 +1,11 @@
-package tests
+package issue_test
 
 import (
 	"testing"
 
 	"github.com/xar-network/xar-network/x/issue"
 
-	"github.com/xar-network/xar-network/x/issue/msgs"
+	"github.com/xar-network/xar-network/x/issue/internal/types"
 
 	"github.com/stretchr/testify/require"
 
@@ -21,18 +21,18 @@ func TestImportExportQueues(t *testing.T) {
 
 	handler := issue.NewHandler(keeper)
 
-	res := handler(ctx, msgs.NewMsgIssue(SenderAccAddr, &IssueParams))
+	res := handler(ctx, types.NewMsgIssue(SenderAccAddr, &IssueParams))
 	require.True(t, res.IsOK())
 
 	var issueID1 string
-	keeper.Getcdc().MustUnmarshalBinaryLengthPrefixed(res.Data, &issueID1)
+	issueID1 = string(res.Data)
 	require.NotNil(t, issueID1)
 
-	res = handler(ctx, msgs.NewMsgIssue(SenderAccAddr, &IssueParams))
+	res = handler(ctx, types.NewMsgIssue(SenderAccAddr, &IssueParams))
 	require.True(t, res.IsOK())
 
 	var issueID2 string
-	keeper.Getcdc().MustUnmarshalBinaryLengthPrefixed(res.Data, &issueID2)
+	issueID2 = string(res.Data)
 	require.NotNil(t, issueID2)
 
 	genAccs := mapp.AccountKeeper.GetAllAccounts(ctx)

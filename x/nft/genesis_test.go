@@ -2,11 +2,19 @@ package nft_test
 
 import (
 	"testing"
+	"encoding/json"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/xar-network/xar-network/x/nft"
 )
+
+type GenesisState map[string]json.RawMessage
+
+// NewDefaultGenesisState generates the default state for the application.
+func NewDefaultGenesisState() GenesisState {
+	return ModuleBasics.DefaultGenesis()
+}
 
 func TestInitGenesis(t *testing.T) {
 	app, ctx := createTestApp(false)

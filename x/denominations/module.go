@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	"github.com/xar-network/xar-network/x/denominations/client/cli"
+	"github.com/xar-network/xar-network/x/denominations/client/rest"
 	"github.com/xar-network/xar-network/x/denominations/internal/types"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -47,6 +48,7 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 }
 
 func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
+	rest.RegisterRoutes(ctx, rtr, types.StoreKey)
 }
 
 func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
@@ -54,7 +56,7 @@ func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 }
 
 func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
-	return nil
+	return cli.GetQueryCmd(types.StoreKey, cdc)
 }
 
 type AppModule struct {

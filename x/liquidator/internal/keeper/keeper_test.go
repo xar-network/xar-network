@@ -1,4 +1,4 @@
-package keeper
+package keeper_test
 
 import (
 	"testing"
@@ -19,30 +19,41 @@ func TestKeeper_SeizeAndStartCollateralAuction(t *testing.T) {
 
 	_, addrs := mock.GeneratePrivKeyAddressPairs(1)
 
-	oracle.InitGenesis(ctx, k.oracleKeeper, oracleGenesis(addrs[0].String()))
-	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("8000.00"), time.Now().Add(time.Hour*1))
+	oracle.InitGenesis(ctx, k.oracleKeeper, oracleGenesis(addrs[0]))
+	_, err := k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("8000.00"), time.Now().Add(time.Hour*1))
+	require.NoError(t, err)
+
 	k.oracleKeeper.SetCurrentPrices(ctx)
 	csdt.InitGenesis(ctx, k.csdtKeeper, csdtDefaultGenesis())
 
 	dp := defaultParams()
 	k.liquidatorKeeper.SetParams(ctx, dp)
-	k.bankKeeper.AddCoins(ctx, addrs[0], cs(c("btc", 100)))
-
-	err := k.csdtKeeper.ModifyCSDT(ctx, addrs[0], "btc", i(3), i(16000))
+	_, err = k.bankKeeper.AddCoins(ctx, addrs[0], cs(c("btc", 100)))
 	require.NoError(t, err)
 
-	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("7999.99"), time.Now().Add(time.Hour*1))
+	err = k.csdtKeeper.ModifyCSDT(ctx, addrs[0], "btc", i(3), i(16000))
+	require.NoError(t, err)
+
+	_, err = k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("7999.99"), time.Now().Add(time.Hour*1))
+	require.NoError(t, err)
 	k.oracleKeeper.SetCurrentPrices(ctx)
 
+	addr, perms := k.supplyKeeper.GetModuleAddressAndPermissions(types.ModuleName)
+	require.Equal(t, "cosmos1eu2ta269haf6j6z3lsj79a8rq3hsmnhuxj34g9", addr.String())
+	require.Equal(t, 1, len(perms))
+
 	// Run test function
+	csdt, found := k.csdtKeeper.GetCSDT(ctx, addrs[0], "btc")
+	require.NoError(t, err)
 	auctionID, err := k.liquidatorKeeper.SeizeAndStartCollateralAuction(ctx, addrs[0], "btc")
 
 	// Check CDP
 	require.NoError(t, err)
-	csdt, found := k.csdtKeeper.GetCSDT(ctx, addrs[0], "btc")
+	csdt, found = k.csdtKeeper.GetCSDT(ctx, addrs[0], "btc")
+
 	require.True(t, found)
-	require.Equal(t, csdt.CollateralAmount, i(2)) // original amount - params.CollateralAuctionSize
-	require.Equal(t, csdt.Debt, i(10667))         // original debt scaled by amount of collateral removed
+	require.Equal(t, csdt.CollateralAmount, cs(c("btc", 2)))                 // original amount - params.CollateralAuctionSize
+	require.Equal(t, csdt.Debt, cs(c(k.csdtKeeper.GetStableDenom(), 10667))) // original debt scaled by amount of collateral removed
 	// Check auction exists
 	_, found = k.auctionKeeper.GetAuction(ctx, auctionID)
 	require.True(t, found)
@@ -54,7 +65,7 @@ func TestKeeper_StartDebtAuction(t *testing.T) {
 	ctx, k := setupTestKeepers()
 	k.liquidatorKeeper.SetParams(ctx, defaultParams())
 	initSDebt := types.SeizedDebt{i(2000), i(0)}
-	k.liquidatorKeeper.setSeizedDebt(ctx, initSDebt)
+	k.liquidatorKeeper.SetSeizedDebt(ctx, initSDebt)
 
 	// Execute
 	auctionID, err := k.liquidatorKeeper.StartDebtAuction(ctx)
@@ -101,7 +112,7 @@ func TestKeeper_partialSeizeCSDT(t *testing.T) {
 
 	_, addrs := mock.GeneratePrivKeyAddressPairs(1)
 
-	oracle.InitGenesis(ctx, k.oracleKeeper, oracleGenesis(addrs[0].String()))
+	oracle.InitGenesis(ctx, k.oracleKeeper, oracleGenesis(addrs[0]))
 
 	k.oracleKeeper.SetPrice(ctx, addrs[0], "btc", sdk.MustNewDecFromStr("8000.00"), time.Now().Add(time.Hour*1))
 	k.oracleKeeper.SetCurrentPrices(ctx)
@@ -115,14 +126,14 @@ func TestKeeper_partialSeizeCSDT(t *testing.T) {
 	k.oracleKeeper.SetCurrentPrices(ctx)
 
 	// Run test function
-	err := k.liquidatorKeeper.partialSeizeCSDT(ctx, addrs[0], "btc", i(2), i(10000))
+	err := k.liquidatorKeeper.PartialSeizeCSDT(ctx, addrs[0], "btc", i(2), i(10000))
 
 	// Check
 	require.NoError(t, err)
 	csdt, found := k.csdtKeeper.GetCSDT(ctx, addrs[0], "btc")
 	require.True(t, found)
-	require.Equal(t, i(1), csdt.CollateralAmount)
-	require.Equal(t, i(6000), csdt.Debt)
+	require.Equal(t, cs(c(csdt.CollateralDenom, 1)), csdt.CollateralAmount)
+	require.Equal(t, cs(c(k.csdtKeeper.GetStableDenom(), 6000)), csdt.Debt)
 }
 
 func TestKeeper_GetSetSeizedDebt(t *testing.T) {
@@ -131,7 +142,7 @@ func TestKeeper_GetSetSeizedDebt(t *testing.T) {
 	debt := types.SeizedDebt{i(234247645), i(2343)}
 
 	// Run test function
-	k.liquidatorKeeper.setSeizedDebt(ctx, debt)
+	k.liquidatorKeeper.SetSeizedDebt(ctx, debt)
 	readDebt := k.liquidatorKeeper.GetSeizedDebt(ctx)
 
 	// Check

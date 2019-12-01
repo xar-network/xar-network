@@ -1,5 +1,5 @@
 // nolint noalias
-package types
+package types_test
 
 import (
 	"github.com/tendermint/tendermint/crypto"

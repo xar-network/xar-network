@@ -253,8 +253,8 @@ func NewXarApp(
 	app.oracleKeeper = oracle.NewKeeper(keys[oracle.StoreKey], app.cdc, oracleSubspace, oracle.DefaultCodespace)
 	app.recordKeeper = record.NewKeeper(app.cdc, keys[record.StoreKey], recordSubspace, record.DefaultCodespace)
 	app.csdtKeeper = csdt.NewKeeper(app.cdc, keys[csdt.StoreKey], csdtSubspace, app.oracleKeeper, app.bankKeeper, app.supplyKeeper)
-	app.auctionKeeper = auction.NewKeeper(app.cdc, app.csdtKeeper, keys[auction.StoreKey], auctionSubspace)
-	app.liquidatorKeeper = liquidator.NewKeeper(app.cdc, keys[liquidator.StoreKey], liquidatorSubspace, app.csdtKeeper, app.auctionKeeper, app.csdtKeeper)
+	app.auctionKeeper = auction.NewKeeper(app.cdc, app.supplyKeeper, keys[auction.StoreKey], auctionSubspace)
+	app.liquidatorKeeper = liquidator.NewKeeper(app.cdc, keys[liquidator.StoreKey], liquidatorSubspace, app.csdtKeeper, app.auctionKeeper, app.bankKeeper, app.supplyKeeper)
 
 	app.marketKeeper = market.NewKeeper(keys[markettypes.StoreKey], app.cdc, marketSubspace, market.DefaultCodespace)
 	app.orderKeeper = order.NewKeeper(app.bankKeeper, app.marketKeeper, keys[ordertypes.StoreKey], queue, app.cdc)

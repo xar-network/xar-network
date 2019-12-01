@@ -1,4 +1,4 @@
-package keeper
+package keeper_test
 
 import (
 	"time"
@@ -16,6 +16,7 @@ import (
 	"github.com/xar-network/xar-network/x/csdt"
 
 	"github.com/xar-network/xar-network/x/auction"
+	"github.com/xar-network/xar-network/x/liquidator/internal/keeper"
 	"github.com/xar-network/xar-network/x/liquidator/internal/types"
 	"github.com/xar-network/xar-network/x/oracle"
 )
@@ -32,7 +33,8 @@ type keepers struct {
 	oracleKeeper     oracle.Keeper
 	auctionKeeper    auction.Keeper
 	csdtKeeper       csdt.Keeper
-	liquidatorKeeper Keeper
+	liquidatorKeeper keeper.Keeper
+	supplyKeeper     supply.Keeper
 }
 
 func setupTestKeepers() (sdk.Context, keepers) {
@@ -82,12 +84,14 @@ func setupTestKeepers() (sdk.Context, keepers) {
 	)
 
 	maccPerms := map[string][]string{
-		csdt.ModuleName: {supply.Minter, supply.Burner},
+		csdt.ModuleName:    {supply.Minter, supply.Burner},
+		types.ModuleName:   {supply.Minter},
+		auction.ModuleName: {},
 	}
 
 	supplyKeeper := supply.NewKeeper(cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
 	oracleKeeper := oracle.NewKeeper(keyPriceFeed, cdc, paramsKeeper.Subspace(oracle.DefaultParamspace), oracle.DefaultCodespace)
-	auctionKeeper := auction.NewKeeper(cdc, bankKeeper, keyAuction, paramsKeeper.Subspace(auction.DefaultParamspace)) // Note: csdt keeper stands in for bank keeper
+	auctionKeeper := auction.NewKeeper(cdc, supplyKeeper, keyAuction, paramsKeeper.Subspace(auction.DefaultParamspace)) // Note: csdt keeper stands in for bank keeper
 	csdtKeeper := csdt.NewKeeper(
 		cdc,
 		keyCSDT,
@@ -96,13 +100,14 @@ func setupTestKeepers() (sdk.Context, keepers) {
 		bankKeeper,
 		supplyKeeper,
 	)
-	liquidatorKeeper := NewKeeper(
+	liquidatorKeeper := keeper.NewKeeper(
 		cdc,
 		keyLiquidator,
 		paramsKeeper.Subspace(types.DefaultParamspace),
 		csdtKeeper,
 		auctionKeeper,
-		csdtKeeper,
+		bankKeeper,
+		supplyKeeper,
 	) // Note: csdt keeper stands in for bank keeper
 
 	// Create context
@@ -117,6 +122,7 @@ func setupTestKeepers() (sdk.Context, keepers) {
 		auctionKeeper,
 		csdtKeeper,
 		liquidatorKeeper,
+		supplyKeeper,
 	}
 }
 
@@ -163,19 +169,19 @@ func csdtDefaultGenesis() csdt.GenesisState {
 	}
 }
 
-func oracleGenesis(address string) oracle.GenesisState {
+func oracleGenesis(address sdk.AccAddress) oracle.GenesisState {
 	ap := oracle.Params{
 		Assets: []oracle.Asset{
 			oracle.Asset{AssetCode: "btc", BaseAsset: "btc", QuoteAsset: "usd"},
 		},
-		Nominees: []string{address},
+		Nominees: []string{address.String()},
 	}
 	return oracle.GenesisState{
 		Params: ap,
 		PostedPrices: []oracle.PostedPrice{
 			oracle.PostedPrice{
 				AssetCode:     "btc",
-				OracleAddress: sdk.AccAddress([]byte("someName")),
+				OracleAddress: address,
 				Price:         sdk.MustNewDecFromStr("8000.00"),
 				Expiry:        time.Now().Add(time.Hour * 1),
 			},

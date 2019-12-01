@@ -1,13 +1,10 @@
-package tests
+package keeper_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/xar-network/xar-network/x/issue/utils"
 	"github.com/tendermint/tendermint/crypto"
-
-	"github.com/xar-network/xar-network/x/issue/params"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -15,28 +12,27 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/xar-network/xar-network/x/issue"
-	queriers2 "github.com/xar-network/xar-network/x/issue/client/queriers"
-	"github.com/xar-network/xar-network/x/issue/msgs"
-	"github.com/xar-network/xar-network/x/issue/types"
+	"github.com/xar-network/xar-network/x/issue/internal/types"
+	"github.com/xar-network/xar-network/x/issue/internal/keeper"
 )
 
 func TestQueryIssue(t *testing.T) {
-	mapp, keeper, _, _, _, _ := getMockApp(t, issue.GenesisState{}, nil)
+	mapp, k, _, _, _, _ := getMockApp(t, issue.GenesisState{}, nil)
 
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 
 	ctx := mapp.NewContext(false, abci.Header{})
 
-	querier := issue.NewQuerier(keeper)
-	handler := issue.NewHandler(keeper)
+	querier := keeper.NewQuerier(k)
+	handler := issue.NewHandler(k)
 
-	res := handler(ctx, msgs.NewMsgIssue(SenderAccAddr, &IssueParams))
+	res := handler(ctx, types.NewMsgIssue(SenderAccAddr, &IssueParams))
 	var issueID string
-	keeper.Getcdc().MustUnmarshalBinaryLengthPrefixed(res.Data, &issueID)
-	bz := getQueried(t, ctx, querier, queriers2.GetQueryIssuePath(issueID), types.QueryIssue, issueID)
+	issueID = string(res.Data)
+	bz := getQueried(t, ctx, querier, types.GetQueryIssuePath(issueID), types.QueryIssue, issueID)
 	var issueInfo types.CoinIssueInfo
-	keeper.Getcdc().MustUnmarshalJSON(bz, &issueInfo)
+	mapp.Cdc.MustUnmarshalJSON(bz, &issueInfo)
 
 	require.Equal(t, issueInfo.GetIssueId(), issueID)
 	require.Equal(t, issueInfo.GetName(), CoinIssueInfo.GetName())
@@ -44,38 +40,38 @@ func TestQueryIssue(t *testing.T) {
 }
 
 func TestQueryIssues(t *testing.T) {
-	mapp, keeper, _, _, _, _ := getMockApp(t, issue.GenesisState{}, nil)
+	mapp, k, _, _, _, _ := getMockApp(t, issue.GenesisState{}, nil)
 
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 
 	ctx := mapp.NewContext(false, abci.Header{})
-	//querier := issue.NewQuerier(keeper)
-	handler := issue.NewHandler(keeper)
+	//querier := issue.NewQuerier(k)
+	handler := issue.NewHandler(k)
 	cap := 10
 	for i := 0; i < cap; i++ {
-		handler(ctx, msgs.NewMsgIssue(SenderAccAddr, &IssueParams))
+		handler(ctx, types.NewMsgIssue(SenderAccAddr, &IssueParams))
 	}
-	issues := keeper.List(ctx, params.IssueQueryParams{Limit: 10})
+	issues := k.List(ctx, types.IssueQueryParams{Limit: 10})
 	require.Len(t, issues, cap)
 
 }
 
 func TestSearchIssues(t *testing.T) {
-	mapp, keeper, _, _, _, _ := getMockApp(t, issue.GenesisState{}, nil)
+	mapp, k, _, _, _, _ := getMockApp(t, issue.GenesisState{}, nil)
 
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.NewContext(false, abci.Header{})
-	querier := issue.NewQuerier(keeper)
-	handler := issue.NewHandler(keeper)
+	querier := keeper.NewQuerier(k)
+	handler := issue.NewHandler(k)
 	cap := 10
 	for i := 0; i < cap; i++ {
-		handler(ctx, msgs.NewMsgIssue(SenderAccAddr, &IssueParams))
+		handler(ctx, types.NewMsgIssue(SenderAccAddr, &IssueParams))
 	}
-	bz := getQueried(t, ctx, querier, queriers2.GetQueryIssuePath("TES"), types.QuerySearch, "TES")
+	bz := getQueried(t, ctx, querier, types.GetQueryIssuePath("TES"), types.QuerySearch, "TES")
 	var issues types.CoinIssues
-	keeper.Getcdc().MustUnmarshalJSON(bz, &issues)
+	mapp.Cdc.MustUnmarshalJSON(bz, &issues)
 	require.Len(t, issues, cap)
 
 }
@@ -91,7 +87,7 @@ func getQueried(t *testing.T, ctx sdk.Context, querier sdk.Querier, path string,
 	return bz
 }
 func TestList(t *testing.T) {
-	mapp, keeper, _, _, _, _ := getMockApp(t, issue.GenesisState{}, nil)
+	mapp, k, _, _, _, _ := getMockApp(t, issue.GenesisState{}, nil)
 
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -100,9 +96,9 @@ func TestList(t *testing.T) {
 
 	cap := 1000
 	for i := 0; i < cap; i++ {
-		CoinIssueInfo.SetIssuer(sdk.AccAddress(crypto.AddressHash([]byte(utils.GetRandomString(10)))))
-		CoinIssueInfo.SetSymbol(utils.GetRandomString(6))
-		_, err := keeper.CreateIssue(ctx, &CoinIssueInfo)
+		CoinIssueInfo.SetIssuer(sdk.AccAddress(crypto.AddressHash([]byte(types.GetRandomString(10)))))
+		CoinIssueInfo.SetSymbol(types.GetRandomString(6))
+		_, err := k.CreateIssue(ctx, &CoinIssueInfo)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -112,7 +108,7 @@ func TestList(t *testing.T) {
 	issueId := ""
 	for i := 0; i < 100; i++ {
 		//fmt.Println("==================page:" + strconv.Itoa(i))
-		issues := keeper.List(ctx, params.IssueQueryParams{StartIssueId: issueId, Owner: nil, Limit: 10})
+		issues := k.List(ctx, types.IssueQueryParams{StartIssueId: issueId, Owner: nil, Limit: 10})
 		require.Len(t, issues, 10)
 		for j, issue := range issues {
 			if j > 0 {

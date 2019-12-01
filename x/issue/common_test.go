@@ -1,9 +1,7 @@
-package tests
+package issue_test
 
 import (
 	"testing"
-
-	keeper2 "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
@@ -14,7 +12,7 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/mock"
 
@@ -32,7 +30,6 @@ var (
 		Name:               "testCoin",
 		Symbol:             "TEST",
 		TotalSupply:        sdk.NewInt(10000),
-		Decimals:           types.CoinDecimalsMaxValue,
 		BurnOwnerDisabled:  false,
 		BurnHolderDisabled: false,
 		BurnFromDisabled:   false,
@@ -44,7 +41,6 @@ var (
 		Name:               "testCoin",
 		Symbol:             "TEST",
 		TotalSupply:        sdk.NewInt(10000),
-		Decimals:           types.CoinDecimalsMaxValue,
 		BurnOwnerDisabled:  false,
 		BurnHolderDisabled: false,
 		BurnFromDisabled:   false,
@@ -60,7 +56,7 @@ type MockHooks struct {
 func NewMockHooks(ik issue.Keeper) MockHooks { return MockHooks{ik} }
 
 func (hooks MockHooks) CanSend(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) (bool, sdk.Error) {
-	return hooks.keeper.Hooks().CanSend(ctx, fromAddr, toAddr, amt)
+	return true, nil
 }
 
 func (hooks MockHooks) CheckMustMemoAddress(ctx sdk.Context, toAddr sdk.AccAddress, memo string) (bool, sdk.Error) {
@@ -68,35 +64,36 @@ func (hooks MockHooks) CheckMustMemoAddress(ctx sdk.Context, toAddr sdk.AccAddre
 }
 
 // initialize the mock application for this module
-func getMockApp(t *testing.T, genState issue.GenesisState, genAccs []auth.Account) (
-	mapp *mock.App, keeper keeper.Keeper, sk staking.Keeper, addrs []sdk.AccAddress,
+func getMockApp(t *testing.T, genState issue.GenesisState, genAccs []exported.Account) (
+	mapp *mock.App, k keeper.Keeper, sk staking.Keeper, addrs []sdk.AccAddress,
 	pubKeys []crypto.PubKey, privKeys []crypto.PrivKey) {
 	mapp = mock.NewApp()
 	types.RegisterCodec(mapp.Cdc)
 	keyIssue := sdk.NewKVStoreKey(types.StoreKey)
 
-	keyStaking := sdk.NewKVStoreKey(staking.StoreKey)
-	tkeyStaking := sdk.NewTransientStoreKey(staking.TStoreKey)
+	//keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 
 	pk := mapp.ParamsKeeper
-	ck := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace)
-	fck := keeper2.DummyFeeCollectionKeeper{}
+	ck := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, make(map[string]bool))
 
-	sk = staking.NewKeeper(mapp.Cdc, keyStaking, tkeyStaking, ck, pk.Subspace(staking.DefaultParamspace), staking.DefaultCodespace)
-	keeper = issue.NewKeeper(mapp.Cdc, keyIssue, pk, pk.Subspace("testissue"), &ck, fck, types.DefaultCodespace)
-	ck.SetHooks(NewMockHooks(keeper))
+	/*maccPerms := map[string][]string{
+		types.ModuleName: {supply.Minter, supply.Burner},
+	}
 
-	mapp.Router().AddRoute(types.RouterKey, issue.NewHandler(keeper))
-	mapp.QueryRouter().AddRoute(types.QuerierRoute, issue.NewQuerier(keeper))
+	supk := supply.NewKeeper(mapp.Cdc, keySupply, mapp.AccountKeeper, ck, maccPerms)*/
+	ik := issue.NewKeeper(keyIssue, pk.Subspace("testissue"), ck, types.DefaultCodespace)
+
+	mapp.Router().AddRoute(types.RouterKey, issue.NewHandler(ik))
+	mapp.QueryRouter().AddRoute(types.QuerierRoute, keeper.NewQuerier(ik))
 	//mapp.SetEndBlocker(getEndBlocker(keeper))
-	mapp.SetInitChainer(getInitChainer(mapp, keeper, sk, genState))
+	mapp.SetInitChainer(getInitChainer(mapp, ik, sk, genState))
 
 	require.NoError(t, mapp.CompleteSetup(keyIssue))
 
-	valTokens := sdk.TokensFromTendermintPower(1000000000000)
+	valTokens := sdk.TokensFromConsensusPower(1000000000000)
 	if len(genAccs) == 0 {
 		genAccs, addrs, pubKeys, privKeys = mock.CreateGenAccounts(2,
-			sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens)))
+			sdk.NewCoins(sdk.NewCoin("uftm", valTokens)))
 	}
 	SenderAccAddr = genAccs[0].GetAddress()
 	TransferAccAddr = genAccs[1].GetAddress()
@@ -106,17 +103,13 @@ func getMockApp(t *testing.T, genState issue.GenesisState, genAccs []auth.Accoun
 
 	mock.SetGenesis(mapp, genAccs)
 
-	return mapp, keeper, sk, addrs, pubKeys, privKeys
+	return mapp, ik, sk, addrs, pubKeys, privKeys
 }
 func getInitChainer(mapp *mock.App, keeper keeper.Keeper, stakingKeeper staking.Keeper, genState issue.GenesisState) sdk.InitChainer {
 
 	return func(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 
 		mapp.InitChainer(ctx, req)
-
-		stakingGenesis := staking.DefaultGenesisState()
-		tokens := sdk.TokensFromTendermintPower(100000)
-		stakingGenesis.Pool.NotBondedTokens = tokens
 
 		//validators, err := staking.InitGenesis(ctx, stakingKeeper, stakingGenesis)
 		//if err != nil {
