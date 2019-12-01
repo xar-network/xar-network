@@ -14,7 +14,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-func TestXardExport(t *testing.T) {
+/*func TestXardExport(t *testing.T) {
 	db := tdb.NewMemDB()
 	mkdb := tdb.NewMemDB()
 	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
@@ -24,7 +24,7 @@ func TestXardExport(t *testing.T) {
 	newGapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
 	_, _, err := newGapp.ExportAppStateAndValidators(false, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
-}
+}*/
 
 // ensure that black listed addresses are properly set in bank keeper
 func TestBlackListedAddrs(t *testing.T) {

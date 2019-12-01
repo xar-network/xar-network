@@ -235,6 +235,7 @@ func NewXarApp(
 
 	auctionSubspace := app.paramsKeeper.Subspace(auction.DefaultParamspace)
 	marketSubspace := app.paramsKeeper.Subspace(market.DefaultParamspace)
+	oracleSubspace := app.paramsKeeper.Subspace(oracle.DefaultParamspace)
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
@@ -249,7 +250,7 @@ func NewXarApp(
 
 	app.NFTKeeper = nft.NewKeeper(app.cdc, keys[nft.StoreKey])
 	app.issueKeeper = issue.NewKeeper(keys[issue.StoreKey], issueSubspace, app.bankKeeper, issue.DefaultCodespace)
-	app.oracleKeeper = oracle.NewKeeper(keys[oracle.StoreKey], app.cdc, oracle.DefaultCodespace)
+	app.oracleKeeper = oracle.NewKeeper(keys[oracle.StoreKey], app.cdc, oracleSubspace, oracle.DefaultCodespace)
 	app.recordKeeper = record.NewKeeper(app.cdc, keys[record.StoreKey], recordSubspace, record.DefaultCodespace)
 	app.csdtKeeper = csdt.NewKeeper(app.cdc, keys[csdt.StoreKey], csdtSubspace, app.oracleKeeper, app.bankKeeper, app.supplyKeeper)
 	app.auctionKeeper = auction.NewKeeper(app.cdc, app.csdtKeeper, keys[auction.StoreKey], auctionSubspace)
@@ -259,7 +260,7 @@ func NewXarApp(
 	app.orderKeeper = order.NewKeeper(app.bankKeeper, app.marketKeeper, keys[ordertypes.StoreKey], queue, app.cdc)
 	app.execKeeper = execution.NewKeeper(queue, app.marketKeeper, app.orderKeeper, app.bankKeeper)
 
-	app.denominationsKeeper = denominations.NewKeeper(app.accountKeeper, app.supplyKeeper, denominationsSubspace, denominations.DefaultCodespace)
+	app.denominationsKeeper = denominations.NewKeeper(keys[denominations.StoreKey], app.cdc, app.accountKeeper, app.supplyKeeper, denominationsSubspace, denominations.DefaultCodespace)
 
 	// create evidence keeper with evidence router
 	app.evidenceKeeper = evidence.NewKeeper(app.cdc, keys[evidence.StoreKey], evidenceSubspace, evidence.DefaultCodespace)
