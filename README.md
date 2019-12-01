@@ -1,7 +1,7 @@
 # XAR Network
 
 [![version](https://img.shields.io/github/tag/xar-network/xar-network.svg)](https://github.com/xar-network/xar-network/releases/latest)
-[![Build Status](https://img.shields.io/travis/xar-network/xar-network.svg?style=flat-square&logo=travis)](https://travis-ci.org/xar-network/xar-network)  
+[![Build Status](https://img.shields.io/travis/xar-network/xar-network.svg?style=flat-square&logo=travis)](https://travis-ci.org/xar-network/xar-network)
 [![codecov](https://codecov.io/gh/xar-network/xar-network/branch/master/graph/badge.svg)](https://codecov.io/gh/xar-network/xar-network)
 [![Go Report Card](https://goreportcard.com/badge/github.com/xar-network/xar-network)](https://goreportcard.com/report/github.com/xar-network/xar-network)
 [![license](https://img.shields.io/github/license/xar-network/xar-network.svg)](https://github.com/xar-network/xar-network/blob/master/LICENSE)
