@@ -31,12 +31,6 @@ func NewHandler(keeper Keeper) sdk.Handler {
 
 // handle message to issue token
 func handleMsgIssueToken(ctx sdk.Context, k Keeper, msg types.MsgIssueToken) sdk.Result {
-	defer func() {
-		if r := recover(); r != nil {
-			err := fmt.Sprintf("had to recover when issuing new token: %v", r)
-			ctx.Logger().Error(err)
-		}
-	}()
 
 	// must be lowercase otherwise NewToken will panic
 	var newSymbol = strings.ToLower(msg.Symbol)
