@@ -30,6 +30,8 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 			GetCmdPostPrice(cdc),
 			getCmdAddOracle(cdc),
 			getCmdSetOracles(cdc),
+			getCmdSetAsset(cdc),
+			getCmdAddAsset(cdc),
 		)...,
 	)
 
@@ -107,6 +109,86 @@ func getCmdSetOracles(cdc *codec.Codec) *cobra.Command {
 			}
 
 			msg := types.NewMsgSetOracles(cliCtx.GetFromAddress(), args[1], oracles)
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
+
+func getCmdAddAsset(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:     "add-asset [nominee_key] [denom] [quote_asset] [oracles]",
+		Example: "xarcli add-asset nominee xar quote_asset xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu",
+		Short:   "Create a new asset",
+		Args:    cobra.ExactArgs(4),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
+
+			oracles, err := types.ParseOracles(args[3])
+			if err != nil {
+				return err
+			}
+			if len(oracles) == 0 {
+				return fmt.Errorf("invalid oracles")
+			}
+			denom := args[1]
+			if len(denom) == 0 {
+				return fmt.Errorf("invalid denom")
+			}
+			quoteAsset := args[2]
+			if len(quoteAsset) == 0 {
+				return fmt.Errorf("invalid quote asset")
+			}
+
+			token := types.NewAsset(denom, denom, quoteAsset, oracles, true)
+			err = token.ValidateBasic()
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgAddAsset(cliCtx.GetFromAddress(), denom, token)
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
+
+func getCmdSetAsset(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:     "set-asset [nominee_key] [denom] [quote_asset] [oracles]",
+		Example: "xarcli set-asset nominee xar quote_asset xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu",
+		Short:   "Create a set asset",
+		Args:    cobra.ExactArgs(4),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
+
+			oracles, err := types.ParseOracles(args[3])
+			if err != nil {
+				return err
+			}
+			if len(oracles) == 0 {
+				return fmt.Errorf("invalid oracles")
+			}
+			denom := args[1]
+			if len(denom) == 0 {
+				return fmt.Errorf("invalid denom")
+			}
+			quoteAsset := args[2]
+			if len(quoteAsset) == 0 {
+				return fmt.Errorf("invalid quote asset")
+			}
+
+			token := types.NewAsset(denom, denom, quoteAsset, oracles, true)
+			err = token.ValidateBasic()
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgSetAsset(cliCtx.GetFromAddress(), denom, token)
 
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},

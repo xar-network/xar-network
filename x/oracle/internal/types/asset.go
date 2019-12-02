@@ -17,15 +17,33 @@ type Asset struct {
 	Active     bool    `json:"active" yaml:"active"`
 }
 
+// NewAsset creates a new asset
+func NewAsset(
+	assetCode, baseAsset, quoteAsset string,
+	oracles Oracles,
+	active bool,
+) Asset {
+	return Asset{
+		AssetCode:  assetCode,
+		BaseAsset:  baseAsset,
+		QuoteAsset: quoteAsset,
+		Oracles:    oracles,
+		Active:     active,
+	}
+}
+
 // ValidateBasic does a simple validation check that doesn't require access to any other information.
 func (a Asset) ValidateBasic() sdk.Error {
-	if a.AssetCode == "" {
+	if len(a.AssetCode) == 0 {
 		return sdk.ErrInternal(fmt.Sprintf("invalid asset: Value: %s. Error: Missing asset_code", a.AssetCode))
 	}
-	if a.BaseAsset == "" {
+	if len(a.BaseAsset) == 0 {
 		return sdk.ErrInternal(fmt.Sprintf("invalid TokenRecord: BaseAsset: %s. Error: Missing BaseAsset", a.BaseAsset))
 	}
-	if a.QuoteAsset == "" {
+	if len(a.QuoteAsset) == 0 {
+		return sdk.ErrInternal(fmt.Sprintf("invalid TokenRecord: QuoteAsset: %s. Error: Missing QuoteAsset", a.QuoteAsset))
+	}
+	if len(a.Oracles) == 0 {
 		return sdk.ErrInternal(fmt.Sprintf("invalid TokenRecord: QuoteAsset: %s. Error: Missing QuoteAsset", a.QuoteAsset))
 	}
 	return nil

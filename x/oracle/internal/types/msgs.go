@@ -220,7 +220,7 @@ func (msg MsgSetAsset) ValidateBasic() sdk.Error {
 		return err
 	}
 
-	if msg.Denom == "" {
+	if len(msg.Denom) == 0 {
 		return sdk.ErrInvalidCoins("missing denom")
 	}
 
