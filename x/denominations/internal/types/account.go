@@ -1,14 +1,19 @@
 package types
 
 import (
+	"errors"
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
+	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
-var _ exported.Account = (*FreezeAccount)(nil)
+var (
+	_ authexported.GenesisAccount = (*FreezeAccount)(nil)
+	_ exported.Account            = (*FreezeAccount)(nil)
+)
 
 func init() {
 	authtypes.RegisterAccountTypeCodec(&FreezeAccount{}, "denominations/FreezeAccount")
@@ -16,14 +21,14 @@ func init() {
 
 // FreezeAccount is customised to allow temporary freezing of coins to exclude them from transactions
 type FreezeAccount struct {
-	exported.Account
+	*authtypes.BaseAccount
 	FrozenCoins sdk.Coins `json:"frozen" yaml:"frozen"`
 }
 
-func NewFreezeAccount(baseAccount exported.Account, frozenCoins sdk.Coins) *FreezeAccount {
+func NewFreezeAccount(ba *authtypes.BaseAccount, frozenCoins sdk.Coins) *FreezeAccount {
 
 	return &FreezeAccount{
-		Account:     baseAccount,
+		BaseAccount: ba,
 		FrozenCoins: frozenCoins,
 	}
 }
@@ -43,12 +48,12 @@ func (acc FreezeAccount) String() string {
   FrozenCoins:   %s
   AccountNumber: %d
   Sequence:      %d`,
-		acc.GetAddress(), pubkey, acc.GetCoins(), acc.FrozenCoins, acc.GetAccountNumber(), acc.GetSequence(),
+		acc.Address, pubkey, acc.Coins, acc.FrozenCoins, acc.AccountNumber, acc.Sequence,
 	)
 }
 
 // GetFrozenCoins retrieves frozen coins from account
-func (acc *FreezeAccount) GetFrozenCoins() sdk.Coins {
+func (acc FreezeAccount) GetFrozenCoins() sdk.Coins {
 	return acc.FrozenCoins
 }
 
@@ -56,6 +61,15 @@ func (acc *FreezeAccount) GetFrozenCoins() sdk.Coins {
 func (acc *FreezeAccount) SetFrozenCoins(frozen sdk.Coins) error {
 	acc.FrozenCoins = frozen
 	return nil
+}
+
+// Validate checks for errors on the account fields
+func (acc FreezeAccount) Validate() error {
+	if !acc.FrozenCoins.IsValid() {
+		return errors.New("invalid coins")
+
+	}
+	return acc.BaseAccount.Validate()
 }
 
 func AreAnyCoinsZero(coins *sdk.Coins) bool {

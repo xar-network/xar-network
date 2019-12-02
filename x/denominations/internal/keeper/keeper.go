@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/xar-network/xar-network/x/denominations/internal/types"
 )
 
@@ -386,9 +387,10 @@ func (k Keeper) FreezeCoins(ctx sdk.Context, from sdk.AccAddress, address sdk.Ac
 
 	// Todo: Validate you are allowed access to account?
 	baseAccount := k.ak.GetAccount(ctx, address)
+	baseAcc := authtypes.NewBaseAccount(baseAccount.GetAddress(), baseAccount.GetCoins(), baseAccount.GetPubKey(), baseAccount.GetAccountNumber(), baseAccount.GetSequence())
 	var freezeAccount, ok = baseAccount.(*types.FreezeAccount)
 	if !ok {
-		freezeAccount = types.NewFreezeAccount(baseAccount, nil)
+		freezeAccount = types.NewFreezeAccount(baseAcc, nil)
 	}
 	er := freezeAccount.FreezeCoins(sdk.NewCoins(sdk.NewCoin(denom, amount)))
 	if er != nil {

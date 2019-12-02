@@ -41,8 +41,9 @@ func TestFreeze(t *testing.T) {
 	require.NotNil(t, err)
 
 	// Can freeze
-	err = account2.FreezeCoins(NewTestCoins(coinSymbol, 1))
+	require.Equal(t, true, sdk.NewInt(100).Equal(account2.GetCoins().AmountOf(coinSymbol)))
+	err = account2.FreezeCoins(NewTestCoins(coinSymbol, 2))
 	require.Nil(t, err)
-	require.Equal(t, true, sdk.NewInt(99).Equal(account2.Account.GetCoins().AmountOf(coinSymbol)))
-	require.Equal(t, true, sdk.NewInt(1).Equal(account2.FrozenCoins.AmountOf(coinSymbol)))
+	require.Equal(t, true, sdk.NewInt(98).Equal(account2.GetCoins().AmountOf(coinSymbol)))
+	require.Equal(t, true, sdk.NewInt(2).Equal(account2.FrozenCoins.AmountOf(coinSymbol)))
 }
