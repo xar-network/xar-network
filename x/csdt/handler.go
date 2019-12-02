@@ -34,5 +34,5 @@ func handleMsgCreateOrModifyCSDT(ctx sdk.Context, keeper keeper.Keeper, msg type
 		return err.Result()
 	}
 
-	return sdk.Result{}
+	return sdk.Result{Events: ctx.EventManager().Events()}
 }

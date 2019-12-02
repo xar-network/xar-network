@@ -17,6 +17,20 @@ type Asset struct {
 	Active     bool    `json:"active" yaml:"active"`
 }
 
+// ValidateBasic does a simple validation check that doesn't require access to any other information.
+func (a Asset) ValidateBasic() sdk.Error {
+	if a.AssetCode == "" {
+		return sdk.ErrInternal(fmt.Sprintf("invalid asset: Value: %s. Error: Missing asset_code", a.AssetCode))
+	}
+	if a.BaseAsset == "" {
+		return sdk.ErrInternal(fmt.Sprintf("invalid TokenRecord: BaseAsset: %s. Error: Missing BaseAsset", a.BaseAsset))
+	}
+	if a.QuoteAsset == "" {
+		return sdk.ErrInternal(fmt.Sprintf("invalid TokenRecord: QuoteAsset: %s. Error: Missing QuoteAsset", a.QuoteAsset))
+	}
+	return nil
+}
+
 // implement fmt.Stringer
 func (a Asset) String() string {
 	return fmt.Sprintf(`Asset:

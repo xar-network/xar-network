@@ -29,6 +29,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 		client.PostCommands(
 			GetCmdPostPrice(cdc),
 			getCmdAddOracle(cdc),
+			getCmdSetOracles(cdc),
 		)...,
 	)
 
@@ -83,6 +84,29 @@ func getCmdAddOracle(cdc *codec.Codec) *cobra.Command {
 			}
 
 			msg := types.NewMsgAddOracle(cliCtx.GetFromAddress(), args[1], oracleAddr)
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
+
+func getCmdSetOracles(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:     "set-oracles [nominee_key] [denom] [oracle_addresses]",
+		Example: "xarcli oracle add-oracle nominee xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu,xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu,xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu",
+		Short:   "Sets a list of oracles for a denom",
+		Args:    cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
+
+			oracles, err := types.ParseOracles(args[2])
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgSetOracles(cliCtx.GetFromAddress(), args[1], oracles)
 
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
