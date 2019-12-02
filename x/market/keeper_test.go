@@ -10,6 +10,7 @@ import (
 	"github.com/xar-network/xar-network/x/market/types"
 
 	cstore "github.com/cosmos/cosmos-sdk/store"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -49,24 +50,28 @@ func TestKeeperCoverage(t *testing.T) {
 	// Get market with ID 1
 	market, err := mk.Get(ctx, store.NewEntityID(1))
 	require.Nil(t, err)
-	require.Equal(t, "ueur", market.BaseAssetDenom)
+	require.Equal(t, "1", market.ID.String())
+	require.Equal(t, "uftm", market.BaseAssetDenom)
 
 	// Get pair for market 1
 	pair, err := mk.Pair(ctx, store.NewEntityID(1))
 	require.Nil(t, err)
-	require.Equal(t, "ueur/uzar", pair)
+	require.Equal(t, "1", market.ID.String())
+	require.Equal(t, "uftm/uzar", pair)
 
 	// Create market as a nominee
 	addr := sdk.AccAddress([]byte("someName"))
 	msg := types.NewMsgCreateMarket(addr, "new1", "new2")
-	res := mk.CreateMarket(ctx, msg)
-	require.Equal(t, true, res.IsOK())
+	mkt, err := mk.CreateMarket(ctx, msg.Nominee.String(), msg.BaseAsset, msg.QuoteAsset)
+	require.Nil(t, err)
+	require.Equal(t, mkt.BaseAssetDenom, msg.BaseAsset)
 
 	// Create market as a nominee
 	addr = sdk.AccAddress([]byte("someInvalidName"))
 	msg = types.NewMsgCreateMarket(addr, "new1", "new2")
-	res = mk.CreateMarket(ctx, msg)
-	require.Equal(t, false, res.IsOK())
+	mkt, err = mk.CreateMarket(ctx, msg.Nominee.String(), msg.BaseAsset, msg.QuoteAsset)
+	assert.Error(t, err)
+	require.Equal(t, "", mkt.BaseAssetDenom)
 }
 
 func makeTestCodec() (cdc *codec.Codec) {

@@ -70,7 +70,8 @@ func InitializeLCD(nValidators int, initAddrs []sdk.AccAddress, minting bool, po
 	logger = log.NewFilter(logger, log.AllowError())
 
 	db := dbm.NewMemDB()
-	gapp := app.NewXarApp(logger, db, nil, true, 0, baseapp.SetPruning(store.PruneNothing))
+	mkdb := dbm.NewMemDB()
+	gapp := app.NewXarApp(logger, db, mkdb, nil, true, 0, baseapp.SetPruning(store.PruneNothing))
 	cdc = app.MakeCodec()
 
 	genDoc, valConsPubKeys, valOperAddrs, privVal, err := defaultGenesis(config, nValidators, initAddrs, minting)
@@ -417,9 +418,9 @@ func CreateAddrs(kb crkeys.Keybase, numAddrs int) (addrs []sdk.AccAddress, seeds
 
 // AddrSeed combines an Address with the mnemonic of the private key to that address
 type AddrSeed struct {
-	Address  sdk.AccAddress
-	Seed     string
-	Name     string
+	Address sdk.AccAddress
+	Seed    string
+	Name    string
 }
 
 // AddrSeedSlice implements `Interface` in sort package.

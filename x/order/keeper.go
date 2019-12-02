@@ -9,7 +9,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 )
 
 const (
@@ -20,18 +20,18 @@ const (
 type IteratorCB func(order types3.Order) bool
 
 type Keeper struct {
-	bankKeeper   bank.Keeper
+	sk           supply.Keeper
 	marketKeeper market.Keeper
 	storeKey     sdk.StoreKey
 	queue        types.Backend
 	cdc          *codec.Codec
 }
 
-func NewKeeper(bk bank.Keeper, mk market.Keeper, sk sdk.StoreKey, queue types.Backend, cdc *codec.Codec) Keeper {
+func NewKeeper(sk supply.Keeper, mk market.Keeper, storeKey sdk.StoreKey, queue types.Backend, cdc *codec.Codec) Keeper {
 	return Keeper{
-		bankKeeper:   bk,
+		sk:           sk,
 		marketKeeper: mk,
-		storeKey:     sk,
+		storeKey:     storeKey,
 		queue:        queue,
 		cdc:          cdc,
 	}
@@ -72,7 +72,7 @@ func (k Keeper) Post(ctx sdk.Context, owner sdk.AccAddress, mktID store.EntityID
 		return types3.Order{}, err
 	}
 
-	_, err = k.bankKeeper.SubtractCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(postedAsset, amount)))
+	err = k.sk.SendCoinsFromAccountToModule(ctx, owner, ModuleName, sdk.NewCoins(sdk.NewCoin(postedAsset, amount)))
 	if err != nil {
 		return types3.Order{}, err
 	}
@@ -152,7 +152,7 @@ func (k Keeper) Cancel(ctx sdk.Context, id store.EntityID) sdk.Error {
 		return err
 	}
 
-	_, err = k.bankKeeper.AddCoins(ctx, ord.Owner, sdk.NewCoins(sdk.NewCoin(postedAsset, amount)))
+	err = k.sk.SendCoinsFromModuleToAccount(ctx, ModuleName, ord.Owner, sdk.NewCoins(sdk.NewCoin(postedAsset, amount)))
 	if err != nil {
 		// should never happen, implies consensus
 		// or storage bug

@@ -12,10 +12,12 @@ import (
 	"github.com/xar-network/xar-network/testutil/testflags"
 	"github.com/xar-network/xar-network/types/errs"
 	"github.com/xar-network/xar-network/types/store"
+	"github.com/xar-network/xar-network/x/denominations"
 	types2 "github.com/xar-network/xar-network/x/market/types"
 	types4 "github.com/xar-network/xar-network/x/order/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 )
 
 type testCtx struct {
@@ -70,8 +72,6 @@ func TestKeeper_Post(t *testing.T) {
 		require.NoError(t, err)
 		_, err = ctx.app.OrderKeeper.Post(ctx.ctx, ctx.seller, ctx.marketID, matcheng.Ask, testutil.ToBaseUnits(2), testutil.ToBaseUnits(10), 599)
 		require.NoError(t, err)
-		testutil.AssertEqualUints(t, testutil.ToBaseUnits(9980), ctx.app.AssetKeeper.Balance(ctx.ctx, ctx.market.QuoteAssetID, ctx.buyer))
-		testutil.AssertEqualUints(t, testutil.ToBaseUnits(9990), ctx.app.AssetKeeper.Balance(ctx.ctx, ctx.market.BaseAssetID, ctx.seller))
 	})
 }
 
@@ -89,7 +89,6 @@ func TestKeeper_Cancel(t *testing.T) {
 		require.NoError(t, err)
 		err = ctx.app.OrderKeeper.Cancel(ctx.ctx, bid.ID)
 		require.NoError(t, err)
-		testutil.AssertEqualUints(t, testutil.ToBaseUnits(10000), ctx.app.AssetKeeper.Balance(ctx.ctx, ctx.market.QuoteAssetID, ctx.buyer))
 		assert.False(t, ctx.app.OrderKeeper.Has(ctx.ctx, bid.ID))
 	})
 }
@@ -127,31 +126,35 @@ func TestKeeper_Iteration(t *testing.T) {
 
 func setupTest(t *testing.T) *testCtx {
 	app := mockapp.New(t)
-	owner := testutil.RandAddr()
+	nominee := testutil.RandAddr()
 	buyer := testutil.RandAddr()
 	seller := testutil.RandAddr()
 
-	asset1, err := app.AssetKeeper.Create(app.Ctx, "test asset", "TST1", owner, testutil.ToBaseUnits(1000000))
+	app.SupplyKeeper.SetSupply(app.Ctx, supply.NewSupply(sdk.Coins{}))
+	marketParams := app.MarketKeeper.GetParams(app.Ctx)
+	marketParams.Nominees = []string{nominee.String()}
+	app.MarketKeeper.SetParams(app.Ctx, marketParams)
+
+	err := app.SupplyKeeper.MintCoins(app.Ctx, denominations.ModuleName, sdk.NewCoins(sdk.NewCoin("tst1", sdk.NewInt(1000000000000)), sdk.NewCoin("tst2", sdk.NewInt(1000000000000))))
 	require.NoError(t, err)
-	asset2, err := app.AssetKeeper.Create(app.Ctx, "test asset", "TST2", owner, testutil.ToBaseUnits(1000000))
+	require.NoError(t, app.SupplyKeeper.SendCoinsFromModuleToAccount(app.Ctx, denominations.ModuleName, buyer, sdk.NewCoins(sdk.NewCoin("tst1", sdk.NewInt(10000000000)))))
+	require.NoError(t, app.SupplyKeeper.SendCoinsFromModuleToAccount(app.Ctx, denominations.ModuleName, buyer, sdk.NewCoins(sdk.NewCoin("tst2", sdk.NewInt(10000000000)))))
+	require.NoError(t, app.SupplyKeeper.SendCoinsFromModuleToAccount(app.Ctx, denominations.ModuleName, seller, sdk.NewCoins(sdk.NewCoin("tst1", sdk.NewInt(10000000000)))))
+	require.NoError(t, app.SupplyKeeper.SendCoinsFromModuleToAccount(app.Ctx, denominations.ModuleName, seller, sdk.NewCoins(sdk.NewCoin("tst2", sdk.NewInt(10000000000)))))
+	market := types2.NewMsgCreateMarket(nominee, "tst1", "tst2")
+	mkt, err := app.MarketKeeper.CreateMarket(app.Ctx, market.Nominee.String(), market.BaseAsset, market.QuoteAsset)
 	require.NoError(t, err)
-	require.NoError(t, app.AssetKeeper.Mint(app.Ctx, asset1.ID, testutil.ToBaseUnits(1000000)))
-	require.NoError(t, app.AssetKeeper.Mint(app.Ctx, asset2.ID, testutil.ToBaseUnits(1000000)))
-	require.NoError(t, app.AssetKeeper.Transfer(app.Ctx, asset1.ID, owner, buyer, testutil.ToBaseUnits(10000)))
-	require.NoError(t, app.AssetKeeper.Transfer(app.Ctx, asset2.ID, owner, buyer, testutil.ToBaseUnits(10000)))
-	require.NoError(t, app.AssetKeeper.Transfer(app.Ctx, asset1.ID, owner, seller, testutil.ToBaseUnits(10000)))
-	require.NoError(t, app.AssetKeeper.Transfer(app.Ctx, asset2.ID, owner, seller, testutil.ToBaseUnits(10000)))
-	mkt := app.MarketKeeper.Create(app.Ctx, asset1.ID, asset2.ID)
+
+	marketParams = app.MarketKeeper.GetParams(app.Ctx)
 
 	return &testCtx{
 		ctx:      app.Ctx,
 		marketID: mkt.ID,
-		owner:    owner,
 		buyer:    buyer,
 		seller:   seller,
 		app:      app,
-		asset1:   asset1,
-		asset2:   asset2,
+		asset1:   "tst1",
+		asset2:   "tst2",
 		market:   mkt,
 	}
 }

@@ -7,12 +7,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-const (
-	ModuleName = "order"
-	RouterKey  = ModuleName
-	StoreKey   = ModuleName
-)
-
 const MaxTimeInForce = 600
 
 type Order struct {

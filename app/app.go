@@ -104,6 +104,10 @@ var (
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		gov.ModuleName:            {supply.Burner},
 		denominations.ModuleName:  {supply.Minter, supply.Burner},
+		liquidator.ModuleName:     {supply.Minter, supply.Burner},
+		csdt.ModuleName:           {supply.Minter, supply.Burner},
+		issue.ModuleName:          {supply.Minter, supply.Burner},
+		order.ModuleName:          nil,
 	}
 )
 
@@ -121,7 +125,7 @@ func MakeCodec() *codec.Codec {
 }
 
 // xarApp extended ABCI application
-type xarApp struct {
+type XarApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
 	mq  types.Backend
@@ -172,7 +176,7 @@ type xarApp struct {
 func NewXarApp(
 	logger log.Logger, db dbm.DB, mktDataDB dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
-) *xarApp {
+) *XarApp {
 
 	cdc := MakeCodec()
 
@@ -206,7 +210,7 @@ func NewXarApp(
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
-	app := &xarApp{
+	app := &XarApp{
 		BaseApp:        bApp,
 		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
@@ -257,7 +261,7 @@ func NewXarApp(
 	app.liquidatorKeeper = liquidator.NewKeeper(app.cdc, keys[liquidator.StoreKey], liquidatorSubspace, app.csdtKeeper, app.auctionKeeper, app.bankKeeper, app.supplyKeeper)
 
 	app.marketKeeper = market.NewKeeper(keys[markettypes.StoreKey], app.cdc, marketSubspace, market.DefaultCodespace)
-	app.orderKeeper = order.NewKeeper(app.bankKeeper, app.marketKeeper, keys[ordertypes.StoreKey], queue, app.cdc)
+	app.orderKeeper = order.NewKeeper(app.supplyKeeper, app.marketKeeper, keys[ordertypes.StoreKey], queue, app.cdc)
 	app.execKeeper = execution.NewKeeper(queue, app.marketKeeper, app.orderKeeper, app.bankKeeper)
 
 	app.denominationsKeeper = denominations.NewKeeper(keys[denominations.StoreKey], app.cdc, app.accountKeeper, app.supplyKeeper, denominationsSubspace, denominations.DefaultCodespace)
@@ -402,18 +406,18 @@ func NewXarApp(
 }
 
 // application updates every begin block
-func (app *xarApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+func (app *XarApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
 
 // application updates every end block
-func (app *xarApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+func (app *XarApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	app.performMatching(ctx)
 	return app.mm.EndBlock(ctx, req)
 }
 
 // application update at chain initialization
-func (app *xarApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *XarApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	//app.Logger().Error(fmt.Sprintf("%s", req.String()))
 	var genesisState GenesisState
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
@@ -421,12 +425,12 @@ func (app *xarApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.
 }
 
 // load a particular height
-func (app *xarApp) LoadHeight(height int64) error {
+func (app *XarApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
 
 // ModuleAccountAddrs returns all the app's module account addresses.
-func (app *xarApp) ModuleAccountAddrs() map[string]bool {
+func (app *XarApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
@@ -436,11 +440,35 @@ func (app *xarApp) ModuleAccountAddrs() map[string]bool {
 }
 
 // Codec returns the application's sealed codec.
-func (app *xarApp) Codec() *codec.Codec {
+func (app *XarApp) Codec() *codec.Codec {
 	return app.cdc
 }
 
-func (app *xarApp) performMatching(ctx sdk.Context) {
+func (app *XarApp) MQ() types.Backend {
+	return app.mq
+}
+
+func (app *XarApp) MarketKeeper() market.Keeper {
+	return app.marketKeeper
+}
+
+func (app *XarApp) OrderKeeper() order.Keeper {
+	return app.orderKeeper
+}
+
+func (app *XarApp) BankKeeper() bank.Keeper {
+	return app.bankKeeper
+}
+
+func (app *XarApp) ExecKeeper() execution.Keeper {
+	return app.execKeeper
+}
+
+func (app *XarApp) SupplyKeeper() supply.Keeper {
+	return app.supplyKeeper
+}
+
+func (app *XarApp) performMatching(ctx sdk.Context) {
 	err := app.execKeeper.ExecuteAndCancelExpired(ctx)
 	// an error in the execution/cancellation step is a
 	// critical consensus failure.

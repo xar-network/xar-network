@@ -58,7 +58,7 @@ func TestBlackListedAddrs(t *testing.T) {
 	}
 }
 
-func setGenesis(gapp *xarApp) error {
+func setGenesis(gapp *XarApp) error {
 	//genesisState := simapp.NewDefaultGenesisState()
 	genesisState := ModuleBasics.DefaultGenesis()
 	stateBytes, err := codec.MarshalJSONIndent(gapp.cdc, genesisState)

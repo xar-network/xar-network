@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	AssetDecimals = 18
+	AssetDecimals = 8
 )
 
 func ToBaseUnits(n uint64) sdk.Uint {

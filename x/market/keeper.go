@@ -37,9 +37,16 @@ func NewKeeper(sk sdk.StoreKey, cdc *codec.Codec, paramstore subspace.Subspace, 
 
 func (k Keeper) Get(ctx sdk.Context, id store.EntityID) (types.Market, sdk.Error) {
 	params := k.GetParams(ctx)
-	market := params.Markets[id.Uint64()]
+	markets := params.Markets
+	if uint64(len(markets)) < id.Uint64() {
+		return types.Market{}, errs.ErrNotFound("not found")
+	}
+	market := params.Markets[id.Dec().Uint64()]
 	if (market == types.Market{}) {
 		return types.Market{}, errs.ErrNotFound("not found")
+	}
+	if !market.ID.Equals(id) {
+		return types.Market{}, errs.ErrNotFound("incorrect index")
 	}
 	return market, nil
 }
@@ -58,17 +65,17 @@ func (k Keeper) Has(ctx sdk.Context, id store.EntityID) bool {
 	return err == nil
 }
 
-func (k Keeper) CreateMarket(ctx sdk.Context, msg types.MsgCreateMarket) sdk.Result {
-	if !k.IsNominee(ctx, msg.Nominee.String()) {
-		return sdk.ErrInternal(fmt.Sprintf("not a nominee: '%s'", msg.Nominee.String())).Result()
+func (k Keeper) CreateMarket(ctx sdk.Context, nominee, baseAsset, quoteAsset string) (types.Market, sdk.Error) {
+	if !k.IsNominee(ctx, nominee) {
+		return types.Market{}, sdk.ErrInternal(fmt.Sprintf("not a nominee: '%s'", nominee))
 	}
 	params := k.GetParams(ctx)
 	id := uint64(len(params.Markets))
-	market := types.NewMarket(store.NewEntityID(id).Inc(), msg.BaseAsset, msg.QuoteAsset)
+	market := types.NewMarket(store.NewEntityID(id).Inc(), baseAsset, quoteAsset)
 	params.Markets = append(params.Markets, market)
 	k.SetParams(ctx, params)
 
-	return sdk.Result{Events: ctx.EventManager().Events()}
+	return market, nil
 }
 
 func (k Keeper) Iterator(ctx sdk.Context, cb IteratorCB) {

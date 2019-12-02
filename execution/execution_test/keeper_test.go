@@ -11,26 +11,34 @@ import (
 	"github.com/xar-network/xar-network/testutil/mockapp"
 	"github.com/xar-network/xar-network/testutil/testflags"
 	uexstore "github.com/xar-network/xar-network/types/store"
+	"github.com/xar-network/xar-network/x/denominations"
+	types2 "github.com/xar-network/xar-network/x/market/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 )
 
 func TestKeeper_ExecuteAndCancelExpired(t *testing.T) {
 	testflags.UnitTest(t)
 	app := mockapp.New(t)
-	owner := testutil.RandAddr()
+	nominee := testutil.RandAddr()
 	buyer := testutil.RandAddr()
 	seller := testutil.RandAddr()
 
-	asset1, err := app.AssetKeeper.Create(app.Ctx, "test asset", "TST1", owner, testutil.ToBaseUnits(1000000))
+	app.SupplyKeeper.SetSupply(app.Ctx, supply.NewSupply(sdk.Coins{}))
+	marketParams := app.MarketKeeper.GetParams(app.Ctx)
+	marketParams.Nominees = []string{nominee.String()}
+	app.MarketKeeper.SetParams(app.Ctx, marketParams)
+
+	err := app.SupplyKeeper.MintCoins(app.Ctx, denominations.ModuleName, sdk.NewCoins(sdk.NewCoin("tst1", sdk.NewInt(1000000000000)), sdk.NewCoin("tst2", sdk.NewInt(1000000000000))))
 	require.NoError(t, err)
-	asset2, err := app.AssetKeeper.Create(app.Ctx, "test asset", "TST2", owner, testutil.ToBaseUnits(1000000))
+	require.NoError(t, app.SupplyKeeper.SendCoinsFromModuleToAccount(app.Ctx, denominations.ModuleName, buyer, sdk.NewCoins(sdk.NewCoin("tst1", sdk.NewInt(10000000000)))))
+	require.NoError(t, app.SupplyKeeper.SendCoinsFromModuleToAccount(app.Ctx, denominations.ModuleName, buyer, sdk.NewCoins(sdk.NewCoin("tst2", sdk.NewInt(10000000000)))))
+	require.NoError(t, app.SupplyKeeper.SendCoinsFromModuleToAccount(app.Ctx, denominations.ModuleName, seller, sdk.NewCoins(sdk.NewCoin("tst1", sdk.NewInt(10000000000)))))
+	require.NoError(t, app.SupplyKeeper.SendCoinsFromModuleToAccount(app.Ctx, denominations.ModuleName, seller, sdk.NewCoins(sdk.NewCoin("tst2", sdk.NewInt(10000000000)))))
+	market := types2.NewMsgCreateMarket(nominee, "tst1", "tst2")
+	mkt, err := app.MarketKeeper.CreateMarket(app.Ctx, market.Nominee.String(), market.BaseAsset, market.QuoteAsset)
 	require.NoError(t, err)
-	require.NoError(t, app.AssetKeeper.Mint(app.Ctx, asset1.ID, testutil.ToBaseUnits(1000000)))
-	require.NoError(t, app.AssetKeeper.Mint(app.Ctx, asset2.ID, testutil.ToBaseUnits(1000000)))
-	require.NoError(t, app.AssetKeeper.Transfer(app.Ctx, asset1.ID, owner, buyer, testutil.ToBaseUnits(10000)))
-	require.NoError(t, app.AssetKeeper.Transfer(app.Ctx, asset2.ID, owner, buyer, testutil.ToBaseUnits(10000)))
-	require.NoError(t, app.AssetKeeper.Transfer(app.Ctx, asset1.ID, owner, seller, testutil.ToBaseUnits(10000)))
-	require.NoError(t, app.AssetKeeper.Transfer(app.Ctx, asset2.ID, owner, seller, testutil.ToBaseUnits(10000)))
-	mkt := app.MarketKeeper.Create(app.Ctx, asset1.ID, asset2.ID)
 
 	_, err = app.OrderKeeper.Post(app.Ctx, buyer, mkt.ID, matcheng.Bid, testutil.ToBaseUnits(1), testutil.ToBaseUnits(1), 100)
 	require.NoError(t, err)
@@ -78,21 +86,22 @@ func TestKeeper_ExecuteAndCancelExpired(t *testing.T) {
 	t.Run("all executed orders should exchange coins", func(t *testing.T) {
 		// seller should have 9990 asset 1, because two orders were
 		// partially executed (for 5 each), then expired.
-		sellerAsset1Bal := app.AssetKeeper.Balance(ctx, asset1.ID, seller)
-		testutil.AssertEqualUints(t, testutil.ToBaseUnits(9990), sellerAsset1Bal)
+
+		sellerAsset1Bal := sdk.NewUintFromBigInt(app.BankKeeper.GetCoins(ctx, seller).AmountOf("tst1").BigInt())
+		testutil.AssertEqualUints(t, testutil.ToBaseUnits(90), sellerAsset1Bal)
 		// 10020 because two orders executed at clearing price 2:
 		// 10000 + 5 * 2 + 5 * 2 = 10020
-		sellerAsset2Bal := app.AssetKeeper.Balance(ctx, asset2.ID, seller)
-		testutil.AssertEqualUints(t, testutil.ToBaseUnits(10020), sellerAsset2Bal)
+		sellerAsset2Bal := sdk.NewUintFromBigInt(app.BankKeeper.GetCoins(ctx, seller).AmountOf("tst2").BigInt())
+		testutil.AssertEqualUints(t, testutil.ToBaseUnits(120), sellerAsset2Bal)
 
-		buyerAsset1Bal := app.AssetKeeper.Balance(ctx, asset1.ID, buyer)
+		buyerAsset1Bal := sdk.NewUintFromBigInt(app.BankKeeper.GetCoins(ctx, buyer).AmountOf("tst1").BigInt())
 		// the orders with prices 1 and 2 receives partial fills of 5
 		// the other orders expired.
-		testutil.AssertEqualUints(t, testutil.ToBaseUnits(10010), buyerAsset1Bal)
+		testutil.AssertEqualUints(t, testutil.ToBaseUnits(110), buyerAsset1Bal)
 
-		buyerAsset2Bal := app.AssetKeeper.Balance(ctx, asset2.ID, buyer)
+		buyerAsset2Bal := sdk.NewUintFromBigInt(app.BankKeeper.GetCoins(ctx, buyer).AmountOf("tst2").BigInt())
 		// clearing of 2. two of buyer's orders were rationed for a total of 10
 		// asset 2 credited.
-		testutil.AssertEqualUints(t, testutil.ToBaseUnits(9980), buyerAsset2Bal)
+		testutil.AssertEqualUints(t, testutil.ToBaseUnits(80), buyerAsset2Bal)
 	})
 }

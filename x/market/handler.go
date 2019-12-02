@@ -12,9 +12,17 @@ func NewHandler(k Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 		switch msg := msg.(type) {
 		case types.MsgCreateMarket:
-			return k.CreateMarket(ctx, msg)
+			return handleCreateMarket(ctx, k, msg)
 		default:
 			return sdk.ErrUnknownRequest(fmt.Sprintf("unrecognized market message type: %T", msg)).Result()
 		}
 	}
+}
+
+func handleCreateMarket(ctx sdk.Context, keeper Keeper, msg types.MsgCreateMarket) sdk.Result {
+	_, err := keeper.CreateMarket(ctx, msg.Nominee.String(), msg.BaseAsset, msg.QuoteAsset)
+	if err != nil {
+		return err.Result()
+	}
+	return sdk.Result{Events: ctx.EventManager().Events()}
 }
