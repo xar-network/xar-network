@@ -33,7 +33,8 @@ func NewKeeper(cdc *codec.Codec, supplyKeeper types.SupplyKeeper, storeKey sdk.S
 // StartForwardAuction starts a normal auction. Known as flap in maker.
 func (k Keeper) StartForwardAuction(ctx sdk.Context, seller sdk.AccAddress, lot sdk.Coin, initialBid sdk.Coin) (types.ID, sdk.Error) {
 	// create auction
-	auction, initiatorOutput := types.NewForwardAuction(seller, lot, initialBid, types.EndTime(ctx.BlockHeight())+types.DefaultMaxAuctionDuration)
+	params := k.GetParams(ctx)
+	auction, initiatorOutput := types.NewForwardAuction(seller, lot, initialBid, types.EndTime(ctx.BlockHeight())+params.MaxAuctionDuration)
 	// start the auction
 	auctionID, err := k.startAuction(ctx, &auction, initiatorOutput)
 	if err != nil {
@@ -45,7 +46,8 @@ func (k Keeper) StartForwardAuction(ctx sdk.Context, seller sdk.AccAddress, lot 
 // StartReverseAuction starts an auction where sellers compete by offering decreasing prices. Known as flop in maker.
 func (k Keeper) StartReverseAuction(ctx sdk.Context, buyer sdk.AccAddress, bid sdk.Coin, initialLot sdk.Coin) (types.ID, sdk.Error) {
 	// create auction
-	auction, initiatorOutput := types.NewReverseAuction(buyer, bid, initialLot, types.EndTime(ctx.BlockHeight())+types.DefaultMaxAuctionDuration)
+	params := k.GetParams(ctx)
+	auction, initiatorOutput := types.NewReverseAuction(buyer, bid, initialLot, types.EndTime(ctx.BlockHeight())+params.MaxAuctionDuration)
 	// start the auction
 	auctionID, err := k.startAuction(ctx, &auction, initiatorOutput)
 	if err != nil {
@@ -58,7 +60,8 @@ func (k Keeper) StartReverseAuction(ctx sdk.Context, buyer sdk.AccAddress, bid s
 func (k Keeper) StartForwardReverseAuction(ctx sdk.Context, seller sdk.AccAddress, lot sdk.Coin, maxBid sdk.Coin, otherPerson sdk.AccAddress) (types.ID, sdk.Error) {
 	// create auction
 	initialBid := sdk.NewInt64Coin(maxBid.Denom, 0) // set the bidding coin denomination from the specified max bid
-	auction, initiatorOutput := types.NewForwardReverseAuction(seller, lot, initialBid, types.EndTime(ctx.BlockHeight())+types.DefaultMaxAuctionDuration, maxBid, otherPerson)
+	params := k.GetParams(ctx)
+	auction, initiatorOutput := types.NewForwardReverseAuction(seller, lot, initialBid, types.EndTime(ctx.BlockHeight())+params.MaxAuctionDuration, maxBid, otherPerson)
 	// start the auction
 	auctionID, err := k.startAuction(ctx, &auction, initiatorOutput)
 	if err != nil {

@@ -17,11 +17,17 @@ func TestKeeper_EndBlocker(t *testing.T) {
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
 
+	params := types.DefaultAuctionParams()
+	params.MaxBidDuration = 3 * 1
+	params.MaxAuctionDuration = 2 * 24 * 1
+	keeper.SetParams(ctx, params)
+
 	seller := addresses[0]
 	keeper.StartForwardAuction(ctx, seller, sdk.NewInt64Coin("token1", 20), sdk.NewInt64Coin("token2", 0))
 
 	// run the endblocker, simulating a block height after auction expiry
-	expiryBlock := ctx.BlockHeight() + int64(types.DefaultMaxAuctionDuration)
+
+	expiryBlock := ctx.BlockHeight() + int64(params.MaxAuctionDuration)
 	auction.EndBlocker(ctx.WithBlockHeight(expiryBlock), keeper)
 
 	// check auction has been closed

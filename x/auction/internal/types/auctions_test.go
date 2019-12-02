@@ -8,13 +8,15 @@ import (
 	"github.com/xar-network/xar-network/x/auction/internal/types"
 )
 
+const DefaultMaxBidDuration types.EndTime = 3 * 1
+
 // TODO can this be less verbose? Should PlaceBid() be split into smaller functions?
 // It would be possible to combine all auction tests into one test runner.
 func TestForwardAuction_PlaceBid(t *testing.T) {
 	seller := sdk.AccAddress([]byte("a_seller"))
 	buyer1 := sdk.AccAddress([]byte("buyer1"))
 	buyer2 := sdk.AccAddress([]byte("buyer2"))
-	end := types.EndTime(10810)
+	end := types.EndTime(13)
 	now := types.EndTime(10)
 
 	type args struct {
@@ -47,7 +49,7 @@ func TestForwardAuction_PlaceBid(t *testing.T) {
 			args{now, buyer2, c("usdx", 100), c("ftm", 10)},
 			[]types.BankOutput{{buyer2, c("ftm", 10)}},
 			[]types.BankInput{{buyer1, c("ftm", 6)}, {seller, c("ftm", 4)}},
-			now + types.DefaultMaxBidDuration,
+			now + DefaultMaxBidDuration,
 			buyer2,
 			c("ftm", 10),
 			true,
@@ -151,7 +153,7 @@ func TestReverseAuction_PlaceBid(t *testing.T) {
 	buyer := sdk.AccAddress([]byte("a_buyer"))
 	seller1 := sdk.AccAddress([]byte("seller1"))
 	seller2 := sdk.AccAddress([]byte("seller2"))
-	end := types.EndTime(10810)
+	end := types.EndTime(13)
 	now := types.EndTime(10)
 
 	type args struct {
@@ -184,7 +186,7 @@ func TestReverseAuction_PlaceBid(t *testing.T) {
 			args{now, seller2, c("ftm", 9), c("usdx", 100)},
 			[]types.BankOutput{{seller2, c("usdx", 100)}},
 			[]types.BankInput{{seller1, c("usdx", 100)}, {buyer, c("ftm", 1)}},
-			now + types.DefaultMaxBidDuration,
+			now + DefaultMaxBidDuration,
 			seller2,
 			c("ftm", 9),
 			true,
@@ -289,7 +291,7 @@ func TestForwardReverseAuction_PlaceBid(t *testing.T) {
 	seller := sdk.AccAddress([]byte("a_seller"))
 	buyer1 := sdk.AccAddress([]byte("buyer1"))
 	buyer2 := sdk.AccAddress([]byte("buyer2"))
-	end := types.EndTime(10810)
+	end := types.EndTime(13)
 	now := types.EndTime(10)
 
 	type args struct {
@@ -325,7 +327,7 @@ func TestForwardReverseAuction_PlaceBid(t *testing.T) {
 			args{now, buyer2, c("xrp", 100), c("usdx", 6)},
 			[]types.BankOutput{{buyer2, c("usdx", 6)}},
 			[]types.BankInput{{buyer1, c("usdx", 5)}, {seller, c("usdx", 1)}},
-			now + types.DefaultMaxBidDuration,
+			now + DefaultMaxBidDuration,
 			buyer2,
 			c("xrp", 100),
 			c("usdx", 6),
@@ -346,7 +348,7 @@ func TestForwardReverseAuction_PlaceBid(t *testing.T) {
 			args{now, buyer2, c("xrp", 99), c("usdx", 10)},
 			[]types.BankOutput{{buyer2, c("usdx", 10)}},
 			[]types.BankInput{{buyer1, c("usdx", 5)}, {seller, c("usdx", 5)}, {cdpOwner, c("xrp", 1)}},
-			now + types.DefaultMaxBidDuration,
+			now + DefaultMaxBidDuration,
 			buyer2,
 			c("xrp", 99),
 			c("usdx", 10),
@@ -367,7 +369,7 @@ func TestForwardReverseAuction_PlaceBid(t *testing.T) {
 			args{now, buyer2, c("xrp", 90), c("usdx", 10)},
 			[]types.BankOutput{{buyer2, c("usdx", 10)}},
 			[]types.BankInput{{buyer1, c("usdx", 10)}, {cdpOwner, c("xrp", 9)}},
-			now + types.DefaultMaxBidDuration,
+			now + DefaultMaxBidDuration,
 			buyer2,
 			c("xrp", 90),
 			c("usdx", 10),

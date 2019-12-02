@@ -112,6 +112,12 @@ func setupTestKeepers() (sdk.Context, keepers) {
 
 	// Create context
 	ctx := sdk.NewContext(ms, abci.Header{ChainID: "testchain"}, false, log.NewNopLogger())
+
+	auctionParams := auction.DefaultAuctionParams()
+	auctionParams.MaxAuctionDuration = 3 * 1
+	auctionParams.MaxBidDuration = 3 * 1
+	auctionKeeper.SetParams(ctx, auctionParams)
+
 	supplyKeeper.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 
 	return ctx, keepers{

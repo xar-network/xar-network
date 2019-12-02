@@ -99,7 +99,13 @@ func TestApp_ForwardAuction(t *testing.T) {
 	// Create a block where an auction is started (lot: 20 t1, initialBid: 0 t2)
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
-	ctx := mapp.BaseApp.NewContext(false, header)                                                          // make sure first arg is false, otherwise no db writes
+	ctx := mapp.BaseApp.NewContext(false, header) // make sure first arg is false, otherwise no db writes
+
+	params := types.DefaultAuctionParams()
+	params.MaxBidDuration = 3 * 1
+	params.MaxAuctionDuration = 3 * 1
+	keeper.SetParams(ctx, params)
+
 	keeper.StartForwardAuction(ctx, seller, sdk.NewInt64Coin("token1", 20), sdk.NewInt64Coin("token2", 0)) // lot, initialBid
 	mapp.EndBlock(abci.RequestEndBlock{})
 	mapp.Commit()
@@ -119,7 +125,7 @@ func TestApp_ForwardAuction(t *testing.T) {
 
 	// Deliver empty blocks until the auction should be closed (bid placed on block 3)
 	// TODO is there a way of skipping ahead? This takes a while and prints a lot.
-	for h := mapp.LastBlockHeight() + 1; h < int64(types.DefaultMaxBidDuration)+4; h++ {
+	for h := mapp.LastBlockHeight() + 1; h < int64(params.MaxBidDuration)+4; h++ {
 		mapp.BeginBlock(abci.RequestBeginBlock{Header: abci.Header{Height: h}})
 		mapp.EndBlock(abci.RequestEndBlock{Height: h})
 		mapp.Commit()
@@ -140,6 +146,12 @@ func TestApp_ReverseAuction(t *testing.T) {
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
+
+	params := types.DefaultAuctionParams()
+	params.MaxBidDuration = 3 * 1
+	params.MaxAuctionDuration = 3 * 1
+	keeper.SetParams(ctx, params)
+
 	keeper.StartReverseAuction(ctx, buyer, sdk.NewInt64Coin("token1", 20), sdk.NewInt64Coin("token2", 99)) // buyer, bid, initialLot
 	mapp.EndBlock(abci.RequestEndBlock{})
 	mapp.Commit()
@@ -158,7 +170,7 @@ func TestApp_ReverseAuction(t *testing.T) {
 	mock.CheckBalance(t, mapp, buyer, sdk.NewCoins(sdk.NewInt64Coin("token1", 120), sdk.NewInt64Coin("token2", 90)))
 
 	// Deliver empty blocks until the auction should be closed (bid placed on block 3)
-	for h := mapp.LastBlockHeight() + 1; h < int64(types.DefaultMaxBidDuration)+4; h++ {
+	for h := mapp.LastBlockHeight() + 1; h < int64(params.MaxBidDuration)+4; h++ {
 		mapp.BeginBlock(abci.RequestBeginBlock{Header: abci.Header{Height: h}})
 		mapp.EndBlock(abci.RequestEndBlock{Height: h})
 		mapp.Commit()
@@ -180,6 +192,12 @@ func TestApp_ForwardReverseAuction(t *testing.T) {
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
+
+	params := types.DefaultAuctionParams()
+	params.MaxBidDuration = 3 * 1
+	params.MaxAuctionDuration = 3 * 1
+	keeper.SetParams(ctx, params)
+
 	keeper.StartForwardReverseAuction(ctx, seller, sdk.NewInt64Coin("token1", 20), sdk.NewInt64Coin("token2", 50), recipient) // seller, lot, maxBid, otherPerson
 	mapp.EndBlock(abci.RequestEndBlock{})
 	mapp.Commit()
@@ -200,7 +218,7 @@ func TestApp_ForwardReverseAuction(t *testing.T) {
 	mock.CheckBalance(t, mapp, recipient, sdk.NewCoins(sdk.NewInt64Coin("token1", 105), sdk.NewInt64Coin("token2", 100)))
 
 	// Deliver empty blocks until the auction should be closed (bid placed on block 3)
-	for h := mapp.LastBlockHeight() + 1; h < int64(types.DefaultMaxBidDuration)+4; h++ {
+	for h := mapp.LastBlockHeight() + 1; h < int64(params.MaxBidDuration)+4; h++ {
 		mapp.BeginBlock(abci.RequestBeginBlock{Header: abci.Header{Height: h}})
 		mapp.EndBlock(abci.RequestEndBlock{Height: h})
 		mapp.Commit()
