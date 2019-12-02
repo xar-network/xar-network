@@ -6,9 +6,7 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
-	"path/filepath"
 	"sort"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -465,13 +463,13 @@ func InitClientHome(dir string) string {
 
 // makePathname creates a unique pathname for each test.
 func makePathname() (string, error) {
-	p, err := os.Getwd()
+	/*p, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
 
-	sep := string(filepath.Separator)
-	return strings.Replace(p, sep, "_", -1), nil
+	sep := string(filepath.Separator)*/
+	return "lcd_test", nil
 }
 
 // GetConfig returns a Tendermint config for the test cases.

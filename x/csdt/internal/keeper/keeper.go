@@ -178,7 +178,6 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 		if er != nil {
 			return er
 		}
-
 	}
 	if err != nil {
 		panic(err) // this shouldn't happen because coin balance was checked earlier

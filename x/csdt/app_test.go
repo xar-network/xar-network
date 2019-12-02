@@ -12,7 +12,81 @@ import (
 	"github.com/xar-network/xar-network/x/csdt"
 	"github.com/xar-network/xar-network/x/csdt/internal/types"
 	"github.com/xar-network/xar-network/x/oracle"
+
+	"github.com/tendermint/tendermint/crypto"
+
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/stretchr/testify/require"
 )
+
+const chainID = ""
+
+// GenTx generates a signed mock transaction.
+func GenTx(msgs []sdk.Msg, accnums []uint64, seq []uint64, priv ...crypto.PrivKey) auth.StdTx {
+	// Make the transaction free
+	fee := auth.StdFee{
+		Amount: sdk.NewCoins(sdk.NewInt64Coin("foocoin", 0)),
+		Gas:    200000,
+	}
+
+	sigs := make([]auth.StdSignature, len(priv))
+	memo := "testmemotestmemo"
+
+	for i, p := range priv {
+		sig, err := p.Sign(auth.StdSignBytes(chainID, accnums[i], seq[i], fee, msgs, memo))
+		if err != nil {
+			panic(err)
+		}
+
+		sigs[i] = auth.StdSignature{
+			PubKey:    p.PubKey(),
+			Signature: sig,
+		}
+	}
+
+	return auth.NewStdTx(msgs, fee, sigs, memo)
+}
+
+// SignCheckDeliver checks a generated signed transaction and simulates a
+// block commitment with the given transaction. A test assertion is made using
+// the parameter 'expPass' against the result. A corresponding result is
+// returned.
+func SignCheckDeliver(
+	t *testing.T, cdc *codec.Codec, app *baseapp.BaseApp, header abci.Header, msgs []sdk.Msg,
+	accNums, seq []uint64, expSimPass, expPass bool, priv ...crypto.PrivKey,
+) sdk.Result {
+
+	tx := GenTx(msgs, accNums, seq, priv...)
+
+	txBytes, err := cdc.MarshalBinaryLengthPrefixed(tx)
+	require.Nil(t, err)
+
+	// Must simulate now as CheckTx doesn't run Msgs anymore
+	res := app.Simulate(txBytes, tx)
+
+	if expSimPass {
+		require.Equal(t, sdk.CodeOK, res.Code, res.Log)
+	} else {
+		require.NotEqual(t, sdk.CodeOK, res.Code, res.Log)
+	}
+
+	// Simulate a sending a transaction and committing a block
+	app.BeginBlock(abci.RequestBeginBlock{Header: header})
+	res = app.Deliver(tx)
+
+	if expPass {
+		require.Equal(t, sdk.CodeOK, res.Code, res.Log)
+	} else {
+		require.NotEqual(t, sdk.CodeOK, res.Code, res.Log)
+	}
+
+	app.EndBlock(abci.RequestEndBlock{})
+	app.Commit()
+
+	return res
+}
 
 func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 	// Setup
@@ -54,19 +128,19 @@ func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 
 	// Create CSDT
 	msgs := []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(10), i(5))}
-	mock.SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{0}, true, true, testPrivKey)
+	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{0}, true, true, testPrivKey)
 
 	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 5), c("uftm", 90)))
 
 	// Modify CSDT
 	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(40), i(5))}
-	mock.SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{1}, true, true, testPrivKey)
+	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{1}, true, true, testPrivKey)
 
 	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 10), c("uftm", 50)))
 
 	// Delete CSDT
 	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(-50), i(-10))}
-	mock.SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{2}, true, true, testPrivKey)
+	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{2}, true, true, testPrivKey)
 
 	mock.CheckBalance(t, mapp, testAddr, cs(c("uftm", 100)))
 }

@@ -12,7 +12,79 @@ import (
 	"github.com/xar-network/xar-network/x/auction"
 	"github.com/xar-network/xar-network/x/auction/internal/types"
 	"github.com/xar-network/xar-network/x/csdt"
+
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/stretchr/testify/require"
 )
+
+const chainID = ""
+
+// GenTx generates a signed mock transaction.
+func GenTx(msgs []sdk.Msg, accnums []uint64, seq []uint64, priv ...crypto.PrivKey) auth.StdTx {
+	// Make the transaction free
+	fee := auth.StdFee{
+		Amount: sdk.NewCoins(sdk.NewInt64Coin("foocoin", 0)),
+		Gas:    200000,
+	}
+
+	sigs := make([]auth.StdSignature, len(priv))
+	memo := "testmemotestmemo"
+
+	for i, p := range priv {
+		sig, err := p.Sign(auth.StdSignBytes(chainID, accnums[i], seq[i], fee, msgs, memo))
+		if err != nil {
+			panic(err)
+		}
+
+		sigs[i] = auth.StdSignature{
+			PubKey:    p.PubKey(),
+			Signature: sig,
+		}
+	}
+
+	return auth.NewStdTx(msgs, fee, sigs, memo)
+}
+
+// SignCheckDeliver checks a generated signed transaction and simulates a
+// block commitment with the given transaction. A test assertion is made using
+// the parameter 'expPass' against the result. A corresponding result is
+// returned.
+func SignCheckDeliver(
+	t *testing.T, cdc *codec.Codec, app *baseapp.BaseApp, header abci.Header, msgs []sdk.Msg,
+	accNums, seq []uint64, expSimPass, expPass bool, priv ...crypto.PrivKey,
+) sdk.Result {
+
+	tx := GenTx(msgs, accNums, seq, priv...)
+
+	txBytes, err := cdc.MarshalBinaryLengthPrefixed(tx)
+	require.Nil(t, err)
+
+	// Must simulate now as CheckTx doesn't run Msgs anymore
+	res := app.Simulate(txBytes, tx)
+
+	if expSimPass {
+		require.Equal(t, sdk.CodeOK, res.Code, res.Log)
+	} else {
+		require.NotEqual(t, sdk.CodeOK, res.Code, res.Log)
+	}
+
+	// Simulate a sending a transaction and committing a block
+	app.BeginBlock(abci.RequestBeginBlock{Header: header})
+	res = app.Deliver(tx)
+
+	if expPass {
+		require.Equal(t, sdk.CodeOK, res.Code, res.Log)
+	} else {
+		require.NotEqual(t, sdk.CodeOK, res.Code, res.Log)
+	}
+
+	app.EndBlock(abci.RequestEndBlock{})
+	app.Commit()
+
+	return res
+}
 
 // TestApp contans several basic integration tests of creating an auction, placing a bid, and the auction closing.
 
@@ -38,7 +110,7 @@ func TestApp_ForwardAuction(t *testing.T) {
 	// Deliver a block that contains a PlaceBid tx (bid: 10 t2, lot: same as starting)
 	msgs := []sdk.Msg{auction.NewMsgPlaceBid(0, buyer, sdk.NewInt64Coin("token2", 10), sdk.NewInt64Coin("token1", 20))} // bid, lot
 	header = abci.Header{Height: mapp.LastBlockHeight() + 1}
-	mock.SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, header, msgs, []uint64{1}, []uint64{0}, true, true, buyerKey) // account number for the buyer account is 1
+	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, header, msgs, []uint64{1}, []uint64{0}, true, true, buyerKey) // account number for the buyer account is 1
 
 	// Check buyer's coins have decreased
 	mock.CheckBalance(t, mapp, buyer, sdk.NewCoins(sdk.NewInt64Coin("token1", 100), sdk.NewInt64Coin("token2", 90)))
@@ -78,7 +150,7 @@ func TestApp_ReverseAuction(t *testing.T) {
 	// Deliver a block that contains a PlaceBid tx
 	msgs := []sdk.Msg{auction.NewMsgPlaceBid(0, seller, sdk.NewInt64Coin("token1", 20), sdk.NewInt64Coin("token2", 10))} // bid, lot
 	header = abci.Header{Height: mapp.LastBlockHeight() + 1}
-	mock.SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, header, msgs, []uint64{0}, []uint64{0}, true, true, sellerKey)
+	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, header, msgs, []uint64{0}, []uint64{0}, true, true, sellerKey)
 
 	// Check seller's coins have decreased
 	mock.CheckBalance(t, mapp, seller, sdk.NewCoins(sdk.NewInt64Coin("token1", 80), sdk.NewInt64Coin("token2", 100)))
@@ -118,7 +190,7 @@ func TestApp_ForwardReverseAuction(t *testing.T) {
 	// Deliver a block that contains a PlaceBid tx
 	msgs := []sdk.Msg{auction.NewMsgPlaceBid(0, buyer, sdk.NewInt64Coin("token2", 50), sdk.NewInt64Coin("token1", 15))} // bid, lot
 	header = abci.Header{Height: mapp.LastBlockHeight() + 1}
-	mock.SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, header, msgs, []uint64{1}, []uint64{0}, true, true, buyerKey)
+	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, header, msgs, []uint64{1}, []uint64{0}, true, true, buyerKey)
 
 	// Check bidder's coins have decreased
 	mock.CheckBalance(t, mapp, buyer, sdk.NewCoins(sdk.NewInt64Coin("token1", 100), sdk.NewInt64Coin("token2", 50)))
