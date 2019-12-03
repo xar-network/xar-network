@@ -1,8 +1,11 @@
 package types
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+
+	yaml "gopkg.in/yaml.v2"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
@@ -31,25 +34,6 @@ func NewFreezeAccount(ba *authtypes.BaseAccount, frozenCoins sdk.Coins) *FreezeA
 		BaseAccount: ba,
 		FrozenCoins: frozenCoins,
 	}
-}
-
-// String implements fmt.Stringer
-func (acc FreezeAccount) String() string {
-	var pubkey string
-
-	if acc.GetPubKey() != nil {
-		pubkey = sdk.MustBech32ifyAccPub(acc.GetPubKey())
-	}
-
-	return fmt.Sprintf(`Account:
-  Address:       %s
-  Pubkey:        %s
-  Coins:         %s
-  FrozenCoins:   %s
-  AccountNumber: %d
-  Sequence:      %d`,
-		acc.Address, pubkey, acc.Coins, acc.FrozenCoins, acc.AccountNumber, acc.Sequence,
-	)
 }
 
 // GetFrozenCoins retrieves frozen coins from account
@@ -147,6 +131,63 @@ func (acc *FreezeAccount) UnfreezeCoins(coinsToUnfreeze sdk.Coins) error {
 	if err := acc.SetCoins(currentCoins); err != nil {
 		return sdk.ErrInvalidCoins(fmt.Sprintf("failed to set coins: %s", err))
 	}
+
+	return nil
+}
+
+type freezeAccountPretty struct {
+	Address       sdk.AccAddress `json:"address" yaml:"address"`
+	Coins         sdk.Coins      `json:"coins" yaml:"coins"`
+	PubKey        string         `json:"public_key" yaml:"public_key"`
+	AccountNumber uint64         `json:"account_number" yaml:"account_number"`
+	Sequence      uint64         `json:"sequence" yaml:"sequence"`
+	FrozenCoins   sdk.Coins      `json:"frozen_coins" yaml:"frozen_coins"`
+}
+
+func (acc FreezeAccount) String() string {
+	out, _ := acc.MarshalYAML()
+	return out.(string)
+}
+
+// MarshalYAML returns the YAML representation of a ModuleAccount.
+func (acc FreezeAccount) MarshalYAML() (interface{}, error) {
+	bs, err := yaml.Marshal(freezeAccountPretty{
+		Address:       acc.Address,
+		Coins:         acc.Coins,
+		PubKey:        "",
+		AccountNumber: acc.AccountNumber,
+		Sequence:      acc.Sequence,
+		FrozenCoins:   acc.FrozenCoins,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return string(bs), nil
+}
+
+// MarshalJSON returns the JSON representation of a ModuleAccount.
+func (acc FreezeAccount) MarshalJSON() ([]byte, error) {
+	return json.Marshal(freezeAccountPretty{
+		Address:       acc.Address,
+		Coins:         acc.Coins,
+		PubKey:        "",
+		AccountNumber: acc.AccountNumber,
+		Sequence:      acc.Sequence,
+		FrozenCoins:   acc.FrozenCoins,
+	})
+}
+
+// UnmarshalJSON unmarshals raw JSON bytes into a ModuleAccount.
+func (acc FreezeAccount) UnmarshalJSON(bz []byte) error {
+	var alias freezeAccountPretty
+	if err := json.Unmarshal(bz, &alias); err != nil {
+		return err
+	}
+
+	acc.BaseAccount = authtypes.NewBaseAccount(alias.Address, alias.Coins, nil, alias.AccountNumber, alias.Sequence)
+	acc.FrozenCoins = alias.FrozenCoins
 
 	return nil
 }

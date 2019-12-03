@@ -26,6 +26,7 @@ require (
 	github.com/tendermint/go-amino v0.15.1
 	github.com/tendermint/tendermint v0.32.7
 	github.com/tendermint/tm-db v0.2.0
+	gopkg.in/yaml.v2 v2.2.5
 )
 
 //replace github.com/cosmos/cosmos-sdk => github.com/Fantom-foundation/cosmos-sdk v0.28.2-0.20190715083311-79f8f2370f7e
