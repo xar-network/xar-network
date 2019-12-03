@@ -17,10 +17,11 @@ func GetCmdListMarkets(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		Short: "lists all markets",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.NewCLIContext().WithCodec(cdc)
-			res, _, err := ctx.QueryWithData(fmt.Sprintf("custom/%s/list", queryRoute), nil)
+			res, height, err := ctx.QueryWithData(fmt.Sprintf("custom/%s/list", queryRoute), nil)
 			if err != nil {
 				return err
 			}
+			ctx = ctx.WithHeight(height)
 
 			var out types.ListQueryResult
 			cdc.MustUnmarshalJSON(res, &out)

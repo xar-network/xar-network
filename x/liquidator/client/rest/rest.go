@@ -24,11 +24,13 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *codec.Codec) 
 
 func queryDebtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/liquidator/%s", types.QueryGetOutstandingDebt), nil)
+		res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/liquidator/%s", types.QueryGetOutstandingDebt), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
+		cliCtx = cliCtx.WithHeight(height)
+
 		rest.PostProcessResponse(w, cliCtx, res) // write JSON to response writer
 	}
 }
@@ -36,7 +38,7 @@ func queryDebtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 type SeizeAndStartCollateralAuctionRequest struct {
 	BaseReq         rest.BaseReq   `json:"base_req"`
 	Sender          sdk.AccAddress `json:"sender"`
-	CsdtOwner        sdk.AccAddress `json:"csdt_owner"`
+	CsdtOwner       sdk.AccAddress `json:"csdt_owner"`
 	CollateralDenom string         `json:"collateral_denom"`
 }
 

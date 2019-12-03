@@ -648,10 +648,12 @@ func CheckAllowance(
 	spender sdk.AccAddress,
 	amount sdk.Int,
 ) error {
-	res, _, err := cliCtx.QueryWithData(types.GetQueryIssueAllowancePath(issueID, owner, spender), nil)
+	res, height, err := cliCtx.QueryWithData(types.GetQueryIssueAllowancePath(issueID, owner, spender), nil)
 	if err != nil {
 		return err
 	}
+	cliCtx = cliCtx.WithHeight(height)
+
 	var approval types.Approval
 	cliCtx.Codec.MustUnmarshalJSON(res, &approval)
 
@@ -664,26 +666,32 @@ func CheckAllowance(
 func GetIssueByID(cliCtx context.CLIContext, issueID string) (types.Issue, error) {
 	var issueInfo types.Issue
 	// Query the issue
-	res, _, err := cliCtx.QueryWithData(types.GetQueryIssuePath(issueID), nil)
+	res, height, err := cliCtx.QueryWithData(types.GetQueryIssuePath(issueID), nil)
 	if err != nil {
 		return nil, err
 	}
+	cliCtx = cliCtx.WithHeight(height)
+
 	cliCtx.Codec.MustUnmarshalJSON(res, &issueInfo)
 	return issueInfo, nil
 }
 
 func CheckFreeze(cliCtx context.CLIContext, issueID string, from sdk.AccAddress, to sdk.AccAddress) error {
-	res, _, err := cliCtx.QueryWithData(types.GetQueryIssueFreezePath(issueID, from), nil)
+	res, height, err := cliCtx.QueryWithData(types.GetQueryIssueFreezePath(issueID, from), nil)
 	if err != nil {
 		return err
 	}
+	cliCtx = cliCtx.WithHeight(height)
+
 	var freeze types.IssueFreeze
 	cliCtx.Codec.MustUnmarshalJSON(res, &freeze)
 
-	res, _, err = cliCtx.QueryWithData(types.GetQueryIssueFreezePath(issueID, to), nil)
+	res, height, err = cliCtx.QueryWithData(types.GetQueryIssueFreezePath(issueID, to), nil)
 	if err != nil {
 		return err
 	}
+	cliCtx = cliCtx.WithHeight(height)
+
 	cliCtx.Codec.MustUnmarshalJSON(res, &freeze)
 	return nil
 }

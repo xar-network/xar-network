@@ -20,10 +20,12 @@ func GetCmd_GetOutstandingDebt(queryRoute string, cdc *codec.Codec) *cobra.Comma
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryGetOutstandingDebt), nil)
+			res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryGetOutstandingDebt), nil)
 			if err != nil {
 				return err
 			}
+			cliCtx = cliCtx.WithHeight(height)
+
 			var outstandingDebt sdk.Int
 			cdc.MustUnmarshalJSON(res, &outstandingDebt)
 			return cliCtx.PrintOutput(outstandingDebt)

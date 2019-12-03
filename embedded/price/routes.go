@@ -58,11 +58,13 @@ func candlesHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
 			params.Interval = cInterval
 		}
 
-		res, _, err := ctx.QueryWithData(fmt.Sprintf("custom/price/candles/%s", mktID), cdc.MustMarshalBinaryBare(params))
+		res, height, err := ctx.QueryWithData(fmt.Sprintf("custom/price/candles/%s", mktID), cdc.MustMarshalBinaryBare(params))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
+		ctx = ctx.WithHeight(height)
+
 		embedded.PostProcessResponse(w, ctx, res)
 	}
 }
@@ -71,11 +73,13 @@ func dailyHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		mktID := vars["marketID"]
-		res, _, err := ctx.QueryWithData(fmt.Sprintf("custom/price/daily/%s", mktID), nil)
+		res, height, err := ctx.QueryWithData(fmt.Sprintf("custom/price/daily/%s", mktID), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
+		ctx = ctx.WithHeight(height)
+
 		embedded.PostProcessResponse(w, ctx, res)
 	}
 }

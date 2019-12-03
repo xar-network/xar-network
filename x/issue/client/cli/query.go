@@ -44,10 +44,12 @@ func QueryParamsCmd(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			res, _, err := cliCtx.QueryWithData(types.GetQueryParamsPath(), nil)
+			res, height, err := cliCtx.QueryWithData(types.GetQueryParamsPath(), nil)
 			if err != nil {
 				return err
 			}
+			cliCtx = cliCtx.WithHeight(height)
+
 			var params types.Params
 			cdc.MustUnmarshalJSON(res, &params)
 			return cliCtx.PrintOutput(params)
@@ -90,10 +92,12 @@ func processQuery(cdc *codec.Codec, args []string) error {
 		return types.Errorf(err)
 	}
 	// Query the issue
-	res, _, err := cliCtx.QueryWithData(types.GetQueryIssuePath(issueID), nil)
+	res, height, err := cliCtx.QueryWithData(types.GetQueryIssuePath(issueID), nil)
 	if err != nil {
 		return err
 	}
+	cliCtx = cliCtx.WithHeight(height)
+
 	var issueInfo types.Issue
 	cdc.MustUnmarshalJSON(res, &issueInfo)
 	return cliCtx.PrintOutput(issueInfo)
@@ -121,10 +125,12 @@ func QueryAllowanceCmd(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			res, _, err := cliCtx.QueryWithData(types.GetQueryIssueAllowancePath(issueID, ownerAddress, spenderAddress), nil)
+			res, height, err := cliCtx.QueryWithData(types.GetQueryIssueAllowancePath(issueID, ownerAddress, spenderAddress), nil)
 			if err != nil {
 				return err
 			}
+			cliCtx = cliCtx.WithHeight(height)
+
 			var approval types.Approval
 			cdc.MustUnmarshalJSON(res, &approval)
 
@@ -151,10 +157,12 @@ func QueryFreezeCmd(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			res, _, err := cliCtx.QueryWithData(types.GetQueryIssueFreezePath(issueID, accAddress), nil)
+			res, height, err := cliCtx.QueryWithData(types.GetQueryIssueFreezePath(issueID, accAddress), nil)
 			if err != nil {
 				return err
 			}
+			cliCtx = cliCtx.WithHeight(height)
+
 			var freeze types.IssueFreeze
 			cdc.MustUnmarshalJSON(res, &freeze)
 
@@ -187,10 +195,11 @@ func QueryIssuesCmd(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			res, _, err := cliCtx.QueryWithData(types.GetQueryIssuesPath(), bz)
+			res, height, err := cliCtx.QueryWithData(types.GetQueryIssuesPath(), bz)
 			if err != nil {
 				return err
 			}
+			cliCtx = cliCtx.WithHeight(height)
 
 			var issues types.CoinIssues
 			cdc.MustUnmarshalJSON(res, &issues)
@@ -217,10 +226,12 @@ func QueryFreezesCmd(cdc *codec.Codec) *cobra.Command {
 			if err := types.CheckIssueId(issueID); err != nil {
 				return types.Errorf(err)
 			}
-			res, _, err := cliCtx.QueryWithData(types.GetQueryIssueFreezesPath(issueID), nil)
+			res, height, err := cliCtx.QueryWithData(types.GetQueryIssueFreezesPath(issueID), nil)
 			if err != nil {
 				return err
 			}
+			cliCtx = cliCtx.WithHeight(height)
+
 			var issueFreeze types.IssueAddressFreezeList
 			cdc.MustUnmarshalJSON(res, &issueFreeze)
 			return cliCtx.PrintOutput(issueFreeze)
@@ -240,10 +251,12 @@ func QuerySearchIssuesCmd(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			// Query the issue
-			res, _, err := cliCtx.QueryWithData(types.GetQueryIssueSearchPath(strings.ToUpper(args[0])), nil)
+			res, height, err := cliCtx.QueryWithData(types.GetQueryIssueSearchPath(strings.ToUpper(args[0])), nil)
 			if err != nil {
 				return err
 			}
+			cliCtx = cliCtx.WithHeight(height)
+
 			var issues types.CoinIssues
 			cdc.MustUnmarshalJSON(res, &issues)
 			return cliCtx.PrintOutput(issues)

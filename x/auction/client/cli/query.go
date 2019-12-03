@@ -16,11 +16,13 @@ func GetCmdGetAuctions(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		Short: "get a list of active auctions",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/getauctions", queryRoute), nil)
+			res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/getauctions", queryRoute), nil)
 			if err != nil {
 				fmt.Printf("error when getting auctions - %s", err)
 				return nil
 			}
+			cliCtx = cliCtx.WithHeight(height)
+
 			var out types.QueryResAuctions
 			cdc.MustUnmarshalJSON(res, &out)
 			if len(out) == 0 {

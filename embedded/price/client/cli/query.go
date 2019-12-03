@@ -23,10 +23,11 @@ func GetCmdHistory(cdc *codec.Codec) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.NewCLIContext().WithCodec(cdc)
-			res, _, err := ctx.QueryWithData(fmt.Sprintf("custom/%s/history/%s", price.EntityName, args[0]), nil)
+			res, height, err := ctx.QueryWithData(fmt.Sprintf("custom/%s/history/%s", price.EntityName, args[0]), nil)
 			if err != nil {
 				return err
 			}
+			ctx = ctx.WithHeight(height)
 
 			var out price.TickQueryResult
 			cdc.MustUnmarshalJSON(res, &out)

@@ -22,7 +22,7 @@ func latestBatch(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
 		vars := mux.Vars(r)
 		mktId := vars["marketID"]
 
-		res, _, err := ctx.QueryWithData(fmt.Sprintf("custom/batch/latest/%s", mktId), nil)
+		res, height, err := ctx.QueryWithData(fmt.Sprintf("custom/batch/latest/%s", mktId), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -31,7 +31,7 @@ func latestBatch(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
 			w.WriteHeader(404)
 			return
 		}
-
+		ctx = ctx.WithHeight(height)
 		embedded.PostProcessResponse(w, ctx, res)
 	}
 }
