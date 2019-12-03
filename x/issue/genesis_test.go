@@ -5,6 +5,8 @@ import (
 
 	"github.com/xar-network/xar-network/x/issue"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/xar-network/xar-network/x/issue/internal/types"
 
 	"github.com/stretchr/testify/require"
@@ -18,7 +20,7 @@ func TestImportExportQueues(t *testing.T) {
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, abci.Header{})
-
+	keeper.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	handler := issue.NewHandler(keeper)
 
 	res := handler(ctx, types.NewMsgIssue(SenderAccAddr, &IssueParams))

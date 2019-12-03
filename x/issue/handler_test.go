@@ -3,6 +3,8 @@ package issue_test
 import (
 	"testing"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/xar-network/xar-network/x/issue"
@@ -14,6 +16,7 @@ func TestHandlerNewMsgIssue(t *testing.T) {
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.NewContext(false, abci.Header{})
+	keeper.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	mapp.InitChainer(ctx, abci.RequestInitChain{})
 
 	handler := issue.NewHandler(keeper)
