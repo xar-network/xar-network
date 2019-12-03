@@ -15,5 +15,9 @@ func init() {
 // RegisterCodec registers concrete types on the codec.
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgCreateOrModifyCSDT{}, "csdt/MsgCreateOrModifyCSDT", nil)
+	cdc.RegisterConcrete(MsgDepositCollateral{}, "csdt/MsgDepositCollateral", nil)
+	cdc.RegisterConcrete(MsgWithdrawCollateral{}, "csdt/MsgWithdrawCollateral", nil)
+	cdc.RegisterConcrete(MsgSettleDebt{}, "csdt/MsgSettleDebt", nil)
+	cdc.RegisterConcrete(MsgWithdrawDebt{}, "csdt/MsgWithdrawDebt", nil)
 	cdc.RegisterConcrete(MsgTransferCSDT{}, "csdt/MsgTransferCSDT", nil)
 }
