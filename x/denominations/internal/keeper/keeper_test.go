@@ -167,6 +167,7 @@ func TestKeeperCoverage(t *testing.T) {
 	// Unfreeze coins the address has
 	res = dk.UnfreezeCoins(ctx, addrerr, addrerr, sdk.NewInt(1), "unm")
 	require.Equal(t, true, res.IsOK())
+	acc = ak.GetAccount(ctx, addrerr)
 
 	t.Logf("%s", sk.GetSupply(ctx).String())
 }

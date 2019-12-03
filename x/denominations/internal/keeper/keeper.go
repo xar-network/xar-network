@@ -386,9 +386,8 @@ func (k Keeper) FreezeCoins(ctx sdk.Context, from sdk.AccAddress, address sdk.Ac
 	}
 
 	// Todo: Validate you are allowed access to account?
-	baseAccount := k.ak.GetAccount(ctx, address)
-	baseAcc := authtypes.NewBaseAccount(baseAccount.GetAddress(), baseAccount.GetCoins(), baseAccount.GetPubKey(), baseAccount.GetAccountNumber(), baseAccount.GetSequence())
-	var freezeAccount, ok = baseAccount.(*types.FreezeAccount)
+	baseAcc := authtypes.NewBaseAccount(acc.GetAddress(), acc.GetCoins(), acc.GetPubKey(), acc.GetAccountNumber(), acc.GetSequence())
+	var freezeAccount, ok = acc.(*types.FreezeAccount)
 	if !ok {
 		freezeAccount = types.NewFreezeAccount(baseAcc, nil)
 	}

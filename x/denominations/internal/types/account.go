@@ -180,7 +180,7 @@ func (acc FreezeAccount) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON unmarshals raw JSON bytes into a ModuleAccount.
-func (acc FreezeAccount) UnmarshalJSON(bz []byte) error {
+func (acc *FreezeAccount) UnmarshalJSON(bz []byte) error {
 	var alias freezeAccountPretty
 	if err := json.Unmarshal(bz, &alias); err != nil {
 		return err

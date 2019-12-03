@@ -332,7 +332,7 @@ func NewXarApp(
 		gov.ModuleName,
 		staking.ModuleName,
 		oracle.ModuleName,
-		issue.ModuleName,
+		auction.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
