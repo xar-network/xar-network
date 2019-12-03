@@ -42,6 +42,11 @@ func ErrInvalidAsset(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidAsset, fmt.Sprintf("Asset code does not exist."))
 }
 
+// ErrExistingAsset Error constructor for posted price messages for invalid assets
+func ErrExistingAsset(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidAsset, fmt.Sprintf("Asset code exists."))
+}
+
 // ErrInvalidOracle Error constructor for posted price messages for invalid oracles
 func ErrInvalidOracle(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidOracle, fmt.Sprintf("Oracle does not exist or not authorized."))

@@ -126,7 +126,7 @@ func handleMsgAddAsset(
 	}
 	_, found := k.GetAsset(ctx, msg.Denom)
 	if found {
-		return types.ErrInvalidAsset(k.Codespace()).Result()
+		return types.ErrExistingAsset(k.Codespace()).Result()
 	}
 	er := k.AddAsset(ctx, msg.Nominee.String(), msg.Denom, msg.Asset)
 	if er != nil {
