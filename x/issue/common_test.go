@@ -12,9 +12,11 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/mock"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	"github.com/xar-network/xar-network/x/issue"
 	"github.com/xar-network/xar-network/x/issue/internal/keeper"
@@ -71,17 +73,17 @@ func getMockApp(t *testing.T, genState issue.GenesisState, genAccs []exported.Ac
 	types.RegisterCodec(mapp.Cdc)
 	keyIssue := sdk.NewKVStoreKey(types.StoreKey)
 
-	//keySupply := sdk.NewKVStoreKey(supply.StoreKey)
+	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 
 	pk := mapp.ParamsKeeper
 	ck := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, make(map[string]bool))
 
-	/*maccPerms := map[string][]string{
+	maccPerms := map[string][]string{
 		types.ModuleName: {supply.Minter, supply.Burner},
 	}
 
-	supk := supply.NewKeeper(mapp.Cdc, keySupply, mapp.AccountKeeper, ck, maccPerms)*/
-	ik := issue.NewKeeper(keyIssue, pk.Subspace("testissue"), ck, types.DefaultCodespace)
+	supk := supply.NewKeeper(mapp.Cdc, keySupply, mapp.AccountKeeper, ck, maccPerms)
+	ik := issue.NewKeeper(keyIssue, pk.Subspace("testissue"), ck, sk, types.DefaultCodespace, auth.FeeCollectorName)
 
 	mapp.Router().AddRoute(types.RouterKey, issue.NewHandler(ik))
 	mapp.QueryRouter().AddRoute(types.QuerierRoute, keeper.NewQuerier(ik))

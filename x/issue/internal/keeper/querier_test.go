@@ -10,6 +10,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	"github.com/xar-network/xar-network/x/issue"
 	"github.com/xar-network/xar-network/x/issue/internal/types"
@@ -24,6 +25,7 @@ func TestQueryIssue(t *testing.T) {
 
 	ctx := mapp.NewContext(false, abci.Header{})
 
+	k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	querier := keeper.NewQuerier(k)
 	handler := issue.NewHandler(k)
 
@@ -46,6 +48,7 @@ func TestQueryIssues(t *testing.T) {
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 
 	ctx := mapp.NewContext(false, abci.Header{})
+	k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	//querier := issue.NewQuerier(k)
 	handler := issue.NewHandler(k)
 	cap := 10
@@ -63,6 +66,7 @@ func TestSearchIssues(t *testing.T) {
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.NewContext(false, abci.Header{})
+	k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	querier := keeper.NewQuerier(k)
 	handler := issue.NewHandler(k)
 	cap := 10
@@ -93,6 +97,7 @@ func TestList(t *testing.T) {
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 
 	ctx := mapp.NewContext(false, abci.Header{})
+	k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 
 	cap := 1000
 	for i := 0; i < cap; i++ {

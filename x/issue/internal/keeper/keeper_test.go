@@ -6,6 +6,7 @@ import (
 	"github.com/xar-network/xar-network/x/issue/internal/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+		"github.com/cosmos/cosmos-sdk/x/supply"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -21,6 +22,8 @@ func TestCreateIssue(t *testing.T) {
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 
 	ctx := mapp.BaseApp.NewContext(false, abci.Header{})
+
+	k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 
 	_, err := k.CreateIssue(ctx, &CoinIssueInfo)
 	require.Nil(t, err)
@@ -46,6 +49,7 @@ func TestGetIssues(t *testing.T) {
 
 	ctx := mapp.BaseApp.NewContext(false, abci.Header{})
 
+		k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	cap := 10
 	for i := 0; i < cap; i++ {
 		_, err := k.CreateIssue(ctx, &CoinIssueInfo)
@@ -65,6 +69,7 @@ func TestMint(t *testing.T) {
 
 	ctx := mapp.BaseApp.NewContext(false, abci.Header{})
 
+		k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	CoinIssueInfo.TotalSupply = sdk.NewInt(10000)
 	_, err := k.CreateIssue(ctx, &CoinIssueInfo)
 	require.Nil(t, err)
@@ -83,6 +88,7 @@ func TestBurnOwner(t *testing.T) {
 
 	ctx := mapp.BaseApp.NewContext(false, abci.Header{})
 
+		k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	CoinIssueInfo.TotalSupply = sdk.NewInt(10000)
 
 	_, err := k.CreateIssue(ctx, &CoinIssueInfo)
@@ -107,6 +113,7 @@ func TestBurnHolder(t *testing.T) {
 
 	ctx := mapp.BaseApp.NewContext(false, abci.Header{})
 
+		k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	CoinIssueInfo.TotalSupply = sdk.NewInt(10000)
 
 	_, err := k.CreateIssue(ctx, &CoinIssueInfo)
@@ -136,6 +143,7 @@ func TestBurnFrom(t *testing.T) {
 
 	CoinIssueInfo.TotalSupply = sdk.NewInt(10000)
 
+		k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	_, err := k.CreateIssue(ctx, &CoinIssueInfo)
 	require.Nil(t, err)
 
@@ -163,6 +171,7 @@ func TestApprove(t *testing.T) {
 
 	CoinIssueInfo.TotalSupply = sdk.NewInt(10000)
 
+		k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	_, err := k.CreateIssue(ctx, &CoinIssueInfo)
 	require.Nil(t, err)
 
@@ -183,6 +192,7 @@ func TestSendFrom(t *testing.T) {
 
 	ctx := mapp.BaseApp.NewContext(false, abci.Header{})
 
+		k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	CoinIssueInfo.TotalSupply = sdk.NewInt(10000)
 
 	_, err := k.CreateIssue(ctx, &CoinIssueInfo)
@@ -214,6 +224,7 @@ func TestSendFromByFreeze(t *testing.T) {
 
 	ctx := mapp.BaseApp.NewContext(false, abci.Header{})
 
+		k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	CoinIssueInfo.TotalSupply = sdk.NewInt(10000)
 
 	_, err := k.CreateIssue(ctx, &CoinIssueInfo)
@@ -255,6 +266,7 @@ func TestIncreaseApproval(t *testing.T) {
 
 	CoinIssueInfo.TotalSupply = sdk.NewInt(10000)
 
+		k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	_, err := k.CreateIssue(ctx, &CoinIssueInfo)
 	require.Nil(t, err)
 
@@ -279,6 +291,7 @@ func TestDecreaseApproval(t *testing.T) {
 
 	ctx := mapp.BaseApp.NewContext(false, abci.Header{})
 
+		k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	CoinIssueInfo.TotalSupply = sdk.NewInt(10000)
 
 	_, err := k.CreateIssue(ctx, &CoinIssueInfo)
@@ -315,6 +328,7 @@ func TestFreeze(t *testing.T) {
 
 	ctx := mapp.BaseApp.NewContext(false, abci.Header{})
 
+		k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	CoinIssueInfo.TotalSupply = sdk.NewInt(10000)
 
 	_, err := k.CreateIssue(ctx, &CoinIssueInfo)
@@ -350,6 +364,7 @@ func TestTransferOwnership(t *testing.T) {
 
 	ctx := mapp.BaseApp.NewContext(false, abci.Header{})
 
+	k.GetSupplyKeeper().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	CoinIssueInfo.TotalSupply = sdk.NewInt(10000)
 
 	_, err := k.CreateIssue(ctx, &CoinIssueInfo)
