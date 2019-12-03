@@ -39,9 +39,31 @@ func NewGenesisState(nominees []string) GenesisState {
 
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		TokenRecords: []types.Token{},
+		TokenRecords: DefaultTokenRecords(),
 		Nominees:     []string{},
 	}
+}
+
+func DefaultTokenRecords() []types.Token {
+	uftm := types.NewToken(
+		"Fantom",
+		"uftm",
+		"FTM",
+		sdk.NewInt(0),
+		sdk.NewInt(3175000000000000),
+		sdk.AccAddress([]byte("uftm_owner")),
+		true,
+	)
+	ucsdt := types.NewToken(
+		"Collateral Stable Debt Tokens",
+		"ucsdt",
+		"CSDT",
+		sdk.NewInt(0),
+		sdk.NewInt(25000000000000),
+		sdk.AccAddress([]byte("ucsdt_owner")),
+		true,
+	)
+	return []types.Token{*uftm, *ucsdt}
 }
 
 func InitGenesis(ctx sdk.Context, k Keeper, data GenesisState) {
