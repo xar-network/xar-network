@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -43,12 +42,12 @@ func queryToken(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Ke
 	searchToken := unprettifySymbol(path[0])
 	token, err := keeper.GetToken(ctx, searchToken)
 	if err != nil {
-		panic(fmt.Sprintf("could not get token: %s", err))
+		return nil, sdk.ErrInternal(err.Error())
 	}
 
 	res, err := codec.MarshalJSONIndent(keeper.cdc, token)
 	if err != nil {
-		panic(fmt.Sprintf("could not marshal result to JSON: %s", err))
+		return nil, sdk.ErrInternal(err.Error())
 	}
 
 	return res, nil
@@ -85,7 +84,7 @@ func querySymbols(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte
 
 	res, err := codec.MarshalJSONIndent(keeper.cdc, symbolList)
 	if err != nil {
-		panic("could not marshal result to JSON")
+		return nil, sdk.ErrInternal(err.Error())
 	}
 
 	return res, nil
