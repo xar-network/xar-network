@@ -145,6 +145,23 @@ func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 	mock.CheckBalance(t, mapp, testAddr, cs(c("uftm", 100)))
 }
 
+func TestApp_ParamExport(t *testing.T) {
+	// Setup
+	mapp, keeper := setUpMockAppWithoutGenesis()
+	genAccs, _, _, _ := mock.CreateGenAccounts(1, cs(c("uftm", 100)))
+	mock.SetGenesis(mapp, genAccs)
+	// setup oracle, TODO can this be shortened a bit?
+	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
+	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
+	ctx := mapp.BaseApp.NewContext(false, header)
+	keeper.SetParams(ctx, types.DefaultParams())
+	keeper.SetGlobalDebt(ctx, sdk.NewInt(1000000000))
+
+	genState := csdt.ExportGenesis(ctx, keeper)
+	require.Equal(t, 1, len(genState.Params.CollateralParams))
+
+}
+
 // Avoid cluttering test cases with long function name
 func i(in int64) sdk.Int                    { return sdk.NewInt(in) }
 func d(str string) sdk.Dec                  { return sdk.MustNewDecFromStr(str) }
