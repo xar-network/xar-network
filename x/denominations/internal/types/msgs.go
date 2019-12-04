@@ -11,21 +11,18 @@ type MsgIssueToken struct {
 	Name           string         `json:"name" yaml:"name"`
 	Symbol         string         `json:"symbol" yaml:"symbol"`
 	OriginalSymbol string         `json:"original_symbol" yaml:"original_symbol"`
-	TotalSupply    sdk.Int        `json:"total_supply" yaml:"total_supply"`
 	MaxSupply      sdk.Int        `json:"max_supply" yaml:"max_supply"`
 	Mintable       bool           `json:"mintable" yaml:"mintable"`
 }
 
 // NewMsgIssueToken is a constructor function for MsgIssueToken
-func NewMsgIssueToken(sourceAddress, owner sdk.AccAddress, name, symbol string, originalSymbol string,
-	totalSupply sdk.Int, maxSupply sdk.Int, mintable bool) MsgIssueToken {
+func NewMsgIssueToken(sourceAddress, owner sdk.AccAddress, name, symbol string, originalSymbol string, maxSupply sdk.Int, mintable bool) MsgIssueToken {
 	return MsgIssueToken{
 		SourceAddress:  sourceAddress,
 		Owner:          owner,
 		Name:           name,
 		Symbol:         symbol,
 		OriginalSymbol: originalSymbol,
-		TotalSupply:    totalSupply,
 		MaxSupply:      maxSupply,
 		Mintable:       mintable,
 	}
@@ -47,9 +44,6 @@ func (msg MsgIssueToken) ValidateBasic() sdk.Error {
 	}
 	if len(msg.Name) == 0 || len(msg.Symbol) == 0 || len(msg.OriginalSymbol) == 0 {
 		return sdk.ErrUnknownRequest("Name and/or Symbols cannot be empty")
-	}
-	if msg.TotalSupply.LT(sdk.NewInt(0)) {
-		return sdk.ErrUnknownRequest("TotalSupply cannot be less than 0")
 	}
 	if msg.MaxSupply.LT(sdk.NewInt(1)) {
 		return sdk.ErrUnknownRequest("TotalSupply cannot be less than 1")

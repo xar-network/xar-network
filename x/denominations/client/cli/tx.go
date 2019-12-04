@@ -108,8 +108,7 @@ func getAccountAddress(cliCtx client.CLIContext) sdk.AccAddress {
 // GetCmdIssueToken is the CLI command for sending a IssueToken transaction
 func GetCmdIssueToken(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use: `issue [owner_address] --token-name [name] --total-supply [amount]
-			--symbol [ABC] --mintable --from [account]`,
+		Use:   `issue [owner_address] --token-name [name] --symbol [ABC] --mintable --from [account]`,
 		Short: "create a new asset",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -126,12 +125,11 @@ func GetCmdIssueToken(cdc *codec.Codec) *cobra.Command {
 			name := fetchStringFlag(cmd, "token-name")
 			originalSymbol := fetchStringFlag(cmd, "symbol")
 			symbol := strings.ToLower(rand.GenerateNewSymbol(originalSymbol))
-			totalSupply := sdk.NewInt(fetchInt64Flag(cmd, "total-supply"))
 			maxSupply := sdk.NewInt(fetchInt64Flag(cmd, "max-supply"))
 			mintable := fetchBoolFlag(cmd, "mintable")
 			log.Debugf("token is mintable? %t", mintable)
 
-			msg := types.NewMsgIssueToken(address, ownerAddr, name, symbol, originalSymbol, totalSupply, maxSupply, mintable)
+			msg := types.NewMsgIssueToken(address, ownerAddr, name, symbol, originalSymbol, maxSupply, mintable)
 			err = msg.ValidateBasic()
 			if err != nil {
 				return err

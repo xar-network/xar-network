@@ -20,9 +20,6 @@ func ValidateGenesis(data GenesisState) error {
 		if record.Symbol == "" {
 			return fmt.Errorf("invalid TokenRecord: Owner: %s. Error: Missing Symbol", record.Symbol)
 		}
-		if record.TotalSupply == nil || record.TotalSupply.Len() == 0 {
-			return fmt.Errorf("invalid TokenRecord: Symbol: %s. Error: Missing TotalSupply", record.TotalSupply)
-		}
 		if record.Name == "" {
 			return fmt.Errorf("invalid TokenRecord: Symbol: %s. Error: Missing Name", record.Name)
 		}

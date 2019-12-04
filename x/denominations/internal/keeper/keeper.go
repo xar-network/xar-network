@@ -126,26 +126,6 @@ func (k Keeper) SetOwner(ctx sdk.Context, owner sdk.Address, symbol string, newO
 	return k.SetToken(ctx, owner, symbol, token)
 }
 
-// GetTotalSupply - gets the current total supply of a symbol
-func (k Keeper) GetTotalSupply(ctx sdk.Context, symbol string) (sdk.Coins, error) {
-	token, err := k.GetToken(ctx, symbol)
-	if err == nil {
-		return token.TotalSupply, nil
-	}
-	return nil, fmt.Errorf("failed to get total supply for symbol '%s' because: %s", symbol, err)
-}
-
-// SetTotalSupply - sets the current total supply of a symbol
-func (k Keeper) SetTotalSupply(ctx sdk.Context, owner sdk.Address, symbol string, totalSupply sdk.Coins) error {
-	token, err := k.GetToken(ctx, symbol)
-	if err != nil {
-		return err
-	}
-
-	token.TotalSupply = totalSupply
-	return k.SetToken(ctx, owner, symbol, token)
-}
-
 // GetTokensIterator - Get an iterator over all symbols in which the keys are the symbols and the values are the token
 func (k Keeper) GetTokensIterator(ctx sdk.Context) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
@@ -167,29 +147,11 @@ func (k Keeper) IssueToken(ctx sdk.Context, nominee, owner sdk.AccAddress, token
 		return sdk.ErrInvalidCoins(token.Symbol).Result()
 	}
 
-	if !token.TotalSupply.IsValid() {
-		return sdk.ErrInvalidCoins(token.TotalSupply.String()).Result()
-	}
-
-	supply := token.TotalSupply.AmountOf(token.Symbol)
-	if supply.GT(token.MaxSupply) {
-		return sdk.ErrInvalidCoins(token.MaxSupply.String()).Result()
-	}
-
 	acc := k.ak.GetAccount(ctx, owner)
 	if acc == nil {
 		return sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", owner.String())).Result()
 	}
 
-	err := k.sk.MintCoins(ctx, types.ModuleName, token.TotalSupply)
-	if err != nil {
-		return err.Result()
-	}
-
-	err = k.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, token.TotalSupply)
-	if err != nil {
-		return err.Result()
-	}
 	er := k.SetToken(ctx, owner, token.Symbol, &token)
 	if er != nil {
 		return sdk.ErrInternal(fmt.Sprintf("failed to store new token: '%s'", er)).Result()
@@ -244,11 +206,12 @@ func (k Keeper) MintCoins(ctx sdk.Context, from sdk.AccAddress, amount sdk.Int, 
 	}
 
 	// Any overflow
-	newCoins := token.TotalSupply.Add(coins)
+
+	supply := k.sk.GetSupply(ctx).GetTotal()
+
+	newCoins := supply.Add(coins)
 	if newCoins.IsAnyNegative() {
-		return sdk.ErrInsufficientCoins(
-			fmt.Sprintf("insufficient account funds; %s < %s", token.TotalSupply, amount),
-		).Result()
+		return sdk.ErrInsufficientCoins(fmt.Sprintf("supply overflow; %s < %s", newCoins.AmountOf(token.Symbol), amount)).Result()
 	}
 
 	// Max supply reached
@@ -264,11 +227,6 @@ func (k Keeper) MintCoins(ctx sdk.Context, from sdk.AccAddress, amount sdk.Int, 
 	er = k.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, from, coins)
 	if er != nil {
 		return er.Result()
-	}
-
-	err = k.SetTotalSupply(ctx, from, denom, newCoins)
-	if err != nil {
-		return sdk.ErrInternal(fmt.Sprintf("failed to set total supply when minting coins: '%s'", err)).Result()
 	}
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
@@ -310,11 +268,10 @@ func (k Keeper) BurnCoins(ctx sdk.Context, from sdk.AccAddress, amount sdk.Int, 
 	}
 
 	// Any overflow
-	newCoins := token.TotalSupply.Sub(coins)
+	supply := k.sk.GetSupply(ctx).GetTotal()
+	newCoins := supply.Sub(coins)
 	if newCoins.IsAnyNegative() {
-		return sdk.ErrInsufficientCoins(
-			fmt.Sprintf("insufficient account funds; %s < %s", token.TotalSupply, amount),
-		).Result()
+		return sdk.ErrInsufficientCoins(fmt.Sprintf("supply overflow; %s < %s", newCoins.AmountOf(token.Symbol), amount)).Result()
 	}
 
 	// Max supply reached
@@ -335,11 +292,6 @@ func (k Keeper) BurnCoins(ctx sdk.Context, from sdk.AccAddress, amount sdk.Int, 
 	er = k.sk.BurnCoins(ctx, types.ModuleName, coins)
 	if er != nil {
 		return er.Result()
-	}
-
-	err = k.SetTotalSupply(ctx, from, denom, newCoins)
-	if err != nil {
-		return sdk.ErrInternal(fmt.Sprintf("failed to set total supply when minting coins: '%s'", err)).Result()
 	}
 
 	return sdk.Result{Events: ctx.EventManager().Events()}

@@ -9,9 +9,9 @@ import (
 type Markets []Market
 
 type Market struct {
-	ID              store.EntityID
-	BaseAssetDenom  string
-	QuoteAssetDenom string
+	ID              store.EntityID `json:"id" yaml:"id"`
+	BaseAssetDenom  string         `json:"base_asset_denom" yaml:"base_asset_denom"`
+	QuoteAssetDenom string         `json:"quote_asset_denom" yaml:"quote_asset_denom"`
 }
 
 func NewMarket(

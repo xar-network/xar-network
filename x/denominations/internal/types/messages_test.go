@@ -32,11 +32,10 @@ func TestMsgIssueToken(t *testing.T) {
 		name                 = "Zap"
 		originalSymbol       = "ZAP"
 		symbol               = "zap"
-		total          int64 = 1
 		max            int64 = 10
 		owner                = sdk.AccAddress([]byte("me"))
 		nominee              = sdk.AccAddress([]byte("nominee"))
-		msg                  = types.NewMsgIssueToken(nominee, owner, name, symbol, originalSymbol, sdk.NewInt(total), sdk.NewInt(max), false)
+		msg                  = types.NewMsgIssueToken(nominee, owner, name, symbol, originalSymbol, sdk.NewInt(max), false)
 	)
 
 	require.Equal(t, msg.Route(), types.RouterKey)
@@ -48,14 +47,11 @@ func TestMsgIssueTokenValidation(t *testing.T) {
 		name                 = "Zap"
 		originalSymbol       = "ZAP"
 		symbol               = "zap"
-		total          int64 = 1
 		max            int64 = 10
-		totalInvalid   int64 = 0
 		maxInvalid     int64 = 0
 		acc                  = sdk.AccAddress([]byte("me"))
 		nominee              = sdk.AccAddress([]byte("nominee"))
 		name2                = "a"
-		total2         int64 = 2
 		max2           int64 = 20
 		acc2                 = sdk.AccAddress([]byte("you"))
 		nominee2             = sdk.AccAddress([]byte("nominee2"))
@@ -65,15 +61,15 @@ func TestMsgIssueTokenValidation(t *testing.T) {
 		valid bool
 		tx    MsgInterface
 	}{
-		{true, types.NewMsgIssueToken(nominee, acc, name, symbol, originalSymbol, sdk.NewInt(total), sdk.NewInt(max), false)},
-		{true, types.NewMsgIssueToken(nominee, acc, name, symbol, originalSymbol, sdk.NewInt(total), sdk.NewInt(max), false)},
-		{false, types.NewMsgIssueToken(nominee, acc, name, symbol, originalSymbol, sdk.NewInt(totalInvalid), sdk.NewInt(maxInvalid), false)},
-		{true, types.NewMsgIssueToken(nominee2, acc2, name2, symbol, originalSymbol, sdk.NewInt(total2), sdk.NewInt(max2), false)},
-		{true, types.NewMsgIssueToken(nominee2, acc2, name2, symbol, originalSymbol, sdk.NewInt(total), sdk.NewInt(max), false)},
-		{true, types.NewMsgIssueToken(nominee, acc, name2, symbol, originalSymbol, sdk.NewInt(total2), sdk.NewInt(max2), false)},
-		{false, types.NewMsgIssueToken(nominee, nil, name, symbol, originalSymbol, sdk.NewInt(total2), sdk.NewInt(max2), false)},
-		{false, types.NewMsgIssueToken(nominee2, acc2, "", symbol, originalSymbol, sdk.NewInt(total2), sdk.NewInt(max2), false)},
-		{false, types.NewMsgIssueToken(nominee2, acc2, name, symbol, originalSymbol, sdk.NewInt(totalInvalid), sdk.NewInt(maxInvalid), false)},
+		{true, types.NewMsgIssueToken(nominee, acc, name, symbol, originalSymbol, sdk.NewInt(max), false)},
+		{true, types.NewMsgIssueToken(nominee, acc, name, symbol, originalSymbol, sdk.NewInt(max), false)},
+		{false, types.NewMsgIssueToken(nominee, acc, name, symbol, originalSymbol, sdk.NewInt(maxInvalid), false)},
+		{true, types.NewMsgIssueToken(nominee2, acc2, name2, symbol, originalSymbol, sdk.NewInt(max2), false)},
+		{true, types.NewMsgIssueToken(nominee2, acc2, name2, symbol, originalSymbol, sdk.NewInt(max), false)},
+		{true, types.NewMsgIssueToken(nominee, acc, name2, symbol, originalSymbol, sdk.NewInt(max2), false)},
+		{false, types.NewMsgIssueToken(nominee, nil, name, symbol, originalSymbol, sdk.NewInt(max2), false)},
+		{false, types.NewMsgIssueToken(nominee2, acc2, "", symbol, originalSymbol, sdk.NewInt(max2), false)},
+		{false, types.NewMsgIssueToken(nominee2, acc2, name, symbol, originalSymbol, sdk.NewInt(maxInvalid), false)},
 	}
 
 	validateError(cases, t)
@@ -84,11 +80,10 @@ func TestMsgIssueTokenGetSignBytes(t *testing.T) {
 		name                 = "Zap"
 		originalSymbol       = "ZAP"
 		symbol               = "zap"
-		total          int64 = 1
 		max            int64 = 10
 		owner                = sdk.AccAddress([]byte("me"))
 		nominee              = sdk.AccAddress([]byte("nominee"))
-		msg                  = types.NewMsgIssueToken(nominee, owner, name, symbol, originalSymbol, sdk.NewInt(total), sdk.NewInt(max), false)
+		msg                  = types.NewMsgIssueToken(nominee, owner, name, symbol, originalSymbol, sdk.NewInt(max), false)
 	)
 	actual := msg.GetSignBytes()
 
@@ -100,8 +95,8 @@ func TestMsgIssueTokenGetSignBytes(t *testing.T) {
 		`"original_symbol":"ZAP",` +
 		`"owner":"cosmos1d4js690r9j",` +
 		`"source_address":"cosmos1dehk66twv4js5dq8xr",` +
-		`"symbol":"` + symbol + `",` +
-		`"total_supply":"1"}}`
+		`"symbol":"` + symbol + `"` +
+		`}}`
 
 	require.Equal(t, expected, string(actual))
 }

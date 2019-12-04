@@ -15,9 +15,9 @@ var (
 
 // LiquidatorParams store params for the liquidator module
 type LiquidatorParams struct {
-	DebtAuctionSize sdk.Int
+	DebtAuctionSize sdk.Int `json:"debt_auction_size" yaml:"debt_auction_size"`
 	//SurplusAuctionSize sdk.Int
-	CollateralParams []CollateralParams
+	CollateralParams []CollateralParams `json:"collateral_params" yaml:"collateral_params"`
 }
 
 // NewLiquidatorParams returns a new params object for the liquidator module
@@ -44,8 +44,8 @@ func (p LiquidatorParams) String() string {
 
 // CollateralParams params storing information about each collateral for the liquidator module
 type CollateralParams struct {
-	Denom       string  // Coin name of collateral type
-	AuctionSize sdk.Int // Max amount of collateral to sell off in any one auction. Known as lump in Maker.
+	Denom       string  `json:"denom" yaml:"denom"`
+	AuctionSize sdk.Int `json:"auction_size" yaml:"auction_size"`
 	// LiquidationPenalty
 }
 

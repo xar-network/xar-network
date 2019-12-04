@@ -38,7 +38,6 @@ func handleMsgIssueToken(ctx sdk.Context, k Keeper, msg types.MsgIssueToken) sdk
 	token := types.NewToken(
 		msg.Name, newSymbol,
 		msg.OriginalSymbol,
-		msg.TotalSupply,
 		msg.MaxSupply,
 		msg.Owner,
 		msg.Mintable,

@@ -78,8 +78,7 @@ func TestKeeperCoverage(t *testing.T) {
 	token := types.NewToken(
 		"Max Mintable", "max",
 		"MAX",
-		sdk.NewInt(3175000000000000),
-		sdk.NewInt(3175000000000000),
+		sdk.NewInt(100),
 		addr,
 		true,
 	)
@@ -91,7 +90,6 @@ func TestKeeperCoverage(t *testing.T) {
 	token = types.NewToken(
 		"Fantom", "uftm",
 		"FTM",
-		sdk.NewInt(1),
 		sdk.NewInt(3175000000000000),
 		addr,
 		true,
@@ -109,19 +107,17 @@ func TestKeeperCoverage(t *testing.T) {
 	token = types.NewToken(
 		"Over max", "ovr",
 		"ovr",
-		sdk.NewInt(4175000000000000),
 		sdk.NewInt(3175000000000000),
 		addr,
 		true,
 	)
 	res = dk.IssueToken(ctx, naddr, addr, *token)
-	require.Equal(t, false, res.IsOK())
+	require.Equal(t, true, res.IsOK())
 
 	// Issue a new token with total supply exceeding max supply
 	token = types.NewToken(
 		"Unmintable", "unm",
 		"UNM",
-		sdk.NewInt(1),
 		sdk.NewInt(3175000000000000),
 		addrerr,
 		false,
@@ -134,11 +130,11 @@ func TestKeeperCoverage(t *testing.T) {
 	require.Equal(t, false, res.IsOK())
 
 	// Try to mint over max supply
-	res = dk.MintCoins(ctx, addr, sdk.NewInt(1), "max")
+	res = dk.MintCoins(ctx, addr, sdk.NewInt(101), "max")
 	require.Equal(t, false, res.IsOK())
 
 	// Try a normal mint
-	res = dk.MintCoins(ctx, addr, sdk.NewInt(1), "uftm")
+	res = dk.MintCoins(ctx, addr, sdk.NewInt(2), "uftm")
 	require.Equal(t, true, res.IsOK())
 
 	// Burn over max supply
@@ -161,11 +157,11 @@ func TestKeeperCoverage(t *testing.T) {
 	require.Equal(t, false, res.IsOK())
 
 	// Freeze coins the address has
-	res = dk.FreezeCoins(ctx, addrerr, addrerr, sdk.NewInt(1), "unm")
+	res = dk.FreezeCoins(ctx, addr, addr, sdk.NewInt(1), "uftm")
 	require.Equal(t, true, res.IsOK())
 
 	// Unfreeze coins the address has
-	res = dk.UnfreezeCoins(ctx, addrerr, addrerr, sdk.NewInt(1), "unm")
+	res = dk.UnfreezeCoins(ctx, addr, addr, sdk.NewInt(1), "uftm")
 	require.Equal(t, true, res.IsOK())
 	acc = ak.GetAccount(ctx, addrerr)
 

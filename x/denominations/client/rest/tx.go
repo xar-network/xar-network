@@ -20,7 +20,6 @@ type issueTokenReq struct {
 	Owner         string       `json:"owner"`
 	Name          string       `json:"name"`
 	Symbol        string       `json:"symbol"`
-	TotalSupply   int64        `json:"total_supply"`
 	MaxSupply     int64        `json:"max_supply"`
 	Mintable      bool         `json:"mintable"`
 }
@@ -54,7 +53,7 @@ func issueTokenHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		symbol := strings.ToLower(rand.GenerateNewSymbol(req.Symbol))
 
 		// create the message
-		msg := types.NewMsgIssueToken(addr, owner, req.Name, symbol, req.Symbol, sdk.NewInt(req.TotalSupply), sdk.NewInt(req.MaxSupply), req.Mintable)
+		msg := types.NewMsgIssueToken(addr, owner, req.Name, symbol, req.Symbol, sdk.NewInt(req.MaxSupply), req.Mintable)
 		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
