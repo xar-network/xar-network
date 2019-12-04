@@ -20,4 +20,6 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgSettleDebt{}, "csdt/MsgSettleDebt", nil)
 	cdc.RegisterConcrete(MsgWithdrawDebt{}, "csdt/MsgWithdrawDebt", nil)
 	cdc.RegisterConcrete(MsgTransferCSDT{}, "csdt/MsgTransferCSDT", nil)
+	cdc.RegisterConcrete(MsgAddCollateralParam{}, "csdt/MsgAddCollateralParam", nil)
+	cdc.RegisterConcrete(MsgSetCollateralParam{}, "csdt/MsgSetCollateralParam", nil)
 }

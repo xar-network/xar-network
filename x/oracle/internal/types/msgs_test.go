@@ -12,7 +12,7 @@ import (
 
 func TestMsgSort(t *testing.T) {
 	from := sdk.AccAddress([]byte("someName"))
-	price, _ := sdk.NewDecFromStr("0.01155578")
+	price, _ := sdk.NewDecFromStr("1")
 	expiry := time.Now()
 
 	msg := types.NewMsgPostPrice(from, "uftm", price, expiry)

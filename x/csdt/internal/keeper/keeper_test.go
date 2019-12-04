@@ -277,6 +277,60 @@ func TestKeeper_PartialSeizeCSDT(t *testing.T) {
 	require.Equal(t, sdk.ZeroInt(), collateralState.TotalDebt)
 }
 
+// TODO change to table driven test to test more test cases
+func TestKeeper_CollateralParams(t *testing.T) {
+	// Setup
+	const collateral = "uftm"
+	mapp, keeper, _, _ := setUpMockAppWithoutGenesis()
+	genAccs, addrs, _, _ := mock.CreateGenAccounts(2, cs(c(collateral, 100)))
+
+	//testAddr := addrs[0]
+	mock.SetGenesis(mapp, genAccs)
+	// setup oracle
+	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
+	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
+	ctx := mapp.BaseApp.NewContext(false, header)
+
+	params := types.DefaultParams()
+	params.Nominees = []string{addrs[1].String()}
+
+	// Create CSDT
+	keeper.SetParams(ctx, params)
+	keeper.SetGlobalDebt(ctx, sdk.NewInt(0))
+	keeper.GetSupply().SetSupply(ctx, supply.NewSupply(sdk.NewCoins(sdk.NewCoin(collateral, sdk.NewInt(200)))))
+
+	// Try to add a denom that already exists and fail
+	collateralParam := types.CollateralParam{
+		Denom:            "uftm",
+		LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
+		DebtLimit:        sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000))),
+	}
+	err := keeper.AddCollateralParam(ctx, addrs[1].String(), collateralParam)
+	require.Error(t, err)
+	// Try to set an existing denom
+
+	err = keeper.SetCollateralParam(ctx, addrs[1].String(), collateralParam)
+	require.NoError(t, err)
+
+	// Try to set with non authority
+	err = keeper.SetCollateralParam(ctx, addrs[0].String(), collateralParam)
+	require.Error(t, err)
+	// Try to add when not a nominee
+	err = keeper.AddCollateralParam(ctx, addrs[0].String(), collateralParam)
+	require.Error(t, err)
+	collateralParam = types.CollateralParam{
+		Denom:            "uftm2",
+		LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
+		DebtLimit:        sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000))),
+	}
+	err = keeper.SetCollateralParam(ctx, addrs[1].String(), collateralParam)
+	require.Error(t, err)
+
+	// Add successfully
+	err = keeper.AddCollateralParam(ctx, addrs[1].String(), collateralParam)
+	require.NoError(t, err)
+}
+
 func TestKeeper_GetCSDTs(t *testing.T) {
 	// setup keeper
 	mapp, keeper, _, _ := setUpMockAppWithoutGenesis()

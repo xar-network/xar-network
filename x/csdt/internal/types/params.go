@@ -23,6 +23,7 @@ var (
 	KeyCollateralParams     = []byte("CollateralParams")
 	KeyDebtParams           = []byte("DebtParams")
 	KeyCircuitBreaker       = []byte("CircuitBreaker")
+	KeyNominees             = []byte("Nominees")
 	DefaultGlobalDebt       = sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000)))
 	DefaultCircuitBreaker   = false
 	DefaultCollateralParams = CollateralParams{CollateralParam{
@@ -39,6 +40,7 @@ type Params struct {
 	DebtParams       DebtParams       `json:"debt_params" yaml:"debt_params"`
 	GlobalDebtLimit  sdk.Coins        `json:"global_debt_limit" yaml:"global_debt_limit"`
 	CircuitBreaker   bool             `json:"circuit_breaker" yaml:"circuit_breaker"`
+	Nominees         []string         `json:"nominees" yaml:"nominees"`
 }
 
 func (cps Params) IsCollateralPresent(collateralDenom string) bool {
@@ -68,24 +70,38 @@ func (p Params) String() string {
 	Global Debt Limit: %s
 	Collateral Params: %s
 	Debt Params: %s
+	Nominees: %s
 	Circuit Breaker: %t`,
-		p.GlobalDebtLimit, p.CollateralParams, p.DebtParams, p.CircuitBreaker,
+		p.GlobalDebtLimit, p.CollateralParams, p.DebtParams, p.Nominees, p.CircuitBreaker,
 	)
 }
 
 // NewParams returns a new params object
-func NewParams(debtLimit sdk.Coins, collateralParams CollateralParams, debtParams DebtParams, breaker bool) Params {
+func NewParams(
+	debtLimit sdk.Coins,
+	collateralParams CollateralParams,
+	debtParams DebtParams,
+	breaker bool,
+	nominees []string,
+) Params {
 	return Params{
 		GlobalDebtLimit:  debtLimit,
 		CollateralParams: collateralParams,
 		DebtParams:       debtParams,
 		CircuitBreaker:   breaker,
+		Nominees:         nominees,
 	}
 }
 
 // DefaultParams returns default params for cdp module
 func DefaultParams() Params {
-	return NewParams(DefaultGlobalDebt, DefaultCollateralParams, DefaultDebtParams, DefaultCircuitBreaker)
+	return NewParams(
+		DefaultGlobalDebt,
+		DefaultCollateralParams,
+		DefaultDebtParams,
+		DefaultCircuitBreaker,
+		[]string{},
+	)
 }
 
 type CollateralParam struct {
@@ -155,6 +171,7 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 		{Key: KeyCollateralParams, Value: &p.CollateralParams},
 		{Key: KeyDebtParams, Value: &p.DebtParams},
 		{Key: KeyCircuitBreaker, Value: &p.CircuitBreaker},
+		{Key: KeyNominees, Value: &p.Nominees},
 	}
 }
 

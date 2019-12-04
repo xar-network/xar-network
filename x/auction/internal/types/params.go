@@ -14,7 +14,7 @@ const (
 	// DefaultBidDuration how long an auction gets extended when someone bids, roughly 3 hours in blocks
 	DefaultMaxBidDuration EndTime = 3 * 3600 / 1
 	// DefaultStartingAuctionID what the id of the first auction will be
-	DefaultStartingAuctionID ID = ID(0)
+	DefaultStartingAuctionID ID = ID(1)
 )
 
 // Parameter keys

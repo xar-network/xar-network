@@ -28,6 +28,10 @@ func NewHandler(keeper keeper.Keeper) sdk.Handler {
 			return handleMsgSettleDebt(ctx, keeper, msg)
 		case types.MsgWithdrawDebt:
 			return handleMsgWithdrawDebt(ctx, keeper, msg)
+		case types.MsgSetCollateralParam:
+			return handleMsgSetCollateralParam(ctx, keeper, msg)
+		case types.MsgAddCollateralParam:
+			return handleMsgAddCollateralParam(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized csdt msg type: %T", msg)
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -103,6 +107,48 @@ func handleMsgWithdrawDebt(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgW
 	}
 
 	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, sdk.NewInt(0), msg.DebtChange)
+	if err != nil {
+		return err.Result()
+	}
+
+	return sdk.Result{Events: ctx.EventManager().Events()}
+}
+
+func handleMsgSetCollateralParam(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSetCollateralParam) sdk.Result {
+
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err.Result()
+	}
+
+	params := types.CollateralParam{
+		Denom:            msg.CollateralDenom,
+		LiquidationRatio: msg.LiquidationRatio,
+		DebtLimit:        msg.DebtLimit,
+	}
+
+	err = keeper.SetCollateralParam(ctx, msg.Nominee.String(), params)
+	if err != nil {
+		return err.Result()
+	}
+
+	return sdk.Result{Events: ctx.EventManager().Events()}
+}
+
+func handleMsgAddCollateralParam(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgAddCollateralParam) sdk.Result {
+
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err.Result()
+	}
+
+	params := types.CollateralParam{
+		Denom:            msg.CollateralDenom,
+		LiquidationRatio: msg.LiquidationRatio,
+		DebtLimit:        msg.DebtLimit,
+	}
+
+	err = keeper.AddCollateralParam(ctx, msg.Nominee.String(), params)
 	if err != nil {
 		return err.Result()
 	}

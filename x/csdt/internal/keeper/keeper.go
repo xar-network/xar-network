@@ -433,3 +433,14 @@ func (k Keeper) GetOracle() types.OracleKeeper {
 func (k Keeper) GetSupply() types.SupplyKeeper {
 	return k.sk
 }
+
+func (k Keeper) IsNominee(ctx sdk.Context, nominee string) bool {
+	params := k.GetParams(ctx)
+	nominees := params.Nominees
+	for _, v := range nominees {
+		if v == nominee {
+			return true
+		}
+	}
+	return false
+}

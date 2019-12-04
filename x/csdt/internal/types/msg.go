@@ -267,6 +267,122 @@ func (msg MsgWithdrawDebt) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Sender}
 }
 
+// MsgAddCollateralParam adds collateral to CSDT management
+type MsgAddCollateralParam struct {
+	Nominee          sdk.AccAddress `json:"nominee" yaml:"nominee"`
+	CollateralDenom  string         `json:"collateral_denom" yaml:"collateral_denom"`
+	LiquidationRatio sdk.Dec        `json:"liquidation_ratio" yaml:"liquidation_ratio"`
+	DebtLimit        sdk.Coins      `json:"debt_limit" yaml:"debt_limit"`
+}
+
+// NewMsgAddCollateralParam returns a new MsgAddCollateralParam.
+func NewMsgAddCollateralParam(
+	nominee sdk.AccAddress,
+	collateralDenom string,
+	liquidationRatio sdk.Dec,
+	debtLimit sdk.Coins,
+) MsgAddCollateralParam {
+	return MsgAddCollateralParam{
+		Nominee:          nominee,
+		CollateralDenom:  collateralDenom,
+		LiquidationRatio: liquidationRatio,
+		DebtLimit:        debtLimit,
+	}
+}
+
+// Route return the message type used for routing the message.
+func (msg MsgAddCollateralParam) Route() string { return ModuleName }
+
+// Type returns a human-readable string for the message, intended for utilization within tags.
+func (msg MsgAddCollateralParam) Type() string { return "add_collateral_denom" } // TODO snake case?
+
+// ValidateBasic does a simple validation check that doesn't require access to any other information.
+func (msg MsgAddCollateralParam) ValidateBasic() sdk.Error {
+	if msg.Nominee.Empty() {
+		return sdk.ErrInternal("invalid (empty) nominee address")
+	}
+	if msg.LiquidationRatio.IsNegative() || msg.LiquidationRatio.IsZero() {
+		return sdk.ErrInternal("invalid (empty) liquidation ratio")
+	}
+	if len(msg.CollateralDenom) == 0 {
+		return sdk.ErrInternal("invalid (empty) debt denom")
+	}
+
+	if !msg.DebtLimit.IsValid() || msg.DebtLimit.IsAnyNegative() {
+		return sdk.ErrInternal("invalid (empty) debt limit")
+	}
+	return nil
+}
+
+// GetSignBytes gets the canonical byte representation of the Msg.
+func (msg MsgAddCollateralParam) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
+}
+
+// GetSigners returns the addresses of signers that must sign.
+func (msg MsgAddCollateralParam) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.Nominee}
+}
+
+// MsgSetCollateralParam sets collateral in CSDT management
+type MsgSetCollateralParam struct {
+	Nominee          sdk.AccAddress `json:"nominee" yaml:"nominee"`
+	CollateralDenom  string         `json:"collateral_denom" yaml:"collateral_denom"`
+	LiquidationRatio sdk.Dec        `json:"liquidation_ratio" yaml:"liquidation_ratio"`
+	DebtLimit        sdk.Coins      `json:"debt_limit" yaml:"debt_limit"`
+}
+
+// NewMsgSetCollateralParam returns a new MsgSetCollateralParam.
+func NewMsgSetCollateralParam(
+	nominee sdk.AccAddress,
+	collateralDenom string,
+	liquidationRatio sdk.Dec,
+	debtLimit sdk.Coins,
+) MsgSetCollateralParam {
+	return MsgSetCollateralParam{
+		Nominee:          nominee,
+		CollateralDenom:  collateralDenom,
+		LiquidationRatio: liquidationRatio,
+		DebtLimit:        debtLimit,
+	}
+}
+
+// Route return the message type used for routing the message.
+func (msg MsgSetCollateralParam) Route() string { return ModuleName }
+
+// Type returns a human-readable string for the message, intended for utilization within tags.
+func (msg MsgSetCollateralParam) Type() string { return "set_collateral_denom" } // TODO snake case?
+
+// ValidateBasic does a simple validation check that doesn't require access to any other information.
+func (msg MsgSetCollateralParam) ValidateBasic() sdk.Error {
+	if msg.Nominee.Empty() {
+		return sdk.ErrInternal("invalid (empty) nominee address")
+	}
+	if msg.LiquidationRatio.IsNegative() || msg.LiquidationRatio.IsZero() {
+		return sdk.ErrInternal("invalid (empty) liquidation ratio")
+	}
+	if len(msg.CollateralDenom) == 0 {
+		return sdk.ErrInternal("invalid (empty) debt denom")
+	}
+
+	if !msg.DebtLimit.IsValid() || msg.DebtLimit.IsAnyNegative() {
+		return sdk.ErrInternal("invalid (empty) debt limit")
+	}
+	return nil
+}
+
+// GetSignBytes gets the canonical byte representation of the Msg.
+func (msg MsgSetCollateralParam) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
+}
+
+// GetSigners returns the addresses of signers that must sign.
+func (msg MsgSetCollateralParam) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.Nominee}
+}
+
 // MsgTransferCSDT changes the ownership of a csdt
 type MsgTransferCSDT struct {
 	// TODO
