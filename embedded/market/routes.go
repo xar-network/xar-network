@@ -19,6 +19,10 @@ func RegisterRoutes(ctx context.CLIContext, r *mux.Router, cdc *codec.Codec) {
 
 func getMarkets(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, ctx, r)
+		if !ok {
+			return
+		}
 		res, height, err := ctx.QueryWithData(fmt.Sprintf("custom/market/list"), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

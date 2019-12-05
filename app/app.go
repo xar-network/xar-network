@@ -444,6 +444,11 @@ func (app *XarApp) Codec() *codec.Codec {
 	return app.cdc
 }
 
+// Module Manager returns the application's module manager
+func (app *XarApp) MM() *module.Manager {
+	return app.mm
+}
+
 func (app *XarApp) MQ() types.Backend {
 	return app.mq
 }

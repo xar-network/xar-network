@@ -36,12 +36,11 @@ func GetCmdFindToken(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			symbol := args[0]
 
-			res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", queryRoute, keeper.QueryToken, symbol), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", queryRoute, keeper.QueryToken, symbol), nil)
 			if err != nil {
 				fmt.Printf("could not find symbol - '%s'. reason: '%s'\n", symbol, err)
 				return nil
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			var out types.Token
 			cdc.MustUnmarshalJSON(res, &out)
@@ -59,12 +58,11 @@ func GetCmdSymbols(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", queryRoute, keeper.QuerySymbols), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", queryRoute, keeper.QuerySymbols), nil)
 			if err != nil {
 				fmt.Printf("could not get query symbols. reason: '%s'\n", err)
 				return nil
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			var out types.QueryResultSymbol
 			cdc.MustUnmarshalJSON(res, &out)

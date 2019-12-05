@@ -83,6 +83,10 @@ func getRawPricesHandler(cliCtx context.CLIContext, storeName string) http.Handl
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		paramType := vars[restName]
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
 		res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/rawprices/%s", storeName, paramType), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
@@ -98,6 +102,10 @@ func getCurrentPriceHandler(cliCtx context.CLIContext, storeName string) http.Ha
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		paramType := vars[restName]
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
 		res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/price/%s", storeName, paramType), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
@@ -111,6 +119,10 @@ func getCurrentPriceHandler(cliCtx context.CLIContext, storeName string) http.Ha
 
 func getAssetsHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
 		res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/assets/", storeName), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())

@@ -18,13 +18,12 @@ func GetCmdCurrentPrice(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			assetCode := args[0]
-			res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/price/%s", queryRoute, assetCode), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/price/%s", queryRoute, assetCode), nil)
 			if err != nil {
 				fmt.Printf("error when querying current price - %s", err)
 				fmt.Printf("could not get current price for - %s \n", string(assetCode))
 				return nil
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			var out types.CurrentPrice
 			cdc.MustUnmarshalJSON(res, &out)
@@ -42,12 +41,11 @@ func GetCmdRawPrices(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			assetCode := args[0]
-			res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/rawprices/%s", queryRoute, assetCode), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/rawprices/%s", queryRoute, assetCode), nil)
 			if err != nil {
 				fmt.Printf("could not get raw prices for - %s \n", string(assetCode))
 				return nil
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			var out types.QueryRawPricesResp
 			cdc.MustUnmarshalJSON(res, &out)
@@ -63,12 +61,11 @@ func GetCmdAssets(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		Short: "get the assets in the oracle",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/assets", queryRoute), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/assets", queryRoute), nil)
 			if err != nil {
 				fmt.Printf("could not get assets")
 				return nil
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			var out types.QueryAssetsResp
 			cdc.MustUnmarshalJSON(res, &out)

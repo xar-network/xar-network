@@ -27,6 +27,10 @@ func queryRecordHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
 		res, height, err := queriers.QueryRecord(hash, cliCtx)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
@@ -66,7 +70,10 @@ func queryRecordsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			}
 			recordQueryParams.Limit = limit
 		}
-
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
 		res, height, err := queriers.QueryRecords(recordQueryParams, cliCtx)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())

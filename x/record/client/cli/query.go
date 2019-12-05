@@ -33,11 +33,10 @@ func processQuery(cdc *codec.Codec, args []string) error {
 		return types.Errorf(err)
 	}
 	// Query the record
-	res, height, err := recordqueriers.QueryRecord(hash, cliCtx)
+	res, _, err := recordqueriers.QueryRecord(hash, cliCtx)
 	if err != nil {
 		return err
 	}
-	cliCtx = cliCtx.WithHeight(height)
 
 	var recordInfo types.Record
 	cdc.MustUnmarshalJSON(res, &recordInfo)
@@ -79,11 +78,10 @@ func GetCmdQueryList(cdc *codec.Codec) *cobra.Command {
 				recordQueryParams.Limit = limit
 			}
 			// Query the record
-			res, height, err := recordqueriers.QueryRecords(recordQueryParams, cliCtx)
+			res, _, err := recordqueriers.QueryRecords(recordQueryParams, cliCtx)
 			if err != nil {
 				return err
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			var ls types.Records
 			cdc.MustUnmarshalJSON(res, &ls)

@@ -78,7 +78,10 @@ func getCsdtsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
 		// Get the CSDTs
 		res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetCsdts), querierParamsBz)
 		if err != nil {
@@ -120,6 +123,10 @@ func modifyCsdtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
 		res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetCsdts), querierParamsBz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
@@ -148,6 +155,10 @@ func modifyCsdtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 func getParamsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Get the params
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
 		res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetParams), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())

@@ -58,11 +58,10 @@ $ %s query %s supply crypto-kitties
 				return err
 			}
 
-			res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/supply/%s", queryRoute, denom), bz)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/supply/%s", queryRoute, denom), bz)
 			if err != nil {
 				return err
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			var out exported.NFT
 			err = cdc.UnmarshalJSON(res, &out)
@@ -109,13 +108,11 @@ $ %s query %s owner cosmos1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p crypto-kitties
 			}
 
 			var res []byte
-			var height int64
 			if denom == "" {
-				res, height, err = cliCtx.QueryWithData(fmt.Sprintf("custom/%s/owner", queryRoute), bz)
+				res, _, err = cliCtx.QueryWithData(fmt.Sprintf("custom/%s/owner", queryRoute), bz)
 			} else {
-				res, height, err = cliCtx.QueryWithData(fmt.Sprintf("custom/%s/ownerByDenom", queryRoute), bz)
+				res, _, err = cliCtx.QueryWithData(fmt.Sprintf("custom/%s/ownerByDenom", queryRoute), bz)
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			if err != nil {
 				return err
@@ -156,11 +153,10 @@ $ %s query %s collection crypto-kitties
 				return err
 			}
 
-			res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/collection", queryRoute), bz)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/collection", queryRoute), bz)
 			if err != nil {
 				return err
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			var out types.Collection
 			err = cdc.UnmarshalJSON(res, &out)
@@ -191,11 +187,10 @@ func GetCmdQueryDenoms(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/denoms", queryRoute), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/denoms", queryRoute), nil)
 			if err != nil {
 				return err
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			var out types.SortedStringArray
 			err = cdc.UnmarshalJSON(res, &out)
@@ -233,11 +228,10 @@ $ %s query %s token crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f
 				return err
 			}
 
-			res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/nft", queryRoute), bz)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/nft", queryRoute), bz)
 			if err != nil {
 				return err
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			var out exported.NFT
 			err = cdc.UnmarshalJSON(res, &out)

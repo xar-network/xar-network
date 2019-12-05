@@ -22,6 +22,11 @@ func latestBatch(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
 		vars := mux.Vars(r)
 		mktId := vars["marketID"]
 
+		ctx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, ctx, r)
+		if !ok {
+			return
+		}
+
 		res, height, err := ctx.QueryWithData(fmt.Sprintf("custom/batch/latest/%s", mktId), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

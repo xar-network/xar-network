@@ -36,13 +36,12 @@ func GetCmd_GetCsdt(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 			// Query
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryGetCsdts)
-			res, height, err := cliCtx.QueryWithData(route, bz)
+			res, _, err := cliCtx.QueryWithData(route, bz)
 			if err != nil {
 				fmt.Printf("error when getting csdt info - %s", err)
 				fmt.Printf("could not get current csdt info - %s %s \n", string(ownerAddress), string(collateralType))
 				return err
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			// Decode and print results
 			var csdts types.CSDTs
@@ -72,11 +71,10 @@ func GetCmd_GetCsdts(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 			// Query
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryGetCsdts)
-			res, height, err := cliCtx.QueryWithData(route, bz)
+			res, _, err := cliCtx.QueryWithData(route, bz)
 			if err != nil {
 				return err
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			// Decode and print results
 			var out types.CSDTs
@@ -110,11 +108,10 @@ func GetCmd_GetUnderCollateralizedCsdts(queryRoute string, cdc *codec.Codec) *co
 
 			// Query
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryGetCsdts)
-			res, height, err := cliCtx.QueryWithData(route, bz)
+			res, _, err := cliCtx.QueryWithData(route, bz)
 			if err != nil {
 				return err
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			// Decode and print results
 			var out types.CSDTs
@@ -135,11 +132,10 @@ func GetCmd_GetParams(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 			// Query
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryGetParams)
-			res, height, err := cliCtx.QueryWithData(route, nil) // TODO use cliCtx.QueryStore?
+			res, _, err := cliCtx.QueryWithData(route, nil) // TODO use cliCtx.QueryStore?
 			if err != nil {
 				return err
 			}
-			cliCtx = cliCtx.WithHeight(height)
 
 			// Decode and print results
 			var out types.Params
