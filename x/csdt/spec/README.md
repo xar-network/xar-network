@@ -87,13 +87,6 @@ collateral: [{denom:string,amount:int64}]
 debt:[{denom:string,amount:int64}]
 ```
 
-Version 2 saves CSDTs per owner and allow for an array of collateral to be used. This collateral creates a overall collateral value in ucsdt. The formula being;
-
-```
-foreach collateral in collateral_array
-- value += amount*(priceOf(denom))
-```
-
 With the version 3 upgrade, the CSDT module now has an amount of collateral. Should ucsdt be requested, this is first borrowed from the CSDT module, before it is minted.
 
 With version 3, debt also becomes a basket, and an owner can borrow any asset that the CSDT module owns (access to all other collateral). So at this upgrade, an owner could borrow BTC/ETH against FTM/ucsdt (including adding ucsdt as collateral)
