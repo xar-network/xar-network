@@ -33,10 +33,12 @@ func CheckIssueId(issueID string) sdk.Error {
 func IssueOwnerCheck(cliCtx context.CLIContext, sender sdk.AccAddress, issueID string) (Issue, error) {
 	var issueInfo Issue
 	// Query the issue
-	res, _, err := cliCtx.QueryWithData(GetQueryIssuePath(issueID), nil)
+	res, height, err := cliCtx.QueryWithData(GetQueryIssuePath(issueID), nil)
 	if err != nil {
 		return nil, err
 	}
+	cliCtx = cliCtx.WithHeight(height)
+
 	cliCtx.Codec.MustUnmarshalJSON(res, &issueInfo)
 
 	if !sender.Equals(issueInfo.GetOwner()) {

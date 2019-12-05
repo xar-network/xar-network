@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"strings"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -22,7 +20,7 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 }
 
 func queryAuctions(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
-	var AuctionsList QueryResAuctions
+	var AuctionsList types.QueryResAuctions
 
 	iterator := keeper.GetAuctionIterator(ctx)
 
@@ -39,12 +37,4 @@ func queryAuctions(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res [
 	}
 
 	return bz, nil
-}
-
-// QueryResAuctions Result Payload for an auctions query
-type QueryResAuctions []string
-
-// implement fmt.Stringer
-func (n QueryResAuctions) String() string {
-	return strings.Join(n[:], "\n")
 }

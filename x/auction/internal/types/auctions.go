@@ -7,20 +7,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-const (
-	// MaxAuctionDuration max length of auction, in blocks
-	MaxAuctionDuration EndTime = 2 * 24 * 3600 / 5 // roughly 2 days, at 5s block time // 34560
-	// BidDuration how long an auction gets extended when someone bids, in blocks
-	BidDuration EndTime = 3 * 3600 / 5 // roughly 3 hours, at 5s block time TODO better name // 2160
-)
-
 // Auction is an interface to several types of auction.
 type Auction interface {
 	GetID() ID
 	SetID(ID)
-	PlaceBid(currentBlockHeight EndTime, bidder sdk.AccAddress, lot sdk.Coin, bid sdk.Coin) ([]BankOutput, []bankInput, sdk.Error)
+	PlaceBid(currentBlockHeight EndTime, bidder sdk.AccAddress, lot sdk.Coin, bid sdk.Coin) ([]BankOutput, []BankInput, sdk.Error)
 	GetEndTime() EndTime // auctions close at the end of the block with blockheight EndTime (ie bids placed in that block are valid)
-	GetPayout() bankInput
+	GetPayout() BankInput
 	String() string
 }
 
@@ -50,7 +43,7 @@ func NewIDFromString(s string) (ID, error) {
 type EndTime int64 // TODO rename to Blockheight or don't define custom type
 
 // Initially the input and output types from the bank module where used here. But they use sdk.Coins instad of sdk.Coin. So it caused a lot of type conversion as auction mainly uses sdk.Coin.
-type bankInput struct {
+type BankInput struct {
 	Address sdk.AccAddress
 	Coin    sdk.Coin
 }
@@ -69,8 +62,8 @@ func (a *BaseAuction) SetID(id ID) { a.ID = id }
 func (a BaseAuction) GetEndTime() EndTime { return a.EndTime }
 
 // GetPayout implements Auction
-func (a BaseAuction) GetPayout() bankInput {
-	return bankInput{a.Bidder, a.Lot}
+func (a BaseAuction) GetPayout() BankInput {
+	return BankInput{a.Bidder, a.Lot}
 }
 
 func (e EndTime) String() string {
@@ -89,6 +82,20 @@ func (a BaseAuction) String() string {
 		a.Bidder, a.Bid, a.GetEndTime().String(),
 		a.MaxEndTime.String(),
 	)
+}
+
+// NewBaseAuction creates a new base auction
+func NewBaseAuction(seller sdk.AccAddress, lot sdk.Coin, initialBid sdk.Coin, EndTime EndTime) BaseAuction {
+	auction := BaseAuction{
+		// no ID
+		Initiator:  seller,
+		Lot:        lot,
+		Bidder:     seller,     // send the proceeds from the first bid back to the seller
+		Bid:        initialBid, // set this to zero most of the time
+		EndTime:    EndTime,
+		MaxEndTime: EndTime,
+	}
+	return auction
 }
 
 // ForwardAuction type for forward auctions
@@ -112,25 +119,25 @@ func NewForwardAuction(seller sdk.AccAddress, lot sdk.Coin, initialBid sdk.Coin,
 }
 
 // PlaceBid implements Auction
-func (a *ForwardAuction) PlaceBid(currentBlockHeight EndTime, bidder sdk.AccAddress, lot sdk.Coin, bid sdk.Coin) ([]BankOutput, []bankInput, sdk.Error) {
+func (a *ForwardAuction) PlaceBid(currentBlockHeight EndTime, bidder sdk.AccAddress, lot sdk.Coin, bid sdk.Coin) ([]BankOutput, []BankInput, sdk.Error) {
 	// TODO check lot size matches lot?
 	// check auction has not closed
 	if currentBlockHeight > a.EndTime {
-		return []BankOutput{}, []bankInput{}, sdk.ErrInternal("auction has closed")
+		return []BankOutput{}, []BankInput{}, sdk.ErrInternal("auction has closed")
 	}
 	// check bid is greater than last bid
 	if !a.Bid.IsLT(bid) { // TODO add minimum bid size
-		return []BankOutput{}, []bankInput{}, sdk.ErrInternal("bid not greater than last bid")
+		return []BankOutput{}, []BankInput{}, sdk.ErrInternal("bid not greater than last bid")
 	}
 	// calculate coin movements
 	outputs := []BankOutput{{bidder, bid}}                                  // new bidder pays bid now
-	inputs := []bankInput{{a.Bidder, a.Bid}, {a.Initiator, bid.Sub(a.Bid)}} // old bidder is paid back, extra goes to seller
+	inputs := []BankInput{{a.Bidder, a.Bid}, {a.Initiator, bid.Sub(a.Bid)}} // old bidder is paid back, extra goes to seller
 
 	// update auction
 	a.Bidder = bidder
 	a.Bid = bid
 	// increment timeout // TODO into keeper?
-	a.EndTime = EndTime(min(int64(currentBlockHeight+BidDuration), int64(a.MaxEndTime))) // TODO is there a better way to structure these types?
+	a.EndTime = EndTime(min(int64(currentBlockHeight+DefaultMaxBidDuration), int64(a.MaxEndTime))) // TODO is there a better way to structure these types?
 
 	return outputs, inputs, nil
 }
@@ -156,26 +163,26 @@ func NewReverseAuction(buyer sdk.AccAddress, bid sdk.Coin, initialLot sdk.Coin, 
 }
 
 // PlaceBid implements Auction
-func (a *ReverseAuction) PlaceBid(currentBlockHeight EndTime, bidder sdk.AccAddress, lot sdk.Coin, bid sdk.Coin) ([]BankOutput, []bankInput, sdk.Error) {
+func (a *ReverseAuction) PlaceBid(currentBlockHeight EndTime, bidder sdk.AccAddress, lot sdk.Coin, bid sdk.Coin) ([]BankOutput, []BankInput, sdk.Error) {
 
 	// check bid size matches bid?
 	// check auction has not closed
 	if currentBlockHeight > a.EndTime {
-		return []BankOutput{}, []bankInput{}, sdk.ErrInternal("auction has closed")
+		return []BankOutput{}, []BankInput{}, sdk.ErrInternal("auction has closed")
 	}
 	// check bid is less than last bid
 	if !lot.IsLT(a.Lot) { // TODO add min bid decrements
-		return []BankOutput{}, []bankInput{}, sdk.ErrInternal("lot not smaller than last lot")
+		return []BankOutput{}, []BankInput{}, sdk.ErrInternal("lot not smaller than last lot")
 	}
 	// calculate coin movements
 	outputs := []BankOutput{{bidder, a.Bid}}                                // new bidder pays bid now
-	inputs := []bankInput{{a.Bidder, a.Bid}, {a.Initiator, a.Lot.Sub(lot)}} // old bidder is paid back, decrease in price for goes to buyer
+	inputs := []BankInput{{a.Bidder, a.Bid}, {a.Initiator, a.Lot.Sub(lot)}} // old bidder is paid back, decrease in price for goes to buyer
 
 	// update auction
 	a.Bidder = bidder
 	a.Lot = lot
 	// increment timeout // TODO into keeper?
-	a.EndTime = EndTime(min(int64(currentBlockHeight+BidDuration), int64(a.MaxEndTime))) // TODO is there a better way to structure these types?
+	a.EndTime = EndTime(min(int64(currentBlockHeight+DefaultMaxBidDuration), int64(a.MaxEndTime))) // TODO is there a better way to structure these types?
 
 	return outputs, inputs, nil
 }
@@ -222,10 +229,10 @@ func NewForwardReverseAuction(seller sdk.AccAddress, lot sdk.Coin, initialBid sd
 }
 
 // PlaceBid implements auction
-func (a *ForwardReverseAuction) PlaceBid(currentBlockHeight EndTime, bidder sdk.AccAddress, lot sdk.Coin, bid sdk.Coin) (outputs []BankOutput, inputs []bankInput, err sdk.Error) {
+func (a *ForwardReverseAuction) PlaceBid(currentBlockHeight EndTime, bidder sdk.AccAddress, lot sdk.Coin, bid sdk.Coin) (outputs []BankOutput, inputs []BankInput, err sdk.Error) {
 	// check auction has not closed
 	if currentBlockHeight > a.EndTime {
-		return []BankOutput{}, []bankInput{}, sdk.ErrInternal("auction has closed")
+		return []BankOutput{}, []BankInput{}, sdk.ErrInternal("auction has closed")
 	}
 
 	// determine phase of auction
@@ -233,17 +240,17 @@ func (a *ForwardReverseAuction) PlaceBid(currentBlockHeight EndTime, bidder sdk.
 	case a.Bid.IsLT(a.MaxBid) && bid.IsLT(a.MaxBid):
 		// Forward auction phase
 		if !a.Bid.IsLT(bid) { // TODO add min bid increments
-			return []BankOutput{}, []bankInput{}, sdk.ErrInternal("bid not greater than last bid")
+			return []BankOutput{}, []BankInput{}, sdk.ErrInternal("bid not greater than last bid")
 		}
 		outputs = []BankOutput{{bidder, bid}}                                  // new bidder pays bid now
-		inputs = []bankInput{{a.Bidder, a.Bid}, {a.Initiator, bid.Sub(a.Bid)}} // old bidder is paid back, extra goes to seller
+		inputs = []BankInput{{a.Bidder, a.Bid}, {a.Initiator, bid.Sub(a.Bid)}} // old bidder is paid back, extra goes to seller
 	case a.Bid.IsLT(a.MaxBid):
 		// Switch over phase
 		if !bid.IsEqual(a.MaxBid) { // require bid == a.MaxBid
-			return []BankOutput{}, []bankInput{}, sdk.ErrInternal("bid greater than the max bid")
+			return []BankOutput{}, []BankInput{}, sdk.ErrInternal("bid greater than the max bid")
 		}
 		outputs = []BankOutput{{bidder, bid}} // new bidder pays bid now
-		inputs = []bankInput{
+		inputs = []BankInput{
 			{a.Bidder, a.Bid},               // old bidder is paid back
 			{a.Initiator, bid.Sub(a.Bid)},   // extra goes to seller
 			{a.OtherPerson, a.Lot.Sub(lot)}, //decrease in price for goes to original CSDT owner
@@ -252,10 +259,10 @@ func (a *ForwardReverseAuction) PlaceBid(currentBlockHeight EndTime, bidder sdk.
 	case a.Bid.IsEqual(a.MaxBid):
 		// Reverse auction phase
 		if !lot.IsLT(a.Lot) { // TODO add min bid decrements
-			return []BankOutput{}, []bankInput{}, sdk.ErrInternal("lot not smaller than last lot")
+			return []BankOutput{}, []BankInput{}, sdk.ErrInternal("lot not smaller than last lot")
 		}
 		outputs = []BankOutput{{bidder, a.Bid}}                                  // new bidder pays bid now
-		inputs = []bankInput{{a.Bidder, a.Bid}, {a.OtherPerson, a.Lot.Sub(lot)}} // old bidder is paid back, decrease in price for goes to original CSDT owner
+		inputs = []BankInput{{a.Bidder, a.Bid}, {a.OtherPerson, a.Lot.Sub(lot)}} // old bidder is paid back, decrease in price for goes to original CSDT owner
 	default:
 		panic("should never be reached") // TODO
 	}
@@ -265,7 +272,7 @@ func (a *ForwardReverseAuction) PlaceBid(currentBlockHeight EndTime, bidder sdk.
 	a.Lot = lot
 	a.Bid = bid
 	// increment timeout
-	a.EndTime = EndTime(min(int64(currentBlockHeight+BidDuration), int64(a.MaxEndTime))) // TODO is there a better way to structure these types?
+	a.EndTime = EndTime(min(int64(currentBlockHeight+DefaultMaxBidDuration), int64(a.MaxEndTime))) // TODO is there a better way to structure these types?
 
 	return outputs, inputs, nil
 }

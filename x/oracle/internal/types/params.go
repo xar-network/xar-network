@@ -1,41 +1,77 @@
 package types
 
-import "github.com/cosmos/cosmos-sdk/x/params"
+import (
+	"fmt"
+	"strings"
 
-// ParamStoreKeyOracleList key to get the list of oracle
-var ParamStoreKeyOracleList = []byte("oraclelist")
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/params"
+)
 
-// ParamKeyTable keytable
+var (
+	// KeyAssets store key for assets
+	KeyAssets   = []byte("oracleassets")
+	KeyNominees = []byte("oraclenominees")
+)
+
+// ParamKeyTable Key declaration for parameters
 func ParamKeyTable() params.KeyTable {
-	return params.NewKeyTable(
-		ParamStoreKeyOracleList, []string{},
-	)
+	return params.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-/*
-Keys:								Values:
-oracle						N/A (top level prefix)
-oracle:raw:x 		[]PostedPrice{AssetCode: string, OracleAddress: string, Price: sdk.Dec, Expiry: sdk.Int}
-oracle:current:x CurrentPrice{AssetCode: string, Price: sdk.Dec, Expiry: sdk.Int}
-oracle:oracles:x []Oracle{OracleAddress: string}
-oracle:assets 		[]Asset{AssetCode:string, Description: string}
+// Params params for oracle. Can be altered via governance
+type Params struct {
+	Assets   []Asset  `json:"assets" yaml:"assets"` //  Array containing the assets supported by the oracle
+	Nominees []string `json:"nominees" yaml:"nominees"`
+}
 
-To update the price for a particular oracle after they have made a MsgPostPrice transaction:
-prices := keeper.GetPrices(AssetCode)
-var index int
-for i := range prices {
-	if prices[i].Oracle == [OracleAddress] {
-		index = i
-		break
+// ParamSetPairs implements the ParamSet interface and returns all the key/value pairs
+// pairs of oracle module's parameters.
+func (p Params) ParamSetPairs() params.ParamSetPairs {
+	return params.ParamSetPairs{
+		{Key: KeyAssets, Value: &p.Assets},
+		{Key: KeyNominees, Value: &p.Nominees},
 	}
 }
-prices[index] = PostedPrice{
-	[AssetCode]
-	[OracleAddress]
-	[Price]
-	[Expiry]
+
+// NewParams creates a new AssetParams object
+func NewParams(assets []Asset, nominees []string) Params {
+	return Params{
+		Assets:   assets,
+		Nominees: nominees,
+	}
 }
 
-store.Set([]byte(RawPriceFeedPrefix+assetCode), keeper.cdc.MustMarshallBinaryBare(prices))
+// DefaultParams default params for oracle
+func DefaultParams() Params {
+	return NewParams(Assets{}, []string{})
+}
 
-*/
+// String implements fmt.stringer
+func (p Params) String() string {
+	out := "Params:\n"
+	for _, a := range p.Assets {
+		out += a.String()
+	}
+	for _, a := range p.Nominees {
+		out += a
+	}
+	return strings.TrimSpace(out)
+}
+
+// ParamSubspace defines the expected Subspace interface for parameters
+type ParamSubspace interface {
+	Get(ctx sdk.Context, key []byte, ptr interface{})
+	Set(ctx sdk.Context, key []byte, param interface{})
+}
+
+// Validate ensure that params have valid values
+func (p Params) Validate() error {
+	// iterate over assets and verify them
+	for _, asset := range p.Assets {
+		if asset.AssetCode == "" {
+			return fmt.Errorf("invalid asset: %s. missing asset code", asset.String())
+		}
+	}
+	return nil
+}

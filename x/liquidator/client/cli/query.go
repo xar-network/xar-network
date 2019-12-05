@@ -24,6 +24,7 @@ func GetCmd_GetOutstandingDebt(queryRoute string, cdc *codec.Codec) *cobra.Comma
 			if err != nil {
 				return err
 			}
+
 			var outstandingDebt sdk.Int
 			cdc.MustUnmarshalJSON(res, &outstandingDebt)
 			return cliCtx.PrintOutput(outstandingDebt)

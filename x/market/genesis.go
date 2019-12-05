@@ -10,11 +10,12 @@ import (
 )
 
 type GenesisState struct {
-	Markets []types.Market
+	Markets  types.Markets `json:"markets" yaml:"markets"`
+	Nominees []string      `json:"nominees" yaml:"nominees"`
 }
 
-func NewGenesisState(markets []types.Market) GenesisState {
-	return GenesisState{Markets: markets}
+func NewGenesisState(markets types.Markets, nominees []string) GenesisState {
+	return GenesisState{Markets: markets, Nominees: nominees}
 }
 
 func ValidateGenesis(data GenesisState) error {
@@ -37,7 +38,7 @@ func ValidateGenesis(data GenesisState) error {
 
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		Markets: []types.Market{
+		Markets: types.Markets{
 			{
 				ID:              store.NewEntityID(1),
 				BaseAssetDenom:  "uftm",
@@ -59,20 +60,15 @@ func DefaultGenesisState() GenesisState {
 				QuoteAssetDenom: "uzar",
 			},
 		},
+		Nominees: []string{},
 	}
 }
 
-func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
-	for _, asset := range data.Markets {
-		keeper.Inject(ctx, asset)
-	}
+func InitGenesis(ctx sdk.Context, k Keeper, data GenesisState) {
+	k.SetParams(ctx, types.NewParams(data.Markets, []string{}))
 }
 
 func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
-	var markets []types.Market
-	k.Iterator(ctx, func(asset types.Market) bool {
-		markets = append(markets, asset)
-		return true
-	})
-	return GenesisState{Markets: markets}
+	params := k.GetParams(ctx)
+	return GenesisState{Markets: params.Markets, Nominees: params.Nominees}
 }

@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -10,26 +11,37 @@ import (
 // CSDT is the state of a single account.
 type CSDT struct {
 	//ID             []byte                                    // removing IDs for now to make things simpler
-	Owner            sdk.AccAddress `json:"owner"`             // Account that authorizes changes to the CSDT
-	CollateralDenom  string         `json:"collateral_denom"`  // Type of collateral stored in this CSDT
-	CollateralAmount sdk.Int        `json:"collateral_amount"` // Amount of collateral stored in this CSDT
-	Debt             sdk.Int        `json:"debt"`              // Amount of stable coin drawn from this CSDT
+	Owner            sdk.AccAddress `json:"owner" yaml:"owner"`                         // Account that authorizes changes to the CSDT
+	CollateralDenom  string         `json:"collateral_denom" yaml:"collateral_denom"`   // Type of collateral stored in this CSDT
+	CollateralAmount sdk.Coins      `json:"collateral_amount" yaml:"collateral_amount"` // Amount of collateral stored in this CSDT
+	Debt             sdk.Coins      `json:"debt" yaml:"debt"`
+	AccumulatedFees  sdk.Coins      `json:"accumulated_fees" yaml:"accumulated_fees"`
+	FeesUpdated      time.Time      `json:"fees_updated" yaml:"fees_updated"` // Amount of stable coin drawn from this CSDT
 }
 
 func (csdt CSDT) IsUnderCollateralized(price sdk.Dec, liquidationRatio sdk.Dec) bool {
-	collateralValue := sdk.NewDecFromInt(csdt.CollateralAmount).Mul(price)
-	minCollateralValue := liquidationRatio.Mul(sdk.NewDecFromInt(csdt.Debt))
+	collateralValue := sdk.NewDecFromInt(csdt.CollateralAmount.AmountOf(csdt.CollateralDenom)).Mul(price)
+	minCollateralValue := sdk.NewDec(0)
+	for _, c := range csdt.Debt {
+		minCollateralValue = minCollateralValue.Add(liquidationRatio.Mul(c.Amount.ToDec()))
+	}
 	return collateralValue.LT(minCollateralValue) // TODO LT or LTE?
 }
 
 func (csdt CSDT) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`CSDT:
   Owner:      %s
-  Collateral: %s
-  Debt:       %s`,
+	Collateral Type: %s
+	Collateral: %s
+	Debt: %s
+	Fees: %s
+	Fees Last Updated: %s`,
 		csdt.Owner,
-		sdk.NewCoin(csdt.CollateralDenom, csdt.CollateralAmount),
-		sdk.NewCoin(StableDenom, csdt.Debt),
+		csdt.CollateralDenom,
+		csdt.CollateralAmount,
+		csdt.Debt,
+		csdt.AccumulatedFees,
+		csdt.FeesUpdated,
 	))
 }
 
@@ -43,12 +55,6 @@ func (csdts CSDTs) String() string {
 	return out
 }
 
-type QueryCsdtsParams struct {
-	CollateralDenom       string         // get CSDTs with this collateral denom
-	Owner                 sdk.AccAddress // get CSDTs belonging to this owner
-	UnderCollateralizedAt sdk.Dec        // get CSDTs that will be below the liquidation ratio when the collateral is at this price.
-}
-
 // byCollateralRatio is used to sort CSDTs
 type ByCollateralRatio CSDTs
 
@@ -59,15 +65,15 @@ func (csdts ByCollateralRatio) Less(i, j int) bool {
 	// The comparison is: collat_i/debt_i < collat_j/debt_j
 	// But to avoid division this can be rearranged to: collat_i*debt_j < collat_j*debt_i
 	// Provided the values are positive, so check for positive values.
-	if csdts[i].CollateralAmount.IsNegative() ||
-		csdts[i].Debt.IsNegative() ||
-		csdts[j].CollateralAmount.IsNegative() ||
-		csdts[j].Debt.IsNegative() {
+	if csdts[i].CollateralAmount.IsAnyNegative() ||
+		csdts[i].Debt.IsAnyNegative() ||
+		csdts[j].CollateralAmount.IsAnyNegative() ||
+		csdts[j].Debt.IsAnyNegative() {
 		panic("negative collateral and debt not supported in CSDTs")
 	}
 	// TODO overflows could cause panics
-	left := csdts[i].CollateralAmount.Mul(csdts[j].Debt)
-	right := csdts[j].CollateralAmount.Mul(csdts[i].Debt)
+	left := csdts[i].CollateralAmount.AmountOf(csdts[i].CollateralDenom).Mul(csdts[j].Debt.AmountOf(StableDenom))
+	right := csdts[j].CollateralAmount.AmountOf(csdts[j].CollateralDenom).Mul(csdts[i].Debt.AmountOf(StableDenom))
 	return left.LT(right)
 }
 

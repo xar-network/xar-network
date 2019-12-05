@@ -78,13 +78,17 @@ func getCsdtsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
 		// Get the CSDTs
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetCsdts), querierParamsBz)
+		res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetCsdts), querierParamsBz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}
+		cliCtx = cliCtx.WithHeight(height)
 
 		// Return the CSDTs
 		rest.PostProcessResponse(w, cliCtx, res)
@@ -93,8 +97,8 @@ func getCsdtsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 }
 
 type ModifyCsdtRequestBody struct {
-	BaseReq rest.BaseReq `json:"base_req"`
-	Csdt     types.CSDT    `json:"csdt"`
+	BaseReq rest.BaseReq                `json:"base_req"`
+	Csdt    types.MsgCreateOrModifyCSDT `json:"csdt"`
 }
 
 func modifyCsdtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
@@ -111,7 +115,7 @@ func modifyCsdtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 
 		// Get the stored CSDT
 		querierParams := types.QueryCsdtsParams{
-			Owner:           requestBody.Csdt.Owner,
+			Owner:           requestBody.Csdt.Sender,
 			CollateralDenom: requestBody.Csdt.CollateralDenom,
 		}
 		querierParamsBz, err := cliCtx.Codec.MarshalJSON(querierParams)
@@ -119,11 +123,17 @@ func modifyCsdtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetCsdts), querierParamsBz)
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+		res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetCsdts), querierParamsBz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
+		cliCtx = cliCtx.WithHeight(height)
+
 		var csdts types.CSDTs
 		err = cliCtx.Codec.UnmarshalJSON(res, &csdts)
 		if len(csdts) != 1 || err != nil {
@@ -131,16 +141,12 @@ func modifyCsdtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		// Calculate CSDT updates
-		collateralDelta := requestBody.Csdt.CollateralAmount.Sub(csdts[0].CollateralAmount)
-		debtDelta := requestBody.Csdt.Debt.Sub(csdts[0].Debt)
-
 		// Create and return msg
 		msg := types.NewMsgCreateOrModifyCSDT(
-			requestBody.Csdt.Owner,
+			requestBody.Csdt.Sender,
 			requestBody.Csdt.CollateralDenom,
-			collateralDelta,
-			debtDelta,
+			requestBody.Csdt.CollateralChange,
+			requestBody.Csdt.DebtChange,
 		)
 		utils.WriteGenerateStdTxResponse(w, cliCtx, requestBody.BaseReq, []sdk.Msg{msg})
 	}
@@ -149,11 +155,17 @@ func modifyCsdtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 func getParamsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Get the params
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetParams), nil)
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+		res, height, err := cliCtx.QueryWithData(fmt.Sprintf("custom/csdt/%s", types.QueryGetParams), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
+		cliCtx = cliCtx.WithHeight(height)
+
 		// Return the params
 		rest.PostProcessResponse(w, cliCtx, res)
 	}

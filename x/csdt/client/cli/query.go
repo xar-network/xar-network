@@ -138,7 +138,7 @@ func GetCmd_GetParams(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 
 			// Decode and print results
-			var out types.CsdtModuleParams
+			var out types.Params
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},

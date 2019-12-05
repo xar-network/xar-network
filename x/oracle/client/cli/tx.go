@@ -3,6 +3,7 @@ package cli
 import (
 	"bufio"
 	"fmt"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -11,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
+	tmtime "github.com/tendermint/tendermint/types/time"
 	"github.com/xar-network/xar-network/x/oracle/internal/types"
 )
 
@@ -24,7 +26,13 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 	cmd.AddCommand(
-		GetCmdPostPrice(cdc),
+		client.PostCommands(
+			GetCmdPostPrice(cdc),
+			getCmdAddOracle(cdc),
+			getCmdSetOracles(cdc),
+			getCmdSetAsset(cdc),
+			getCmdAddAsset(cdc),
+		)...,
 	)
 
 	return cmd
@@ -32,7 +40,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 
 // GetCmdPostPrice cli command for posting prices.
 func GetCmdPostPrice(cdc *codec.Codec) *cobra.Command {
-	cmd := &cobra.Command{
+	return &cobra.Command{
 		Use:   "postprice [from_key_or_address] [assetCode] [price] [expiry]",
 		Short: "post the latest price for a particular asset",
 		Args:  cobra.ExactArgs(4),
@@ -45,11 +53,12 @@ func GetCmdPostPrice(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			expiry, ok := sdk.NewIntFromString(args[3])
+			expiryInt, ok := sdk.NewIntFromString(args[2])
 			if !ok {
-				fmt.Printf("invalid expiry - %s \n", string(args[3]))
+				fmt.Printf("invalid expiry - %s \n", args[2])
 				return nil
 			}
+			expiry := tmtime.Canonical(time.Unix(expiryInt.Int64(), 0))
 			msg := types.NewMsgPostPrice(cliCtx.GetFromAddress(), args[1], price, expiry)
 			err = msg.ValidateBasic()
 			if err != nil {
@@ -58,8 +67,130 @@ func GetCmdPostPrice(cdc *codec.Codec) *cobra.Command {
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
+}
 
-	cmd = client.PostCommands(cmd)[0]
+func getCmdAddOracle(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:     "add-oracle [nominee_key] [denom] [oracle_address]",
+		Example: "xarcli oracle add-oracle nominee xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu",
+		Short:   "Create a new oracle",
+		Args:    cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
 
-	return cmd
+			oracleAddr, err := sdk.AccAddressFromBech32(args[2])
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgAddOracle(cliCtx.GetFromAddress(), args[1], oracleAddr)
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
+
+func getCmdSetOracles(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:     "set-oracles [nominee_key] [denom] [oracle_addresses]",
+		Example: "xarcli oracle add-oracle nominee xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu,xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu,xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu",
+		Short:   "Sets a list of oracles for a denom",
+		Args:    cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
+
+			oracles, err := types.ParseOracles(args[2])
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgSetOracles(cliCtx.GetFromAddress(), args[1], oracles)
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
+
+func getCmdAddAsset(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:     "add-asset [nominee_key] [denom] [quote_asset] [oracles]",
+		Example: "xarcli add-asset nominee xar quote_asset xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu",
+		Short:   "Create a new asset",
+		Args:    cobra.ExactArgs(4),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
+
+			oracles, err := types.ParseOracles(args[3])
+			if err != nil {
+				return err
+			}
+			if len(oracles) == 0 {
+				return fmt.Errorf("invalid oracles")
+			}
+			denom := args[1]
+			if len(denom) == 0 {
+				return fmt.Errorf("invalid denom")
+			}
+			quoteAsset := args[2]
+			if len(quoteAsset) == 0 {
+				return fmt.Errorf("invalid quote asset")
+			}
+
+			token := types.NewAsset(denom, denom, quoteAsset, oracles, true)
+			err = token.ValidateBasic()
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgAddAsset(cliCtx.GetFromAddress(), denom, token)
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
+
+func getCmdSetAsset(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:     "set-asset [nominee_key] [denom] [quote_asset] [oracles]",
+		Example: "xarcli set-asset nominee xar quote_asset xar17up20gamd0vh6g9ne0uh67hx8xhyfrv2lyazgu",
+		Short:   "Create a set asset",
+		Args:    cobra.ExactArgs(4),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
+
+			oracles, err := types.ParseOracles(args[3])
+			if err != nil {
+				return err
+			}
+			if len(oracles) == 0 {
+				return fmt.Errorf("invalid oracles")
+			}
+			denom := args[1]
+			if len(denom) == 0 {
+				return fmt.Errorf("invalid denom")
+			}
+			quoteAsset := args[2]
+			if len(quoteAsset) == 0 {
+				return fmt.Errorf("invalid quote asset")
+			}
+
+			token := types.NewAsset(denom, denom, quoteAsset, oracles, true)
+			err = token.ValidateBasic()
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgSetAsset(cliCtx.GetFromAddress(), denom, token)
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
 }

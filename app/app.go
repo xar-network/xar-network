@@ -32,11 +32,8 @@ import (
 	"github.com/xar-network/xar-network/x/nft"
 
 	//Public issuance
-	"github.com/xar-network/xar-network/x/authority"
-	"github.com/xar-network/xar-network/x/interest"
+	"github.com/xar-network/xar-network/x/denominations"
 	"github.com/xar-network/xar-network/x/issue"
-	"github.com/xar-network/xar-network/x/issuer"
-	"github.com/xar-network/xar-network/x/liquidityprovider"
 
 	"github.com/xar-network/xar-network/x/auction"
 	"github.com/xar-network/xar-network/x/csdt"
@@ -91,10 +88,8 @@ var (
 		liquidator.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		record.AppModuleBasic{},
-		interest.AppModuleBasic{},
-		liquidityprovider.AppModuleBasic{},
-		issuer.AppModuleBasic{},
-		authority.AppModule{},
+
+		denominations.AppModuleBasic{},
 
 		market.AppModuleBasic{},
 		order.AppModuleBasic{},
@@ -102,14 +97,17 @@ var (
 
 	// module account permissions
 	maccPerms = map[string][]string{
-		auth.FeeCollectorName:        nil,
-		distr.ModuleName:             nil,
-		mint.ModuleName:              {supply.Minter},
-		staking.BondedPoolName:       {supply.Burner, supply.Staking},
-		staking.NotBondedPoolName:    {supply.Burner, supply.Staking},
-		gov.ModuleName:               {supply.Burner},
-		liquidityprovider.ModuleName: {supply.Minter, supply.Burner},
-		interest.ModuleName:          {supply.Minter},
+		auth.FeeCollectorName:     nil,
+		distr.ModuleName:          nil,
+		mint.ModuleName:           {supply.Minter},
+		staking.BondedPoolName:    {supply.Burner, supply.Staking},
+		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
+		gov.ModuleName:            {supply.Burner},
+		denominations.ModuleName:  {supply.Minter, supply.Burner},
+		liquidator.ModuleName:     {supply.Minter, supply.Burner},
+		csdt.ModuleName:           {supply.Minter, supply.Burner},
+		issue.ModuleName:          {supply.Minter, supply.Burner},
+		order.ModuleName:          nil,
 	}
 )
 
@@ -127,7 +125,7 @@ func MakeCodec() *codec.Codec {
 }
 
 // xarApp extended ABCI application
-type xarApp struct {
+type XarApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
 	mq  types.Backend
@@ -161,10 +159,7 @@ type xarApp struct {
 
 	NFTKeeper nft.Keeper
 
-	interestKeeper  interest.Keeper
-	lpKeeper        liquidityprovider.Keeper
-	issuerKeeper    issuer.Keeper
-	authorityKeeper authority.Keeper
+	denominationsKeeper denominations.Keeper
 
 	marketKeeper market.Keeper
 	orderKeeper  order.Keeper
@@ -181,7 +176,7 @@ type xarApp struct {
 func NewXarApp(
 	logger log.Logger, db dbm.DB, mktDataDB dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
-) *xarApp {
+) *XarApp {
 
 	cdc := MakeCodec()
 
@@ -209,14 +204,13 @@ func NewXarApp(
 		supply.StoreKey, mint.StoreKey, distr.StoreKey, slashing.StoreKey,
 		gov.StoreKey, params.StoreKey, issue.StoreKey, oracle.StoreKey,
 		auction.StoreKey, csdt.StoreKey, liquidator.StoreKey, nft.StoreKey,
-		interest.StoreKey, authority.StoreKey, issuer.StoreKey,
-		record.StoreKey, evidence.StoreKey, market.StoreKey,
-		ordertypes.StoreKey,
+		denominations.StoreKey, record.StoreKey, evidence.StoreKey,
+		market.StoreKey, ordertypes.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
-	app := &xarApp{
+	app := &XarApp{
 		BaseApp:        bApp,
 		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
@@ -240,7 +234,12 @@ func NewXarApp(
 	csdtSubspace := app.paramsKeeper.Subspace(csdt.DefaultParamspace)
 	liquidatorSubspace := app.paramsKeeper.Subspace(liquidator.DefaultParamspace)
 	recordSubspace := app.paramsKeeper.Subspace(record.DefaultParamspace)
-	interestSubspace := app.paramsKeeper.Subspace(interest.DefaultParamspace)
+
+	denominationsSubspace := app.paramsKeeper.Subspace(denominations.DefaultParamspace)
+
+	auctionSubspace := app.paramsKeeper.Subspace(auction.DefaultParamspace)
+	marketSubspace := app.paramsKeeper.Subspace(market.DefaultParamspace)
+	oracleSubspace := app.paramsKeeper.Subspace(oracle.DefaultParamspace)
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
@@ -254,21 +253,18 @@ func NewXarApp(
 	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
 
 	app.NFTKeeper = nft.NewKeeper(app.cdc, keys[nft.StoreKey])
-	app.issueKeeper = issue.NewKeeper(keys[issue.StoreKey], issueSubspace, app.bankKeeper, issue.DefaultCodespace)
-	app.oracleKeeper = oracle.NewKeeper(keys[oracle.StoreKey], app.cdc, oracle.DefaultCodespace)
+	app.issueKeeper = issue.NewKeeper(keys[issue.StoreKey], issueSubspace, app.bankKeeper, app.supplyKeeper, issue.DefaultCodespace, auth.FeeCollectorName)
+	app.oracleKeeper = oracle.NewKeeper(keys[oracle.StoreKey], app.cdc, oracleSubspace, oracle.DefaultCodespace)
 	app.recordKeeper = record.NewKeeper(app.cdc, keys[record.StoreKey], recordSubspace, record.DefaultCodespace)
 	app.csdtKeeper = csdt.NewKeeper(app.cdc, keys[csdt.StoreKey], csdtSubspace, app.oracleKeeper, app.bankKeeper, app.supplyKeeper)
-	app.auctionKeeper = auction.NewKeeper(app.cdc, app.csdtKeeper, keys[auction.StoreKey])
-	app.liquidatorKeeper = liquidator.NewKeeper(app.cdc, keys[liquidator.StoreKey], liquidatorSubspace, app.csdtKeeper, app.auctionKeeper, app.csdtKeeper)
+	app.auctionKeeper = auction.NewKeeper(app.cdc, app.supplyKeeper, keys[auction.StoreKey], auctionSubspace)
+	app.liquidatorKeeper = liquidator.NewKeeper(app.cdc, keys[liquidator.StoreKey], liquidatorSubspace, app.csdtKeeper, app.auctionKeeper, app.bankKeeper, app.supplyKeeper)
 
-	app.marketKeeper = market.NewKeeper(keys[markettypes.StoreKey], app.cdc)
-	app.orderKeeper = order.NewKeeper(app.bankKeeper, app.marketKeeper, keys[ordertypes.StoreKey], queue, app.cdc)
+	app.marketKeeper = market.NewKeeper(keys[markettypes.StoreKey], app.cdc, marketSubspace, market.DefaultCodespace)
+	app.orderKeeper = order.NewKeeper(app.supplyKeeper, app.marketKeeper, keys[ordertypes.StoreKey], queue, app.cdc)
 	app.execKeeper = execution.NewKeeper(queue, app.marketKeeper, app.orderKeeper, app.bankKeeper)
 
-	app.interestKeeper = interest.NewKeeper(app.cdc, keys[interest.StoreKey], interestSubspace, app.supplyKeeper, auth.FeeCollectorName)
-	app.lpKeeper = liquidityprovider.NewKeeper(app.accountKeeper, app.supplyKeeper)
-	app.issuerKeeper = issuer.NewKeeper(keys[issuer.StoreKey], app.lpKeeper, app.interestKeeper)
-	app.authorityKeeper = authority.NewKeeper(keys[authority.StoreKey], app.issuerKeeper, app.oracleKeeper, app.marketKeeper, app.supplyKeeper)
+	app.denominationsKeeper = denominations.NewKeeper(keys[denominations.StoreKey], app.cdc, app.accountKeeper, app.supplyKeeper, denominationsSubspace, denominations.DefaultCodespace)
 
 	// create evidence keeper with evidence router
 	app.evidenceKeeper = evidence.NewKeeper(app.cdc, keys[evidence.StoreKey], evidenceSubspace, evidence.DefaultCodespace)
@@ -316,10 +312,7 @@ func NewXarApp(
 		oracle.NewAppModule(app.oracleKeeper),
 		record.NewAppModule(app.recordKeeper),
 
-		interest.NewAppModule(app.interestKeeper),
-		liquidityprovider.NewAppModule(app.lpKeeper),
-		issuer.NewAppModule(app.issuerKeeper),
-		authority.NewAppModule(app.authorityKeeper),
+		denominations.NewAppModule(app.denominationsKeeper),
 
 		market.NewAppModule(app.marketKeeper),
 		order.NewAppModule(app.orderKeeper),
@@ -329,7 +322,6 @@ func NewXarApp(
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(
-		interest.ModuleName,
 		mint.ModuleName,
 		distr.ModuleName,
 		slashing.ModuleName,
@@ -340,9 +332,7 @@ func NewXarApp(
 		gov.ModuleName,
 		staking.ModuleName,
 		oracle.ModuleName,
-		authority.ModuleName,
-		interest.ModuleName,
-		issue.ModuleName,
+		auction.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -352,8 +342,7 @@ func NewXarApp(
 		slashing.ModuleName, gov.ModuleName, mint.ModuleName, supply.ModuleName,
 		crisis.ModuleName, issue.ModuleName,
 		auction.ModuleName, csdt.ModuleName, liquidator.ModuleName, oracle.ModuleName,
-		interest.ModuleName, authority.ModuleName, liquidityprovider.ModuleName, issuer.ModuleName,
-		nft.ModuleName, record.ModuleName, genutil.ModuleName,
+		denominations.ModuleName, nft.ModuleName, record.ModuleName, genutil.ModuleName,
 		evidence.ModuleName, markettypes.ModuleName,
 	)
 	app.QueryRouter().
@@ -417,18 +406,18 @@ func NewXarApp(
 }
 
 // application updates every begin block
-func (app *xarApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+func (app *XarApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
 
 // application updates every end block
-func (app *xarApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+func (app *XarApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	app.performMatching(ctx)
 	return app.mm.EndBlock(ctx, req)
 }
 
 // application update at chain initialization
-func (app *xarApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *XarApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	//app.Logger().Error(fmt.Sprintf("%s", req.String()))
 	var genesisState GenesisState
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
@@ -436,12 +425,12 @@ func (app *xarApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.
 }
 
 // load a particular height
-func (app *xarApp) LoadHeight(height int64) error {
+func (app *XarApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
 
 // ModuleAccountAddrs returns all the app's module account addresses.
-func (app *xarApp) ModuleAccountAddrs() map[string]bool {
+func (app *XarApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
@@ -451,11 +440,40 @@ func (app *xarApp) ModuleAccountAddrs() map[string]bool {
 }
 
 // Codec returns the application's sealed codec.
-func (app *xarApp) Codec() *codec.Codec {
+func (app *XarApp) Codec() *codec.Codec {
 	return app.cdc
 }
 
-func (app *xarApp) performMatching(ctx sdk.Context) {
+// Module Manager returns the application's module manager
+func (app *XarApp) MM() *module.Manager {
+	return app.mm
+}
+
+func (app *XarApp) MQ() types.Backend {
+	return app.mq
+}
+
+func (app *XarApp) MarketKeeper() market.Keeper {
+	return app.marketKeeper
+}
+
+func (app *XarApp) OrderKeeper() order.Keeper {
+	return app.orderKeeper
+}
+
+func (app *XarApp) BankKeeper() bank.Keeper {
+	return app.bankKeeper
+}
+
+func (app *XarApp) ExecKeeper() execution.Keeper {
+	return app.execKeeper
+}
+
+func (app *XarApp) SupplyKeeper() supply.Keeper {
+	return app.supplyKeeper
+}
+
+func (app *XarApp) performMatching(ctx sdk.Context) {
 	err := app.execKeeper.ExecuteAndCancelExpired(ctx)
 	// an error in the execution/cancellation step is a
 	// critical consensus failure.

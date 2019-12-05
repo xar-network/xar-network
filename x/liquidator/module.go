@@ -17,6 +17,7 @@ import (
 	"github.com/xar-network/xar-network/x/liquidator/client/cli"
 	querycli "github.com/xar-network/xar-network/x/liquidator/client/cli"
 	"github.com/xar-network/xar-network/x/liquidator/internal/keeper"
+	"github.com/xar-network/xar-network/x/liquidator/internal/types"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -47,17 +48,17 @@ func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 
 // DefaultGenesis default genesis state
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
-	return ModuleCdc.MustMarshalJSON(DefaultGenesisState())
+	return ModuleCdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
 // ValidateGenesis module validate genesis
 func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
-	var data GenesisState
+	var data types.GenesisState
 	err := ModuleCdc.UnmarshalJSON(bz, &data)
 	if err != nil {
 		return err
 	}
-	return ValidateGenesis(data)
+	return types.ValidateGenesis(data)
 }
 
 // RegisterRESTRoutes registers the REST routes for the bank module.
@@ -128,7 +129,7 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 
 // InitGenesis module init-genesis
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
-	var genesisState GenesisState
+	var genesisState types.GenesisState
 	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
 	InitGenesis(ctx, am.keeper, genesisState)
 

@@ -1,19 +1,17 @@
 package types
 
 import (
+	"fmt"
+
 	"github.com/xar-network/xar-network/types/store"
 )
 
-const (
-	ModuleName = "market"
-	RouterKey  = ModuleName
-	StoreKey   = RouterKey
-)
+type Markets []Market
 
 type Market struct {
-	ID              store.EntityID
-	BaseAssetDenom  string
-	QuoteAssetDenom string
+	ID              store.EntityID `json:"id" yaml:"id"`
+	BaseAssetDenom  string         `json:"base_asset_denom" yaml:"base_asset_denom"`
+	QuoteAssetDenom string         `json:"quote_asset_denom" yaml:"quote_asset_denom"`
 }
 
 func NewMarket(
@@ -26,4 +24,13 @@ func NewMarket(
 		BaseAssetDenom:  baseAsset,
 		QuoteAssetDenom: quoteAsset,
 	}
+}
+
+// implement fmt.Stringer
+func (m Market) String() string {
+	return fmt.Sprintf(`Market:
+	ID: %s
+	Base Asset: %s
+	Quote Asset: %s`,
+		m.ID.String(), m.BaseAssetDenom, m.QuoteAssetDenom)
 }

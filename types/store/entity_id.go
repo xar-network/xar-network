@@ -29,6 +29,12 @@ func (id EntityID) String() string {
 	return sdk.Uint(id).String()
 }
 
+// Uint64 converts Uint to uint64
+// Panics if the value is out of range
+func (id EntityID) Uint64() uint64 {
+	return sdk.Uint(id).Uint64()
+}
+
 func (id EntityID) Bytes() []byte {
 	var buf [32]byte
 	bn := conv.SDKUint2Big(sdk.Uint(id))

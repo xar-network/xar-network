@@ -36,11 +36,17 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router) {
 
 func queryGetAuctionsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		res, _, err := cliCtx.QueryWithData("/custom/auction/getauctions", nil)
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+		res, height, err := cliCtx.QueryWithData("/custom/auction/getauctions", nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}
+		cliCtx = cliCtx.WithHeight(height)
+
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }

@@ -16,9 +16,9 @@ Design options and problems:
 */
 
 type MsgSeizeAndStartCollateralAuction struct {
-	Sender          sdk.AccAddress // only needed to pay the tx fees
-	CsdtOwner       sdk.AccAddress
-	CollateralDenom string
+	Sender          sdk.AccAddress `json:"sender" yaml:"sender"`
+	CsdtOwner       sdk.AccAddress `json:"owner" yaml:"owner"`
+	CollateralDenom string         `json:"collateral_denom" yaml:"collateral_denom"`
 }
 
 // Route return the message type used for routing the message.
@@ -51,7 +51,7 @@ func (msg MsgSeizeAndStartCollateralAuction) GetSigners() []sdk.AccAddress {
 }
 
 type MsgStartDebtAuction struct {
-	Sender sdk.AccAddress // only needed to pay the tx fees
+	Sender sdk.AccAddress `json:"sender" yaml:"sender"`
 }
 
 func (msg MsgStartDebtAuction) Route() string { return "liquidator" }
@@ -66,21 +66,3 @@ func (msg MsgStartDebtAuction) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 func (msg MsgStartDebtAuction) GetSigners() []sdk.AccAddress { return []sdk.AccAddress{msg.Sender} }
-
-// With no stability and liquidation fees, surplus auctions can never be run.
-// type MsgStartSurplusAuction struct {
-// 	Sender sdk.AccAddress // only needed to pay the tx fees
-// }
-
-// func (msg MsgStartSurplusAuction) Route() string { return "liquidator" }
-// func (msg MsgStartSurplusAuction) Type() string  { return "start_surplus_auction" } // TODO snake case?
-// func (msg MsgStartSurplusAuction) ValidateBasic() sdk.Error {
-// 	if msg.Sender.Empty() {
-// 		return sdk.ErrInternal("invalid (empty) sender address")
-// 	}
-// 	return nil
-// }
-// func (msg MsgStartSurplusAuction) GetSignBytes() []byte {
-// 	return sdk.MustSortJSON(msgCdc.MustMarshalJSON(msg))
-// }
-// func (msg MsgStartSurplusAuction) GetSigners() []sdk.AccAddress { return []sdk.AccAddress{msg.Sender} }

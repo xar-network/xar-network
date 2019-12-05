@@ -27,11 +27,17 @@ func queryRecordHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		res, _, err := queriers.QueryRecord(hash, cliCtx)
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+		res, height, err := queriers.QueryRecord(hash, cliCtx)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
+		cliCtx = cliCtx.WithHeight(height)
+
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }
@@ -64,13 +70,17 @@ func queryRecordsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			}
 			recordQueryParams.Limit = limit
 		}
-
-		res, _, err := queriers.QueryRecords(recordQueryParams, cliCtx)
-
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+		res, height, err := queriers.QueryRecords(recordQueryParams, cliCtx)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
+		cliCtx = cliCtx.WithHeight(height)
+
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }

@@ -24,6 +24,7 @@ func GetCmdCurrentPrice(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				fmt.Printf("could not get current price for - %s \n", string(assetCode))
 				return nil
 			}
+
 			var out types.CurrentPrice
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
@@ -45,6 +46,7 @@ func GetCmdRawPrices(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				fmt.Printf("could not get raw prices for - %s \n", string(assetCode))
 				return nil
 			}
+
 			var out types.QueryRawPricesResp
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
@@ -64,6 +66,7 @@ func GetCmdAssets(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				fmt.Printf("could not get assets")
 				return nil
 			}
+
 			var out types.QueryAssetsResp
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)

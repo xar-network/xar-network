@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"os"
 	"testing"
 
@@ -9,10 +10,62 @@ import (
 	tdb "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/simapp"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	abci "github.com/tendermint/tendermint/abci/types"
+	tmtypes "github.com/tendermint/tendermint/types"
 )
+
+func TestXardGeneric(t *testing.T) {
+	db := tdb.NewMemDB()
+	mkdb := tdb.NewMemDB()
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
+	setGenesis(gapp)
+
+	modAccPerms := GetMaccPerms()
+	require.Equal(t, 11, len(modAccPerms))
+}
+
+func TestXardValidateGenesis(t *testing.T) {
+
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount("xar", "xarp")
+	config.SetBech32PrefixForValidator("xva", "xvap")
+	config.SetBech32PrefixForConsensusNode("xca", "xcap")
+	config.SetKeyringServiceName("xar")
+	config.Seal()
+
+	db := tdb.NewMemDB()
+	mkdb := tdb.NewMemDB()
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
+	setGenesis(gapp)
+	// Load default if passed no args, otherwise load passed file
+	genesis := DefaultNodeHome + "/config/genesises.json"
+
+	t.Logf("validating genesis file at %s\n", genesis)
+
+	genDoc, err := tmtypes.GenesisDocFromFile(genesis)
+	if err == nil {
+		var genState map[string]json.RawMessage
+		if err := gapp.Codec().UnmarshalJSON(genDoc.AppState, &genState); err != nil {
+			t.Errorf("error unmarshaling genesis doc %s: %s", genesis, err.Error())
+		}
+
+		for _, moduleName := range gapp.MM().OrderInitGenesis {
+
+			err := gapp.MM().Modules[moduleName].ValidateGenesis(genState[moduleName])
+			if err != nil {
+				if moduleName != "genutil" {
+					t.Errorf("error validating genesis file %s[%s]: %s", genesis, moduleName, err.Error())
+				}
+			}
+		}
+
+		// TODO test to make sure initchain doesn't panic
+
+		t.Logf("File at %s is a valid genesis file\n", genesis)
+	}
+}
 
 func TestXardExport(t *testing.T) {
 	db := tdb.NewMemDB()
@@ -23,6 +76,18 @@ func TestXardExport(t *testing.T) {
 	// Making a new app object with the db, so that initchain hasn't been called
 	newGapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
 	_, _, err := newGapp.ExportAppStateAndValidators(false, []string{})
+	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
+}
+
+func TestXardExportZeroHeight(t *testing.T) {
+	db := tdb.NewMemDB()
+	mkdb := tdb.NewMemDB()
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
+	setGenesis(gapp)
+
+	// Making a new app object with the db, so that initchain hasn't been called
+	newGapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
+	_, _, err := newGapp.ExportAppStateAndValidators(true, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 }
 
@@ -37,8 +102,9 @@ func TestBlackListedAddrs(t *testing.T) {
 	}
 }
 
-func setGenesis(gapp *xarApp) error {
-	genesisState := simapp.NewDefaultGenesisState()
+func setGenesis(gapp *XarApp) error {
+	//genesisState := simapp.NewDefaultGenesisState()
+	genesisState := ModuleBasics.DefaultGenesis()
 	stateBytes, err := codec.MarshalJSONIndent(gapp.cdc, genesisState)
 	if err != nil {
 		return err

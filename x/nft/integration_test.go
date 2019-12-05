@@ -7,7 +7,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/xar-network/xar-network/x/nft"
-	simapp "github.com/xar-network/xar-network/x/nft/app"
 	"github.com/xar-network/xar-network/x/nft/internal/types"
 )
 
@@ -26,8 +25,8 @@ var (
 	tokenURI2 = "https://google.com/token-2.json"
 )
 
-func createTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
-	app := simapp.Setup(isCheckTx)
+func createTestApp(isCheckTx bool) (*SimApp, sdk.Context) {
+	app := Setup(isCheckTx)
 	ctx := app.BaseApp.NewContext(isCheckTx, abci.Header{})
 
 	return app, ctx

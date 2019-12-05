@@ -15,7 +15,7 @@ import (
 )
 
 // ExportStateToJSON util function to export the app state to JSON
-func ExportStateToJSON(app *xarApp, path string) error {
+func ExportStateToJSON(app *XarApp, path string) error {
 	fmt.Println("exporting app state...")
 	appState, _, err := app.ExportAppStateAndValidators(false, nil)
 	if err != nil {
@@ -30,7 +30,7 @@ func ExportStateToJSON(app *xarApp, path string) error {
 // NOTE: to not use this function with non-test code
 func NewXarAppUNSAFE(logger log.Logger, db dbm.DB, mkdb dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*baseapp.BaseApp),
-) (app *xarApp, keyMain, keyStaking *sdk.KVStoreKey, stakingKeeper staking.Keeper) {
+) (app *XarApp, keyMain, keyStaking *sdk.KVStoreKey, stakingKeeper staking.Keeper) {
 
 	app = NewXarApp(logger, db, mkdb, traceStore, loadLatest, invCheckPeriod, baseAppOptions...)
 	return app, app.keys[bam.MainStoreKey], app.keys[staking.StoreKey], app.stakingKeeper

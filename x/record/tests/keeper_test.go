@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/xar-network/xar-network/x/record/params"
+	"github.com/xar-network/xar-network/x/record/internal/types"
 
 	"github.com/xar-network/xar-network/x/record"
 )
@@ -57,7 +57,7 @@ func TestGetRecords(t *testing.T) {
 		err := keeper.CreateRecord(ctx, &RecordInfo)
 		require.Nil(t, err)
 	}
-	records := keeper.List(ctx, params.RecordQueryParams{
+	records := keeper.List(ctx, types.RecordQueryParams{
 		Sender: RecordInfo.Sender,
 		Limit:  99999999,
 	})

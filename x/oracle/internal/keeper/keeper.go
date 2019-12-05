@@ -2,51 +2,41 @@ package keeper
 
 import (
 	"sort"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/xar-network/xar-network/x/oracle/internal/types"
 )
 
 // Keeper struct for oracle module
 type Keeper struct {
-	storeKey  sdk.StoreKey
-	cdc       *codec.Codec
+	// The keys used to access the stores from Context
+	storeKey sdk.StoreKey
+	// Codec for binary encoding/decoding
+	cdc *codec.Codec
+	// The reference to the Paramstore to get and set oracle specific params
+	paramstore params.Subspace
+	// Reserved codespace
 	codespace sdk.CodespaceType
 }
 
-// NewKeeper returns a new keeper for the oracle modle
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, codespace sdk.CodespaceType) Keeper {
+// NewKeeper returns a new keeper for the oralce module. It handles:
+// - adding oracles
+// - adding/removing assets from the oracle
+func NewKeeper(
+	storeKey sdk.StoreKey,
+	cdc *codec.Codec,
+	paramstore params.Subspace,
+	codespace sdk.CodespaceType,
+) Keeper {
 	return Keeper{
-		storeKey:  storeKey,
-		cdc:       cdc,
-		codespace: codespace,
+		paramstore: paramstore.WithKeyTable(types.ParamKeyTable()),
+		storeKey:   storeKey,
+		cdc:        cdc,
+		codespace:  codespace,
 	}
-}
-
-// AddOracle adds an Oracle to the store
-func (k Keeper) AddOracle(ctx sdk.Context, address string) {
-
-	oracles := k.GetOracles(ctx)
-	oracles = append(oracles, types.Oracle{OracleAddress: address})
-	store := ctx.KVStore(k.storeKey)
-	store.Set(
-		[]byte(types.OraclePrefix), k.cdc.MustMarshalBinaryBare(oracles),
-	)
-}
-
-// AddAsset adds an asset to the store
-func (k Keeper) AddAsset(
-	ctx sdk.Context,
-	assetCode string,
-	desc string,
-) {
-	assets := k.GetAssets(ctx)
-	assets = append(assets, types.Asset{AssetCode: assetCode, Description: desc})
-	store := ctx.KVStore(k.storeKey)
-	store.Set(
-		[]byte(types.AssetPrefix), k.cdc.MustMarshalBinaryBare(assets),
-	)
 }
 
 // SetPrice updates the posted price for a specific oracle
@@ -55,15 +45,15 @@ func (k Keeper) SetPrice(
 	oracle sdk.AccAddress,
 	assetCode string,
 	price sdk.Dec,
-	expiry sdk.Int) (types.PostedPrice, sdk.Error) {
+	expiry time.Time) (types.PostedPrice, sdk.Error) {
 	// If the expiry is greater than or equal to the current blockheight, we consider the price valid
-	if expiry.GTE(sdk.NewInt(ctx.BlockHeight())) {
+	if expiry.After(ctx.BlockTime()) {
 		store := ctx.KVStore(k.storeKey)
 		prices := k.GetRawPrices(ctx, assetCode)
 		var index int
 		found := false
 		for i := range prices {
-			if prices[i].OracleAddress == oracle.String() {
+			if prices[i].OracleAddress.Equals(oracle) {
 				index = i
 				found = true
 				break
@@ -71,12 +61,13 @@ func (k Keeper) SetPrice(
 		}
 		// set the price for that particular oracle
 		if found {
-			prices[index] = types.PostedPrice{AssetCode: assetCode, OracleAddress: oracle.String(), Price: price, Expiry: expiry}
+			prices[index] = types.PostedPrice{
+				AssetCode: assetCode, OracleAddress: oracle,
+				Price: price, Expiry: expiry}
 		} else {
 			prices = append(prices, types.PostedPrice{
-				AssetCode: assetCode, OracleAddress: oracle.String(),
-				Price: price, Expiry: expiry,
-			})
+				AssetCode: assetCode, OracleAddress: oracle,
+				Price: price, Expiry: expiry})
 			index = len(prices) - 1
 		}
 
@@ -91,35 +82,32 @@ func (k Keeper) SetPrice(
 
 // SetCurrentPrices updates the price of an asset to the median of all valid oracle inputs
 func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
-	assets := k.GetAssets(ctx)
+	assets := k.GetAssetParams(ctx)
 	for _, v := range assets {
+
 		assetCode := v.AssetCode
 		prices := k.GetRawPrices(ctx, assetCode)
 		var notExpiredPrices []types.CurrentPrice
 		// filter out expired prices
-		for _, v := range prices {
-			if v.Expiry.GTE(sdk.NewInt(ctx.BlockHeight())) {
+		for _, x := range prices {
+			if x.Expiry.After(ctx.BlockTime()) {
 				notExpiredPrices = append(notExpiredPrices, types.CurrentPrice{
-					AssetCode: v.AssetCode,
-					Price:     v.Price,
-					Expiry:    v.Expiry,
+					AssetCode: x.AssetCode,
+					Price:     x.Price,
 				})
 			}
 		}
 		l := len(notExpiredPrices)
 		var medianPrice sdk.Dec
-		var expiry sdk.Int
 		// TODO make threshold for acceptance (ie. require 51% of oracles to have posted valid prices
 		if l == 0 {
 			// Error if there are no valid prices in the raw oracle
 			//return types.ErrNoValidPrice(k.codespace)
 			medianPrice = sdk.NewDec(0)
-			expiry = sdk.NewInt(0)
 		} else if l == 1 {
 
 			// Return immediately if there's only one price
 			medianPrice = notExpiredPrices[0].Price
-			expiry = notExpiredPrices[0].Expiry
 		} else {
 			// sort the prices
 			sort.Slice(notExpiredPrices, func(i, j int) bool {
@@ -134,13 +122,9 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 				sum := price1.Add(price2)
 				divsor, _ := sdk.NewDecFromStr("2")
 				medianPrice = sum.Quo(divsor)
-				// TODO Check if safe, makes sense
-				// Takes the average of the two expiries rounded down to the nearest Int.
-				expiry = notExpiredPrices[l/2-1].Expiry.Add(notExpiredPrices[l/2].Expiry).Quo(sdk.NewInt(2))
 			} else {
 				// integer division, so we'll get an integer back, rounded down
 				medianPrice = notExpiredPrices[l/2].Price
-				expiry = notExpiredPrices[l/2].Expiry
 			}
 		}
 
@@ -148,12 +132,11 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 		oldPrice := k.GetCurrentPrice(ctx, assetCode)
 
 		// Only update if there is a price or expiry change, no need to update after every block
-		if oldPrice.AssetCode == "" || !oldPrice.Price.Equal(medianPrice) || !oldPrice.Expiry.Equal(expiry) {
+		if oldPrice.AssetCode == "" || !oldPrice.Price.Equal(medianPrice) {
 
 			newPrice := types.CurrentPrice{
 				AssetCode: assetCode,
 				Price:     medianPrice,
-				Expiry:    expiry,
 			}
 
 			store.Set(
@@ -163,50 +146,6 @@ func (k Keeper) SetCurrentPrices(ctx sdk.Context) sdk.Error {
 	}
 
 	return nil
-}
-
-// GetOracles returns the oracles in the oracle store
-func (k Keeper) GetOracles(ctx sdk.Context) []types.Oracle {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get([]byte(types.OraclePrefix))
-	var oracles []types.Oracle
-	k.cdc.MustUnmarshalBinaryBare(bz, &oracles)
-	return oracles
-}
-
-// GetAssets returns the assets in the oracle store
-func (k Keeper) GetAssets(ctx sdk.Context) []types.Asset {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get([]byte(types.AssetPrefix))
-	var assets []types.Asset
-	k.cdc.MustUnmarshalBinaryBare(bz, &assets)
-	return assets
-}
-
-// GetAsset returns the asset if it is in the oracle system
-func (k Keeper) GetAsset(ctx sdk.Context, assetCode string) (types.Asset, bool) {
-	assets := k.GetAssets(ctx)
-
-	for i := range assets {
-		if assets[i].AssetCode == assetCode {
-			return assets[i], true
-		}
-	}
-	return types.Asset{}, false
-
-}
-
-// GetOracle returns the oracle address as a string if it is in the oracle store
-func (k Keeper) GetOracle(ctx sdk.Context, oracle string) (types.Oracle, bool) {
-	oracles := k.GetOracles(ctx)
-
-	for i := range oracles {
-		if oracles[i].OracleAddress == oracle {
-			return oracles[i], true
-		}
-	}
-	return types.Oracle{}, false
-
 }
 
 // GetCurrentPrice fetches the current median price of all oracles for a specific asset
@@ -236,10 +175,25 @@ func (k Keeper) ValidatePostPrice(ctx sdk.Context, msg types.MsgPostPrice) sdk.E
 	if !assetFound {
 		return types.ErrInvalidAsset(k.codespace)
 	}
-	_, oracleFound := k.GetOracle(ctx, msg.From.String())
-	if !oracleFound {
+	_, err := k.GetOracle(ctx, msg.AssetCode, msg.From)
+	if err != nil {
 		return types.ErrInvalidOracle(k.codespace)
 	}
 
 	return nil
+}
+
+func (k Keeper) Codespace() sdk.CodespaceType {
+	return k.codespace
+}
+
+func (k Keeper) IsNominee(ctx sdk.Context, nominee string) bool {
+	params := k.GetParams(ctx)
+	nominees := params.Nominees
+	for _, v := range nominees {
+		if v == nominee {
+			return true
+		}
+	}
+	return false
 }

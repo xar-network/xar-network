@@ -4,7 +4,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	simapp "github.com/xar-network/xar-network/x/nft/app"
+	"github.com/xar-network/xar-network/x/nft/"
 	"github.com/xar-network/xar-network/x/nft/internal/types"
 )
 

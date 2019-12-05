@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 
 	"github.com/xar-network/xar-network/x/auction"
+	"github.com/xar-network/xar-network/x/csdt"
 	"github.com/xar-network/xar-network/x/liquidator/internal/types"
 )
 
@@ -13,13 +14,22 @@ type Keeper struct {
 	cdc            *codec.Codec
 	paramsSubspace params.Subspace
 	storeKey       sdk.StoreKey
-	csdtKeeper     csdtKeeper
-	auctionKeeper  auctionKeeper
-	bankKeeper     bankKeeper
+	csdtKeeper     types.CsdtKeeper
+	auctionKeeper  types.AuctionKeeper
+	bankKeeper     types.BankKeeper
+	sk             types.SupplyKeeper
 }
 
-func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace, csdtKeeper csdtKeeper, auctionKeeper auctionKeeper, bankKeeper bankKeeper) Keeper {
-	subspace = subspace.WithKeyTable(types.CreateParamsKeyTable())
+func NewKeeper(
+	cdc *codec.Codec,
+	storeKey sdk.StoreKey,
+	subspace params.Subspace,
+	csdtKeeper types.CsdtKeeper,
+	auctionKeeper types.AuctionKeeper,
+	bankKeeper types.BankKeeper,
+	supplyKeeper types.SupplyKeeper,
+) Keeper {
+	subspace = subspace.WithKeyTable(types.ParamKeyTable())
 	return Keeper{
 		cdc:            cdc,
 		paramsSubspace: subspace,
@@ -27,6 +37,7 @@ func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, subspace params.Subspace
 		csdtKeeper:     csdtKeeper,
 		auctionKeeper:  auctionKeeper,
 		bankKeeper:     bankKeeper,
+		sk:             supplyKeeper,
 	}
 }
 
@@ -42,13 +53,25 @@ func (k Keeper) SeizeAndStartCollateralAuction(ctx sdk.Context, owner sdk.AccAdd
 	}
 
 	// Calculate amount of collateral to sell in this auction
-	params := k.GetParams(ctx).GetCollateralParams(csdt.CollateralDenom)
-	collateralToSell := sdk.MinInt(csdt.CollateralAmount, params.AuctionSize)
+	paramsMap := make(map[string]types.CollateralParams)
+	params := k.GetParams(ctx).CollateralParams
+	for _, cp := range params {
+		paramsMap[cp.Denom] = cp
+	}
+	collateralParams, found := paramsMap[collateralDenom]
+	if !found {
+		return 0, sdk.ErrInternal("collateral denom not found")
+	}
+
+	collateralToSell := sdk.MinInt(csdt.CollateralAmount.AmountOf(csdt.CollateralDenom), collateralParams.AuctionSize)
 	// Calculate the corresponding maximum amount of stable coin to raise TODO test maths
-	stableToRaise := sdk.NewDecFromInt(collateralToSell).Quo(sdk.NewDecFromInt(csdt.CollateralAmount)).Mul(sdk.NewDecFromInt(csdt.Debt)).RoundInt()
+	stableToRaise := sdk.NewDecFromInt(collateralToSell).
+		Quo(sdk.NewDecFromInt(csdt.CollateralAmount.AmountOf(csdt.CollateralDenom))).
+		Mul(sdk.NewDecFromInt(csdt.Debt.AmountOf(k.csdtKeeper.GetStableDenom()))).
+		RoundInt()
 
 	// Seize the collateral and debt from the CSDT
-	err := k.partialSeizeCSDT(ctx, owner, collateralDenom, collateralToSell, stableToRaise)
+	err := k.PartialSeizeCSDT(ctx, owner, collateralDenom, collateralToSell, stableToRaise)
 	if err != nil {
 		return 0, err
 	}
@@ -56,7 +79,7 @@ func (k Keeper) SeizeAndStartCollateralAuction(ctx sdk.Context, owner sdk.AccAdd
 	// Start "forward reverse" auction type
 	lot := sdk.NewCoin(csdt.CollateralDenom, collateralToSell)
 	maxBid := sdk.NewCoin(k.csdtKeeper.GetStableDenom(), stableToRaise)
-	auctionID, err := k.auctionKeeper.StartForwardReverseAuction(ctx, k.csdtKeeper.GetLiquidatorAccountAddress(), lot, maxBid, owner)
+	auctionID, err := k.auctionKeeper.StartForwardReverseAuction(ctx, k.sk.GetModuleAddress(types.ModuleName), lot, maxBid, owner)
 	if err != nil {
 		panic(err) // TODO how can errors here be handled to be safe with the state update in PartialSeizeCSDT?
 	}
@@ -69,7 +92,7 @@ func (k Keeper) SeizeAndStartCollateralAuction(ctx sdk.Context, owner sdk.AccAdd
 func (k Keeper) StartDebtAuction(ctx sdk.Context) (auction.ID, sdk.Error) {
 
 	// Ensure amount of seized stable coin is 0 (ie Joy = 0)
-	stableCoins := k.bankKeeper.GetCoins(ctx, k.csdtKeeper.GetLiquidatorAccountAddress()).AmountOf(k.csdtKeeper.GetStableDenom())
+	stableCoins := k.bankKeeper.GetCoins(ctx, k.sk.GetModuleAddress(types.ModuleName)).AmountOf(k.csdtKeeper.GetStableDenom())
 	if !stableCoins.IsZero() {
 		return 0, sdk.ErrInternal("debt auction cannot be started as there is outstanding stable coins")
 	}
@@ -80,19 +103,22 @@ func (k Keeper) StartDebtAuction(ctx sdk.Context) (auction.ID, sdk.Error) {
 	if seizedDebt.Available().LT(params.DebtAuctionSize) {
 		return 0, sdk.ErrInternal("not enough seized debt to start an auction")
 	}
+
+	mintedCoins := sdk.NewInt64Coin(k.csdtKeeper.GetGovDenom(), 2^255-1)
+	k.sk.MintCoins(ctx, types.ModuleName, sdk.NewCoins(mintedCoins))
 	// start reverse auction, selling minted gov coin for stable coin
 	auctionID, err := k.auctionKeeper.StartReverseAuction(
 		ctx,
-		k.csdtKeeper.GetLiquidatorAccountAddress(),
+		k.sk.GetModuleAddress(types.ModuleName),
 		sdk.NewCoin(k.csdtKeeper.GetStableDenom(), params.DebtAuctionSize),
-		sdk.NewInt64Coin(k.csdtKeeper.GetGovDenom(), 2^255-1), // TODO is there a way to avoid potentially minting infinite gov coin?
+		mintedCoins, // TODO is there a way to avoid potentially minting infinite gov coin?
 	)
 	if err != nil {
 		return 0, err
 	}
 	// Record amount of debt sent for auction. Debt can only be reduced in lock step with reducing stable coin
 	seizedDebt.SentToAuction = seizedDebt.SentToAuction.Add(params.DebtAuctionSize)
-	k.setSeizedDebt(ctx, seizedDebt)
+	k.SetSeizedDebt(ctx, seizedDebt)
 	return auctionID, nil
 }
 
@@ -124,7 +150,7 @@ func (k Keeper) StartDebtAuction(ctx sdk.Context) (auction.ID, sdk.Error) {
 // }
 
 // PartialSeizeCSDT seizes some collateral and debt from an under-collateralized CSDT.
-func (k Keeper) partialSeizeCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, collateralToSeize sdk.Int, debtToSeize sdk.Int) sdk.Error { // aka Cat.bite
+func (k Keeper) PartialSeizeCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, collateralToSeize sdk.Int, debtToSeize sdk.Int) sdk.Error { // aka Cat.bite
 	// Seize debt and collateral in the csdt module. This also validates the inputs.
 	err := k.csdtKeeper.PartialSeizeCSDT(ctx, owner, collateralDenom, collateralToSeize, debtToSeize)
 	if err != nil {
@@ -134,11 +160,12 @@ func (k Keeper) partialSeizeCSDT(ctx sdk.Context, owner sdk.AccAddress, collater
 	// increment the total seized debt (Awe) by csdt.debt
 	seizedDebt := k.GetSeizedDebt(ctx)
 	seizedDebt.Total = seizedDebt.Total.Add(debtToSeize)
-	k.setSeizedDebt(ctx, seizedDebt)
+	k.SetSeizedDebt(ctx, seizedDebt)
 
 	// add csdt.collateral amount of coins to the moduleAccount (so they can be transferred to the auction later)
 	coins := sdk.NewCoins(sdk.NewCoin(collateralDenom, collateralToSeize))
-	_, err = k.bankKeeper.AddCoins(ctx, k.csdtKeeper.GetLiquidatorAccountAddress(), coins)
+	err = k.sk.SendCoinsFromModuleToModule(ctx, csdt.ModuleName, types.ModuleName, coins)
+
 	if err != nil {
 		panic(err) // TODO this shouldn't happen?
 	}
@@ -151,7 +178,7 @@ func (k Keeper) partialSeizeCSDT(ctx sdk.Context, owner sdk.AccAddress, collater
 func (k Keeper) SettleDebt(ctx sdk.Context) sdk.Error {
 	// Calculate max amount of debt and stable coins that can be settled (ie annihilated)
 	debt := k.GetSeizedDebt(ctx)
-	stableCoins := k.bankKeeper.GetCoins(ctx, k.csdtKeeper.GetLiquidatorAccountAddress()).AmountOf(k.csdtKeeper.GetStableDenom())
+	stableCoins := k.bankKeeper.GetCoins(ctx, k.sk.GetModuleAddress(types.ModuleName)).AmountOf(k.csdtKeeper.GetStableDenom())
 	settleAmount := sdk.MinInt(debt.Total, stableCoins)
 
 	// Call csdt module to reduce GlobalDebt. This can fail if genesis not set
@@ -165,24 +192,14 @@ func (k Keeper) SettleDebt(ctx sdk.Context) sdk.Error {
 	if err != nil {
 		return err // this should not error in this context
 	}
-	k.setSeizedDebt(ctx, updatedDebt)
+	k.SetSeizedDebt(ctx, updatedDebt)
 
 	// Subtract stable coin from moduleAccout
-	k.bankKeeper.SubtractCoins(ctx, k.csdtKeeper.GetLiquidatorAccountAddress(), sdk.Coins{sdk.NewCoin(k.csdtKeeper.GetStableDenom(), settleAmount)})
+	err = k.sk.BurnCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(k.csdtKeeper.GetStableDenom(), settleAmount)))
+	if err != nil {
+		return err // this should not error in this context
+	}
 	return nil
-}
-
-// ---------- Module Parameters ----------
-
-func (k Keeper) GetParams(ctx sdk.Context) types.LiquidatorModuleParams {
-	var params types.LiquidatorModuleParams
-	k.paramsSubspace.Get(ctx, types.ModuleParamsKey, &params)
-	return params
-}
-
-// This is only needed to be able to setup the store from the genesis file. The keeper should not change any of the params itself.
-func (k Keeper) SetParams(ctx sdk.Context, params types.LiquidatorModuleParams) {
-	k.paramsSubspace.Set(ctx, types.ModuleParamsKey, &params)
 }
 
 // ---------- Store Wrappers ----------
@@ -201,7 +218,7 @@ func (k Keeper) GetSeizedDebt(ctx sdk.Context) types.SeizedDebt {
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &seizedDebt)
 	return seizedDebt
 }
-func (k Keeper) setSeizedDebt(ctx sdk.Context, debt types.SeizedDebt) {
+func (k Keeper) SetSeizedDebt(ctx sdk.Context, debt types.SeizedDebt) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(debt)
 	store.Set(k.getSeizedDebtKey(), bz)

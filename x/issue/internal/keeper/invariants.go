@@ -8,13 +8,13 @@ import (
 )
 
 // RegisterInvariants registers the bank module invariants
-func RegisterInvariants(ir sdk.InvariantRegistry, ak AccountKeeper) {
+func RegisterInvariants(ir sdk.InvariantRegistry, ak types.AccountKeeper) {
 	ir.RegisterRoute(types.ModuleName, "nonnegative-outstanding",
 		NonnegativeBalanceInvariant(ak))
 }
 
 // NonnegativeBalanceInvariant checks that all accounts in the application have non-negative balances
-func NonnegativeBalanceInvariant(ak AccountKeeper) sdk.Invariant {
+func NonnegativeBalanceInvariant(ak types.AccountKeeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
 		var msg string
 		var count int

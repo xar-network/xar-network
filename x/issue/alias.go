@@ -13,13 +13,11 @@ import (
 )
 
 type (
-	BaseKeeper    = keeper.BaseKeeper // ibc module depends on this
 	Keeper        = keeper.Keeper
 	CoinIssueInfo = types.CoinIssueInfo
 	Approval      = types.Approval
 	IssueFreeze   = types.IssueFreeze
 	Params        = types.Params
-	Hooks         = keeper.Hooks
 )
 
 const (

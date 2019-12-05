@@ -11,13 +11,13 @@ import (
 	"github.com/xar-network/xar-network/app"
 	"github.com/xar-network/xar-network/execution"
 	"github.com/xar-network/xar-network/types"
-	"github.com/xar-network/xar-network/x/asset"
 	"github.com/xar-network/xar-network/x/market"
 	"github.com/xar-network/xar-network/x/order"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 )
 
 type nopWriter struct{}
@@ -30,7 +30,7 @@ type MockApp struct {
 	Cdc             *codec.Codec
 	Mq              types.Backend
 	Ctx             sdk.Context
-	AssetKeeper     asset.Keeper
+	SupplyKeeper    supply.Keeper
 	MarketKeeper    market.Keeper
 	OrderKeeper     order.Keeper
 	BankKeeper      bank.Keeper
@@ -42,21 +42,27 @@ type Option func(t *testing.T, app *MockApp)
 func New(t *testing.T, options ...Option) *MockApp {
 	appDB := dbm.NewMemDB()
 	mkDataDB := dbm.NewMemDB()
-	dex := app.NewDexApp(log.NewNopLogger(), appDB, mkDataDB, &nopWriter{})
+	dex := app.NewXarApp(log.NewNopLogger(), appDB, mkDataDB, nil, true, 0)
+
+	genesisState := app.ModuleBasics.DefaultGenesis()
+	stateBytes, err := codec.MarshalJSONIndent(dex.Codec(), genesisState)
+	if err != nil {
+		return nil
+	}
 	dex.InitChain(abci.RequestInitChain{
-		AppStateBytes: []byte("{}"),
+		AppStateBytes: stateBytes,
 	})
 	ctx := dex.BaseApp.NewContext(false, abci.Header{ChainID: "unit-test-chain", Height: 1, Time: time.Unix(1558332092, 0)})
 
 	mock := &MockApp{
-		Cdc:             dex.Cdc,
-		Mq:              dex.Mq,
+		Cdc:             dex.Codec(),
+		Mq:              dex.MQ(),
 		Ctx:             ctx,
-		AssetKeeper:     dex.AssetKeeper,
-		MarketKeeper:    dex.MarketKeeper,
-		OrderKeeper:     dex.OrderKeeper,
-		BankKeeper:      dex.BankKeeper,
-		ExecutionKeeper: dex.ExecKeeper,
+		SupplyKeeper:    dex.SupplyKeeper(),
+		MarketKeeper:    dex.MarketKeeper(),
+		OrderKeeper:     dex.OrderKeeper(),
+		BankKeeper:      dex.BankKeeper(),
+		ExecutionKeeper: dex.ExecKeeper(),
 	}
 
 	for _, opt := range options {

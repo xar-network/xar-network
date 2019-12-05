@@ -5,8 +5,10 @@ import (
 )
 
 const (
-	ModuleName = types.ModuleName
-	StoreKey   = types.StoreKey
+	ModuleName        = types.ModuleName
+	StoreKey          = types.StoreKey
+	DefaultParamspace = types.DefaultParamspace
+	DefaultCodespace  = types.DefaultCodespace
 )
 
 var (

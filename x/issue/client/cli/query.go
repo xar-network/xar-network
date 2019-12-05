@@ -48,6 +48,7 @@ func QueryParamsCmd(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			var params types.Params
 			cdc.MustUnmarshalJSON(res, &params)
 			return cliCtx.PrintOutput(params)
@@ -94,6 +95,7 @@ func processQuery(cdc *codec.Codec, args []string) error {
 	if err != nil {
 		return err
 	}
+
 	var issueInfo types.Issue
 	cdc.MustUnmarshalJSON(res, &issueInfo)
 	return cliCtx.PrintOutput(issueInfo)
@@ -125,6 +127,7 @@ func QueryAllowanceCmd(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			var approval types.Approval
 			cdc.MustUnmarshalJSON(res, &approval)
 
@@ -155,6 +158,7 @@ func QueryFreezeCmd(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			var freeze types.IssueFreeze
 			cdc.MustUnmarshalJSON(res, &freeze)
 
@@ -221,6 +225,7 @@ func QueryFreezesCmd(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			var issueFreeze types.IssueAddressFreezeList
 			cdc.MustUnmarshalJSON(res, &issueFreeze)
 			return cliCtx.PrintOutput(issueFreeze)
@@ -244,6 +249,7 @@ func QuerySearchIssuesCmd(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			var issues types.CoinIssues
 			cdc.MustUnmarshalJSON(res, &issues)
 			return cliCtx.PrintOutput(issues)

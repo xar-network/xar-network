@@ -37,6 +37,7 @@ func processQuery(cdc *codec.Codec, args []string) error {
 	if err != nil {
 		return err
 	}
+
 	var recordInfo types.Record
 	cdc.MustUnmarshalJSON(res, &recordInfo)
 	return cliCtx.PrintOutput(recordInfo)

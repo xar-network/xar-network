@@ -50,17 +50,11 @@ func NewHandler(k Keeper) sdk.Handler {
 			return handleMsgIssueFreeze(ctx, k, msg)
 		case types.MsgIssueUnFreeze:
 			return handleMsgIssueUnFreeze(ctx, k, msg)
-		case types.MsgSetInterest:
-			return handleMsgSetInterest(ctx, msg, k)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized gov msg type: %T", msg)
 			return sdk.ErrUnknownRequest(errMsg).Result()
 		}
 	}
-}
-
-func handleMsgSetInterest(ctx sdk.Context, msg types.MsgSetInterest, k keeper.Keeper) sdk.Result {
-	return k.SetInterestRate(ctx, msg.Issuer, msg.InterestRate, msg.Denom)
 }
 
 func handleMsgIssueDecreaseApproval(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssueDecreaseApproval) sdk.Result {
@@ -340,5 +334,5 @@ func handleMsgIssue(ctx sdk.Context, k keeper.Keeper, msg types.MsgIssue) sdk.Re
 		),
 	)
 
-	return sdk.Result{Events: ctx.EventManager().Events()}
+	return sdk.Result{Data: []byte(coinIssueInfo.IssueId), Events: ctx.EventManager().Events()}
 }
