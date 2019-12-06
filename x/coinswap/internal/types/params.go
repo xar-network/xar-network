@@ -25,35 +25,43 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/cosmos/cosmos-sdk/x/params/subspace"
 )
 
 const (
 	// DefaultParamSpace for coinswap
 	DefaultParamSpace = ModuleName
-	MaxFeePrecision   = 10
 )
 
 // Parameter store keys
 var (
-	feeKey = []byte("fee")
+	keyFee = []byte("fee")
 )
 
 // Params defines the fee and native denomination for coinswap
 type Params struct {
-	Fee sdk.Coins `json:"fee"`
+	Fee sdk.Dec `json:"fee"`
 }
 
 // NewParams coinswap params constructor
-func NewParams(fee sdk.Coins) Params {
+func NewParams(fee sdk.Dec) Params {
 	return Params{
 		Fee: fee,
 	}
 }
 
-// ParamTypeTable returns the TypeTable for coinswap module
-func ParamTypeTable() params.TypeTable {
-	return params.NewTypeTable().RegisterParamSet(&Params{})
+// ParamKeyTable returns the TypeTable for coinswap module
+func ParamKeyTable() subspace.KeyTable {
+	return subspace.NewKeyTable().RegisterParamSet(&Params{})
+}
+
+// ParamSetPairs implements the ParamSet interface and returns all the key/value pairs
+// pairs of auth module's parameters.
+// nolint
+func (p Params) ParamSetPairs() subspace.ParamSetPairs {
+	return subspace.ParamSetPairs{
+		{keyFee, &p.Fee},
+	}
 }
 
 // String returns a human readable string representation of the parameters.
@@ -68,18 +76,11 @@ func (p *Params) GetParamSpace() string {
 	return DefaultParamSpace
 }
 
-// KeyValuePairs  Implements params.KeyValuePairs
-func (p *Params) KeyValuePairs() params.KeyValuePairs {
-	return params.KeyValuePairs{
-		{Key: feeKey, Value: &p.Fee},
-	}
-}
-
 // Validate Implements params.Validate
 func (p *Params) Validate(key string, value string) (interface{}, sdk.Error) {
 	switch key {
-	case string(feeKey):
-		fee, err := sdk.NewRatFromDecimal(value, MaxFeePrecision)
+	case string(keyFee):
+		fee, err := sdk.NewDecFromStr(value)
 		if err != nil {
 			return nil, err
 		}
@@ -88,7 +89,7 @@ func (p *Params) Validate(key string, value string) (interface{}, sdk.Error) {
 		}
 		return fee, nil
 	default:
-		return nil, sdk.NewError(params.DefaultCodespace, params.CodeInvalidKey, fmt.Sprintf("%s is not found", key))
+		return nil, sdk.NewError(DefaultCodespace, CodeConstraintNotMet, fmt.Sprintf("%s is not found", key))
 	}
 }
 
@@ -107,7 +108,7 @@ func (p *Params) ReadOnly() bool {
 
 // DefaultParams returns the default coinswap module parameters
 func DefaultParams() Params {
-	fee := sdk.NewRat(3, 1000)
+	fee, _ := sdk.NewDecFromStr("0.1")
 	return Params{
 		Fee: fee,
 	}
@@ -118,13 +119,13 @@ func ValidateParams(p Params) error {
 	return validateFee(p.Fee)
 }
 
-func validateFee(fee sdk.Rat) sdk.Error {
-	if !fee.GT(sdk.ZeroRat()) {
-		return sdk.ParseParamsErr(fmt.Errorf("fee is not positive: %s", fee.String()))
+func validateFee(fee sdk.Dec) sdk.Error {
+	if !fee.GT(sdk.ZeroDec()) {
+		return sdk.NewError(DefaultCodespace, CodeConstraintNotMet, fmt.Sprintf("fee is not positive: %s", fee.String()))
 	}
 
-	if !fee.LT(sdk.OneRat()) {
-		return sdk.ParseParamsErr(fmt.Errorf("fee must be less than 1: %s", fee.String()))
+	if !fee.LT(sdk.OneDec()) {
+		return sdk.NewError(DefaultCodespace, CodeConstraintNotMet, fmt.Sprintf("fee must be less than 1: %s", fee.String()))
 	}
 	return nil
 }
