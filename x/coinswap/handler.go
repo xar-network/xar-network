@@ -33,13 +33,10 @@ func NewHandler(k Keeper) sdk.Handler {
 		switch msg := msg.(type) {
 		case MsgSwapOrder:
 			return HandleMsgSwapOrder(ctx, msg, k)
-
 		case MsgAddLiquidity:
 			return HandleMsgAddLiquidity(ctx, msg, k)
-
 		case MsgRemoveLiquidity:
 			return HandleMsgRemoveLiquidity(ctx, msg, k)
-
 		default:
 			errMsg := fmt.Sprintf("unrecognized coinswap message type: %T", msg)
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -47,7 +44,7 @@ func NewHandler(k Keeper) sdk.Handler {
 	}
 }
 
-// Handle MsgSwapOrder.
+// HandleMsgSwapOrder.
 func HandleMsgSwapOrder(ctx sdk.Context, msg MsgSwapOrder, k Keeper) sdk.Result {
 	// check that deadline has not passed
 	if ctx.BlockHeader().Time.After(time.Unix(msg.Deadline, 0)) {
@@ -61,7 +58,7 @@ func HandleMsgSwapOrder(ctx sdk.Context, msg MsgSwapOrder, k Keeper) sdk.Result 
 	return sdk.Result{Tags: tags}
 }
 
-// Handle MsgAddLiquidity. If the reserve pool does not exist, it will be
+// HandleMsgAddLiquidity. If the reserve pool does not exist, it will be
 // created. The first liquidity provider sets the exchange rate.
 func HandleMsgAddLiquidity(ctx sdk.Context, msg MsgAddLiquidity, k Keeper) sdk.Result {
 	// check that deadline has not passed

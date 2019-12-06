@@ -26,8 +26,8 @@ import (
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/coinswap/internal/types"
 	"github.com/stretchr/testify/require"
+	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
 
 var (

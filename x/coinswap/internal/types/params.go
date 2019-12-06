@@ -41,11 +41,11 @@ var (
 
 // Params defines the fee and native denomination for coinswap
 type Params struct {
-	Fee sdk.Rat `json:"fee"`
+	Fee sdk.Coins `json:"fee"`
 }
 
 // NewParams coinswap params constructor
-func NewParams(fee sdk.Rat) Params {
+func NewParams(fee sdk.Coins) Params {
 	return Params{
 		Fee: fee,
 	}

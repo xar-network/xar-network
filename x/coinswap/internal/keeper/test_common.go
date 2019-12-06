@@ -23,8 +23,6 @@ package keeper
 import (
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/x/protocol"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/libs/log"
@@ -37,8 +35,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/coinswap/internal/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
 
 // create a codec used only for testing
@@ -55,9 +53,9 @@ func makeTestCodec() *codec.Codec {
 }
 
 func createTestInput(t *testing.T, amt sdk.Int, nAccs int64) (sdk.Context, Keeper, []auth.Account) {
-	keyAcc := protocol.KeyAccount
-	keyParams := protocol.KeyParams
-	tkeyParams := protocol.TkeyParams
+	keyAcc := auth.StoreKey
+	keyParams := params.StoreKey
+	tkeyParams := params.TStoreKey
 	keyCoinswap := sdk.NewKVStoreKey(types.StoreKey)
 
 	db := dbm.NewMemDB()

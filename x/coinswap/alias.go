@@ -21,8 +21,8 @@ limitations under the License.
 package coinswap
 
 import (
-	"github.com/cosmos/cosmos-sdk/x/coinswap/internal/keeper"
-	"github.com/cosmos/cosmos-sdk/x/coinswap/internal/types"
+	"github.com/xar-network/xar-network/x/coinswap/internal/keeper"
+	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
 
 type (
