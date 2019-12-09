@@ -1,0 +1,17 @@
+{
+  "title": "Decrease stake unbonding time from 21 days to 24 hours",
+  "description": "Decrease unbonding time from 21 days to 24 hours in staking params",
+  "changes": [
+    {
+      "subspace": "staking",
+      "key": "UnbondingTime",
+      "value": "86400000000000"
+    }
+  ],
+  "deposit": [
+    {
+      "denom": "uftm",
+      "amount": "1000000000000"
+    }
+  ]
+}

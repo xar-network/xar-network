@@ -1,0 +1,68 @@
+{
+  "title": "Increase uftm ucsdt debt to $5,000,000 from $500,000",
+  "description": "Increase the amount of ucsdt that can be minted from uftm to $5,000,000 from $500,000",
+  "changes": [
+    {
+      "subspace": "csdt",
+      "key": "CollateralParams",
+      "value":[
+          {
+            "debt_limit": [
+              {
+                "amount": "500000000000",
+                "denom": "ucsdt"
+              }
+            ],
+            "denom": "ubtc",
+            "liquidation_ratio": "1.500000000000000000"
+          },
+          {
+            "debt_limit": [
+              {
+                "amount": "500000000000",
+                "denom": "ucsdt"
+              }
+            ],
+            "denom": "ubnb",
+            "liquidation_ratio": "1.500000000000000000"
+          },
+          {
+            "debt_limit": [
+              {
+                "amount": "500000000000",
+                "denom": "ucsdt"
+              }
+            ],
+            "denom": "ueth",
+            "liquidation_ratio": "1.500000000000000000"
+          },
+          {
+            "debt_limit": [
+              {
+                "amount": "5000000000000",
+                "denom": "ucsdt"
+              }
+            ],
+            "denom": "uftm",
+            "liquidation_ratio": "1.500000000000000000"
+          },
+          {
+            "debt_limit": [
+              {
+                "amount": "500000000000",
+                "denom": "ucsdt"
+              }
+            ],
+            "denom": "uzar",
+            "liquidation_ratio": "1.300000000000000000"
+          }
+        ]
+    }
+  ],
+  "deposit": [
+    {
+      "denom": "uftm",
+      "amount": "1000000000000"
+    }
+  ]
+}
