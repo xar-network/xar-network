@@ -1,0 +1,23 @@
+{
+  "title": "Deposit Proposal Change",
+  "description": "Reduce the cost of new proposals from 1,000,000FTM to 1,000FTM",
+  "changes": [
+    {
+      "subspace": "gov",
+      "key": "depositparams",
+      "value": {
+        "max_deposit_period":"172800000000000",
+        "min_deposit":[{
+          "amount": "1000000000",
+          "denom": "uftm"
+        }]
+      }
+    }
+  ],
+  "deposit": [
+    {
+      "denom": "uftm",
+      "amount": "1000000000000"
+    }
+  ]
+}

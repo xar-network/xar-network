@@ -21,7 +21,6 @@ limitations under the License.
 package types
 
 import (
-	"fmt"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -82,9 +81,6 @@ func (msg MsgPostPrice) ValidateBasic() sdk.Error {
 	}
 	if msg.Price.LT(sdk.ZeroDec()) {
 		return sdk.ErrInternal("invalid (negative) price")
-	}
-	if !msg.Expiry.After(time.Now()) {
-		return sdk.ErrInternal(fmt.Sprintf("invalid (negative) expiry %s now: %s", msg.Expiry.String(), time.Now().String()))
 	}
 	// TODO check coin denoms
 	return nil

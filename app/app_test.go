@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
@@ -30,10 +31,68 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	"github.com/cosmos/cosmos-sdk/x/mint"
+	"github.com/cosmos/cosmos-sdk/x/params"
+	paramscutils "github.com/cosmos/cosmos-sdk/x/params/client/utils"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 )
+
+func TestProposalChangeDepositParams(t *testing.T) {
+	db := tdb.NewMemDB()
+	mkdb := tdb.NewMemDB()
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
+	setGenesis(gapp)
+
+	proposal, _ := gapp.paramsKeeper.GetSubspace("gov")
+
+	var depositParams gov.DepositParams
+
+	ctx := gapp.NewContext(true, abci.Header{Height: gapp.LastBlockHeight()})
+	proposal.Get(ctx, gov.ParamStoreKeyDepositParams, &depositParams)
+
+	propJson, err := paramscutils.ParseParamChangeProposalJSON(gapp.Codec(), "proposal_deposit_params.json")
+	require.NoError(t, err)
+
+	changes := params.NewParameterChangeProposal(propJson.Title, propJson.Description, propJson.Changes.ToParamChanges())
+	hdlr := params.NewParamChangeProposalHandler(gapp.paramsKeeper)
+	require.NoError(t, hdlr(ctx, changes))
+
+	var newParams gov.DepositParams
+	proposal.Get(ctx, gov.ParamStoreKeyDepositParams, &newParams)
+	require.Equal(t, newParams.MaxDepositPeriod, time.Duration(172800000000000))
+	require.Equal(t, newParams.MinDeposit, sdk.NewCoins(sdk.NewCoin("uftm", sdk.NewInt(1000000000))))
+}
+
+func TestProposalChangeInflationRateChange(t *testing.T) {
+	db := tdb.NewMemDB()
+	mkdb := tdb.NewMemDB()
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
+	setGenesis(gapp)
+
+	proposal, _ := gapp.paramsKeeper.GetSubspace("mint")
+
+	var inflationRateChange sdk.Dec
+
+	ctx := gapp.NewContext(true, abci.Header{Height: gapp.LastBlockHeight()})
+	proposal.Get(ctx, mint.KeyInflationRateChange, &inflationRateChange)
+	match, _ := sdk.NewDecFromStr("0.130000000000000000")
+	require.Equal(t, inflationRateChange, match)
+
+	propJson, err := paramscutils.ParseParamChangeProposalJSON(gapp.Codec(), "proposal_inflation.json")
+	require.NoError(t, err)
+
+	changes := params.NewParameterChangeProposal(propJson.Title, propJson.Description, propJson.Changes.ToParamChanges())
+	hdlr := params.NewParamChangeProposalHandler(gapp.paramsKeeper)
+	require.NoError(t, hdlr(ctx, changes))
+
+	var newParams sdk.Dec
+	proposal.Get(ctx, mint.KeyInflationRateChange, &newParams)
+	match, _ = sdk.NewDecFromStr("5.000000000000000000")
+	require.Equal(t, newParams, match)
+}
 
 func TestXardGeneric(t *testing.T) {
 	db := tdb.NewMemDB()
