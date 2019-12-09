@@ -35,6 +35,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramscutils "github.com/cosmos/cosmos-sdk/x/params/client/utils"
+	"github.com/cosmos/cosmos-sdk/x/staking"
+	"github.com/xar-network/xar-network/x/csdt"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
@@ -120,6 +122,59 @@ func TestProposalChangeVotingPeriod(t *testing.T) {
 	expected = gov.NewVotingParams(604800000000000)
 	proposal.Get(ctx, gov.ParamStoreKeyVotingParams, &newParams)
 	require.Equal(t, newParams, expected)
+}
+
+func TestProposalChangeUnbondingTime(t *testing.T) {
+	db := tdb.NewMemDB()
+	mkdb := tdb.NewMemDB()
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
+	setGenesis(gapp)
+
+	proposal, _ := gapp.paramsKeeper.GetSubspace("staking")
+
+	var current time.Duration
+
+	ctx := gapp.NewContext(true, abci.Header{Height: gapp.LastBlockHeight()})
+	proposal.Get(ctx, staking.KeyUnbondingTime, &current)
+	require.Equal(t, current, time.Duration(1814400000000000))
+
+	propJson, err := paramscutils.ParseParamChangeProposalJSON(gapp.Codec(), "proposal_staking_unbonding_time.json")
+	require.NoError(t, err)
+
+	changes := params.NewParameterChangeProposal(propJson.Title, propJson.Description, propJson.Changes.ToParamChanges())
+	hdlr := params.NewParamChangeProposalHandler(gapp.paramsKeeper)
+	require.NoError(t, hdlr(ctx, changes))
+
+	var new time.Duration
+	proposal.Get(ctx, staking.KeyUnbondingTime, &new)
+	require.Equal(t, new, time.Duration(86400000000000))
+}
+
+func TestProposalChangeUFTMDebt(t *testing.T) {
+	db := tdb.NewMemDB()
+	mkdb := tdb.NewMemDB()
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
+	setGenesis(gapp)
+
+	proposal, _ := gapp.paramsKeeper.GetSubspace("csdt")
+
+	var current csdt.CollateralParams
+
+	ctx := gapp.NewContext(true, abci.Header{Height: gapp.LastBlockHeight()})
+	proposal.Get(ctx, csdt.KeyCollateralParams, &current)
+
+	require.Equal(t, current[0].Denom, "ubtc")
+
+	propJson, err := paramscutils.ParseParamChangeProposalJSON(gapp.Codec(), "proposal_increase_uftm_collateral_debt.json")
+	require.NoError(t, err)
+
+	changes := params.NewParameterChangeProposal(propJson.Title, propJson.Description, propJson.Changes.ToParamChanges())
+	hdlr := params.NewParamChangeProposalHandler(gapp.paramsKeeper)
+	require.NoError(t, hdlr(ctx, changes))
+
+	var new csdt.CollateralParams
+	proposal.Get(ctx, csdt.KeyCollateralParams, &new)
+	require.Equal(t, new[0].Denom, "ubtc")
 }
 
 func TestXardGeneric(t *testing.T) {

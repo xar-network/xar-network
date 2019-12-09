@@ -43,7 +43,8 @@ const (
 )
 
 var (
-	ModuleCdc     = types.ModuleCdc
-	NewKeeper     = keeper.NewKeeper
-	RegisterCodec = types.RegisterCodec
+	ModuleCdc           = types.ModuleCdc
+	NewKeeper           = keeper.NewKeeper
+	RegisterCodec       = types.RegisterCodec
+	KeyCollateralParams = types.KeyCollateralParams
 )
