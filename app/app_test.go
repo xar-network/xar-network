@@ -94,6 +94,34 @@ func TestProposalChangeInflationRateChange(t *testing.T) {
 	require.Equal(t, newParams, match)
 }
 
+func TestProposalChangeVotingPeriod(t *testing.T) {
+	db := tdb.NewMemDB()
+	mkdb := tdb.NewMemDB()
+	gapp := NewXarApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, mkdb, nil, true, 0)
+	setGenesis(gapp)
+
+	proposal, _ := gapp.paramsKeeper.GetSubspace("gov")
+
+	var votingPeriod gov.VotingParams
+	expected := gov.NewVotingParams(172800000000000)
+
+	ctx := gapp.NewContext(true, abci.Header{Height: gapp.LastBlockHeight()})
+	proposal.Get(ctx, gov.ParamStoreKeyVotingParams, &votingPeriod)
+	require.Equal(t, votingPeriod, expected)
+
+	propJson, err := paramscutils.ParseParamChangeProposalJSON(gapp.Codec(), "proposal_voting_period.json")
+	require.NoError(t, err)
+
+	changes := params.NewParameterChangeProposal(propJson.Title, propJson.Description, propJson.Changes.ToParamChanges())
+	hdlr := params.NewParamChangeProposalHandler(gapp.paramsKeeper)
+	require.NoError(t, hdlr(ctx, changes))
+
+	var newParams gov.VotingParams
+	expected = gov.NewVotingParams(604800000000000)
+	proposal.Get(ctx, gov.ParamStoreKeyVotingParams, &newParams)
+	require.Equal(t, newParams, expected)
+}
+
 func TestXardGeneric(t *testing.T) {
 	db := tdb.NewMemDB()
 	mkdb := tdb.NewMemDB()

@@ -1,0 +1,19 @@
+{
+  "title": "Decrease voting period to 7 days from 14 days",
+  "description": "Reduce the voting period to 7 days from 14 days for param proposals",
+  "changes": [
+    {
+      "subspace": "gov",
+      "key": "votingparams",
+      "value": {
+        "voting_period": "604800000000000"
+      }
+    }
+  ],
+  "deposit": [
+    {
+      "denom": "uftm",
+      "amount": "1000000000000"
+    }
+  ]
+}

@@ -58,7 +58,7 @@ func HandleMsgSwapOrder(ctx sdk.Context, msg MsgSwapOrder, k Keeper) sdk.Result 
 	return sdk.Result{Tags: tags}
 }
 
-// HandleMsgAddLiquidity. If the reserve pool does not exist, it will be
+// HandleMsgAddLiquidity If the reserve pool does not exist, it will be
 // created. The first liquidity provider sets the exchange rate.
 func HandleMsgAddLiquidity(ctx sdk.Context, msg MsgAddLiquidity, k Keeper) sdk.Result {
 	// check that deadline has not passed
