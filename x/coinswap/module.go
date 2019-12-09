@@ -26,7 +26,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/xar-network/xar-network/x/coinswap/client/cli"
 	"github.com/xar-network/xar-network/x/coinswap/internal/keeper"
 
 	"github.com/gorilla/mux"
@@ -78,7 +77,7 @@ func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router
 
 // GetTxCmd returns the root tx command for the bank module.
 func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
-	return cli.GetTxCmd(cdc)
+	return nil//cli.GetTxCmd(cdc)
 }
 
 // GetQueryCmd returns no root query command for the bank module.

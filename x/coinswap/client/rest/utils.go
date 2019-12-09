@@ -25,10 +25,9 @@ import (
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/utils"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
-	"github.com/irisnet/irishub/app/protocol"
 	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
 
@@ -42,17 +41,17 @@ func queryLiquidity(cliCtx context.CLIContext, cdc *codec.Codec, endpoint string
 
 		bz, err := cliCtx.Codec.MarshalJSON(params)
 		if err != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		res, err := cliCtx.QueryWithData(
-			fmt.Sprintf("custom/%s/%s", protocol.SwapRoute, types.QueryLiquidity), bz)
+		res, _, err := cliCtx.QueryWithData(
+			fmt.Sprintf("custom/%s/%s", types.RouterKey, types.QueryLiquidity), bz)
 		if err != nil {
-			utils.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
-		utils.PostProcessResponse(w, cliCtx.Codec, res, cliCtx.Indent)
+		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }

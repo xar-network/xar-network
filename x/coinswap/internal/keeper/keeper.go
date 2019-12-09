@@ -50,15 +50,14 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bk types.BankKeeper, ak types
 		bk:         bk,
 		ak:         ak,
 		cdc:        cdc,
-		paramSpace: paramSpace.WithTypeTable(types.ParamTypeTable()),
+		paramSpace: paramSpace.WithKeyTable(types.ParamKeyTable()),
 	}
 }
 
-func (k Keeper) HandleSwap(ctx sdk.Context, msg types.MsgSwapOrder) (sdk.Tags, sdk.Error) {
-	tags := sdk.EmptyTags()
+func (k Keeper) HandleSwap(ctx sdk.Context, msg types.MsgSwapOrder) sdk.Result {
 	var amount sdk.Int
 	var err sdk.Error
-	var isDoubleSwap = msg.Input.Coin.Denom != sdk.IrisAtto && msg.Output.Coin.Denom != sdk.IrisAtto
+	var isDoubleSwap = msg.Input.Coin.Denom != types.NativeDenom && msg.Output.Coin.Denom != types.NativeDenom
 
 	if msg.IsBuyOrder && isDoubleSwap {
 		amount, err = k.doubleTradeInputForExactOutput(ctx, msg.Input, msg.Output)
@@ -70,63 +69,71 @@ func (k Keeper) HandleSwap(ctx sdk.Context, msg types.MsgSwapOrder) (sdk.Tags, s
 		amount, err = k.tradeExactInputForOutput(ctx, msg.Input, msg.Output)
 	}
 	if err != nil {
-		return tags, err
+		return err.Result()
 	}
-
-	tags = sdk.NewTags(
-		types.TagAmount, []byte(amount.String()),
-		types.TagSender, []byte(msg.Input.Address.String()),
-		types.TagRecipient, []byte(msg.Output.Address.String()),
-		types.TagIsBuyOrder, []byte(strconv.FormatBool(msg.IsBuyOrder)),
-		types.TagTokenPair, []byte(getTokenPairByDenom(msg.Input.Coin.Denom, msg.Output.Coin.Denom)),
-	)
-
-	return tags, nil
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			"HandleSwap",
+			sdk.NewAttribute(types.EventAmount, amount.String()),
+			sdk.NewAttribute(types.EventSender, msg.Input.Address.String()),
+			sdk.NewAttribute(types.EventRecipient, msg.Output.Address.String()),
+			sdk.NewAttribute(types.EventIsBuyOrder, strconv.FormatBool(msg.IsBuyOrder)),
+			sdk.NewAttribute(types.EventTokenPair, getTokenPairByDenom(msg.Input.Coin.Denom, msg.Output.Coin.Denom)),
+		),
+	})
+	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func (k Keeper) HandleAddLiquidity(ctx sdk.Context, msg types.MsgAddLiquidity) (sdk.Tags, sdk.Error) {
-	tags := sdk.EmptyTags()
-	uniId, err := types.GetUniId(sdk.IrisAtto, msg.MaxToken.Denom)
+func (k Keeper) HandleAddLiquidity(ctx sdk.Context, msg types.MsgAddLiquidity) sdk.Result {
+	uniId, err := types.GetUniId(types.NativeDenom, msg.MaxToken.Denom)
 	if err != nil {
-		return tags, err
+		return err.Result()
 	}
 	uniDenom, err := types.GetUniDenom(uniId)
 	if err != nil {
-		return tags, err
+		return err.Result()
 	}
 
 	reservePool := k.GetReservePool(ctx, uniId)
-	irisReserveAmt := reservePool.AmountOf(sdk.IrisAtto)
+	nativeReserveAmt := reservePool.AmountOf(types.NativeDenom)
 	tokenReserveAmt := reservePool.AmountOf(msg.MaxToken.Denom)
 	liquidity := reservePool.AmountOf(uniDenom)
 
 	var mintLiquidityAmt sdk.Int
 	var depositToken sdk.Coin
-	var irisCoin = sdk.NewCoin(sdk.IrisAtto, msg.ExactIrisAmt)
+	var nativeCoin = sdk.NewCoin(types.NativeDenom, msg.ExactAmt)
 
 	// calculate amount of UNI to be minted for sender
 	// and coin amount to be deposited
 	if liquidity.IsZero() {
-		mintLiquidityAmt = msg.ExactIrisAmt
+		mintLiquidityAmt = msg.ExactAmt
 		depositToken = sdk.NewCoin(msg.MaxToken.Denom, msg.MaxToken.Amount)
 	} else {
-		mintLiquidityAmt = (liquidity.Mul(msg.ExactIrisAmt)).Div(irisReserveAmt)
+		mintLiquidityAmt = (liquidity.Mul(msg.ExactAmt)).Quo(nativeReserveAmt)
 		if mintLiquidityAmt.LT(msg.MinLiquidity) {
-			return tags, types.ErrConstraintNotMet(fmt.Sprintf("liquidity amount not met, user expected: no less than %s, actual: %s", msg.MinLiquidity.String(), mintLiquidityAmt.String()))
+			return types.ErrConstraintNotMet(fmt.Sprintf("liquidity amount not met, user expected: no less than %s, actual: %s", msg.MinLiquidity.String(), mintLiquidityAmt.String())).Result()
 		}
-		depositAmt := (tokenReserveAmt.Mul(msg.ExactIrisAmt)).Div(irisReserveAmt).AddRaw(1)
+		depositAmt := (tokenReserveAmt.Mul(msg.ExactAmt)).Quo(nativeReserveAmt).AddRaw(1)
 		depositToken = sdk.NewCoin(msg.MaxToken.Denom, depositAmt)
 
 		if depositAmt.GT(msg.MaxToken.Amount) {
-			return tags, types.ErrConstraintNotMet(fmt.Sprintf("token amount not met, user expected: no more than %s, actual: %s", msg.MaxToken.String(), depositToken.String()))
+			return types.ErrConstraintNotMet(fmt.Sprintf("token amount not met, user expected: no more than %s, actual: %s", msg.MaxToken.String(), depositToken.String())).Result()
 		}
 	}
 
-	tags = sdk.NewTags(
-		types.TagSender, []byte(msg.Sender.String()),
-		types.TagTokenPair, []byte(getTokenPairByDenom(msg.MaxToken.Denom, sdk.IrisAtto)),
-	)
-	return tags, k.addLiquidity(ctx, msg.Sender, irisCoin, depositToken, uniId, mintLiquidityAmt)
+	err = k.addLiquidity(ctx, msg.Sender, irisCoin, depositToken, uniId, mintLiquidityAmt)
+	if err != nil {
+		return err.Result()
+	}
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			"HandleAddLiquidity",
+			sdk.NewAttribute(types.EventSender, msg.Sender.String()),
+			sdk.NewAttribute(types.EventTokenPair, getTokenPairByDenom(msg.MaxToken.Denom, types.NativeDenom)),
+		),
+	})
+	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
 func (k Keeper) addLiquidity(ctx sdk.Context, sender sdk.AccAddress, irisCoin, token sdk.Coin, uniId string, mintLiquidityAmt sdk.Int) sdk.Error {

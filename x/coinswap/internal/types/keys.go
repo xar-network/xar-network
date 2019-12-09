@@ -30,6 +30,8 @@ const (
 	// StoreKey is the default store key for the coinswap module.
 	StoreKey = ModuleName
 
+	NativeDenom = "ucsdt"
+
 	// QuerierRoute is the querier route for the coinswap module.
 	QuerierRoute = StoreKey
 

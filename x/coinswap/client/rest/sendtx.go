@@ -24,10 +24,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cosmos-sdk/cosmos/client/context"
-	"github.com/cosmos-sdk/cosmos/client/utils"
-	"github.com/cosmos-sdk/cosmos/codec"
-	sdk "github.com/cosmos-sdk/cosmos/types"
+	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/gorilla/mux"
 	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
@@ -55,7 +56,7 @@ func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *codec.Codec
 }
 
 type addLiquidityReq struct {
-	BaseTx       utils.BaseTx `json:"base_tx"`
+	BaseReq      rest.BaseReq `json:"base_req"`
 	Id           string       `json:"id"`             // the unique liquidity id
 	MaxToken     string       `json:"max_token"`      // token to be deposited as liquidity with an upper bound for its amount
 	ExactIrisAmt string       `json:"exact_iris_amt"` // exact amount of iris-atto being add to the liquidity pool
@@ -65,7 +66,7 @@ type addLiquidityReq struct {
 }
 
 type removeLiquidityReq struct {
-	BaseTx            utils.BaseTx `json:"base_tx"`
+	BaseReq           rest.BaseReq `json:"base_req"`
 	Id                string       `json:"id"`                 // the unique liquidity id
 	MinToken          string       `json:"min_token"`          // coin to be withdrawn with a lower bound for its amount
 	WithdrawLiquidity string       `json:"withdraw_liquidity"` // amount of UNI to be burned to withdraw liquidity from a reserve pool
@@ -85,7 +86,7 @@ type output struct {
 }
 
 type swapOrderReq struct {
-	BaseTx   utils.BaseTx `json:"base_tx"`
+	BaseReq  rest.BaseReq `json:"base_req"`
 	Input    input        `json:"input"`    // the amount the sender is trading
 	Output   output       `json:"output"`   // the amount the sender is receiving
 	Deadline string       `json:"deadline"` // deadline for the transaction to still be considered valid
@@ -98,37 +99,35 @@ func addLiquidityHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.Han
 
 		uniDenom, err := types.GetUniDenom(id)
 		if err != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		tokenDenom, err := types.GetCoinMinDenomFromUniDenom(uniDenom)
 		if err != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		var req addLiquidityReq
-		err1 := utils.ReadPostBody(w, r, cdc, &req)
-		if err1 != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err1.Error())
+		if !rest.ReadRESTReq(w, r, cdc, &req) {
 			return
 		}
 
-		baseReq := req.BaseTx.Sanitize()
+		baseReq := req.BaseReq.Sanitize()
 		if !baseReq.ValidateBasic(w) {
 			return
 		}
 
 		senderAddress, err1 := sdk.AccAddressFromBech32(req.Sender)
 		if err1 != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err1.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err1.Error())
 			return
 		}
 
 		duration, err1 := time.ParseDuration(req.Deadline)
 		if err1 != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err1.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err1.Error())
 			return
 		}
 
@@ -136,32 +135,30 @@ func addLiquidityHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.Han
 
 		maxToken, ok := sdk.NewIntFromString(req.MaxToken)
 		if !ok || !maxToken.IsPositive() {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, "invalid max token amount: "+req.MaxToken)
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid max token amount: "+req.MaxToken)
 			return
 		}
 
 		exactIrisAmt, ok := sdk.NewIntFromString(req.ExactIrisAmt)
 		if !ok {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, "invalid exact iris amount: "+req.ExactIrisAmt)
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid exact iris amount: "+req.ExactIrisAmt)
 			return
 		}
 
 		minLiquidity, ok := sdk.NewIntFromString(req.MinLiquidity)
 		if !ok {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, "invalid min liquidity amount: "+req.MinLiquidity)
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid min liquidity amount: "+req.MinLiquidity)
 			return
 		}
 
 		msg := types.NewMsgAddLiquidity(sdk.NewCoin(tokenDenom, maxToken), exactIrisAmt, minLiquidity, deadline.Unix(), senderAddress)
 		err = msg.ValidateBasic()
 		if err != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		txCtx := utils.BuildReqTxCtx(cliCtx, baseReq, w)
-
-		utils.WriteGenerateStdTxResponse(w, txCtx, []sdk.Msg{msg})
+		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
 	}
 }
 
@@ -172,31 +169,29 @@ func removeLiquidityHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.
 
 		uniDenom, err := types.GetUniDenom(id)
 		if err != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		var req removeLiquidityReq
-		err1 := utils.ReadPostBody(w, r, cdc, &req)
-		if err1 != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err1.Error())
+		if !rest.ReadRESTReq(w, r, cdc, &req) {
 			return
 		}
 
-		baseReq := req.BaseTx.Sanitize()
+		baseReq := req.BaseReq.Sanitize()
 		if !baseReq.ValidateBasic(w) {
 			return
 		}
 
 		senderAddress, err1 := sdk.AccAddressFromBech32(req.Sender)
 		if err1 != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err1.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err1.Error())
 			return
 		}
 
 		duration, err1 := time.ParseDuration(req.Deadline)
 		if err1 != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err1.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err1.Error())
 			return
 		}
 
@@ -204,52 +199,48 @@ func removeLiquidityHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext) http.
 
 		minToken, ok := sdk.NewIntFromString(req.MinToken)
 		if !ok {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, "invalid min token amount: "+req.MinToken)
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid min token amount: "+req.MinToken)
 			return
 		}
 
 		minIris, ok := sdk.NewIntFromString(req.MinIrisAmt)
 		if !ok {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, "invalid min iris amount: "+req.MinIrisAmt)
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid min iris amount: "+req.MinIrisAmt)
 			return
 		}
 
 		liquidityAmt, ok := sdk.NewIntFromString(req.WithdrawLiquidity)
 		if !ok || !liquidityAmt.IsPositive() {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, "invalid liquidity amount: "+req.WithdrawLiquidity)
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid liquidity amount: "+req.WithdrawLiquidity)
 			return
 		}
 
 		msg := types.NewMsgRemoveLiquidity(minToken, sdk.NewCoin(uniDenom, liquidityAmt), minIris, deadline.Unix(), senderAddress)
 		err = msg.ValidateBasic()
 		if err != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		txCtx := utils.BuildReqTxCtx(cliCtx, baseReq, w)
-
-		utils.WriteGenerateStdTxResponse(w, txCtx, []sdk.Msg{msg})
+		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
 	}
 }
 
 func swapOrderHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext, isBuyOrder bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req swapOrderReq
-		err := utils.ReadPostBody(w, r, cdc, &req)
-		if err != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+		if !rest.ReadRESTReq(w, r, cdc, &req) {
 			return
 		}
 
-		baseReq := req.BaseTx.Sanitize()
+		baseReq := req.BaseReq.Sanitize()
 		if !baseReq.ValidateBasic(w) {
 			return
 		}
 
 		senderAddress, err := sdk.AccAddressFromBech32(req.Input.Address)
 		if err != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -257,14 +248,14 @@ func swapOrderHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext, isBuyOrder 
 		if len(req.Output.Address) > 0 {
 			recipientAddress, err = sdk.AccAddressFromBech32(req.Output.Address)
 			if err != nil {
-				utils.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 				return
 			}
 		}
 
 		duration, err := time.ParseDuration(req.Deadline)
 		if err != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -275,12 +266,10 @@ func swapOrderHandlerFn(cdc *codec.Codec, cliCtx context.CLIContext, isBuyOrder 
 		msg := types.NewMsgSwapOrder(input, output, deadline.Unix(), isBuyOrder)
 		err = msg.ValidateBasic()
 		if err != nil {
-			utils.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		txCtx := utils.BuildReqTxCtx(cliCtx, baseReq, w)
-
-		utils.WriteGenerateStdTxResponse(w, txCtx, []sdk.Msg{msg})
+		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
 	}
 }

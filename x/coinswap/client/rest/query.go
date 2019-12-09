@@ -23,8 +23,8 @@ package rest
 import (
 	"net/http"
 
-	"github.com/cosmos-sdk/cosmos/client/context"
-	"github.com/cosmos-sdk/cosmos/codec"
+	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/gorilla/mux"
 )
 

@@ -21,8 +21,8 @@ limitations under the License.
 package rest
 
 import (
-	"github.com/cosmos-sdk/cosmos/client/context"
-	"github.com/cosmos-sdk/cosmos/codec"
+	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/gorilla/mux"
 )
 

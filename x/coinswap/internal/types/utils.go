@@ -36,10 +36,10 @@ func GetUniId(denom1, denom2 string) (string, sdk.Error) {
 	}
 
 	denom := denom1
-	if denom == "uftm" {
+	if denom == NativeDenom {
 		denom = denom2
 	}
-	return fmt.Sprintf("u-%s", denom), nil
+	return fmt.Sprintf("uni:%s", denom), nil
 }
 
 // GetCoinMinDenomFromUniDenom returns the token denom by uni denom
@@ -48,16 +48,22 @@ func GetCoinMinDenomFromUniDenom(uniDenom string) (string, sdk.Error) {
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimPrefix(uniDenom, "u-"), nil
+	return strings.TrimPrefix(uniDenom, "uni:"), nil
 }
 
 // CheckUniDenom returns nil if the uni denom is valid
 func CheckUniDenom(uniDenom string) sdk.Error {
+	if !strings.HasPrefix(uniDenom, "uni:") {
+		return ErrIllegalDenom(fmt.Sprintf("illegal liquidity denomnation: %s", uniDenom))
+	}
 	return nil
 }
 
 // CheckUniId returns nil if the uni id is valid
 func CheckUniId(uniId string) sdk.Error {
+	if !strings.HasPrefix(uniId, "uni:") {
+		return ErrIllegalUniId(fmt.Sprintf("illegal liquidity id: %s", uniId))
+	}
 	return nil
 }
 
@@ -66,7 +72,5 @@ func GetUniDenom(uniId string) (string, sdk.Error) {
 	if err := CheckUniId(uniId); err != nil {
 		return "", err
 	}
-
-	uniDenom := fmt.Sprintf("u-%s", uniId)
-	return uniDenom, nil
+	return strings.TrimPrefix(uniId, "uni:"), nil
 }

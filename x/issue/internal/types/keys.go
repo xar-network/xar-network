@@ -32,6 +32,7 @@ const (
 	QueryFreeze    = "freeze"
 	QueryFreezes   = "freezes"
 	QuerySearch    = "search"
+	NativeDenom    = "ucsdt"
 )
 
 const (

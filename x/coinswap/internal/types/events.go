@@ -22,9 +22,9 @@ limitations under the License.
 package types
 
 var (
-	TagAmount     = "amount"
-	TagSender     = "sender"
-	TagRecipient  = "recipient"
-	TagIsBuyOrder = "is-buy-order"
-	TagTokenPair  = "token-pair"
+	EventAmount     = "amount"
+	EventSender     = "sender"
+	EventRecipient  = "recipient"
+	EventIsBuyOrder = "is-buy-order"
+	EventTokenPair  = "token-pair"
 )
