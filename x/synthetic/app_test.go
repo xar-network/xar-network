@@ -28,9 +28,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/xar-network/xar-network/x/csdt"
-	"github.com/xar-network/xar-network/x/csdt/internal/types"
 	"github.com/xar-network/xar-network/x/oracle"
+	"github.com/xar-network/xar-network/x/synthetic"
+	"github.com/xar-network/xar-network/x/synthetic/internal/types"
 
 	"github.com/tendermint/tendermint/crypto"
 
@@ -107,10 +107,10 @@ func SignCheckDeliver(
 	return res
 }
 
-func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
+func TestApp_BuyAndSellSynthetic(t *testing.T) {
 	// Setup
 	mapp, keeper := setUpMockAppWithoutGenesis()
-	genAccs, addrs, _, privKeys := mock.CreateGenAccounts(1, cs(c("uftm", 100)))
+	genAccs, addrs, _, privKeys := mock.CreateGenAccounts(1, cs(c(synthetic.StableDenom, 100)))
 	testAddr := addrs[0]
 	testPrivKey := privKeys[0]
 	mock.SetGenesis(mapp, genAccs)
@@ -119,14 +119,13 @@ func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
 	keeper.SetParams(ctx, types.DefaultParams())
-	keeper.SetGlobalDebt(ctx, sdk.NewInt(1000000000))
 	keeper.GetSupply().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	oracleParams := oracle.DefaultParams()
 	oracleParams.Assets = oracle.Assets{
 		oracle.Asset{
-			AssetCode:  "uftm",
-			BaseAsset:  "uftm",
-			QuoteAsset: csdt.StableDenom,
+			AssetCode:  "sbtc",
+			BaseAsset:  "sbtc",
+			QuoteAsset: synthetic.StableDenom,
 			Oracles: oracle.Oracles{
 				oracle.Oracle{
 					Address: addrs[0],
@@ -138,30 +137,24 @@ func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 
 	keeper.GetOracle().SetParams(ctx, oracleParams)
 	_, _ = keeper.GetOracle().SetPrice(
-		ctx, addrs[0], "uftm",
+		ctx, addrs[0], "sbtc",
 		sdk.MustNewDecFromStr("1.00"),
 		time.Now().Add(time.Hour*1))
 	_ = keeper.GetOracle().SetCurrentPrices(ctx)
 	mapp.EndBlock(abci.RequestEndBlock{})
 	mapp.Commit()
 
-	// Create CSDT
-	msgs := []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(10), i(5))}
+	// Buy synthetic
+	msgs := []sdk.Msg{types.NewMsgBuySynthetic(testAddr, (c("sbtc", 100)))}
 	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{0}, true, true, testPrivKey)
 
-	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 5), c("uftm", 90)))
+	mock.CheckBalance(t, mapp, testAddr, cs(c("sbtc", 100)))
 
-	// Modify CSDT
-	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(40), i(5))}
+	// Sell synthetic
+	msgs = []sdk.Msg{types.NewMsgSellSynthetic(testAddr, (c("sbtc", 100)))}
 	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{1}, true, true, testPrivKey)
 
-	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 10), c("uftm", 50)))
-
-	// Delete CSDT
-	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(-50), i(-10))}
-	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{2}, true, true, testPrivKey)
-
-	mock.CheckBalance(t, mapp, testAddr, cs(c("uftm", 100)))
+	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 100)))
 }
 
 func TestApp_ParamExport(t *testing.T) {
@@ -174,10 +167,9 @@ func TestApp_ParamExport(t *testing.T) {
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
 	keeper.SetParams(ctx, types.DefaultParams())
-	keeper.SetGlobalDebt(ctx, sdk.NewInt(1000000000))
 
-	genState := csdt.ExportGenesis(ctx, keeper)
-	require.Equal(t, 1, len(genState.Params.CollateralParams))
+	genState := synthetic.ExportGenesis(ctx, keeper)
+	require.Equal(t, 1, len(genState.Params.SyntheticParams))
 
 }
 
@@ -187,7 +179,7 @@ func d(str string) sdk.Dec                  { return sdk.MustNewDecFromStr(str) 
 func c(denom string, amount int64) sdk.Coin { return sdk.NewInt64Coin(denom, amount) }
 func cs(coins ...sdk.Coin) sdk.Coins        { return sdk.NewCoins(coins...) }
 
-func setUpMockAppWithoutGenesis() (*mock.App, csdt.Keeper) {
+func setUpMockAppWithoutGenesis() (*mock.App, synthetic.Keeper) {
 	// Create uninitialized mock app
 	mapp := mock.NewApp()
 
@@ -196,7 +188,7 @@ func setUpMockAppWithoutGenesis() (*mock.App, csdt.Keeper) {
 	supply.RegisterCodec(mapp.Cdc)
 
 	// Create keepers
-	keyCSDT := sdk.NewKVStoreKey(types.StoreKey)
+	keySynthetic := sdk.NewKVStoreKey(types.StoreKey)
 	keyOracle := sdk.NewKVStoreKey(oracle.StoreKey)
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 
@@ -207,15 +199,15 @@ func setUpMockAppWithoutGenesis() (*mock.App, csdt.Keeper) {
 	oracleKeeper := oracle.NewKeeper(keyOracle, mapp.Cdc, mapp.ParamsKeeper.Subspace(oracle.DefaultParamspace), oracle.DefaultCodespace)
 	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, map[string]bool{})
 	supplyKeeper := supply.NewKeeper(mapp.Cdc, keySupply, mapp.AccountKeeper, bankKeeper, maccPerms)
-	csdtKeeper := csdt.NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace(types.DefaultParamspace), oracleKeeper, bankKeeper, supplyKeeper)
+	syntheticKeeper := synthetic.NewKeeper(mapp.Cdc, keySynthetic, mapp.ParamsKeeper.Subspace(types.DefaultParamspace), oracleKeeper, bankKeeper, supplyKeeper)
 
 	// Register routes
-	mapp.Router().AddRoute("csdt", csdt.NewHandler(csdtKeeper))
+	mapp.Router().AddRoute("synthetic", synthetic.NewHandler(syntheticKeeper))
 	// Mount and load the stores
-	err := mapp.CompleteSetup(keyOracle, keyCSDT, keySupply)
+	err := mapp.CompleteSetup(keyOracle, keySynthetic, keySupply)
 	if err != nil {
 		panic("mock app setup failed")
 	}
 
-	return mapp, csdtKeeper
+	return mapp, syntheticKeeper
 }
