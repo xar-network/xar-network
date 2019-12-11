@@ -1,3 +1,22 @@
+/*
+
+Copyright 2016 All in Bits, Inc
+Copyright 2019 Xar Network
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+*/
+
 package keeper
 
 import (
@@ -14,7 +33,7 @@ func (keeper Keeper) SwapCoins(ctx sdk.Context, sender, recipient sdk.AccAddress
 		cns := keeper.bk.GetCoins(ctx, sender)
 		log.Println(coinSold)
 		log.Println(coinBought)
-		for _, v:= range cns {
+		for _, v := range cns {
 			log.Println(v)
 		}
 		return sdk.ErrInsufficientCoins(fmt.Sprintf("sender account does not have sufficient amount of %s to fulfill the swap order", coinSold.Denom))
@@ -75,7 +94,7 @@ func (keeper Keeper) GetOutputAmount(ctx sdk.Context, inputAmt sdk.Int, inputDen
 		panic(fmt.Sprintf("reserve pool for %s not found", moduleName))
 	}
 
-	inputBalance := reservePool.AmountOf(inputDenom) // coin
+	inputBalance := reservePool.AmountOf(inputDenom)   // coin
 	outputBalance := reservePool.AmountOf(outputDenom) // native
 	fee := keeper.GetFeeParam(ctx)
 
@@ -193,7 +212,6 @@ func (keeper Keeper) DoubleSwapInputAmount(ctx sdk.Context, outputCoinsA, output
 	return inputAmountA, inputAmountB
 }
 
-
 // TODO: replace GetInputAmount
 func (keeper Keeper) OutputAmount(ctx sdk.Context, inputCoins sdk.Coin, outputDenom string) sdk.Int {
 	keeper.ValidateSwap(ctx, inputCoins.Denom, outputDenom)
@@ -253,7 +271,7 @@ func (keeper Keeper) getSwapBalances(ctx sdk.Context, denom1, denom2 string) (ba
 }
 
 func (keeper Keeper) DenomIsNative(ctx sdk.Context, denom string) bool {
-	return keeper.GetNativeDenom(ctx)== denom
+	return keeper.GetNativeDenom(ctx) == denom
 }
 
 // GetModuleName returns the ModuleAccount name for the provided denominations.
