@@ -179,7 +179,7 @@ func GetCmdSettleDebt(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-// GetCmdWithdrawDebt cli command for settling debt.
+// GetCmdWithdrawDebt cli command for withdrawing/adding debt.
 func GetCmdWithdrawDebt(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "withdraw-debt [from_key_or_addres] [collateralDenom] [debtDenom] [debtChange]",
