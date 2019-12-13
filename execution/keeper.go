@@ -32,7 +32,34 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/params"
 )
+
+const (
+       DefaultParamspace = "execution"
+)
+
+var (
+       KeyFee         = []byte("fee")
+
+       logger = log.WithModule("execution")
+)
+
+type FeeParam struct {
+       Numerator   sdk.Int `json:"fee_numerator"`
+       Denominator sdk.Int `json:"fee_denominator"`
+}
+
+type Params struct {
+       Fee         FeeParam `json:"fee"`
+}
+
+// Implements params.ParamSet.
+func (p *Params) ParamSetPairs() params.ParamSetPairs {
+       return params.ParamSetPairs{
+               {KeyFee, &p.Fee},
+       }
+}
 
 type Keeper struct {
 	queue     types.Backend
@@ -41,6 +68,7 @@ type Keeper struct {
 	bk        bank.Keeper
 	metrics   *Metrics
 	saveFills bool
+	paramSpace params.Subspace
 }
 
 type matcherByMarket struct {
@@ -48,16 +76,19 @@ type matcherByMarket struct {
 	mktID   store.EntityID
 }
 
-var logger = log.WithModule("execution")
-
-func NewKeeper(queue types.Backend, mk market.Keeper, ordK order.Keeper, bk bank.Keeper) Keeper {
+func NewKeeper(queue types.Backend, mk market.Keeper, ordK order.Keeper, bk bank.Keeper, paramSpace params.Subspace) Keeper {
 	return Keeper{
 		queue:   queue,
 		mk:      mk,
 		ordK:    ordK,
 		bk:      bk,
 		metrics: PrometheusMetrics(),
+		paramSpace: paramSpace.WithKeyTable(ParamKeyTable()),
 	}
+}
+
+func ParamKeyTable() params.KeyTable {
+       return params.NewKeyTable().RegisterParamSet(&Params{})
 }
 
 func (k Keeper) ExecuteAndCancelExpired(ctx sdk.Context) sdk.Error {
