@@ -23,6 +23,10 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 
 	csdtTxCmd.AddCommand(
 		GetCmdModifyCsdt(cdc),
+		GetCmdDepositCollateral(cdc),
+		GetCmdWithdrawCollateral(cdc),
+		GetCmdSettleDebt(cdc),
+		GetCmdWithdrawDebt(cdc),
 	)
 
 	return csdtTxCmd
@@ -134,7 +138,7 @@ func GetCmdWithdrawCollateral(cdc *codec.Codec) *cobra.Command {
 }
 
 // GetCmdSettleDebt cli command for settling debt.
-func GetCmdDepositDebt(cdc *codec.Codec) *cobra.Command {
+func GetCmdSettleDebt(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "settle-debt [from_key_or_addres] [collateralDenom] [debtDenom] [debtChange]",
 		Short: "settle debt with csdt",

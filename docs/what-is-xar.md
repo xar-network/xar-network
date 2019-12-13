@@ -1,6 +1,6 @@
 # What is Xar?
 
-`xar` is the name of the Fantom application for the Cosmos Hub. It comes with 2 main entrypoints:
+The framework for Cosmos and Fantom based decentralized finance 
 
 - `xard`: The Xar Daemon, runs a full-node of the `xar` application.
 - `xarcli`: The Xar command-line interface, which enables interaction with a Xar full-node.

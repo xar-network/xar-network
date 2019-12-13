@@ -1,0 +1,17 @@
+{
+  "title": "Inflation Rate Proposal Change",
+  "description": "Update Inflation Rate Change from 0.13 to 5.0",
+  "changes": [
+    {
+      "subspace": "mint",
+      "key": "InflationRateChange",
+      "value": "5.000000000000000000"
+    }
+  ],
+  "deposit": [
+    {
+      "denom": "uftm",
+      "amount": "1000000000000"
+    }
+  ]
+}
