@@ -21,6 +21,7 @@ package types
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -105,11 +106,19 @@ func DefaultParams() Params {
 	}
 }
 
+var (
+	// Denominations can be 3 ~ 16 characters long.
+	reDnmString = `[a-z][a-z0-9]{2,15}`
+	reDnm       = regexp.MustCompile(fmt.Sprintf(`^%s$`, reDnmString))
+)
+
 // ValidateParams validates a set of params
 func ValidateParams(p Params) error {
-	// TODO: ensure equivalent sdk.validateDenom validation
 	if strings.TrimSpace(p.NativeDenom) == "" {
 		return fmt.Errorf("native denomination must not be empty")
+	}
+	if !reDnm.MatchString(p.NativeDenom) {
+		return fmt.Errorf("invalid denom: %s", p.NativeDenom)
 	}
 	if !p.Fee.Numerator.IsPositive() {
 		return fmt.Errorf("fee numerator is not positive: %v", p.Fee.Numerator)

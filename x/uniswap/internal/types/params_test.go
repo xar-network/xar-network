@@ -40,6 +40,7 @@ func TestValidateParams(t *testing.T) {
 	}{
 		{"empty native denom", NewParams("     ", defaultParams.Fee)},
 		{"native denom with caps", NewParams("aTom", defaultParams.Fee)},
+		{"native denom dash", NewParams("a-Tom", defaultParams.Fee)},
 		{"native denom too short", NewParams("a", defaultParams.Fee)},
 		{"native denom too long", NewParams("a very long coin denomination", defaultParams.Fee)},
 		{"fee numerator == denominator", NewParams(defaultParams.NativeDenom, NewFeeParam(sdk.NewInt(1000), sdk.NewInt(1000)))},

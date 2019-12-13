@@ -35,7 +35,7 @@ import (
 )
 
 const (
-	moduleName = "swap:uftm:ubtc"
+	moduleName = "swap1uftm2ubtc"
 )
 
 // test that the module account gets created with an initial
@@ -85,7 +85,7 @@ func TestCreateReservePool(t *testing.T) {
 }
 
 func ttt(ctx *sdk.Context, k *Keeper) {
-	k.CreateReservePool(*ctx, "swap:asd:stake")
+	k.CreateReservePool(*ctx, "swap1asd2stake")
 }
 
 // test that the params can be properly set and retrieved
