@@ -83,8 +83,8 @@ func (k Keeper) BuySynthetic(ctx sdk.Context, buyer sdk.AccAddress, coin sdk.Coi
 		return sdk.ErrInternal("quantity can not be represented")
 	}
 
-	purchaseCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, quantity))
-
+	quantityWithFee := p.Fee.MustAddToAmount(quantity)
+	purchaseCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, quantityWithFee))
 	if !purchaseCoins.IsValid() || purchaseCoins.IsAnyNegative() {
 		return sdk.ErrInvalidCoins("invalid purchase coins")
 	}
@@ -141,6 +141,7 @@ func (k Keeper) SellSynthetic(ctx sdk.Context, seller sdk.AccAddress, coin sdk.C
 	}
 
 	quantity, ok := sdk.NewIntFromString(amount.String())
+	quantityWithFee := p.Fee.MustAddToAmount(quantity)
 	if !ok {
 		return sdk.ErrInternal("quantity can not be represented")
 	}
@@ -160,7 +161,7 @@ func (k Keeper) SellSynthetic(ctx sdk.Context, seller sdk.AccAddress, coin sdk.C
 		panic(err) // this shouldn't happen because coin balance was checked earlier
 	}
 
-	sellerCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, quantity))
+	sellerCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, quantityWithFee))
 
 	if !sellerCoins.IsValid() || sellerCoins.IsAnyNegative() {
 		return sdk.ErrInvalidCoins("invalid seller coins")

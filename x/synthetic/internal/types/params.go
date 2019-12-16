@@ -38,6 +38,7 @@ var (
 type Params struct {
 	SyntheticParams SyntheticParams `json:"synthetic_params" yaml:"synthetic_params"`
 	Nominees        []string        `json:"nominees" yaml:"nominees"`
+	Fee             Fee             `json:"fee" yaml:"fee"`
 }
 
 func (p Params) IsSyntheticPresent(denom string) bool {
@@ -75,10 +76,12 @@ func (p Params) String() string {
 func NewParams(
 	syntheticParams SyntheticParams,
 	nominees []string,
+	fee Fee,
 ) Params {
 	return Params{
 		SyntheticParams: syntheticParams,
 		Nominees:        nominees,
+		Fee:             fee,
 	}
 }
 
@@ -87,6 +90,7 @@ func DefaultParams() Params {
 	return NewParams(
 		DefaultSyntheticParams,
 		[]string{},
+		NewDefaultFee(),
 	)
 }
 

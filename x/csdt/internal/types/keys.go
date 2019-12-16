@@ -20,6 +20,10 @@ limitations under the License.
 
 package types
 
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
 const (
 	// ModuleKey is the name of the module
 	ModuleName = "csdt"
@@ -35,5 +39,6 @@ const (
 	// StableDenom asset code of the dollar-denominated debt coin
 	StableDenom = "ucsdt" // TODO allow to be changed
 	// GovDenom asset code of the governance coin
-	GovDenom = "uftm"
+	GovDenom                           = "uftm"
+	DefaultCodespace sdk.CodespaceType = ModuleName
 )
