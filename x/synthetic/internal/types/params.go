@@ -21,6 +21,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/xar-network/xar-network/types/fee"
 
 	"github.com/cosmos/cosmos-sdk/x/params"
 )
@@ -38,7 +39,7 @@ var (
 type Params struct {
 	SyntheticParams SyntheticParams `json:"synthetic_params" yaml:"synthetic_params"`
 	Nominees        []string        `json:"nominees" yaml:"nominees"`
-	Fee             Fee             `json:"fee" yaml:"fee"`
+	Fee             types.Fee       `json:"fee" yaml:"fee"`
 }
 
 func (p Params) IsSyntheticPresent(denom string) bool {
@@ -76,7 +77,7 @@ func (p Params) String() string {
 func NewParams(
 	syntheticParams SyntheticParams,
 	nominees []string,
-	fee Fee,
+	fee types.Fee,
 ) Params {
 	return Params{
 		SyntheticParams: syntheticParams,
@@ -90,7 +91,7 @@ func DefaultParams() Params {
 	return NewParams(
 		DefaultSyntheticParams,
 		[]string{},
-		NewDefaultFee(),
+		types.NewDefaultFee(),
 	)
 }
 

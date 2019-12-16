@@ -100,14 +100,12 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 	// Add/Subtract collateral and debt
 	var collateralCoins sdk.Coins
 	var debtCoins sdk.Coins
-	var changeInCollateralWithFee sdk.Int
 
 	if changeInCollateral.IsNegative() {
 		collateralCoins = sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral.Neg()))
 		csdt.CollateralAmount = csdt.CollateralAmount.Sub(collateralCoins)
 	} else {
-		changeInCollateralWithFee = p.Fee.MustAddToAmount(changeInCollateral)
-		collateralCoins = sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateralWithFee))
+		collateralCoins = sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral))
 		csdt.CollateralAmount = csdt.CollateralAmount.Add(collateralCoins)
 	}
 
@@ -170,8 +168,8 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 			panic(err) // this shouldn't happen because coin balance was checked earlier
 		}
 	} else {
-		err = k.sk.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateralWithFee)))
 		if err != nil {
+			err = k.sk.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
 			panic(err) // this shouldn't happen because coin balance was checked earlier
 		}
 	}

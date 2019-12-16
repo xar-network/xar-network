@@ -10,15 +10,29 @@ type Fee struct {
 	MinimumFee  sdk.Int `json:"minimum_fee"  yaml:"minimum_fee"`
 }
 
-func NewFee(nom sdk.Int, denom sdk.Int, minimumFee sdk.Int) Fee {
+func NewFee(num, den, minimumFee sdk.Int) Fee {
 	if minimumFee.LT(sdk.ZeroInt()) {
 		panic(MsgIncorrectMinimumFee)
 	}
 
+	if num.LTE(den) {
+		panic(MsgNumeratorLTEDenominator)
+	}
+
 	return Fee{
-		nom,
-		denom,
+		num,
+		den,
 		minimumFee,
+	}
+}
+
+func validateNewFee(num, den, minimumFee sdk.Int) {
+	if minimumFee.LT(sdk.ZeroInt()) {
+		panic(MsgIncorrectMinimumFee)
+	}
+
+	if num.LTE(den) {
+		panic(MsgNumeratorLTEDenominator)
 	}
 }
 
@@ -34,22 +48,9 @@ func NewDefaultFee() Fee {
 // amount cannot be negative.
 // for a specific cases when a fee is to small to be added to an int a MinimalFee variable is added.
 // for example if a fee is 0.003 the formula would be : x * 1003 / 1000. So if x is less than 334 a fee would not be added (333 * 1003 / 1000 = int(333.999) = 333)
-func (f Fee) AddToAmount(amount sdk.Int) (sdk.Int, sdk.Error) {
+func (f Fee) AddToAmount(amount sdk.Int) sdk.Int {
 	if amount.LTE(sdk.ZeroInt()) {
-		return sdk.ZeroInt(), ErrIncorrectBaseAmountForFee
-	}
-
-	amountWithFee := amount.Mul(f.Numerator).Quo(f.Denominator)
-	if amountWithFee.Sub(amount).LT(f.MinimumFee) {
-		return amount.Add(f.MinimumFee), nil
-	}
-
-	return amountWithFee, nil
-}
-
-func (f Fee) MustAddToAmount(amount sdk.Int) sdk.Int {
-	if amount.LTE(sdk.ZeroInt()) {
-		panic(ErrIncorrectBaseAmountForFee)
+		panic(MsgIncorrectBaseAmountForFee)
 	}
 
 	amountWithFee := amount.Mul(f.Numerator).Quo(f.Denominator)
@@ -58,6 +59,21 @@ func (f Fee) MustAddToAmount(amount sdk.Int) sdk.Int {
 	}
 
 	return amountWithFee
+}
+
+func (f Fee) SubFromAmount(amount sdk.Int) sdk.Int {
+	if amount.LTE(sdk.ZeroInt()) {
+		panic(MsgIncorrectBaseAmountForFee)
+	}
+
+	opposedNumerator := f.Denominator.Mul(sdk.NewInt(2)).Sub(f.Numerator)
+
+	amountWithoutFee := amount.Mul(opposedNumerator).Quo(f.Denominator)
+	if amountWithoutFee.LTE(sdk.ZeroInt()) {
+		panic(MsgAmountSubFeeTooSmall)
+	}
+
+	return amountWithoutFee
 }
 
 // need to implement?
