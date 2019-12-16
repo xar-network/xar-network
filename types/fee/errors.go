@@ -1,4 +1,4 @@
-package types
+package fee
 
 const (
 	MsgIncorrectBaseAmountForFee = "base fee amount cannot be less or equal to zero"

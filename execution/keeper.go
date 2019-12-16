@@ -25,6 +25,7 @@ import (
 	"github.com/xar-network/xar-network/pkg/log"
 	"github.com/xar-network/xar-network/pkg/matcheng"
 	"github.com/xar-network/xar-network/types"
+	"github.com/xar-network/xar-network/types/fee"
 	"github.com/xar-network/xar-network/types/store"
 	"github.com/xar-network/xar-network/x/market"
 	"github.com/xar-network/xar-network/x/order"
@@ -45,13 +46,8 @@ var (
        logger = log.WithModule("execution")
 )
 
-type FeeParam struct {
-       Numerator   sdk.Int `json:"fee_numerator"`
-       Denominator sdk.Int `json:"fee_denominator"`
-}
-
 type Params struct {
-       Fee         FeeParam `json:"fee"`
+       Fee         fee.Fee 		`json:"fee"`
 }
 
 // Implements params.ParamSet.
