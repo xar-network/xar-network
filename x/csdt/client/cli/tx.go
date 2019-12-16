@@ -27,6 +27,8 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 		GetCmdWithdrawCollateral(cdc),
 		GetCmdSettleDebt(cdc),
 		GetCmdWithdrawDebt(cdc),
+		GetCmdSetCollateralParam(cdc),
+		GetCmdAddCollateralParam(cdc),
 	)
 
 	return csdtTxCmd
@@ -207,6 +209,99 @@ func GetCmdWithdrawDebt(cdc *codec.Codec) *cobra.Command {
 			err := msg.ValidateBasic()
 			if err != nil {
 				return err
+			}
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+
+	cmd = client.PostCommands(cmd)[0]
+
+	return cmd
+}
+
+// GetCmdSetCollateralParam cli command for setting collateral params.
+func GetCmdSetCollateralParam(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set [from_key_or_addres] [collateral_denom] [liquidation_ratio] [debt_limit]",
+		Short: "set csdt params",
+		Args:  cobra.ExactArgs(4),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
+
+			debtLimit, ok := sdk.NewIntFromString(args[3])
+			if !ok || debtLimit.IsZero() || debtLimit.IsNegative() {
+				fmt.Printf("invalid debt limit - %s \n", string(args[3]))
+				return nil
+			}
+			collateralDenom := args[1]
+			if len(collateralDenom) == 0 {
+				fmt.Printf("invalid collateral denom - %s \n", string(args[1]))
+				return nil
+			}
+			liquidationRatio, err := sdk.NewDecFromStr(args[2])
+			if err != nil || liquidationRatio.IsNil() || liquidationRatio.IsZero() || liquidationRatio.IsNegative() {
+				fmt.Printf("invalid liquidation ratio - %s \n", string(args[2]))
+				return nil
+			}
+			debtCoins := sdk.NewCoins(sdk.NewCoin("ucsdt", debtLimit))
+			if !debtCoins.IsValid() {
+				fmt.Printf("invalid debt limit - %s \n", string(args[3]))
+				return nil
+			}
+
+			msg := types.NewMsgSetCollateralParam(cliCtx.GetFromAddress(), collateralDenom, liquidationRatio, debtCoins)
+			er := msg.ValidateBasic()
+			if er != nil {
+				return er
+			}
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+
+	cmd = client.PostCommands(cmd)[0]
+
+	return cmd
+}
+
+// GetCmdAddCollateralParam cli command for adding collateral params.
+func GetCmdAddCollateralParam(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add [from_key_or_addres] [collateral_denom] [liquidation_ratio] [debt_limit]",
+		Short: "add csdt params",
+		Args:  cobra.ExactArgs(4),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, args[0]).WithCodec(cdc)
+
+			debtLimit, ok := sdk.NewIntFromString(args[3])
+			if !ok || debtLimit.IsZero() || debtLimit.IsNegative() {
+				fmt.Printf("invalid debt limit - %s \n", string(args[3]))
+				return nil
+			}
+			collateralDenom := args[1]
+			if len(collateralDenom) == 0 {
+				fmt.Printf("invalid collateral denom - %s \n", string(args[1]))
+				return nil
+			}
+			liquidationRatio, err := sdk.NewDecFromStr(args[2])
+			if err != nil || liquidationRatio.IsNil() || liquidationRatio.IsZero() || liquidationRatio.IsNegative() {
+				fmt.Printf("invalid liquidation ratio - %s \n", string(args[2]))
+				return nil
+			}
+
+			debtCoins := sdk.NewCoins(sdk.NewCoin("ucsdt", debtLimit))
+			if !debtCoins.IsValid() {
+				fmt.Printf("invalid debt limit - %s \n", string(args[3]))
+				return nil
+			}
+
+			msg := types.NewMsgAddCollateralParam(cliCtx.GetFromAddress(), collateralDenom, liquidationRatio, debtCoins)
+			er := msg.ValidateBasic()
+			if er != nil {
+				return er
 			}
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
