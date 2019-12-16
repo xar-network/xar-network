@@ -22,6 +22,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/xar-network/xar-network/types/fee"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
@@ -60,6 +61,7 @@ type Params struct {
 	DebtParams       DebtParams       `json:"debt_params" yaml:"debt_params"`
 	GlobalDebtLimit  sdk.Coins        `json:"global_debt_limit" yaml:"global_debt_limit"`
 	CircuitBreaker   bool             `json:"circuit_breaker" yaml:"circuit_breaker"`
+	Fee              types.Fee        `json:"fee" yaml:"fee"`
 	Nominees         []string         `json:"nominees" yaml:"nominees"`
 }
 
@@ -103,6 +105,7 @@ func NewParams(
 	debtParams DebtParams,
 	breaker bool,
 	nominees []string,
+	fee types.Fee,
 ) Params {
 	return Params{
 		GlobalDebtLimit:  debtLimit,
@@ -110,6 +113,7 @@ func NewParams(
 		DebtParams:       debtParams,
 		CircuitBreaker:   breaker,
 		Nominees:         nominees,
+		Fee:              fee,
 	}
 }
 
@@ -121,6 +125,7 @@ func DefaultParams() Params {
 		DefaultDebtParams,
 		DefaultCircuitBreaker,
 		[]string{},
+		types.NewDefaultFee(),
 	)
 }
 

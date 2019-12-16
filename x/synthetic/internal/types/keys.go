@@ -20,6 +20,10 @@ limitations under the License.
 
 package types
 
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
 const (
 	// ModuleKey is the name of the module
 	ModuleName = "synthetic"
@@ -31,6 +35,8 @@ const (
 	QuerierRoute = ModuleName
 	// Parameter store default namestore
 	DefaultParamspace = ModuleName
+
+	DefaultCodespace sdk.CodespaceType = ModuleName
 
 	// StableDenom asset code of the dollar-denominated debt coin
 	StableDenom = "ucsdt" // TODO allow to be changed
