@@ -45,6 +45,12 @@ func (mc ModuleClient) GetTxCmd() *cobra.Command {
 
 	csdtTxCmd.AddCommand(client.PostCommands(
 		csdtcmd.GetCmdModifyCsdt(mc.cdc),
+		csdtcmd.GetCmdDepositCollateral(mc.cdc),
+		csdtcmd.GetCmdWithdrawCollateral(mc.cdc),
+		csdtcmd.GetCmdSettleDebt(mc.cdc),
+		csdtcmd.GetCmdWithdrawDebt(mc.cdc),
+		csdtcmd.GetCmdSetCollateralParam(mc.cdc),
+		csdtcmd.GetCmdAddCollateralParam(mc.cdc),
 	)...)
 
 	return csdtTxCmd
