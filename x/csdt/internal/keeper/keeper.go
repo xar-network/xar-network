@@ -2,11 +2,13 @@ package keeper
 
 import (
 	"bytes"
+	"fmt"
 	"sort"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/tendermint/tendermint/libs/log"
 	"github.com/xar-network/xar-network/x/csdt/internal/types"
 )
 
@@ -37,6 +39,11 @@ func NewKeeper(
 		cdc:            cdc,
 		sk:             supply,
 	}
+}
+
+// Logger returns a module-specific logger
+func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 // ModifyCSDT creates, changes, or deletes a CSDT
