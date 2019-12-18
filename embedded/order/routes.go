@@ -21,6 +21,8 @@ package order
 
 import (
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/xar-network/xar-network/embedded"
 
@@ -43,8 +45,14 @@ func getOrdersHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc
 		owner := auth.MustGetKBFromSession(r)
 		q := r.URL.Query()
 
+		unixTimeAfter, unixTimeBefore := getTimeLimitFromQuery(q)
 		req := ListQueryRequest{
 			Owner: owner.GetAddr(),
+			Limit: getLimitFromQuery(q),
+			MarketID: getMarketIDFromQuery(q),
+			Status: getStatusFromQuery(q),
+			UnixTimeAfter: unixTimeAfter,
+			UnixTimeBefore: unixTimeBefore,
 		}
 		if start, ok := q["start"]; ok {
 			req.Start = store.NewEntityIDFromString(start[0])
@@ -58,4 +66,58 @@ func getOrdersHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc
 
 		embedded.PostProcessResponse(w, ctx, resB)
 	}
+}
+
+func getLimitFromQuery(q url.Values) int {
+	return int(getInt64FromQuery(q, "limit"))
+}
+
+func getMarketIDFromQuery(q url.Values) []store.EntityID {
+	marketIDs := make([]store.EntityID, 0)
+
+	if marketIdList, ok := q["market_ids"]; ok {
+		for _, marketID := range marketIdList {
+			marketIDs = append(marketIDs, store.NewEntityIDFromString(marketID))
+		}
+	}
+
+	return marketIDs
+}
+
+func getStatusFromQuery(q url.Values) []string {
+	statuses := make([]string, 0)
+
+	if statusesList, ok := q["statuses"]; ok {
+		for _, status := range statusesList {
+			statuses = append(statuses, status)
+		}
+	}
+
+	return statuses
+}
+
+func getTimeLimitFromQuery(q url.Values) (int64, int64) {
+	after := getInt64FromQuery(q, "after")
+	before := getInt64FromQuery(q, "before")
+
+	if after != 0 && before != 0 && after > before {
+		return 0, 0
+	}
+
+	return after, before
+}
+
+func getInt64FromQuery(q url.Values, name string) int64 {
+	tm := int64(0)
+
+	tmStrList, ok := q[name]
+	if ok && len(tmStrList) != 0 && tmStrList[0] != "" {
+		var err error
+		tm, err = strconv.ParseInt(tmStrList[0], 10, 64)
+		if err != nil {
+			return 0
+		}
+	}
+
+	return tm
 }

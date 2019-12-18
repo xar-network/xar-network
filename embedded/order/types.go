@@ -38,11 +38,17 @@ type Order struct {
 	TimeInForce    uint16             `json:"time_in_force"`
 	QuantityFilled sdk.Uint           `json:"quantity_filled"`
 	CreatedBlock   int64              `json:"created_block"`
+	CreatedTime	   int64			  `json:"created_time"`
 }
 
 type ListQueryRequest struct {
-	Start store.EntityID
-	Owner sdk.AccAddress
+	Start          store.EntityID
+	Owner          sdk.AccAddress
+	Limit          int
+	MarketID       []store.EntityID
+	Status         []string
+	UnixTimeAfter  int64
+	UnixTimeBefore int64
 }
 
 type ListQueryResult struct {

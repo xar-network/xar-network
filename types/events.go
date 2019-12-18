@@ -63,6 +63,7 @@ type OrderCreated struct {
 	Quantity          sdk.Uint
 	TimeInForceBlocks uint16
 	CreatedBlock      int64
+	CreatedTime		  int64
 }
 
 type OrderCancelled struct {
