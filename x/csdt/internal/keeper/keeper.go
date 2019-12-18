@@ -436,7 +436,7 @@ func (k Keeper) GetOracle() types.OracleKeeper {
 	return k.oracle
 }
 
-// GetOracle allows testing
+// GetSupply allows testing
 func (k Keeper) GetSupply() types.SupplyKeeper {
 	return k.sk
 }
