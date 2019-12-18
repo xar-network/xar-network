@@ -165,8 +165,14 @@ func (k Keeper) ExecuteFill(ctx sdk.Context, clearingPrice sdk.Uint, f matcheng.
 		panic(err)
 	}
 
+	params := Params{}
+	k.paramSpace.Get(ctx, KeyFee, &params)
+
+	fQtyUnfilled := sdk.Int(f.QtyUnfilled)
 	if ord.Direction == matcheng.Bid {
-		quoteAmount, ok := sdk.NewIntFromString(f.QtyFilled.String())
+		fQtyFilled := sdk.Uint(params.Fee.AddToAmount(sdk.Int(f.QtyFilled)))
+		fQtyUnfilled = params.Fee.SubFromAmount(fQtyUnfilled)
+		quoteAmount, ok := sdk.NewIntFromString(fQtyFilled.String())
 		if !ok {
 			panic("invalid QtyFilled value")
 		}
@@ -176,7 +182,7 @@ func (k Keeper) ExecuteFill(ctx sdk.Context, clearingPrice sdk.Uint, f matcheng.
 		}
 		if clearingPrice.LT(ord.Price) {
 			diff := ord.Price.Sub(clearingPrice)
-			refund, qErr := matcheng.NormalizeQuoteQuantity(diff, f.QtyFilled)
+			refund, qErr := matcheng.NormalizeQuoteQuantity(diff, fQtyFilled)
 			refundInt, ok := sdk.NewIntFromString(refund.String())
 			if !ok {
 				panic("invalid refundInt value")
@@ -190,13 +196,15 @@ func (k Keeper) ExecuteFill(ctx sdk.Context, clearingPrice sdk.Uint, f matcheng.
 				logger.Info(
 					"refund amount too small",
 					"order_id", ord.ID.String(),
-					"qty_filled", f.QtyFilled.String(),
+					"qty_filled", fQtyFilled.String(),
 					"price_delta", diff.String(),
 				)
 			}
 		}
 	} else {
-		baseAmount, qErr := matcheng.NormalizeQuoteQuantity(clearingPrice, f.QtyFilled)
+		fQtyFilled := sdk.Uint(params.Fee.SubFromAmount(sdk.Int(f.QtyFilled)))
+		fQtyUnfilled = params.Fee.AddToAmount(fQtyUnfilled)
+		baseAmount, qErr := matcheng.NormalizeQuoteQuantity(clearingPrice, fQtyFilled)
 		baseAmountInt, ok := sdk.NewIntFromString(baseAmount.String())
 		if !ok {
 			panic("invalid baseAmountInt")
@@ -211,7 +219,7 @@ func (k Keeper) ExecuteFill(ctx sdk.Context, clearingPrice sdk.Uint, f matcheng.
 		}
 	}
 
-	ord.Quantity = f.QtyUnfilled
+	ord.Quantity = sdk.Uint(fQtyUnfilled)
 	if ord.Quantity.Equal(sdk.ZeroUint()) {
 		logger.Info("order completely filled", "id", ord.ID.String())
 		if err := k.ordK.Del(ctx, ord.ID); err != nil {
