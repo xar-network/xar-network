@@ -22,6 +22,7 @@ package csdt
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/xar-network/xar-network/types/fee"
 	"github.com/xar-network/xar-network/x/csdt/internal/keeper"
 	"github.com/xar-network/xar-network/x/csdt/internal/types"
 )
@@ -66,6 +67,7 @@ func DefaultGenesisState() GenesisState {
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 				},
 			},
+			Fee: fee.FromPercentString("0"),
 		},
 		sdk.ZeroInt(),
 		types.CSDTs{},

@@ -21,6 +21,7 @@ limitations under the License.
 package csdt_test
 
 import (
+	"log"
 	"testing"
 	"time"
 
@@ -146,6 +147,9 @@ func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 	mapp.EndBlock(abci.RequestEndBlock{})
 	mapp.Commit()
 
+	currP := keeper.GetOracle().GetCurrentPrice(ctx, "uftm")
+	log.Println(currP)
+
 	// Create CSDT
 	msgs := []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(10), i(5))}
 	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{0}, true, true, testPrivKey)
@@ -163,6 +167,20 @@ func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{2}, true, true, testPrivKey)
 
 	mock.CheckBalance(t, mapp, testAddr, cs(c("uftm", 100)))
+
+	// deposit
+	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(10), i(5))}
+	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{3}, true, true, testPrivKey)
+
+	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 5), c("uftm", 90)))
+
+	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(0), i(1))}
+	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{4}, true, true, testPrivKey)
+
+	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 6), c("uftm", 90)))
+
+	addr := mapp.AccountKeeper.GetAccount(ctx, testAddr)
+	log.Println(addr)
 }
 
 func TestApp_ParamExport(t *testing.T) {

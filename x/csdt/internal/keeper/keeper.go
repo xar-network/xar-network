@@ -168,8 +168,8 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 			panic(err) // this shouldn't happen because coin balance was checked earlier
 		}
 	} else {
+		err = k.sk.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
 		if err != nil {
-			err = k.sk.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
 			panic(err) // this shouldn't happen because coin balance was checked earlier
 		}
 	}
@@ -187,7 +187,8 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 			return er
 		}
 	} else { //Withdrawing stable coins to owner (minting)
-		withdrawCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt))
+		stableCoin := p.Fee.AddToCoin(sdk.NewCoin(types.StableDenom, changeInDebt))
+		withdrawCoins := sdk.NewCoins(stableCoin)
 
 		er := k.sk.MintCoins(ctx, types.ModuleName, withdrawCoins)
 		if er != nil {

@@ -5,4 +5,5 @@ const (
 	MsgIncorrectMinimumFee       = "minimum fee cannot be less than zero"
 	MsgNumeratorLTEDenominator   = "fee numerator cannot be less or equal to fee denominator"
 	MsgAmountSubFeeTooSmall      = "amount sub fee is too small"
+	MsgRatioIsIncorrect          = "incorrect fee ratio"
 )
