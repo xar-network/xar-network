@@ -11,7 +11,7 @@ func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k keeper.Keeper) 
 	// TODO this is Tendermint-dependent
 	// ref https://github.com/cosmos/cosmos-sdk/issues/3095
 	if ctx.BlockHeight() > 1 {
-		previousBlock := k.GetLastAccrualBlock(ctx)
+		previousBlock := k.GetLastAccrualBlock(ctx) // assumes only one interest index model
 		k.AccrueInterest(ctx, previousBlock)
 	}
 }
