@@ -253,7 +253,7 @@ func missingModuleNamePanic(t *testing.T) {
 		Sender:        accs[0].GetAddress(),
 	}
 
-	keeper.CreateReservePool(ctx, keeper.MustGetModuleName(keeper.GetNativeDenom(ctx), outputTestCoin1.Denom))
+	keeper.CreateReservePool(ctx, keeper.MustGetPoolName(keeper.GetNativeDenom(ctx), outputTestCoin1.Denom))
 	keeper.AddInitialLiquidity(ctx, &msg)
 
 	panicAssert = func() {
@@ -300,7 +300,7 @@ func addLiquidityForTest(ctx sdk.Context, keeper Keeper, accs []exported.Account
 		Deadline:      t,
 		Sender:        accs[0].GetAddress(),
 	}
-	keeper.CreateReservePool(ctx, keeper.MustGetModuleName(keeper.GetNativeDenom(ctx), denom))
+	keeper.CreateReservePool(ctx, keeper.MustGetPoolName(keeper.GetNativeDenom(ctx), denom))
 	keeper.AddInitialLiquidity(ctx, &msg)
 	return nil
 }

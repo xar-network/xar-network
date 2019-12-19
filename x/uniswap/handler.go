@@ -21,6 +21,7 @@ package uniswap
 
 import (
 	"fmt"
+	"github.com/tendermint/crypto/acme"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/supply"
@@ -35,7 +36,6 @@ func NewHandler(k Keeper) sdk.Handler {
 		switch msg := msg.(type) {
 		case MsgSwapOrder:
 			return HandleMsgSwapOrder(ctx, msg, k)
-
 		case MsgAddLiquidity:
 			return HandleMsgAddLiquidity(ctx, msg, k)
 		case MsgRemoveLiquidity:
@@ -129,10 +129,10 @@ func DoubleSwap(ctx sdk.Context, keeper Keeper, msg types.MsgSwapOrder) sdk.Resu
 	outputCoin := sdk.NewCoin(msg.Output.Denom, outputAmt)
 	nativeMideator := sdk.NewCoin(nativeDenom, nativeMediatorAmt)
 
-	moduleNameA := keeper.MustGetModuleName(nativeDenom, inputCoin.Denom)
+	moduleNameA := keeper.MustGetPoolName(nativeDenom, inputCoin.Denom)
 	mAccA := keeper.ModuleAccountFromName(ctx, moduleNameA)
 
-	moduleNameB := keeper.MustGetModuleName(nativeDenom, outputCoin.Denom)
+	moduleNameB := keeper.MustGetPoolName(nativeDenom, outputCoin.Denom)
 	mAccB := keeper.ModuleAccountFromName(ctx, moduleNameB)
 
 	err := keeper.SendCoins(ctx, msg.Sender, mAccA.Address, inputCoin)
@@ -197,30 +197,31 @@ func validateSwapMsg(msg *MsgSwapOrder, calculatedAmount sdk.Int) sdk.Error {
 // created. The first liquidity provider sets the exchange rate.
 // TODO create the initial setting liquidity, additional liquidity does not have to be in the same ratio
 func HandleMsgAddLiquidity(ctx sdk.Context, msg MsgAddLiquidity, keeper Keeper) sdk.Result {
-	if ctx.BlockHeader().Time.After(msg.Deadline) {
-		return ErrInvalidDeadline(DefaultCodespace, types.LiquidityAddDeadLineHasPassed).Result()
+	nativeDenom := keeper.GetNativeDenom(ctx)
+	nonNativeDenom := msg.Deposit.Denom
+
+	nativeCoins := sdk.NewCoin(nativeDenom, msg.DepositAmount)
+	liquidityCoins := sdk.NewCoins(nativeCoins, msg.Deposit)
+
+	poolName := keeper.MustGetPoolName(nativeDenom, nonNativeDenom)
+	rp, found := keeper.GetReservePool(ctx, poolName)
+	if !found {
+		rp = keeper.CreateReservePool(ctx, nativeDenom, nonNativeDenom)
 	}
 
-	nativeDenom := keeper.GetNativeDenom(ctx) // swap:nativeDenom:msg.Deposit.Denom
-	moduleName, err := keeper.GetModuleName(nativeDenom, msg.Deposit.Denom)
+	liquidityVouchers, err := rp.AddLiquidity(nativeCoins, msg.Deposit)
 	if err != nil {
 		return err.Result()
 	}
 
-	// create reserve pool if it does not exist
-	reservePool, found := keeper.GetReservePool(ctx, moduleName)
-	if !found {
-		err := newReservePool(ctx, moduleName, keeper)
-		if err != nil {
-			return err.Result()
-		}
-
-		return keeper.AddInitialLiquidity(ctx, &msg)
-		//addInitialLiquidity(ctx, keeper, &msg)
+	err = keeper.AddLiquidityTransfer(ctx, msg.Sender, liquidityCoins, liquidityVouchers)
+	if err != nil {
+		return err.Result()
 	}
 
-	return keeper.AddLiquidity(ctx, &msg, reservePool)
-	//addLiquidity(ctx, keeper, &msg, reservePool)
+	keeper.SetReservePool(ctx, rp)
+
+	return sdk.Result{}
 }
 
 // creates new reserve pool and verifies it was created successfully
@@ -304,7 +305,7 @@ func HandleMsgRemoveLiquidity(ctx sdk.Context, msg MsgRemoveLiquidity, k Keeper)
 	}
 
 	nativeDenom := k.GetNativeDenom(ctx)
-	moduleName, err := k.GetModuleName(nativeDenom, msg.Withdraw.Denom)
+	moduleName, err := k.GetPoolName(nativeDenom, msg.Withdraw.Denom)
 	if err != nil {
 		return err.Result()
 	}

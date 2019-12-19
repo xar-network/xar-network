@@ -72,7 +72,7 @@ func TestSwap(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	moduleName := keeper.MustGetModuleName(nativeDenom, testDenom)
+	moduleName := keeper.MustGetPoolName(nativeDenom, testDenom)
 
 	rp1, found := keeper.GetReservePool(ctx, moduleName)
 	if !found {
@@ -148,8 +148,8 @@ func TestDoubleSwap(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	moduleName1 := keeper.MustGetModuleName(nativeDenom, testDenom)
-	moduleName2 := keeper.MustGetModuleName(nativeDenom, testDenom2)
+	moduleName1 := keeper.MustGetPoolName(nativeDenom, testDenom)
+	moduleName2 := keeper.MustGetPoolName(nativeDenom, testDenom2)
 
 	rpA1, found := keeper.GetReservePool(ctx, moduleName1)
 	if !found {
@@ -218,7 +218,7 @@ func addLiquidityForTest(ctx sdk.Context, keeper Keeper, accs []exported.Account
 		Deadline:      t,
 		Sender:        accs[0].GetAddress(),
 	}
-	keeper.CreateReservePool(ctx, keeper.MustGetModuleName(keeper.GetNativeDenom(ctx), denom))
+	keeper.CreateReservePool(ctx, keeper.MustGetPoolName(keeper.GetNativeDenom(ctx), denom))
 	keeper.AddInitialLiquidity(ctx, &msg)
 	return nil
 }

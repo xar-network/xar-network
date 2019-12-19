@@ -20,13 +20,8 @@ limitations under the License.
 package keeper
 
 import (
-	"encoding/json"
 	"log"
 	"testing"
-
-	"github.com/cosmos/cosmos-sdk/x/supply"
-	"github.com/cosmos/cosmos-sdk/x/supply/exported"
-	types2 "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/stretchr/testify/require"
 
@@ -48,37 +43,8 @@ func TestCreateReservePool(t *testing.T) {
 
 	keeper.CreateReservePool(ctx, moduleName)
 	moduleAcc = keeper.sk.GetModuleAccount(ctx, moduleName)
-	ma := supply.NewEmptyModuleAccount("supply_only", supply.Minter)
-	maccI := (keeper.ak.NewAccount(ctx, ma)).(exported.ModuleAccountI)
-
-	keeper.sk.SetModuleAccount(ctx, maccI)
-	addr := keeper.sk.GetModuleAccount(ctx, ma.Name)
-
-	ttt(&ctx, &keeper)
-	accs := keeper.ak.GetAllAccounts(ctx)
-	x, found := keeper.GetReservePool(ctx, moduleName)
-
-	//var denom types.QueryLiquidityParams
-	//denom.NonNativeDenom = "asd"
-	params := types.NewQueryLiquidityParams("asd")
-	b, err := json.Marshal(params)
-	if err != nil {
-		return
-	}
-
-	var req types2.RequestQuery
-	req.Data = b
-
-	b, err = queryLiquidity(ctx, req, keeper)
-	log.Println(found)
-	log.Println(addr)
-	log.Println(accs)
-	log.Println(x)
-	log.Println(b)
-	log.Println(err)
-
 	require.NotNil(t, moduleAcc)
-	require.Equal(t, sdk.Coins{}, accs[0].GetCoins(), "module account has non zero balance after creation")
+	require.Equal(t, sdk.Coins{}, moduleAcc.GetCoins(), "module account has non zero balance after creation")
 
 	// attempt to recreate existing ModuleAccount
 	require.Panics(t, func() { keeper.CreateReservePool(ctx, moduleName) })
@@ -115,15 +81,19 @@ func TestParams(t *testing.T) {
 func TestGetReservePool(t *testing.T) {
 	amt := sdk.NewInt(100)
 	ctx, keeper, accs := createTestInput(t, amt, 1)
+	log.Println("testinput is done")
 
 	reservePool, found := keeper.GetReservePool(ctx, moduleName)
 	require.False(t, found)
+	log.Println("reservePool 1", reservePool)
 
 	keeper.CreateReservePool(ctx, moduleName)
 	reservePool, found = keeper.GetReservePool(ctx, moduleName)
 	require.True(t, found)
+	log.Println("reservePool 2", reservePool)
 
-	keeper.sk.SendCoinsFromAccountToModule(ctx, accs[0].GetAddress(), moduleName, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, amt)))
+	err := keeper.sk.SendCoinsFromAccountToModule(ctx, accs[0].GetAddress(), moduleName, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, amt)))
+	require.Nil(t, err)
 	reservePool, found = keeper.GetReservePool(ctx, moduleName)
 	reservePool, found = keeper.GetReservePool(ctx, moduleName)
 	require.True(t, found)
