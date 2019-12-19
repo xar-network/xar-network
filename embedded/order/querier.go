@@ -63,7 +63,7 @@ func queryList(keeper Keeper, reqB []byte) ([]byte, sdk.Error) {
 		if len(req.MarketID) > 0 {
 			present := false
 			for _, marketID := range req.MarketID {
-				if order.MarketID == marketID {
+				if order.MarketID.Cmp(marketID) == 0 {
 					present = true
 					break
 				}
