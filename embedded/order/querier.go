@@ -110,7 +110,7 @@ func queryList(keeper Keeper, reqB []byte) ([]byte, sdk.Error) {
 		keeper.OrdersByOwner(req.Owner, iterCB)
 	}
 
-	if len(orders) < req.Limit {
+	if (req.Limit == 0) || (len(orders) < req.Limit) {
 		lastID = store.NewEntityID(0)
 	}
 	res := ListQueryResult{
