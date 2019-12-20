@@ -44,16 +44,11 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 	}
 }
 
-func queryList(keeper Keeper, reqB []byte) ([]byte, sdk.Error) {
-	var req ListQueryRequest
-	err := keeper.cdc.UnmarshalBinaryBare(reqB, &req)
-	if err != nil {
-		return nil, errs.ErrUnmarshalFailure("failed to unmarshal list query request")
-	}
-
+func getIterFunction(req ListQueryRequest) (ordersList *[]Order, lastIDptr *store.EntityID, iterCB func(order Order) bool) {
 	orders := make([]Order, 0)
 	var lastID store.EntityID
-	iterCB := func(order Order) bool {
+
+	iterCB = func(order Order) bool {
 		// MarketID filter
 		if len(req.MarketID) > 0 {
 			present := false
@@ -99,6 +94,18 @@ func queryList(keeper Keeper, reqB []byte) ([]byte, sdk.Error) {
 		return (req.Limit == 0) || (len(orders) < req.Limit)
 	}
 
+	return &orders, &lastID, iterCB
+}
+
+func queryList(keeper Keeper, reqB []byte) ([]byte, sdk.Error) {
+	var req ListQueryRequest
+	err := keeper.cdc.UnmarshalBinaryBare(reqB, &req)
+	if err != nil {
+		return nil, errs.ErrUnmarshalFailure("failed to unmarshal list query request")
+	}
+
+	ordersList, lastIDPtr, iterCB := getIterFunction(req)
+
 	if req.Owner.Empty() {
 		if req.Start.IsDefined() {
 			keeper.ReverseIteratorFrom(req.Start, iterCB)
@@ -109,6 +116,9 @@ func queryList(keeper Keeper, reqB []byte) ([]byte, sdk.Error) {
 		// TEMPORARY: can add support for richer querying with sqlite
 		keeper.OrdersByOwner(req.Owner, iterCB)
 	}
+
+	orders := *ordersList
+	lastID := *lastIDPtr
 
 	if (req.Limit == 0) || (len(orders) < req.Limit) {
 		lastID = store.NewEntityID(0)
