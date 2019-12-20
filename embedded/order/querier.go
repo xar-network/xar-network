@@ -51,11 +51,6 @@ func queryList(keeper Keeper, reqB []byte) ([]byte, sdk.Error) {
 		return nil, errs.ErrUnmarshalFailure("failed to unmarshal list query request")
 	}
 
-	limit := 50
-	if req.Limit > 0 {
-		limit = req.Limit
-	}
-
 	orders := make([]Order, 0)
 	var lastID store.EntityID
 	iterCB := func(order Order) bool {
@@ -63,7 +58,7 @@ func queryList(keeper Keeper, reqB []byte) ([]byte, sdk.Error) {
 		if len(req.MarketID) > 0 {
 			present := false
 			for _, marketID := range req.MarketID {
-				if order.MarketID.Cmp(marketID) == 0 {
+				if order.MarketID.Equals(marketID) {
 					present = true
 					break
 				}
@@ -89,19 +84,19 @@ func queryList(keeper Keeper, reqB []byte) ([]byte, sdk.Error) {
 
 		// Time filter
 		if req.UnixTimeAfter != 0 {
-			if order.CreatedTime < req.UnixTimeAfter {
+			if order.CreatedTime.UnixNano() < req.UnixTimeAfter {
 				return true
 			}
 		}
 		if req.UnixTimeBefore != 0 {
-			if order.CreatedTime > req.UnixTimeBefore {
+			if order.CreatedTime.UnixNano() > req.UnixTimeBefore {
 				return true
 			}
 		}
 
 		orders = append(orders, order)
 		lastID = order.ID
-		return len(orders) < limit
+		return (req.Limit == 0) || (len(orders) < req.Limit)
 	}
 
 	if req.Owner.Empty() {
@@ -115,7 +110,7 @@ func queryList(keeper Keeper, reqB []byte) ([]byte, sdk.Error) {
 		keeper.OrdersByOwner(req.Owner, iterCB)
 	}
 
-	if len(orders) < limit {
+	if len(orders) < req.Limit {
 		lastID = store.NewEntityID(0)
 	}
 	res := ListQueryResult{
