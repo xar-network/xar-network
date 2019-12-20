@@ -39,23 +39,7 @@ func (keeper Keeper) SwapCoins(ctx sdk.Context, sender, recipient sdk.AccAddress
 		return sdk.ErrInsufficientCoins(fmt.Sprintf("sender account does not have sufficient amount of %s to fulfill the swap order", coinSold.Denom))
 	}
 
-	moduleName, err := keeper.GetPoolName(coinSold.Denom, coinBought.Denom)
-	if err != nil {
-		return err
-	}
-
-	mAcc := keeper.ModuleAccountFromName(ctx, moduleName)
-	err = keeper.SendCoins(ctx, sender, mAcc.Address, coinSold)
-	if err != nil {
-		return err
-	}
-
-	err = keeper.SendCoins(ctx, mAcc.Address, recipient, coinBought)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return keeper.TransferSwappedCoins(ctx, sender, recipient, coinSold, coinBought)
 }
 
 // GetInputAmount returns the amount of coins sold (calculated) given the output amount being bought (exact)

@@ -192,13 +192,46 @@ func (keeper Keeper) SendFromModuleToAcc(ctx sdk.Context, account sdk.AccAddress
 	return keeper.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, account, coins)
 }
 
+func (keeper Keeper) TransferSwappedCoins(ctx sdk.Context, sender, recipient sdk.AccAddress, userCoin sdk.Coin, moduleCoin sdk.Coin) sdk.Error {
+	err := keeper.sk.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, sdk.Coins{userCoin})
+	if err != nil {
+		return err
+	}
+
+	err = keeper.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, recipient, sdk.Coins{moduleCoin})
+	return err
+}
+
 func (keeper Keeper) AddLiquidityTransfer(ctx sdk.Context, account sdk.AccAddress, coins sdk.Coins, liquidityVouchers sdk.Coin) sdk.Error {
 	err := keeper.SendFromAccToModule(ctx, account, coins)
 	if err != nil {
 		return err
 	}
 
+	err = keeper.sk.MintCoins(ctx, types.ModuleName, sdk.NewCoins(liquidityVouchers))
+	if err != nil {
+		return err
+	}
+
 	err = keeper.SendFromModuleToAcc(ctx, account, sdk.NewCoins(liquidityVouchers))
+	return err
+}
+
+func (keeper Keeper) RemoveLiquidityTransfer(ctx sdk.Context, account sdk.AccAddress, coins sdk.Coins, userVouchers sdk.Coin) sdk.Error {
+	vouchers := sdk.NewCoins(userVouchers)
+	totalVouchersAmt := userVouchers.Amount.Mul(sdk.NewInt(2))
+	totalVouchers := sdk.NewCoins(sdk.NewCoin(userVouchers.Denom, totalVouchersAmt))
+	err := keeper.SendFromAccToModule(ctx, account, vouchers)
+	if err != nil {
+		return err
+	}
+
+	err = keeper.sk.BurnCoins(ctx, types.ModuleName, totalVouchers)
+	if err != nil {
+		return err
+	}
+
+	err = keeper.SendFromModuleToAcc(ctx, account, coins)
 	return err
 }
 
@@ -273,14 +306,6 @@ func (keeper Keeper) ModuleAccountFromName(ctx sdk.Context, moduleName string) *
 //
 //	return keeper.GetReservePoolFromAk(ctx, moduleName)
 //}
-
-func (keeper Keeper) ReservePool(ctx sdk.Context, moduleName string) *types.ReservePool {
-	rp, found := keeper.GetReservePool(ctx, moduleName)
-	if !found {
-		return nil
-	}
-	return &rp
-}
 
 func (keeper Keeper) AddInitialLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity) sdk.Result {
 	nativeDenom, _, moduleName := keeper.MustGetAllDenoms(ctx, msg)
