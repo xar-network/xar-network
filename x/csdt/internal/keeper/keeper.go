@@ -50,16 +50,16 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, changeInCollateral sdk.Int, changeInDebt sdk.Int) sdk.Error {
 
 	// Phase 1: Get state, make changes in memory and check if they're ok.
-	csdt, gDebt, collateralState, s, done := k.checkChanges(ctx, collateralDenom, changeInCollateral, owner, changeInDebt)
+	csdt, gDebt, collateralState, s, done := k.checkCsdtChanges(ctx, collateralDenom, changeInCollateral, owner, changeInDebt)
 	if done {
 		return s
 	}
 
 	// Phase 2: Update all the state
-	return k.updateState(changeInCollateral, ctx, owner, collateralDenom, changeInDebt, csdt, gDebt, collateralState)
+	return k.updateCsdtState(changeInCollateral, ctx, owner, collateralDenom, changeInDebt, csdt, gDebt, collateralState)
 }
 
-func (k Keeper) checkChanges(ctx sdk.Context, collateralDenom string, changeInCollateral sdk.Int, owner sdk.AccAddress, changeInDebt sdk.Int) (types.CSDT, sdk.Int, types.CollateralState, sdk.Error, bool) {
+func (k Keeper) checkCsdtChanges(ctx sdk.Context, collateralDenom string, changeInCollateral sdk.Int, owner sdk.AccAddress, changeInDebt sdk.Int) (types.CSDT, sdk.Int, types.CollateralState, sdk.Error, bool) {
 	// Check collateral type ok
 	p := k.GetParams(ctx)
 	if !p.IsCollateralPresent(collateralDenom) { // maybe abstract this logic into GetCSDT
@@ -155,7 +155,7 @@ func (k Keeper) checkChanges(ctx sdk.Context, collateralDenom string, changeInCo
 	return csdt, gDebt, collateralState, nil, false
 }
 
-func (k Keeper) updateState(changeInCollateral sdk.Int, ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, changeInDebt sdk.Int, csdt types.CSDT, gDebt sdk.Int, collateralState types.CollateralState) sdk.Error {
+func (k Keeper) updateCsdtState(changeInCollateral sdk.Int, ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, changeInDebt sdk.Int, csdt types.CSDT, gDebt sdk.Int, collateralState types.CollateralState) sdk.Error {
 	// change owner's coins (increase or decrease)
 	var err sdk.Error
 	if changeInCollateral.IsNegative() {
@@ -334,7 +334,7 @@ func (k Keeper) GetCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom s
 	return csdt, true
 }
 
-//Potentially change this logic to use the account interface?
+// Potentially change this logic to use the account interface?
 func (k Keeper) SetCSDT(ctx sdk.Context, csdt types.CSDT) {
 	// get store
 	store := ctx.KVStore(k.storeKey)
