@@ -20,6 +20,8 @@ limitations under the License.
 package types
 
 import (
+	time1 "time"
+
 	"github.com/tendermint/tendermint/types/time"
 	"github.com/xar-network/xar-network/pkg/matcheng"
 	"github.com/xar-network/xar-network/types/store"
@@ -38,7 +40,7 @@ type Order struct {
 	Quantity          sdk.Uint           `json:"quantity"`
 	TimeInForceBlocks uint16             `json:"time_in_force_blocks"`
 	CreatedBlock      int64              `json:"created_block"`
-	CreatedTime		  int64				 `json:"created_time"`
+	CreatedTime		  time1.Time		 `json:"created_time"`
 }
 
 func New(owner sdk.AccAddress, marketID store.EntityID, direction matcheng.Direction, price sdk.Uint, quantity sdk.Uint, tif uint16, created int64) Order {
@@ -50,6 +52,6 @@ func New(owner sdk.AccAddress, marketID store.EntityID, direction matcheng.Direc
 		Quantity:          quantity,
 		TimeInForceBlocks: tif,
 		CreatedBlock:      created,
-		CreatedTime:	   time.Now().UnixNano(),
+		CreatedTime:	   time.Now(),
 	}
 }
