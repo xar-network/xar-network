@@ -20,6 +20,7 @@ limitations under the License.
 package exchange
 
 import (
+	"github.com/xar-network/xar-network/embedded/order"
 	"net/http"
 	"strings"
 
@@ -42,6 +43,7 @@ func RegisterRoutes(ctx context.CLIContext, r *mux.Router, cdc *codec.Codec) {
 	sub := r.PathPrefix("/exchange").Subrouter()
 	sub.Use(auth.DefaultAuthMW)
 	sub.HandleFunc("/orders", postOrderHandler(ctx, cdc)).Methods("POST")
+	sub.HandleFunc("/orders/{order_id}/get", getOrderHandler(ctx, cdc)).Methods("GET")
 }
 
 func postOrderHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
@@ -117,5 +119,31 @@ func postOrderHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc
 		if _, err := w.Write(out); err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 		}
+	}
+}
+
+func getOrderHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// URI analize for get order id
+		vars := mux.Vars(r)
+		orderIDStr, ok := vars["order_id"]
+		if !ok {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "order_id not present")
+		}
+		orderID := store.NewEntityIDFromString(orderIDStr)
+
+
+		req := order.ListQueryRequest{
+			Start: orderID,
+			Limit: 1,
+		}
+
+		resB, _, err := ctx.QueryWithData("custom/embeddedorder/list", cdc.MustMarshalBinaryBare(req))
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		embedded.PostProcessResponse(w, ctx, resB)
 	}
 }
