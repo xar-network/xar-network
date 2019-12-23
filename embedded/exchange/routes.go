@@ -20,14 +20,16 @@ limitations under the License.
 package exchange
 
 import (
-	"github.com/xar-network/xar-network/embedded/order"
+	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/gorilla/mux"
 
 	"github.com/xar-network/xar-network/embedded"
 	"github.com/xar-network/xar-network/embedded/auth"
+	"github.com/xar-network/xar-network/embedded/order"
 	"github.com/xar-network/xar-network/types/store"
 	"github.com/xar-network/xar-network/x/order/types"
 
@@ -124,24 +126,41 @@ func postOrderHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc
 
 func getOrderHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// URI analize for get order id
-		vars := mux.Vars(r)
-		orderIDStr, ok := vars["order_id"]
-		if !ok {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, "order_id not present")
+		// Parse URI for get order id
+		var orderIDStr string
+		re, _ := regexp.Compile("/orders/(.+)/(get|test)")
+		values := re.FindStringSubmatch(r.URL.RequestURI())
+		if len(values) > 1 {
+			orderIDStr = values[1]
 		}
+		// Check for test mode
+		testMode := values[2] == "test"
+
+		if orderIDStr == "" {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "order_id not present")
+			return
+		}
+
 		orderID := store.NewEntityIDFromString(orderIDStr)
 
-
+		// Use standart filter with start = order id and limit 1
 		req := order.ListQueryRequest{
 			Start: orderID,
 			Limit: 1,
 		}
 
-		resB, _, err := ctx.QueryWithData("custom/embeddedorder/list", cdc.MustMarshalBinaryBare(req))
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
+		var resB []byte
+		var err error
+		if !testMode {
+			// In test mode this block not worked with error
+			resB, _, err = ctx.QueryWithData("custom/embeddedorder/list", cdc.MustMarshalBinaryBare(req))
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		} else {
+			// In test mode return test answer
+			resB = []byte(fmt.Sprintf("Test OK = %s", orderID.String()))
 		}
 
 		embedded.PostProcessResponse(w, ctx, resB)
