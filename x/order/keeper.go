@@ -91,7 +91,8 @@ func (k Keeper) Post(ctx sdk.Context, owner sdk.AccAddress, mktID store.EntityID
 		return types3.Order{}, err
 	}
 
-	err = k.sk.SendCoinsFromAccountToModule(ctx, owner, ModuleName, sdk.NewCoins(sdk.NewCoin(postedAsset, amount)))
+	coins := sdk.NewCoins(sdk.NewCoin(postedAsset, amount))
+	err = k.ReceiveAndFreezeCoins(ctx, owner, coins)
 	if err != nil {
 		return types3.Order{}, err
 	}
@@ -105,6 +106,79 @@ func (k Keeper) Post(ctx sdk.Context, owner sdk.AccAddress, mktID store.EntityID
 		quantity,
 		tif,
 	)
+}
+
+// all from-module transactions should be handled with this func
+func (k Keeper) SendCoinsFromModuleToAccount(ctx sdk.Context, addr sdk.AccAddress, coinsToSend sdk.Coins) sdk.Error {
+	k.ValidateCoinTransfer(ctx, coinsToSend)
+
+	return k.sk.SendCoinsFromModuleToAccount(ctx, ModuleName, addr, coinsToSend)
+}
+
+func (k Keeper) ValidateCoinTransfer(ctx sdk.Context, coinsToSend sdk.Coins) {
+	frosenCoins := k.GetFrozenCoins(ctx)
+	mAcc := k.sk.GetModuleAccount(ctx, ModuleName)
+	moduleCoins := mAcc.GetCoins()
+	avalibleCoins := moduleCoins.Sub(frosenCoins)
+	// should panic if avalibleCoins sub coinsToSend would contain coins with negative amount
+	avalibleCoins.Sub(coinsToSend)
+}
+
+func (k Keeper) ReceiveAndFreezeCoins(ctx sdk.Context, owner sdk.AccAddress, coins sdk.Coins) sdk.Error {
+	err := k.sk.SendCoinsFromAccountToModule(ctx, owner, ModuleName, coins)
+	if err != nil {
+		return err
+	}
+
+	k.AddToFrozenCoins(ctx, coins)
+	return nil
+}
+
+func (k Keeper) ReturnAndUnfreezeCoins(ctx sdk.Context, owner sdk.AccAddress, coins sdk.Coins) sdk.Error {
+	k.RemoveFromFrozenCoins(ctx, coins)
+
+	err := k.SendCoinsFromModuleToAccount(ctx, owner, coins)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k Keeper) RemoveFromFrozenCoins(ctx sdk.Context, coins sdk.Coins) {
+	frozenCoins := k.GetFrozenCoins(ctx)
+	frozenCoins = frozenCoins.Sub(coins)
+	k.SetFrozenCoins(ctx, frozenCoins)
+}
+
+func (k Keeper) AddToFrozenCoins(ctx sdk.Context, coins sdk.Coins) {
+	frozenCoins := k.GetFrozenCoins(ctx)
+	frozenCoins = frozenCoins.Add(coins)
+	k.SetFrozenCoins(ctx, frozenCoins)
+}
+
+func (k Keeper) GetFrozenCoins(ctx sdk.Context) sdk.Coins {
+	var coins sdk.Coins
+	kvstore := ctx.KVStore(k.storeKey)
+	coinsRaw := kvstore.Get(k.GetFrosenCoinsKey())
+	if coinsRaw == nil {
+		return sdk.Coins{}
+	}
+
+	k.cdc.MustUnmarshalBinaryLengthPrefixed(coinsRaw, &coins)
+	return coins
+}
+
+func (k Keeper) SetFrozenCoins(ctx sdk.Context, coins sdk.Coins) {
+	kvstore := ctx.KVStore(k.storeKey)
+
+	coinsRaw := k.cdc.MustMarshalBinaryLengthPrefixed(coins)
+	kvstore.Set(k.GetFrosenCoinsKey(), coinsRaw)
+}
+
+// temp
+func (k Keeper) GetFrosenCoinsKey() []byte {
+	return []byte{0x01, 0x00}
 }
 
 func (k Keeper) Create(ctx sdk.Context, owner sdk.AccAddress, marketID store.EntityID, direction matcheng.Direction, price sdk.Uint, quantity sdk.Uint, tif uint16) (types3.Order, sdk.Error) {
@@ -173,12 +247,12 @@ func (k Keeper) Cancel(ctx sdk.Context, id store.EntityID) sdk.Error {
 		return err
 	}
 
-	err = k.sk.SendCoinsFromModuleToAccount(ctx, ModuleName, ord.Owner, sdk.NewCoins(sdk.NewCoin(postedAsset, amount)))
+	coins := sdk.NewCoins(sdk.NewCoin(postedAsset, amount))
+	err = k.ReturnAndUnfreezeCoins(ctx, ord.Owner, coins)
 	if err != nil {
-		// should never happen, implies consensus
-		// or storage bug
-		panic(err)
+		return err
 	}
+
 	_ = k.queue.Publish(types.OrderCancelled{
 		OrderID: id,
 	})
