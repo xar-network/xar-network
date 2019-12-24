@@ -36,9 +36,7 @@ const nonNativeDenomTest = "asd"
 func TestSwap(t *testing.T) {
 	ctx, keeper, accs := createTestInput(t, sdk.NewInt(0), 1)
 	tm, err := time.Parse("2006-01-02T15:04:05.000Z", "2022-04-23T18:25:43.511Z")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 
 	oneCoin := sdk.NewInt(1)
 	testCoinAmt := sdk.NewInt(14)
@@ -47,10 +45,8 @@ func TestSwap(t *testing.T) {
 	nativeCoinAmt := sdk.NewInt(10040)
 	nonNativeCoinAmt := sdk.NewInt(151000)
 
-	err = addLiquidityForTest(ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom)
-	if err != nil {
-		require.NoError(t, err)
-	}
+	err = addLiquidityForTest(t, ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom)
+	require.NoError(t, err)
 
 	TestCoin1 := sdk.NewCoin(nativeDenom, oneCoin)
 	TestCoin2 := sdk.NewCoin(testDenom, testCoinAmt)
@@ -72,19 +68,16 @@ func TestSwap(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	moduleName := keeper.MustGetPoolName(nativeDenom, testDenom)
+	//moduleName := keeper.MustGetPoolName(nativeDenom, testDenom)
 
-	rp1, found := keeper.GetReservePool(ctx, moduleName)
-	if !found {
-		require.NoError(t, err)
-	}
+	rp1, found := keeper.GetReservePool(ctx, testDenom)
+	require.True(t, found)
 
-	HandleMsgSwapOrder(ctx, msg, keeper)
+	res := HandleMsgSwapOrder(ctx, msg, keeper)
+	require.True(t, res.IsOK())
 
-	rp2, found := keeper.GetReservePool(ctx, moduleName)
-	if !found {
-		require.NoError(t, err)
-	}
+	rp2, found := keeper.GetReservePool(ctx, testDenom)
+	require.True(t, found)
 
 	expectedNativeDenomAmt := rp1.AmountOf(nativeDenom).Add(oneCoin)
 	require.True(t, expectedNativeDenomAmt.Equal(rp2.AmountOf(nativeDenom)))
@@ -116,12 +109,12 @@ func TestDoubleSwap(t *testing.T) {
 	nativeCoinAmt := sdk.NewInt(10040)
 	nonNativeCoinAmt := sdk.NewInt(151000)
 
-	err = addLiquidityForTest(ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom)
+	err = addLiquidityForTest(t, ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom)
 	if err != nil {
 		require.NoError(t, err)
 	}
 
-	err = addLiquidityForTest(ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom2)
+	err = addLiquidityForTest(t, ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom2)
 	if err != nil {
 		require.NoError(t, err)
 	}
@@ -148,30 +141,20 @@ func TestDoubleSwap(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	moduleName1 := keeper.MustGetPoolName(nativeDenom, testDenom)
-	moduleName2 := keeper.MustGetPoolName(nativeDenom, testDenom2)
+	rpA1, found := keeper.GetReservePool(ctx, testDenom)
+	require.True(t, found)
 
-	rpA1, found := keeper.GetReservePool(ctx, moduleName1)
-	if !found {
-		require.NoError(t, err)
-	}
+	rpB1, found := keeper.GetReservePool(ctx, testDenom2)
+	require.True(t, found)
 
-	rpB1, found := keeper.GetReservePool(ctx, moduleName2)
-	if !found {
-		require.NoError(t, err)
-	}
+	res := HandleMsgSwapOrder(ctx, msg, keeper)
+	require.True(t, res.IsOK())
 
-	HandleMsgSwapOrder(ctx, msg, keeper)
+	rpA2, found := keeper.GetReservePool(ctx, testDenom)
+	require.True(t, found)
 
-	rpA2, found := keeper.GetReservePool(ctx, moduleName1)
-	if !found {
-		require.NoError(t, err)
-	}
-
-	rpB2, found := keeper.GetReservePool(ctx, moduleName2)
-	if !found {
-		require.NoError(t, err)
-	}
+	rpB2, found := keeper.GetReservePool(ctx, testDenom2)
+	require.True(t, found)
 
 	expectedNativeDenomAmt := rpA1.AmountOf(nativeDenom).Sub(oneCoin)
 	expectedNonNativeDenomAmt := rpA1.AmountOf(testDenom).Add(testCoinAmt1)
@@ -184,7 +167,7 @@ func TestDoubleSwap(t *testing.T) {
 	require.True(t, expectedNonNativeDenomAmt.Equal(rpB2.AmountOf(testDenom2)))
 }
 
-func addLiquidityForTest(ctx sdk.Context, keeper Keeper, accs []exported.Account, nativeAmt, nonNativeAmt sdk.Int, denom string) error {
+func addLiquidityForTest(t *testing.T, ctx sdk.Context, keeper Keeper, accs []exported.Account, nativeAmt, nonNativeAmt sdk.Int, denom string) error {
 	if len(accs) == 0 {
 		return fmt.Errorf("len is not enough")
 	}
@@ -193,7 +176,7 @@ func addLiquidityForTest(ctx sdk.Context, keeper Keeper, accs []exported.Account
 	var nativeDenomAmt = nativeAmt
 	var minReward = sdk.NewInt(1)
 
-	t, err := time.Parse("2006-01-02T15:04:05.000Z", "2022-04-23T18:25:43.511Z")
+	tm, err := time.Parse("2006-01-02T15:04:05.000Z", "2022-04-23T18:25:43.511Z")
 	if err != nil {
 		return err
 	}
@@ -201,24 +184,29 @@ func addLiquidityForTest(ctx sdk.Context, keeper Keeper, accs []exported.Account
 	nonNativeDeposit := sdk.Coin{Denom: denom, Amount: nonNativeDenomAmt}
 	nativeDeposit := sdk.Coin{Denom: keeper.GetNativeDenom(ctx), Amount: nativeDenomAmt}
 
-	err = keeper.RecieveCoins(ctx, accs[0].GetAddress(), sdk.Coins{nonNativeDeposit}...)
+	err = keeper.MintCoins(ctx, sdk.Coins{nonNativeDeposit})
 	if err != nil {
 		return err
 	}
 
-	err = keeper.RecieveCoins(ctx, accs[0].GetAddress(), sdk.Coins{nativeDeposit}...)
+	err = keeper.MintCoins(ctx, sdk.Coins{nativeDeposit})
 	if err != nil {
 		return err
 	}
+	require.Nil(t, err)
 
 	msg := types.MsgAddLiquidity{
 		Deposit:       nonNativeDeposit,
 		DepositAmount: nativeDenomAmt,
 		MinReward:     minReward,
-		Deadline:      t,
+		Deadline:      tm,
 		Sender:        accs[0].GetAddress(),
 	}
-	keeper.CreateReservePool(ctx, keeper.MustGetPoolName(keeper.GetNativeDenom(ctx), denom))
-	keeper.AddInitialLiquidity(ctx, &msg)
+	//keeper.CreateReservePool(ctx, denom)
+	res := HandleMsgAddLiquidity(ctx, msg, keeper)
+	require.True(t, res.IsOK())
+	rp, found := keeper.GetReservePool(ctx, denom)
+	require.True(t, found)
+	log.Println(rp)
 	return nil
 }

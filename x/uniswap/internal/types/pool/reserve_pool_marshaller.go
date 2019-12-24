@@ -7,6 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+//var _ := Marshaler
+
 var keyHandlers = map[string]func(r *ReservePool, val interface{}) error{
 	"native_coins":     jsonAddNative,
 	"non_native_coins": jsonAddNonNative,
@@ -19,7 +21,7 @@ func jsonAddNative(r *ReservePool, val interface{}) error {
 		return errors.New("cannot unmarshal native_coins")
 	}
 
-	amt, ok  := coinMap["amount"].(string)
+	amt, ok := coinMap["amount"].(string)
 	if !ok {
 		return errors.New("cannot unmarshal native_coins")
 	}
@@ -40,7 +42,7 @@ func jsonAddNonNative(r *ReservePool, val interface{}) error {
 		return errors.New("cannot unmarshal native_coins")
 	}
 
-	amt, ok  := coinMap["amount"].(string)
+	amt, ok := coinMap["amount"].(string)
 	if !ok {
 		return errors.New("cannot unmarshal native_coins")
 	}
@@ -61,7 +63,7 @@ func jsonAddLiquidity(r *ReservePool, val interface{}) error {
 		return errors.New("cannot unmarshal native_coins")
 	}
 
-	amt, ok  := coinMap["amount"].(string)
+	amt, ok := coinMap["amount"].(string)
 	if !ok {
 		return errors.New("cannot unmarshal native_coins")
 	}
@@ -124,4 +126,19 @@ func (r *ReservePool) UnmarshalJSON(bz []byte) error {
 		}
 	}
 	return nil
+}
+func (r ReservePool) MarshalAmino() (string, error) {
+	b, err := r.MarshalJSON()
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), nil
+}
+
+// UnmarshalAmino defines custom decoding scheme
+func (r *ReservePool) UnmarshalAmino(text string) error {
+	b := []byte(text)
+
+	return r.UnmarshalJSON(b)
 }

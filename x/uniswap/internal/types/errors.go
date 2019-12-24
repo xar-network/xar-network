@@ -81,7 +81,7 @@ func MsgAccPermissionsError(moduleName string) string {
 }
 
 func MsgReservePoolNotFound(moduleName string) string {
-	return fmt.Sprintf("error retrieving reserve pool for ModuleAccoint name: %s", moduleName)
+	return fmt.Sprintf("reserve pool for a denom %s not found", moduleName)
 }
 
 func ErrReservePoolNotFound(codespace sdk.CodespaceType, moduleName string) sdk.Error {

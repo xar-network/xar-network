@@ -36,18 +36,23 @@ const (
 // test that the module account gets created with an initial
 // balance of zero coins.
 func TestCreateReservePool(t *testing.T) {
+	testDenom := "asd"
 	ctx, keeper, _ := createTestInput(t, sdk.NewInt(0), 0)
 
-	moduleAcc := keeper.sk.GetModuleAccount(ctx, moduleName)
-	require.Nil(t, moduleAcc)
-
-	keeper.CreateReservePool(ctx, moduleName)
-	moduleAcc = keeper.sk.GetModuleAccount(ctx, moduleName)
+	moduleAcc := keeper.sk.GetModuleAccount(ctx, types.ModuleName)
 	require.NotNil(t, moduleAcc)
-	require.Equal(t, sdk.Coins{}, moduleAcc.GetCoins(), "module account has non zero balance after creation")
 
-	// attempt to recreate existing ModuleAccount
-	require.Panics(t, func() { keeper.CreateReservePool(ctx, moduleName) })
+	pool, found := keeper.GetReservePool(ctx, testDenom)
+	require.False(t, found)
+
+	keeper.CreateReservePool(ctx, testDenom)
+
+	pool, found = keeper.GetReservePool(ctx, testDenom)
+	require.True(t, found)
+	require.NotNil(t, pool)
+	poolName := pool.GetName()
+	poolExpectedName := keeper.MustGetPoolName(keeper.GetNativeDenom(ctx), testDenom)
+	require.Equal(t, poolName, poolExpectedName)
 }
 
 func ttt(ctx *sdk.Context, k *Keeper) {
@@ -80,22 +85,16 @@ func TestParams(t *testing.T) {
 // that balance is updated.
 func TestGetReservePool(t *testing.T) {
 	amt := sdk.NewInt(100)
-	ctx, keeper, accs := createTestInput(t, amt, 1)
+	ctx, keeper, _ := createTestInput(t, amt, 1)
 	log.Println("testinput is done")
+	testDenom := "asd"
 
-	reservePool, found := keeper.GetReservePool(ctx, moduleName)
+	reservePool, found := keeper.GetReservePool(ctx, testDenom)
 	require.False(t, found)
 	log.Println("reservePool 1", reservePool)
 
-	keeper.CreateReservePool(ctx, moduleName)
-	reservePool, found = keeper.GetReservePool(ctx, moduleName)
+	keeper.CreateReservePool(ctx, testDenom)
+	reservePool, found = keeper.GetReservePool(ctx, testDenom)
 	require.True(t, found)
 	log.Println("reservePool 2", reservePool)
-
-	err := keeper.sk.SendCoinsFromAccountToModule(ctx, accs[0].GetAddress(), moduleName, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, amt)))
-	require.Nil(t, err)
-	reservePool, found = keeper.GetReservePool(ctx, moduleName)
-	reservePool, found = keeper.GetReservePool(ctx, moduleName)
-	require.True(t, found)
-	require.Equal(t, amt, reservePool.AmountOf(sdk.DefaultBondDenom))
 }

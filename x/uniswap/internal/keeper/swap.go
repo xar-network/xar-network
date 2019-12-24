@@ -21,7 +21,6 @@ package keeper
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -29,17 +28,17 @@ import (
 )
 
 func (keeper Keeper) SwapCoins(ctx sdk.Context, sender, recipient sdk.AccAddress, coinSold, coinBought sdk.Coin) sdk.Error {
-	if !keeper.HasCoins(ctx, sender, coinSold) {
-		cns := keeper.bk.GetCoins(ctx, sender)
-		log.Println(coinSold)
-		log.Println(coinBought)
-		for _, v := range cns {
-			log.Println(v)
-		}
-		return sdk.ErrInsufficientCoins(fmt.Sprintf("sender account does not have sufficient amount of %s to fulfill the swap order", coinSold.Denom))
+	notNativeDenom := keeper.GetNotNative(ctx, coinBought.Denom, coinSold.Denom)
+	rp, found := keeper.GetReservePool(ctx, notNativeDenom)
+	if !found {
+		return types.ErrReservePoolNotFound(types.DefaultCodespace,"cannot swap coins in a reserve pool that has not been created")
 	}
-
-	return keeper.TransferSwappedCoins(ctx, sender, recipient, coinSold, coinBought)
+	_, err := rp.Swap(coinSold, coinBought)
+	if err != nil {
+		return err
+	}
+	keeper.SetReservePool(ctx, rp)
+	return keeper.HandleCoinSwap(ctx, sender, recipient, coinSold, coinBought)
 }
 
 // GetInputAmount returns the amount of coins sold (calculated) given the output amount being bought (exact)
@@ -47,13 +46,10 @@ func (keeper Keeper) SwapCoins(ctx sdk.Context, sender, recipient sdk.AccAddress
 // https://github.com/runtimeverification/verified-smart-contracts/blob/uniswap/uniswap/x-y-k.pdf
 // TODO: continue using numerator/denominator -> open issue for eventually changing to sdk.Dec
 func (keeper Keeper) GetInputAmount(ctx sdk.Context, outputAmt sdk.Int, inputDenom, outputDenom string) sdk.Int {
-	moduleName, err := keeper.GetPoolName(inputDenom, outputDenom)
-	if err != nil {
-		panic(err)
-	}
-	reservePool, found := keeper.GetReservePool(ctx, moduleName)
+	notNativeDenom := keeper.GetNotNative(ctx, inputDenom, outputDenom)
+	reservePool, found := keeper.GetReservePool(ctx, notNativeDenom)
 	if !found {
-		panic(fmt.Sprintf("reserve pool for %s not found", moduleName))
+		panic(fmt.Sprintf("reserve pool for %s not found", notNativeDenom))
 	}
 	inputBalance := reservePool.AmountOf(inputDenom)
 	outputBalance := reservePool.AmountOf(outputDenom)
@@ -69,13 +65,10 @@ func (keeper Keeper) GetInputAmount(ctx sdk.Context, outputAmt sdk.Int, inputDen
 // https://github.com/runtimeverification/verified-smart-contracts/blob/uniswap/uniswap/x-y-k.pdf
 // TODO: continue using numerator/denominator -> open issue for eventually changing to sdk.Dec
 func (keeper Keeper) GetOutputAmount(ctx sdk.Context, inputAmt sdk.Int, inputDenom, outputDenom string) sdk.Int {
-	moduleName, err := keeper.GetPoolName(inputDenom, outputDenom)
-	if err != nil {
-		panic(err)
-	}
-	reservePool, found := keeper.GetReservePool(ctx, moduleName)
+	notNativeDenom := keeper.GetNotNative(ctx, inputDenom, outputDenom)
+	reservePool, found := keeper.GetReservePool(ctx, notNativeDenom)
 	if !found {
-		panic(fmt.Sprintf("reserve pool for %s not found", moduleName))
+		panic(fmt.Sprintf("reserve pool for %s not found", notNativeDenom))
 	}
 
 	inputBalance := reservePool.AmountOf(inputDenom)   // coin
@@ -121,8 +114,8 @@ func (keeper Keeper) DoubleSwapOutputAmount(ctx sdk.Context, coinA, coinB sdk.Co
 
 	fee := keeper.GetFeeParam(ctx)
 	nativeDenom := keeper.GetNativeDenom(ctx)
-	moduleNameA := keeper.MustGetPoolName(coinA.Denom, nativeDenom)
-	moduleNameB := keeper.MustGetPoolName(coinB.Denom, nativeDenom)
+	moduleNameA := coinA.Denom
+	moduleNameB := coinB.Denom
 
 	reservePoolA, found := keeper.GetReservePool(ctx, moduleNameA)
 	if !found {
@@ -164,15 +157,13 @@ func (keeper Keeper) DoubleSwapInputAmount(ctx sdk.Context, outputCoinsA, output
 
 	fee := keeper.GetFeeParam(ctx)
 	nativeDenom := keeper.GetNativeDenom(ctx)
-	moduleNameA := keeper.MustGetPoolName(outputCoinsA.Denom, nativeDenom)
-	moduleNameB := keeper.MustGetPoolName(outputCoinsB.Denom, nativeDenom)
 
-	reservePoolA, found := keeper.GetReservePool(ctx, moduleNameA)
+	reservePoolA, found := keeper.GetReservePool(ctx, outputCoinsA.Denom)
 	if !found {
 		panic("reserve pool not found")
 	}
 
-	reservePoolB, found := keeper.GetReservePool(ctx, moduleNameB)
+	reservePoolB, found := keeper.GetReservePool(ctx, outputCoinsB.Denom)
 	if !found {
 		panic("reserve pool not found")
 	}
@@ -222,10 +213,7 @@ func (keeper Keeper) ValidateSwap(ctx sdk.Context, denom1, denom2 string) {
 // returns balances from reservePool and fees from genesis
 // panics if some of them is zero or uninitialized.
 func (keeper Keeper) getSwapBalances(ctx sdk.Context, denom1, denom2 string) (balance1, balance2 sdk.Int, fee types.FeeParam) {
-	moduleName, err := keeper.GetPoolName(denom1, denom2)
-	if err != nil {
-		panic(err)
-	}
+	moduleName := keeper.GetNotNative(ctx, denom1, denom2)
 
 	reservePool, found := keeper.GetReservePool(ctx, moduleName)
 	if !found {
@@ -272,6 +260,23 @@ func (keeper Keeper) GetPoolName(denom1, denom2 string) (string, sdk.Error) {
 	default:
 		return "", types.ErrEqualDenom(types.DefaultCodespace, "denomnations for forming module name are equal")
 	}
+}
+
+// returns not native denom
+func (keeper Keeper) GetNotNative(ctx sdk.Context, denom1, denom2 string) string {
+	var notNative string
+	nativeDenom := keeper.GetNativeDenom(ctx)
+	if denom1 != nativeDenom {
+		notNative = denom1
+	}
+
+	if denom2 != nativeDenom {
+		if notNative != "" {
+			panic("both denoms are not native")
+		}
+		notNative = denom2
+	}
+	return notNative
 }
 
 func (keeper Keeper) MustGetPoolName(denom1, denom2 string) string {

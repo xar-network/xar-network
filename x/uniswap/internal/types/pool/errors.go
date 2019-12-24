@@ -29,6 +29,8 @@ const (
 	CodeIncorrectNonNativeDenom
 	CodeIncorrectNativeAmount
 	CodeIncorrectNonNativeAmount
+	CodeNoNativeDenomPresent
+	CodeNotAllDenomsAreInPool
 )
 
 var codespace sdk.CodespaceType = "uniswap"
@@ -53,10 +55,14 @@ const (
 	LiquidityRemoveDeadLineHasPassed = "deadline has passed for MsgRemoveLiquidity"
 	IncorrectNativeDenomMsg          = "native coin denom from add liquidity request does not equal to native coin denom from a reserve pool"
 	IncorrectNonNativeDenomMsg       = "non-native coin denom from add liquidity request does not equal to non-native coin denom from a reserve pool"
+	NoNativeDenomPresentMsg          = "native denom is not present"
+	NotAllDenomsAreInPoolMsg         = "native denom is not present"
 )
 
 var ErrIncorrectNativeDenom = sdk.NewError(codespace, CodeIncorrectNativeDenom, IncorrectNativeDenomMsg)
 var ErrIncorrectNonNativeDenom = sdk.NewError(codespace, CodeIncorrectNonNativeDenom, IncorrectNonNativeDenomMsg)
+var ErrNoNativeDenomPresent = sdk.NewError(codespace, CodeNoNativeDenomPresent, NoNativeDenomPresentMsg)
+var ErrNotAllDenomsAreInPool = sdk.NewError(codespace, CodeNotAllDenomsAreInPool, NotAllDenomsAreInPoolMsg)
 
 func ErrIncorrectNativeAmount(msg string) sdk.Error {
 	return sdk.NewError(codespace, CodeIncorrectNativeAmount, msg)

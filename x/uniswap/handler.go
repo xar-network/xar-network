@@ -126,31 +126,38 @@ func DoubleSwap(ctx sdk.Context, keeper Keeper, msg types.MsgSwapOrder) sdk.Resu
 	outputCoin := sdk.NewCoin(msg.Output.Denom, outputAmt)
 	nativeMideator := sdk.NewCoin(nativeDenom, nativeMediatorAmt)
 
-	moduleNameA := keeper.MustGetPoolName(nativeDenom, inputCoin.Denom)
-	mAccA := keeper.ModuleAccountFromName(ctx, moduleNameA)
+	rpInput, found := keeper.GetReservePool(ctx, inputCoin.Denom)
+	if !found {
+		return types.ErrReservePoolNotFound(DefaultCodespace, inputCoin.Denom).Result()
+	}
 
-	moduleNameB := keeper.MustGetPoolName(nativeDenom, outputCoin.Denom)
-	mAccB := keeper.ModuleAccountFromName(ctx, moduleNameB)
+	rpOutput, found := keeper.GetReservePool(ctx, outputCoin.Denom)
+	if !found {
+		return types.ErrReservePoolNotFound(DefaultCodespace, inputCoin.Denom).Result()
+	}
 
-	err := keeper.SendCoins(ctx, msg.Sender, mAccA.Address, inputCoin)
+	_, err := rpInput.Swap(inputCoin, nativeMideator)
 	if err != nil {
 		return err.Result()
 	}
 
-	err = keeper.SendCoins(ctx, mAccA.Address, mAccB.Address, nativeMideator)
+	_, err = rpOutput.Swap(nativeMideator, outputCoin)
 	if err != nil {
 		return err.Result()
 	}
 
-	err = keeper.SendCoins(ctx, mAccB.Address, msg.Recipient, outputCoin)
+	err = keeper.HandleCoinSwap(ctx, msg.Sender, msg.Recipient, inputCoin, outputCoin)
 	if err != nil {
 		return err.Result()
 	}
+
+	keeper.SetReservePool(ctx, rpInput)
+	keeper.SetReservePool(ctx, rpOutput)
 
 	return sdk.Result{}
 }
 
-// incorrect. will be removed in the upcoming commit
+// TODO: replace
 func DoubleSwapCoins(keeper *Keeper, ctx sdk.Context, msg MsgSwapOrder) sdk.Result {
 	nativeDenom := keeper.GetNativeDenom(ctx)
 	calculatedAmount := keeper.GetOutputAmount(ctx, msg.Input.Amount, msg.Input.Denom, nativeDenom)

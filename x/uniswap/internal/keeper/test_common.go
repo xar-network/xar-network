@@ -60,7 +60,7 @@ func createTestInput(t *testing.T, amt sdk.Int, nAccs int64) (sdk.Context, Keepe
 	keyParams := sdk.NewKVStoreKey(params.StoreKey)
 	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
-	keyCoinswap := sdk.NewKVStoreKey(types.StoreKey)
+	keyUniswap := sdk.NewKVStoreKey(types.StoreKey)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
@@ -68,7 +68,7 @@ func createTestInput(t *testing.T, amt sdk.Int, nAccs int64) (sdk.Context, Keepe
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyCoinswap, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyUniswap, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 
@@ -83,10 +83,12 @@ func createTestInput(t *testing.T, amt sdk.Int, nAccs int64) (sdk.Context, Keepe
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 
 	// module account permissions
-	maccPerms := map[string][]string{}
+	maccPerms := map[string][]string{
+		types.ModuleName: {supply.Minter, supply.Burner, supply.Staking},
+	}
 
 	sk := supplyKeeper.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
-	keeper := NewKeeper(cdc, keyCoinswap, bk, sk, &ak, pk.Subspace(types.DefaultParamspace))
+	keeper := NewKeeper(cdc, keyUniswap, bk, sk, &ak, pk.Subspace(types.DefaultParamspace))
 	keeper.SetParams(ctx, types.DefaultParams())
 
 	return ctx, keeper, accs

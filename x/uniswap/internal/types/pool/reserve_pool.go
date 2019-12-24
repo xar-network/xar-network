@@ -1,7 +1,10 @@
 package pool
 
 import (
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/xar-network/xar-network/x/uniswap/internal/types"
+	"strings"
 )
 
 type ReservePool struct {
@@ -24,11 +27,15 @@ func (r ReservePool) GetName() string {
 
 // returns liquidityVouchers and error as a response
 func (r *ReservePool) AddLiquidity(nativeCoins, nonNativeCoins sdk.Coin) (ChangeInPool, sdk.Error) {
-	if r.nativeCoins.Amount.Equal(sdk.ZeroInt()) {
+	if r.IsEmpty() {
 		return r.addInitialLiquidity(nativeCoins, nonNativeCoins)
 	}
 
 	return r.addLiquidity(nativeCoins, nonNativeCoins)
+}
+
+func (r ReservePool) IsEmpty() bool {
+	return r.nativeCoins.Amount.Equal(r.nonNativeCoins.Amount) && r.nativeCoins.Amount.Equal(sdk.ZeroInt())
 }
 
 func (r *ReservePool) addLiquidity(nativeCoins, nonNativeCoins sdk.Coin) (ChangeInPool, sdk.Error) {
@@ -65,6 +72,26 @@ func (r *ReservePool) addInitialLiquidity(nativeCoins, nonNativeCoins sdk.Coin) 
 	return changeInPool, r.applyChanges(changeInPool)
 }
 
+// TODO: a swap logic is currently placed inside msgSwap handler. it should be considered to put it below
+func (r *ReservePool) Swap(inputCoin, outputCoin sdk.Coin) (changeInPool ChangeInPool, err sdk.Error) {
+	err = r.validateSwap(inputCoin, outputCoin)
+	if err != nil {
+		return ChangeInPool{}, err
+	}
+
+	if r.nativeCoins.Denom == inputCoin.Denom {
+		changeInPool = NewChangeInPool(inputCoin, r.coinToNegative(outputCoin), r.EmptyLiquidityCoin())
+	} else {
+		changeInPool = NewChangeInPool(r.coinToNegative(outputCoin), inputCoin, r.EmptyLiquidityCoin())
+	}
+
+	return changeInPool, r.applyChanges(changeInPool)
+}
+
+func (r ReservePool) EmptyLiquidityCoin() sdk.Coin {
+	return sdk.NewCoin(r.GetName(), sdk.ZeroInt())
+}
+
 func (r *ReservePool) RemoveLiquidity(nativeCoins, nonNativeCoins sdk.Coin) (ChangeInPool, sdk.Error) {
 	err := r.validateRemoveLiquidity(nativeCoins, nonNativeCoins)
 	if err != nil {
@@ -94,6 +121,10 @@ func (r ReservePool) AmountOf(denom string) sdk.Int {
 	}
 
 	if r.nonNativeCoins.Denom == denom {
+		return r.nonNativeCoins.Amount
+	}
+
+	if r.liquidityCoins.Denom == denom {
 		return r.nonNativeCoins.Amount
 	}
 
@@ -128,12 +159,90 @@ func (r ReservePool) validateLiquidityParams(nativeCoins, nonNativeCoins sdk.Coi
 	return nil
 }
 
+func (r ReservePool) validateSwap(inputCoin, outputCoin sdk.Coin) sdk.Error {
+	if !r.containsNative(sdk.Coins{inputCoin, outputCoin}) {
+		return ErrNoNativeDenomPresent
+	}
+
+	if !r.allDenomsInPool(sdk.Coins{inputCoin, outputCoin}) {
+		return ErrNotAllDenomsAreInPool
+	}
+
+	return nil
+}
+
+// returns true if a coin with a native denom is present in an array
+func (r ReservePool) containsNative(cns sdk.Coins) bool {
+	for _, coin := range cns {
+		if coin.Denom == r.nativeCoins.Denom {
+			return true
+		}
+	}
+	return false
+}
+
+// returns true if a all denoms of coins in array are present in a reserve pool
+func (r ReservePool) allDenomsInPool(cns sdk.Coins) bool {
+	for _, coin := range cns {
+		if coin.Denom == r.nativeCoins.Denom {
+			continue
+		}
+		if coin.Denom == r.nonNativeCoins.Denom {
+			continue
+		}
+		if coin.Denom == r.liquidityCoins.Denom {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
 // changes a state of a reserve pool. in a future updates it is possible to add an additional logic here.
 // for example:
 // as far as reserve pool fields are public (for a purpose of a json marshal/unmarshal logic) we can prevent manual changes of a state by taking a hash of fields
 func (r *ReservePool) applyChanges(change ChangeInPool) sdk.Error {
-	r.nativeCoins.Add(change.NativeCoins)
-	r.nonNativeCoins.Add(change.NonNativeCoins)
-	r.liquidityCoins.Add(change.LiquidityCoins)
+	err := r.validateChanges(change)
+	if err != nil {
+		return err
+	}
+
+	r.nativeCoins = r.nativeCoins.Add(change.NativeCoins)
+	r.nonNativeCoins = r.nonNativeCoins.Add(change.NonNativeCoins)
+	r.liquidityCoins = r.liquidityCoins.Add(change.LiquidityCoins)
 	return nil
+}
+
+// place err to errors.go
+func (r *ReservePool) validateChanges(change ChangeInPool) sdk.Error {
+	zero := sdk.ZeroInt()
+	if !change.NativeCoins.Amount.Equal(zero) {
+		if r.nativeCoins.Denom != change.NativeCoins.Denom {
+			return sdk.NewError(types.DefaultCodespace, 200, "")
+		}
+	}
+
+	if !change.NonNativeCoins.Amount.Equal(zero) {
+		if r.nonNativeCoins.Denom != change.NonNativeCoins.Denom {
+			return sdk.NewError(types.DefaultCodespace, 201, "")
+		}
+	}
+
+	if !change.LiquidityCoins.Amount.Equal(zero) {
+		if r.liquidityCoins.Denom != change.LiquidityCoins.Denom {
+			return sdk.NewError(types.DefaultCodespace, 202, "")
+		}
+	}
+	return nil
+}
+
+func (r ReservePool) String() string {
+	return strings.TrimSpace(fmt.Sprintf(`ReservePool:
+    r.nativeCoins:      %s
+	r.nonNativeCoins: %s
+	r.liquidityCoins: %s`,
+		r.nativeCoins,
+		r.nonNativeCoins,
+		r.liquidityCoins,
+	))
 }

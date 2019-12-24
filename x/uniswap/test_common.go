@@ -79,13 +79,21 @@ func createTestInput(t *testing.T, amt sdk.Int, nAccs int64) (sdk.Context, Keepe
 	ak := auth.NewAccountKeeper(cdc, keyAcc, pk.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
 	bk := bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, nil)
 
-	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, amt))
+	initialCoins := sdk.Coins{sdk.NewCoin("stake", sdk.NewInt(100000000000)), sdk.NewCoin("asd", sdk.NewInt(100000000000)), sdk.NewCoin("asd2", sdk.NewInt(100000000000))}.Sort()
+	//sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, amt))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 
 	// module account permissions
-	maccPerms := map[string][]string{}
+	maccPerms := map[string][]string{
+		types.ModuleName: {supply.Minter, supply.Burner, supply.Staking},
+	}
 
 	sk := supplyKeeper.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
+	mAcc := supplyKeeper.NewEmptyModuleAccount(types.ModuleName, []string{supply.Minter, supply.Burner, supply.Staking}...)
+	sk.SetModuleAccount(ctx, mAcc)
+	sk.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
+	mc := sk.GetModuleAccount(ctx, types.ModuleName)
+	require.NotNil(t, mc)
 	keeper := NewKeeper(cdc, keyCoinswap, bk, sk, &ak, pk.Subspace(types.DefaultParamspace))
 	keeper.SetParams(ctx, types.DefaultParams())
 
