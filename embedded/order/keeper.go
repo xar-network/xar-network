@@ -99,6 +99,7 @@ func (k Keeper) OnOrderCreatedEvent(event types.OrderCreated) {
 		TimeInForce:    event.TimeInForceBlocks,
 		QuantityFilled: sdk.NewUint(0),
 		CreatedBlock:   event.CreatedBlock,
+		CreatedTime:	event.CreatedTime,
 	}
 	k.Set(order)
 	k.as.Set(ownerOrderKey(order.Owner, order.ID), order.ID.Bytes())

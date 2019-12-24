@@ -44,6 +44,59 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 	}
 }
 
+func getIterFunction(req ListQueryRequest) (ordersList *[]Order, lastIDptr *store.EntityID, iterCB func(order Order) bool) {
+	orders := make([]Order, 0)
+	var lastID store.EntityID
+
+	iterCB = func(order Order) bool {
+		// MarketID filter
+		if len(req.MarketID) > 0 {
+			present := false
+			for _, marketID := range req.MarketID {
+				if order.MarketID.Equals(marketID) {
+					present = true
+					break
+				}
+			}
+			if !present {
+				return true
+			}
+		}
+
+		// Status filter
+		if len(req.Status) > 0 {
+			present := false
+			for _, status := range req.Status {
+				if order.Status == status {
+					present = true
+					break
+				}
+			}
+			if !present {
+				return true
+			}
+		}
+
+		// Time filter
+		if req.UnixTimeAfter != 0 {
+			if order.CreatedTime.UnixNano() < req.UnixTimeAfter {
+				return true
+			}
+		}
+		if req.UnixTimeBefore != 0 {
+			if order.CreatedTime.UnixNano() > req.UnixTimeBefore {
+				return true
+			}
+		}
+
+		orders = append(orders, order)
+		lastID = order.ID
+		return (req.Limit == 0) || (len(orders) < req.Limit)
+	}
+
+	return &orders, &lastID, iterCB
+}
+
 func queryList(keeper Keeper, reqB []byte) ([]byte, sdk.Error) {
 	var req ListQueryRequest
 	err := keeper.cdc.UnmarshalBinaryBare(reqB, &req)
@@ -51,13 +104,7 @@ func queryList(keeper Keeper, reqB []byte) ([]byte, sdk.Error) {
 		return nil, errs.ErrUnmarshalFailure("failed to unmarshal list query request")
 	}
 
-	orders := make([]Order, 0)
-	var lastID store.EntityID
-	iterCB := func(order Order) bool {
-		orders = append(orders, order)
-		lastID = order.ID
-		return len(orders) < 50
-	}
+	ordersList, lastIDPtr, iterCB := getIterFunction(req)
 
 	if req.Owner.Empty() {
 		if req.Start.IsDefined() {
@@ -70,7 +117,10 @@ func queryList(keeper Keeper, reqB []byte) ([]byte, sdk.Error) {
 		keeper.OrdersByOwner(req.Owner, iterCB)
 	}
 
-	if len(orders) < 50 {
+	orders := *ordersList
+	lastID := *lastIDPtr
+
+	if (req.Limit == 0) || (len(orders) < req.Limit) {
 		lastID = store.NewEntityID(0)
 	}
 	res := ListQueryResult{

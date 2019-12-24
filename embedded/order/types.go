@@ -20,6 +20,8 @@ limitations under the License.
 package order
 
 import (
+	"time"
+
 	"github.com/xar-network/xar-network/pkg/matcheng"
 	"github.com/xar-network/xar-network/types/store"
 
@@ -38,11 +40,17 @@ type Order struct {
 	TimeInForce    uint16             `json:"time_in_force"`
 	QuantityFilled sdk.Uint           `json:"quantity_filled"`
 	CreatedBlock   int64              `json:"created_block"`
+	CreatedTime    time.Time          `json:"created_time"`
 }
 
 type ListQueryRequest struct {
-	Start store.EntityID
-	Owner sdk.AccAddress
+	Start          store.EntityID   `json:"start"`
+	Owner          sdk.AccAddress   `json:"owner"`
+	Limit          int              `json:"limit"`
+	MarketID       []store.EntityID `json:"market_id"`
+	Status         []string         `json:"status"`
+	UnixTimeAfter  int64            `json:"time_after"`
+	UnixTimeBefore int64            `json:"time_before"`
 }
 
 type ListQueryResult struct {

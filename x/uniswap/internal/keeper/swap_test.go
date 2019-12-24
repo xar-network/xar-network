@@ -21,13 +21,9 @@ package keeper
 
 import (
 	"fmt"
-	"testing"
-	"time"
-
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
-	"github.com/xar-network/xar-network/x/uniswap/internal/types"
-
 	"github.com/stretchr/testify/require"
+	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -132,7 +128,7 @@ func defaultTestcase(t *testing.T) {
 	nativeCoinAmt := sdk.NewInt(10040)
 	nonNativeCoinAmt := sdk.NewInt(151000)
 
-	err := addLiquidityForTest(ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom)
+	err := addLiquidityForTest(t, ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom)
 	if err != nil {
 		panic(err)
 	}
@@ -173,12 +169,12 @@ func testGetDoubleswapAmount(t *testing.T) {
 	nativeCoinAmt := sdk.NewInt(10040)
 	nonNativeCoinAmt := sdk.NewInt(151000)
 
-	err := addLiquidityForTest(ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom)
+	err := addLiquidityForTest(t, ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom)
 	if err != nil {
 		require.NoError(t, err)
 	}
 
-	err = addLiquidityForTest(ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom2)
+	err = addLiquidityForTest(t, ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom2)
 	if err != nil {
 		require.NoError(t, err)
 	}
@@ -220,7 +216,7 @@ func equalDenomPanic(t *testing.T) {
 }
 
 func missingModuleNamePanic(t *testing.T) {
-	ctx, keeper, accs := createTestInput(t, sdk.NewInt(0), 1)
+	ctx, keeper, _ := createTestInput(t, sdk.NewInt(0), 1)
 
 	oneHundredCoin := sdk.NewInt(100)
 	testDenom := nonNativeDenomTest
@@ -240,21 +236,14 @@ func missingModuleNamePanic(t *testing.T) {
 	}
 	require.Panics(t, panicAssert)
 
-	tm, err := time.Parse("2006-01-02T15:04:05.000Z", "2022-04-23T18:25:43.511Z")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	//tm, err := time.Parse("2006-01-02T15:04:05.000Z", "2022-04-23T18:25:43.511Z")
+	//require.NoError(t, err)
 
-	msg := types.MsgAddLiquidity{
-		Deposit:       outputTestCoin1,
-		DepositAmount: sdk.NewInt(10),
-		MinReward:     sdk.NewInt(1),
-		Deadline:      tm,
-		Sender:        accs[0].GetAddress(),
-	}
+	rp := keeper.CreateReservePool(ctx, outputTestCoin1.Denom)
 
-	keeper.CreateReservePool(ctx, keeper.MustGetModuleName(keeper.GetNativeDenom(ctx), outputTestCoin1.Denom))
-	keeper.AddInitialLiquidity(ctx, &msg)
+	nativeCoin := sdk.NewCoin(keeper.GetNativeDenom(ctx), sdk.NewInt(10))
+	_, err := rp.AddLiquidity(nativeCoin, outputTestCoin1)
+	require.Nil(t, err)
 
 	panicAssert = func() {
 		keeper.DoubleSwapOutputAmount(ctx, outputTestCoin1, outputTestCoin2)
@@ -266,24 +255,24 @@ func missingModuleNamePanic(t *testing.T) {
 	require.Panics(t, panicAssert)
 }
 
-func addLiquidityForTest(ctx sdk.Context, keeper Keeper, accs []exported.Account, nativeAmt, nonNativeAmt sdk.Int, denom string) error {
+func addLiquidityForTest(t *testing.T, ctx sdk.Context, keeper Keeper, accs []exported.Account, nativeAmt, nonNativeAmt sdk.Int, denom string) error {
 	if len(accs) == 0 {
 		return fmt.Errorf("len is not enough")
 	}
 
 	var nonNativeDenomAmt = nonNativeAmt
 	var nativeDenomAmt = nativeAmt
-	var minReward = sdk.NewInt(1)
-
-	t, err := time.Parse("2006-01-02T15:04:05.000Z", "2022-04-23T18:25:43.511Z")
-	if err != nil {
-		return err
-	}
+	//var minReward = sdk.NewInt(1)
+	//
+	//tm, err := time.Parse("2006-01-02T15:04:05.000Z", "2022-04-23T18:25:43.511Z")
+	//if err != nil {
+	//	return err
+	//}
 
 	nonNativeDeposit := sdk.Coin{Denom: denom, Amount: nonNativeDenomAmt}
 	nativeDeposit := sdk.Coin{Denom: keeper.GetNativeDenom(ctx), Amount: nativeDenomAmt}
 
-	_, err = keeper.bk.AddCoins(ctx, accs[0].GetAddress(), sdk.Coins{nonNativeDeposit})
+	_, err := keeper.bk.AddCoins(ctx, accs[0].GetAddress(), sdk.Coins{nonNativeDeposit})
 	if err != nil {
 		return err
 	}
@@ -293,14 +282,10 @@ func addLiquidityForTest(ctx sdk.Context, keeper Keeper, accs []exported.Account
 		return err
 	}
 
-	msg := types.MsgAddLiquidity{
-		Deposit:       nonNativeDeposit,
-		DepositAmount: nativeDenomAmt,
-		MinReward:     minReward,
-		Deadline:      t,
-		Sender:        accs[0].GetAddress(),
-	}
-	keeper.CreateReservePool(ctx, keeper.MustGetModuleName(keeper.GetNativeDenom(ctx), denom))
-	keeper.AddInitialLiquidity(ctx, &msg)
+	nativeCoin := sdk.NewCoin(keeper.GetNativeDenom(ctx), nativeDenomAmt)
+	rp := keeper.CreateReservePool(ctx, denom)
+	_, err = rp.AddLiquidity(nativeCoin, nonNativeDeposit)
+	require.Nil(t, err)
+	keeper.SetReservePool(ctx, rp)
 	return nil
 }

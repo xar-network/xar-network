@@ -20,6 +20,7 @@ limitations under the License.
 package app
 
 import (
+	"github.com/xar-network/xar-network/x/uniswap"
 	"io"
 	"os"
 
@@ -124,6 +125,7 @@ var (
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		gov.ModuleName:            {supply.Burner},
+		uniswap.ModuleName:        {supply.Minter, supply.Burner, supply.Staking},
 		denominations.ModuleName:  {supply.Minter, supply.Burner},
 		liquidator.ModuleName:     {supply.Minter, supply.Burner},
 		csdt.ModuleName:           {supply.Minter, supply.Burner},
@@ -174,6 +176,7 @@ type XarApp struct {
 	// app specific keepers
 	auctionKeeper    auction.Keeper
 	csdtKeeper       csdt.Keeper
+	uniswapKeeper    uniswap.Keeper
 	syntheticKeeper  synthetic.Keeper
 	liquidatorKeeper liquidator.Keeper
 	oracleKeeper     oracle.Keeper
@@ -228,7 +231,7 @@ func NewXarApp(
 		gov.StoreKey, params.StoreKey, issue.StoreKey, oracle.StoreKey,
 		auction.StoreKey, csdt.StoreKey, synthetic.StoreKey, liquidator.StoreKey, nft.StoreKey,
 		denominations.StoreKey, record.StoreKey, evidence.StoreKey,
-		market.StoreKey, ordertypes.StoreKey,
+		market.StoreKey, ordertypes.StoreKey, uniswap.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -258,6 +261,7 @@ func NewXarApp(
 	syntheticSubspace := app.paramsKeeper.Subspace(synthetic.DefaultParamspace)
 	liquidatorSubspace := app.paramsKeeper.Subspace(liquidator.DefaultParamspace)
 	recordSubspace := app.paramsKeeper.Subspace(record.DefaultParamspace)
+	uniswapSubspace := app.paramsKeeper.Subspace(uniswap.DefaultParamspace)
 
 	denominationsSubspace := app.paramsKeeper.Subspace(denominations.DefaultParamspace)
 
@@ -282,6 +286,7 @@ func NewXarApp(
 	app.oracleKeeper = oracle.NewKeeper(keys[oracle.StoreKey], app.cdc, oracleSubspace, oracle.DefaultCodespace)
 	app.recordKeeper = record.NewKeeper(app.cdc, keys[record.StoreKey], recordSubspace, record.DefaultCodespace)
 	app.csdtKeeper = csdt.NewKeeper(app.cdc, keys[csdt.StoreKey], csdtSubspace, app.oracleKeeper, app.bankKeeper, app.supplyKeeper)
+	app.uniswapKeeper = uniswap.NewKeeper(cdc, keys[uniswap.StoreKey], app.bankKeeper, app.supplyKeeper, &app.accountKeeper, uniswapSubspace)
 	app.syntheticKeeper = synthetic.NewKeeper(app.cdc, keys[synthetic.StoreKey], syntheticSubspace, app.oracleKeeper, app.bankKeeper, app.supplyKeeper)
 	app.auctionKeeper = auction.NewKeeper(app.cdc, app.supplyKeeper, keys[auction.StoreKey], auctionSubspace)
 	app.liquidatorKeeper = liquidator.NewKeeper(app.cdc, keys[liquidator.StoreKey], liquidatorSubspace, app.csdtKeeper, app.auctionKeeper, app.bankKeeper, app.supplyKeeper)
@@ -338,8 +343,9 @@ func NewXarApp(
 		liquidator.NewAppModule(app.liquidatorKeeper),
 		oracle.NewAppModule(app.oracleKeeper),
 		record.NewAppModule(app.recordKeeper),
+		uniswap.NewAppModule(app.uniswapKeeper),
 
-		denominations.NewAppModule(app.denominationsKeeper),
+	denominations.NewAppModule(app.denominationsKeeper),
 
 		market.NewAppModule(app.marketKeeper),
 		order.NewAppModule(app.orderKeeper),
@@ -370,7 +376,7 @@ func NewXarApp(
 		crisis.ModuleName, issue.ModuleName, synthetic.ModuleName,
 		auction.ModuleName, csdt.ModuleName, liquidator.ModuleName, oracle.ModuleName,
 		denominations.ModuleName, nft.ModuleName, record.ModuleName, genutil.ModuleName,
-		evidence.ModuleName, markettypes.ModuleName,
+		evidence.ModuleName, markettypes.ModuleName, uniswap.ModuleName,
 	)
 	app.QueryRouter().
 		AddRoute("embeddedorder", embeddedorder.NewQuerier(embOrderKeeper)).

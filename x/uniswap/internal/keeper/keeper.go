@@ -59,33 +59,6 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bk bank.Keeper, sk supply.Kee
 	}
 }
 
-// CreateReservePool initializes a new reserve pool by creating a
-// ModuleAccount with minting and burning permissions.
-func (keeper Keeper) CreateReservePool(ctx sdk.Context, moduleName string) {
-	moduleAcc := keeper.sk.GetModuleAccount(ctx, moduleName)
-	if moduleAcc != nil {
-		panic(fmt.Sprintf("reserve pool for %s already exists", moduleName))
-	}
-
-	if _, found := keeper.GetReservePool(ctx, moduleName); found {
-		panic(fmt.Sprintf("reserve pool for %s already exists", moduleName))
-	}
-
-	moduleAcc = supply.NewEmptyModuleAccount(moduleName, supply.Minter, supply.Burner)
-	keeper.sk.SetModuleAccount(ctx, moduleAcc)
-}
-
-// creates new reserve pool and verifies it was created successfully
-func newReservePool(ctx sdk.Context, moduleName string, keeper Keeper) sdk.Error {
-	keeper.CreateReservePool(ctx, moduleName)
-
-	if _, found := keeper.GetReservePool(ctx, moduleName); !found {
-		return types.ErrCannotCreateReservePool(types.DefaultCodespace)
-	}
-
-	return nil
-}
-
 // HasCoins returns whether or not an account has at least coins.
 func (keeper Keeper) HasCoins(ctx sdk.Context, addr sdk.AccAddress, coins ...sdk.Coin) bool {
 	return keeper.bk.HasCoins(ctx, addr, coins)
@@ -122,10 +95,10 @@ func (keeper Keeper) DoubleSwap(ctx sdk.Context, msg types.MsgSwapOrder) sdk.Res
 		nativeMideatorAmt, nonNativeCoinAmt := keeper.DoubleSwapOutputAmount(ctx, msg.Input, msg.Output)
 		nativeMideator := sdk.NewCoin(nativeDenom, nativeMideatorAmt)
 
-		moduleNameA := keeper.MustGetModuleName(nativeDenom, msg.Input.Denom)
+		moduleNameA := keeper.MustGetPoolName(nativeDenom, msg.Input.Denom)
 		mAccA := keeper.ModuleAccountFromName(ctx, moduleNameA)
 
-		moduleNameB := keeper.MustGetModuleName(nativeDenom, msg.Output.Denom)
+		moduleNameB := keeper.MustGetPoolName(nativeDenom, msg.Output.Denom)
 		mAccB := keeper.ModuleAccountFromName(ctx, moduleNameB)
 
 		err := keeper.SendCoins(ctx, msg.Sender, mAccA.Address, msg.Input)
@@ -149,39 +122,65 @@ func (keeper Keeper) DoubleSwap(ctx sdk.Context, msg types.MsgSwapOrder) sdk.Res
 	return sdk.Result{}
 }
 
-// MintCoins mints liquidity coins to the address and returns liquidity coins
-func (keeper Keeper) MintCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Int) (sdk.Coins, sdk.Error) {
-	mAcc := keeper.ak.GetAccount(ctx, addr)
-	moduleAcc, ok := mAcc.(*supply.ModuleAccount)
-	if !ok {
-		return nil, types.ErrInvalidAccountAddr(types.DefaultCodespace, "")
-	}
-
-	if !moduleAcc.HasPermission(supply.Minter) {
-		msg := fmt.Sprintf("module account %s does not have permissions to mint tokens", moduleAcc.Name)
-		return nil, types.ErrInvalidAccountPermission(types.DefaultCodespace, msg)
-	}
-
-	coinsToMint := sdk.Coins{sdk.Coin{Denom: moduleAcc.Name, Amount: amt}}
-	coinsToMint.Sort()
-	_, err := keeper.bk.AddCoins(ctx, mAcc.GetAddress(), coinsToMint)
-	if err != nil {
-		return nil, err
-	}
-
-	//supp := keeper.sk.GetSupply(ctx)
-	//supp = supp.Inflate(coinsToMint)
-	//
-	//keeper.sk.SetSupply(ctx, supp)
-	logger := keeper.Logger(ctx)
-	logger.Info(fmt.Sprintf("minted %s from %s module account", amt.String(), moduleAcc.Name))
-	return coinsToMint, nil
+func (keeper Keeper) MintCoins(ctx sdk.Context, cns sdk.Coins) sdk.Error {
+	return keeper.sk.MintCoins(ctx, types.ModuleName, cns)
 }
 
 // SendCoin sends coins from the address to the ModuleAccount at moduleName.
 func (keeper Keeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, coins ...sdk.Coin) sdk.Error {
 	coinsSorted := sdk.Coins(coins).Sort()
 	return keeper.bk.SendCoins(ctx, fromAddr, toAddr, coinsSorted)
+}
+
+func (keeper Keeper) SendFromAccToModule(ctx sdk.Context, account sdk.AccAddress, coins sdk.Coins) sdk.Error {
+	return keeper.sk.SendCoinsFromAccountToModule(ctx, account, types.ModuleName, coins)
+}
+
+func (keeper Keeper) SendFromModuleToAcc(ctx sdk.Context, account sdk.AccAddress, coins sdk.Coins) sdk.Error {
+	return keeper.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, account, coins)
+}
+
+func (keeper Keeper) HandleCoinSwap(ctx sdk.Context, sender, recipient sdk.AccAddress, userCoin sdk.Coin, moduleCoin sdk.Coin) sdk.Error {
+	err := keeper.sk.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, sdk.Coins{userCoin})
+	if err != nil {
+		return err
+	}
+
+	err = keeper.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, recipient, sdk.Coins{moduleCoin})
+	return err
+}
+
+func (keeper Keeper) AddLiquidityTransfer(ctx sdk.Context, account sdk.AccAddress, coins sdk.Coins, liquidityVouchers sdk.Coin) sdk.Error {
+	err := keeper.SendFromAccToModule(ctx, account, coins)
+	if err != nil {
+		return err
+	}
+
+	err = keeper.sk.MintCoins(ctx, types.ModuleName, sdk.NewCoins(liquidityVouchers))
+	if err != nil {
+		return err
+	}
+
+	err = keeper.SendFromModuleToAcc(ctx, account, sdk.NewCoins(liquidityVouchers))
+	return err
+}
+
+func (keeper Keeper) RemoveLiquidityTransfer(ctx sdk.Context, account sdk.AccAddress, coins sdk.Coins, userVouchers sdk.Coin) sdk.Error {
+	vouchers := sdk.NewCoins(userVouchers)
+	totalVouchersAmt := userVouchers.Amount.Mul(sdk.NewInt(2))
+	totalVouchers := sdk.NewCoins(sdk.NewCoin(userVouchers.Denom, totalVouchersAmt))
+	err := keeper.SendFromAccToModule(ctx, account, vouchers)
+	if err != nil {
+		return err
+	}
+
+	err = keeper.sk.BurnCoins(ctx, types.ModuleName, totalVouchers)
+	if err != nil {
+		return err
+	}
+
+	err = keeper.SendFromModuleToAcc(ctx, account, coins)
+	return err
 }
 
 // RecieveCoin sends coins from the ModuleAccount at moduleName to the
@@ -247,95 +246,25 @@ func (keeper Keeper) ModuleAccountFromName(ctx sdk.Context, moduleName string) *
 	return requestedAcc
 }
 
-func (keeper Keeper) GetReservePool(ctx sdk.Context, moduleName string) (sdk.Coins, bool) {
-	rp, found := keeper.getReservePoolFromSk(ctx, moduleName)
-	if found {
-		return rp, found
-	}
-
-	return keeper.GetReservePoolFromAk(ctx, moduleName)
-}
-
-func (keeper Keeper) ReservePool(ctx sdk.Context, moduleName string) *sdk.Coins {
-	rp, found := keeper.GetReservePool(ctx, moduleName)
-	if !found {
-		return nil
-	}
-	return &rp
-}
-
-func (keeper Keeper) AddInitialLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity) sdk.Result {
-	nativeDenom, _, moduleName := keeper.MustGetAllDenoms(ctx, msg)
-
-	coinAmount := msg.Deposit.Amount.BigInt()
-	nativeAmount := msg.DepositAmount.BigInt()
-	mintAmtBigint := (coinAmount.Mul(coinAmount, nativeAmount)).Sqrt(coinAmount)
-	nativeCoinDeposited := sdk.NewCoin(nativeDenom, msg.DepositAmount)
-	amtToMint := sdk.NewIntFromBigInt(mintAmtBigint)
-
-	if !keeper.HasCoins(ctx, msg.Sender, nativeCoinDeposited, msg.Deposit) {
-		return sdk.ErrInsufficientCoins(types.InsufficientCoins).Result()
-	}
-
-	mAcc := keeper.ModuleAccountFromName(ctx, moduleName)
-	err := keeper.transferLiquidityCoins(ctx, msg, msg.Deposit, nativeCoinDeposited, amtToMint, mAcc)
-	if err != nil {
-		return err.Result()
-	}
-	return sdk.Result{}
-}
+//func (keeper Keeper) GetReservePool(ctx sdk.Context, moduleName string) (sdk.Coins, bool) {
+//	rp, found := keeper.getReservePoolFromSk(ctx, moduleName)
+//	if found {
+//		return rp, found
+//	}
+//
+//	return keeper.GetReservePoolFromAk(ctx, moduleName)
+//}
 
 // creates new reserve pool and verifies it was created successfully
-func (keeper Keeper) NewReservePool(ctx sdk.Context, moduleName string) sdk.Error {
-	keeper.CreateReservePool(ctx, moduleName)
-
-	if _, found := keeper.GetReservePool(ctx, moduleName); !found {
-		return types.ErrCannotCreateReservePool(types.DefaultCodespace)
-	}
-
-	return nil
-}
-
-func (keeper Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, reservePool sdk.Coins) sdk.Result {
-	nativeDenom, _, moduleName := keeper.MustGetAllDenoms(ctx, msg)
-	nativeBalance := reservePool.AmountOf(nativeDenom)
-	liquidityCoinBalance := reservePool.AmountOf(moduleName)
-	if liquidityCoinBalance.LTE(sdk.NewInt(0)) {
-		return types.ErrInsufficientLiquidityAmount(types.DefaultCodespace).Result()
-	}
-
-	amtToMint := (liquidityCoinBalance.Mul(msg.DepositAmount)).Quo(nativeBalance)
-	coinAmountDeposited := (liquidityCoinBalance.Mul(msg.DepositAmount)).Quo(nativeBalance)
-	nativeCoinDeposited := sdk.NewCoin(nativeDenom, msg.DepositAmount)
-	coinDeposited := sdk.NewCoin(msg.Deposit.Denom, coinAmountDeposited)
-
-	if !keeper.HasCoins(ctx, msg.Sender, nativeCoinDeposited, coinDeposited) {
-		return sdk.ErrInsufficientCoins(types.InsufficientCoins).Result()
-	}
-
-	mAcc := keeper.ModuleAccountFromName(ctx, moduleName)
-	err := keeper.transferLiquidityCoins(ctx, msg, nativeCoinDeposited, coinDeposited, amtToMint, mAcc)
-	if err != nil {
-		return err.Result()
-	}
-
-	return sdk.Result{}
-}
-
-func (keeper Keeper) transferLiquidityCoins(ctx sdk.Context, msg *types.MsgAddLiquidity, nativeCoin, coin sdk.Coin, amtToMint sdk.Int, moduleAcc *supply.ModuleAccount) sdk.Error {
-	err := keeper.SendCoins(ctx, msg.Sender, moduleAcc.Address, nativeCoin, coin)
-	if err != nil {
-		return err
-	}
-
-	// mint liquidity vouchers for sender
-	mintCoins, err := keeper.MintCoins(ctx, moduleAcc.Address, amtToMint)
-	if err != nil {
-		return err
-	}
-
-	return keeper.RecieveCoins(ctx, msg.Sender, mintCoins...)
-}
+//func (keeper Keeper) NewReservePool(ctx sdk.Context, moduleName string) sdk.Error {
+//	keeper.CreateReservePool(ctx, moduleName)
+//
+//	if _, found := keeper.GetReservePool(ctx, moduleName); !found {
+//		return types.ErrCannotCreateReservePool(types.DefaultCodespace)
+//	}
+//
+//	return nil
+//}
 
 // GetNativeDenom returns the native denomination for this module from the
 // global param store.
@@ -348,7 +277,7 @@ func (keeper Keeper) MustGetAllDenoms(ctx sdk.Context, msg *types.MsgAddLiquidit
 	nativeDenom = keeper.GetNativeDenom(ctx)
 	tokenDenom = msg.Deposit.Denom
 
-	return nativeDenom, tokenDenom, keeper.MustGetModuleName(nativeDenom, tokenDenom)
+	return nativeDenom, tokenDenom, keeper.MustGetPoolName(nativeDenom, tokenDenom)
 }
 
 // GetFeeParam returns the current FeeParam from the global param store

@@ -29,18 +29,22 @@ import (
 const (
 	DefaultCodespace sdk.CodespaceType = ModuleName
 
-	CodeReservePoolAlreadyExists    sdk.CodeType = 101
-	CodeEqualDenom                  sdk.CodeType = 102
-	CodeInvalidDeadline             sdk.CodeType = 103
-	CodeNotPositive                 sdk.CodeType = 104
-	CodeConstraintNotMet            sdk.CodeType = 105
-	CodeNotSupported                sdk.CodeType = 106
-	CodeCannotCreateReservePool     sdk.CodeType = 107
-	CodeInvalidAccountAddr          sdk.CodeType = 108
-	CodeInvalidAccountPemission     sdk.CodeType = 109
-	CodeQueryParamIsInvalid         sdk.CodeType = 110
-	CodeInsufficientLiquidityAmount sdk.CodeType = 111
-	CodeReservePoolNotFound         sdk.CodeType = 111
+	CodeReservePoolAlreadyExists sdk.CodeType = 101 + iota
+	CodeEqualDenom
+	CodeInvalidDeadline
+	CodeNotPositive
+	CodeConstraintNotMet
+	CodeNotSupported
+	CodeCannotCreateReservePool
+	CodeInvalidAccountAddr
+	CodeInvalidAccountPemission
+	CodeQueryParamIsInvalid
+	CodeInsufficientLiquidityAmount
+	CodeReservePoolNotFound
+	CodeIncorrectNativeDenom
+	CodeIncorrectNonNativeDenom
+	CodeIncorrectNativeAmount
+	CodeIncorrectNonNativeAmount
 )
 
 // constant set for error messages
@@ -57,14 +61,27 @@ const (
 	InsufficientCoins                = "sender does not have sufficient funds"
 	LiquidityAddDeadLineHasPassed    = "deadline has passed for MsgAddLiquidity"
 	LiquidityRemoveDeadLineHasPassed = "deadline has passed for MsgRemoveLiquidity"
+	IncorrectNativeDenomMsg          = "native coin denom from add liquidity request does not equal to native coin denom from a reserve pool"
+	IncorrectNonNativeDenomMsg       = "non-native coin denom from add liquidity request does not equal to non-native coin denom from a reserve pool"
 )
+
+var ErrIncorrectNativeDenom = sdk.NewError(DefaultCodespace, CodeIncorrectNativeDenom, IncorrectNativeDenomMsg)
+var ErrIncorrectNonNativeDenom = sdk.NewError(DefaultCodespace, CodeIncorrectNonNativeDenom, IncorrectNonNativeDenomMsg)
+
+func ErrIncorrectNativeAmount(msg string) sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeIncorrectNativeAmount, msg)
+}
+
+func ErrIncorrectNonNativeAmount(msg string) sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeIncorrectNonNativeAmount, msg)
+}
 
 func MsgAccPermissionsError(moduleName string) string {
 	return fmt.Sprintf("module account %s does not have permissions to burn tokens", moduleName)
 }
 
 func MsgReservePoolNotFound(moduleName string) string {
-	return fmt.Sprintf("error retrieving reserve pool for ModuleAccoint name: %s", moduleName)
+	return fmt.Sprintf("reserve pool for a denom %s not found", moduleName)
 }
 
 func ErrReservePoolNotFound(codespace sdk.CodespaceType, moduleName string) sdk.Error {

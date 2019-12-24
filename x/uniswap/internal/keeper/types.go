@@ -19,10 +19,12 @@ limitations under the License.
 
 package keeper
 
-import "github.com/cosmos/cosmos-sdk/types"
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
 
 type AddLiquidity interface {
-	GetSenderAddress() types.AccAddress
-	GetDeposit() types.Coin
-	GetNativeAmount() types.Int
+	GetSenderAddress() sdk.AccAddress
+	GetDeposit() sdk.Coin
+	GetNativeAmount() sdk.Int
 }
