@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/xar-network/xar-network/x/uniswap/internal/types"
+	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
 
 func (keeper Keeper) SwapCoins(ctx sdk.Context, sender, recipient sdk.AccAddress, coinSold, coinBought sdk.Coin) sdk.Error {
@@ -43,7 +43,7 @@ func (keeper Keeper) SwapCoins(ctx sdk.Context, sender, recipient sdk.AccAddress
 
 // GetInputAmount returns the amount of coins sold (calculated) given the output amount being bought (exact)
 // The fee is included in the output coins being bought
-// https://github.com/runtimeverification/verified-smart-contracts/blob/uniswap/uniswap/x-y-k.pdf
+// https://github.com/runtimeverification/verified-smart-contracts/blob/coinswap/coinswap/x-y-k.pdf
 // TODO: continue using numerator/denominator -> open issue for eventually changing to sdk.Dec
 func (keeper Keeper) GetInputAmount(ctx sdk.Context, outputAmt sdk.Int, inputDenom, outputDenom string) sdk.Int {
 	notNativeDenom := keeper.GetNotNative(ctx, inputDenom, outputDenom)
@@ -62,7 +62,7 @@ func (keeper Keeper) GetInputAmount(ctx sdk.Context, outputAmt sdk.Int, inputDen
 
 // GetOutputAmount returns the amount of coins bought (calculated) given the input amount being sold (exact)
 // The fee is included in the input coins being bought
-// https://github.com/runtimeverification/verified-smart-contracts/blob/uniswap/uniswap/x-y-k.pdf
+// https://github.com/runtimeverification/verified-smart-contracts/blob/coinswap/coinswap/x-y-k.pdf
 // TODO: continue using numerator/denominator -> open issue for eventually changing to sdk.Dec
 func (keeper Keeper) GetOutputAmount(ctx sdk.Context, inputAmt sdk.Int, inputDenom, outputDenom string) sdk.Int {
 	notNativeDenom := keeper.GetNotNative(ctx, inputDenom, outputDenom)

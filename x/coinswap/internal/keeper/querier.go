@@ -24,7 +24,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/xar-network/xar-network/x/uniswap/internal/types"
+	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
 
 // NewQuerier creates a querier for coinswap REST endpoints
