@@ -20,9 +20,10 @@ limitations under the License.
 package app
 
 import (
-	"github.com/xar-network/xar-network/x/coinswap"
 	"io"
 	"os"
+
+	"github.com/xar-network/xar-network/x/coinswap"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
@@ -125,7 +126,7 @@ var (
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		gov.ModuleName:            {supply.Burner},
-		coinswap.ModuleName:        {supply.Minter, supply.Burner, supply.Staking},
+		coinswap.ModuleName:       {supply.Minter, supply.Burner, supply.Staking},
 		denominations.ModuleName:  {supply.Minter, supply.Burner},
 		liquidator.ModuleName:     {supply.Minter, supply.Burner},
 		csdt.ModuleName:           {supply.Minter, supply.Burner},
@@ -176,7 +177,7 @@ type XarApp struct {
 	// app specific keepers
 	auctionKeeper    auction.Keeper
 	csdtKeeper       csdt.Keeper
-	coinswapKeeper    coinswap.Keeper
+	coinswapKeeper   coinswap.Keeper
 	syntheticKeeper  synthetic.Keeper
 	liquidatorKeeper liquidator.Keeper
 	oracleKeeper     oracle.Keeper
@@ -345,7 +346,7 @@ func NewXarApp(
 		record.NewAppModule(app.recordKeeper),
 		coinswap.NewAppModule(app.coinswapKeeper),
 
-	denominations.NewAppModule(app.denominationsKeeper),
+		denominations.NewAppModule(app.denominationsKeeper),
 
 		market.NewAppModule(app.marketKeeper),
 		order.NewAppModule(app.orderKeeper),
