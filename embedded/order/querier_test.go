@@ -302,6 +302,40 @@ func TestQuerier(t *testing.T) {
 			assert.LessOrEqual(t, ord.CreatedTime.UnixNano(), time.Unix(int64(100), 0).UnixNano())
 		}
 	})
+	t.Run("should support filter by order id for one order", func(t *testing.T) {
+		id := store.NewEntityID(0)
+		genOwner := testutil.RandAddr()
+		for i := 0; i < 110; i++ {
+			id = id.Inc()
+			var owner sdk.AccAddress
+			if i%2 == 0 {
+				owner = genOwner
+			}
+
+			var market store.EntityID
+			if i%2 == 0 {
+				market = store.NewEntityID(2)
+			} else {
+				market = store.NewEntityID(1)
+			}
+
+			require.NoError(t, k.OnEvent(types.OrderCreated{
+				MarketID: market,
+				ID:       id,
+				Owner:    owner,
+				CreatedTime: time.Unix(int64(i), 0),
+			}))
+		}
+
+		res, err := doListQuery(ListQueryRequest{
+			Start: store.NewEntityID(50),
+			Limit: 1,
+		})
+		require.NoError(t, err)
+
+		assert.Equal(t, len(res.Orders), 1)
+		assert.Equal(t, res.Orders[0].ID, store.NewEntityID(50))
+	})
 
 	t.Run("should return an error if the request does not deserialize", func(t *testing.T) {
 		_, err := q(ctx, []string{"list"}, abci.RequestQuery{Data: []byte("foo")})

@@ -20,13 +20,16 @@ limitations under the License.
 package exchange
 
 import (
+	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/gorilla/mux"
 
 	"github.com/xar-network/xar-network/embedded"
 	"github.com/xar-network/xar-network/embedded/auth"
+	"github.com/xar-network/xar-network/embedded/order"
 	"github.com/xar-network/xar-network/types/store"
 	"github.com/xar-network/xar-network/x/order/types"
 
@@ -42,6 +45,7 @@ func RegisterRoutes(ctx context.CLIContext, r *mux.Router, cdc *codec.Codec) {
 	sub := r.PathPrefix("/exchange").Subrouter()
 	sub.Use(auth.DefaultAuthMW)
 	sub.HandleFunc("/orders", postOrderHandler(ctx, cdc)).Methods("POST")
+	sub.HandleFunc("/orders/{order_id}/get", getOrderHandler(ctx, cdc)).Methods("GET")
 }
 
 func postOrderHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
@@ -117,5 +121,48 @@ func postOrderHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc
 		if _, err := w.Write(out); err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 		}
+	}
+}
+
+func getOrderHandler(ctx context.CLIContext, cdc *codec.Codec) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Parse URI for get order id
+		var orderIDStr string
+		re, _ := regexp.Compile("/orders/(.+)/(get|test)")
+		values := re.FindStringSubmatch(r.URL.RequestURI())
+		if len(values) > 1 {
+			orderIDStr = values[1]
+		}
+		// Check for test mode
+		testMode := values[2] == "test"
+
+		if orderIDStr == "" {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "order_id not present")
+			return
+		}
+
+		orderID := store.NewEntityIDFromString(orderIDStr)
+
+		// Use standart filter with start = order id and limit 1
+		req := order.ListQueryRequest{
+			Start: orderID,
+			Limit: 1,
+		}
+
+		var resB []byte
+		var err error
+		if !testMode {
+			// In test mode this block not worked with error
+			resB, _, err = ctx.QueryWithData("custom/embeddedorder/list", cdc.MustMarshalBinaryBare(req))
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		} else {
+			// In test mode return test answer
+			resB = []byte(fmt.Sprintf("Test OK = %s", orderID.String()))
+		}
+
+		embedded.PostProcessResponse(w, ctx, resB)
 	}
 }
