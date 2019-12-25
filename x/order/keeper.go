@@ -138,7 +138,7 @@ func (k Keeper) ReceiveAndFreezeCoins(ctx sdk.Context, owner sdk.AccAddress, coi
 func (k Keeper) UnfreezeAndReturnCoins(ctx sdk.Context, owner sdk.AccAddress, coins sdk.Coins) sdk.Error {
 	k.UnfreezeCoins(ctx, coins)
 
-	err := k.sk.SendCoinsFromModuleToAccount(ctx, ModuleName, owner, coins)
+	err := k.SendCoinsFromModuleToAccount(ctx, owner, coins)
 	if err != nil {
 		return err
 	}
