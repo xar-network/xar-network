@@ -20,6 +20,7 @@ limitations under the License.
 package order_test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -92,6 +93,23 @@ func TestKeeper_Post(t *testing.T) {
 		_, err = ctx.app.OrderKeeper.Post(ctx.ctx, ctx.seller, ctx.marketID, matcheng.Ask, testutil.ToBaseUnits(2), testutil.ToBaseUnits(10), 599)
 		require.NoError(t, err)
 	})
+	t.Run("test correct frosen", testFrozen)
+}
+
+func testFrozen(t *testing.T) {
+	ctx := setupTest(t)
+	price := testutil.ToBaseUnits(2)
+	quantity := testutil.ToBaseUnits(10)
+	fe, _ := matcheng.NormalizeQuoteQuantity(price, quantity)
+	frozenExpected, _ := sdk.NewIntFromString(fe.String())
+
+	_, err := ctx.app.OrderKeeper.Post(ctx.ctx, ctx.buyer, ctx.marketID, matcheng.Bid, price, quantity, 599)
+	require.NoError(t, err)
+
+	cns := ctx.app.OrderKeeper.GetFrozenCoins(ctx.ctx)
+	require.True(t, len(cns) > 0)
+	require.True(t, cns[0].Amount.Equal(frozenExpected))
+	log.Println()
 }
 
 func TestKeeper_Cancel(t *testing.T) {

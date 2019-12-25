@@ -130,14 +130,15 @@ func (k Keeper) ReceiveAndFreezeCoins(ctx sdk.Context, owner sdk.AccAddress, coi
 		return err
 	}
 
-	k.AddToFrozenCoins(ctx, coins)
+	k.FreezeCoins(ctx, coins)
+
 	return nil
 }
 
-func (k Keeper) ReturnAndUnfreezeCoins(ctx sdk.Context, owner sdk.AccAddress, coins sdk.Coins) sdk.Error {
-	k.RemoveFromFrozenCoins(ctx, coins)
+func (k Keeper) UnfreezeAndReturnCoins(ctx sdk.Context, owner sdk.AccAddress, coins sdk.Coins) sdk.Error {
+	k.UnfreezeCoins(ctx, coins)
 
-	err := k.SendCoinsFromModuleToAccount(ctx, owner, coins)
+	err := k.sk.SendCoinsFromModuleToAccount(ctx, ModuleName, owner, coins)
 	if err != nil {
 		return err
 	}
@@ -145,13 +146,13 @@ func (k Keeper) ReturnAndUnfreezeCoins(ctx sdk.Context, owner sdk.AccAddress, co
 	return nil
 }
 
-func (k Keeper) RemoveFromFrozenCoins(ctx sdk.Context, coins sdk.Coins) {
+func (k Keeper) UnfreezeCoins(ctx sdk.Context, coins sdk.Coins) {
 	frozenCoins := k.GetFrozenCoins(ctx)
 	frozenCoins = frozenCoins.Sub(coins)
 	k.SetFrozenCoins(ctx, frozenCoins)
 }
 
-func (k Keeper) AddToFrozenCoins(ctx sdk.Context, coins sdk.Coins) {
+func (k Keeper) FreezeCoins(ctx sdk.Context, coins sdk.Coins) {
 	frozenCoins := k.GetFrozenCoins(ctx)
 	frozenCoins = frozenCoins.Add(coins)
 	k.SetFrozenCoins(ctx, frozenCoins)
@@ -192,7 +193,7 @@ func (k Keeper) Create(ctx sdk.Context, owner sdk.AccAddress, marketID store.Ent
 		Quantity:          quantity,
 		TimeInForceBlocks: tif,
 		CreatedBlock:      ctx.BlockHeight(),
-		CreatedTime:	   ctx.BlockTime().UnixNano(),
+		CreatedTime:       ctx.BlockTime().UnixNano(),
 	}
 	err := store.SetNotExists(ctx, k.storeKey, k.cdc, orderKey(id), order)
 	_ = k.queue.Publish(types.OrderCreated{
@@ -204,7 +205,7 @@ func (k Keeper) Create(ctx sdk.Context, owner sdk.AccAddress, marketID store.Ent
 		Quantity:          order.Quantity,
 		TimeInForceBlocks: order.TimeInForceBlocks,
 		CreatedBlock:      order.CreatedBlock,
-		CreatedTime:	   order.CreatedTime,
+		CreatedTime:       order.CreatedTime,
 	})
 
 	return order, err
@@ -248,7 +249,7 @@ func (k Keeper) Cancel(ctx sdk.Context, id store.EntityID) sdk.Error {
 	}
 
 	coins := sdk.NewCoins(sdk.NewCoin(postedAsset, amount))
-	err = k.ReturnAndUnfreezeCoins(ctx, ord.Owner, coins)
+	err = k.UnfreezeAndReturnCoins(ctx, ord.Owner, coins)
 	if err != nil {
 		return err
 	}

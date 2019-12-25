@@ -12,7 +12,7 @@ You may obtain a copy of the License at
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
+See the License for the specific language governing Permissions and
 limitations under the License.
 
 */
@@ -20,7 +20,7 @@ limitations under the License.
 package types
 
 const (
-	// ModuleName The name that will be used throughout the module
+	// ModuleName The Name that will be used throughout the module
 	ModuleName = "order"
 
 	// StoreKey Top level store key where all module items will be stored
@@ -29,6 +29,6 @@ const (
 	// RouterKey Top level router key
 	RouterKey = ModuleName
 
-	// DefaultParamspace default name for parameter store
+	// DefaultParamspace default Name for parameter store
 	DefaultParamspace = ModuleName
 )
