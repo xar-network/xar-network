@@ -281,6 +281,11 @@ func (k Keeper) SetParams(ctx sdk.Context, params Params) sdk.Error {
 
 // GetParams gets the execution module's parameters.
 func (k Keeper) GetParams(ctx sdk.Context) (params Params) {
+	if !k.paramSpace.Has(ctx, KeyFee) {
+		percent, _ := sdk.NewDecFromStr("0.01")
+		fee := fee.FromPercent(percent)
+		k.SetParams(ctx, Params{Fee: fee})
+	}
 	k.paramSpace.GetParamSet(ctx, &params)
 	return
 }

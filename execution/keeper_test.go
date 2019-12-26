@@ -25,12 +25,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/xar-network/xar-network/execution"
 	"github.com/xar-network/xar-network/pkg/matcheng"
 	"github.com/xar-network/xar-network/testutil"
 	"github.com/xar-network/xar-network/testutil/mockapp"
 	"github.com/xar-network/xar-network/testutil/testflags"
-	"github.com/xar-network/xar-network/types/fee"
 	uexstore "github.com/xar-network/xar-network/types/store"
 	"github.com/xar-network/xar-network/x/csdt"
 	"github.com/xar-network/xar-network/x/denominations"
@@ -51,10 +49,7 @@ func TestKeeper_ExecuteAndCancelExpired(t *testing.T) {
 	marketParams := app.MarketKeeper.GetParams(app.Ctx)
 	marketParams.Nominees = []string{nominee.String()}
 	app.MarketKeeper.SetParams(app.Ctx, marketParams)
-	percent, _ := sdk.NewDecFromStr("0.01")
-	fee := fee.FromPercent(percent)
 
-	app.ExecutionKeeper.SetParams(app.Ctx, execution.Params{Fee: fee})
 	err := app.SupplyKeeper.MintCoins(app.Ctx, denominations.ModuleName, sdk.NewCoins(sdk.NewCoin("tst1", sdk.NewInt(1000000000000)), sdk.NewCoin("tst2", sdk.NewInt(1000000000000))))
 	require.NoError(t, err)
 	require.NoError(t, app.SupplyKeeper.SendCoinsFromModuleToAccount(app.Ctx, denominations.ModuleName, buyer, sdk.NewCoins(sdk.NewCoin("tst1", sdk.NewInt(10000000000)))))
@@ -140,7 +135,7 @@ func TestKeeper_ExecuteAndCancelExpired(t *testing.T) {
 
 	// perform next round of cancellation after since orders are
 	// deleted on cancellation
-	ctx = app.Ctx.WithBlockHeight(703)
+	ctx = app.Ctx.WithBlockHeight(704)
 	require.NoError(t, app.ExecutionKeeper.ExecuteAndCancelExpired(ctx))
 
 	t.Run("should delete completely filled orders", func(t *testing.T) {
