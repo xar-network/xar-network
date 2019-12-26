@@ -193,7 +193,7 @@ func (k Keeper) Create(ctx sdk.Context, owner sdk.AccAddress, marketID store.Ent
 		Quantity:          quantity,
 		TimeInForceBlocks: tif,
 		CreatedBlock:      ctx.BlockHeight(),
-		CreatedTime:       ctx.BlockTime().UnixNano(),
+		CreatedTime:       ctx.BlockTime(),
 	}
 	err := store.SetNotExists(ctx, k.storeKey, k.cdc, orderKey(id), order)
 	_ = k.queue.Publish(types.OrderCreated{
