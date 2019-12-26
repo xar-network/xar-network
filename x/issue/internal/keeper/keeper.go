@@ -680,7 +680,7 @@ func (k Keeper) GetSymbolIssues(ctx sdk.Context, symbol string) (issueIDs []stri
 // -----------------------------------------------------------------------------
 // Params
 
-// SetParams sets the auth module's parameters.
+// SetParams sets the issue module's parameters.
 func (k Keeper) SetParams(ctx sdk.Context, params types.Params) sdk.Error {
 	if !params.IssueFee.IsValid() {
 		return sdk.NewError(k.codespace, types.CodeInvalidGenesis, "invalid issue fee set")
@@ -692,7 +692,7 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) sdk.Error {
 	return nil
 }
 
-// GetParams gets the auth module's parameters.
+// GetParams gets the issue module's parameters.
 func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 	k.paramSpace.GetParamSet(ctx, &params)
 	return

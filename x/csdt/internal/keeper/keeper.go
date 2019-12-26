@@ -32,12 +32,13 @@ import (
 
 // Keeper csdt Keeper
 type Keeper struct {
-	storeKey       sdk.StoreKey
-	cdc            *codec.Codec
-	paramsSubspace params.Subspace
-	oracle         types.OracleKeeper
-	bank           types.BankKeeper
-	sk             types.SupplyKeeper
+	storeKey        sdk.StoreKey
+	cdc             *codec.Codec
+	paramsSubspace  params.Subspace
+	oracle          types.OracleKeeper
+	bank            types.BankKeeper
+	sk              types.SupplyKeeper
+	liquidityModule string
 }
 
 // NewKeeper creates a new keeper
@@ -48,14 +49,16 @@ func NewKeeper(
 	oracle types.OracleKeeper,
 	bank types.BankKeeper,
 	supply types.SupplyKeeper,
+	liquidityModule string,
 ) Keeper {
 	return Keeper{
-		storeKey:       storeKey,
-		oracle:         oracle,
-		bank:           bank,
-		paramsSubspace: subspace.WithKeyTable(types.ParamKeyTable()),
-		cdc:            cdc,
-		sk:             supply,
+		storeKey:        storeKey,
+		oracle:          oracle,
+		bank:            bank,
+		paramsSubspace:  subspace.WithKeyTable(types.ParamKeyTable()),
+		cdc:             cdc,
+		sk:              supply,
+		liquidityModule: liquidityModule,
 	}
 }
 
@@ -163,12 +166,12 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 	// change owner's coins (increase or decrease)
 	var err sdk.Error
 	if changeInCollateral.IsNegative() {
-		err = k.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral.Neg())))
+		err = k.sk.SendCoinsFromModuleToAccount(ctx, k.liquidityModule, owner, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral.Neg())))
 		if err != nil {
 			panic(err) // this shouldn't happen because coin balance was checked earlier
 		}
 	} else {
-		err = k.sk.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
+		err = k.sk.SendCoinsFromAccountToModule(ctx, owner, k.liquidityModule, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
 		if err != nil {
 			panic(err) // this shouldn't happen because coin balance was checked earlier
 		}
@@ -177,12 +180,12 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 	if changeInDebt.IsNegative() { //Depositing stable coin from owner to CSDT (decrease supply)
 		depositCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg()))
 
-		er := k.sk.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, depositCoins)
+		er := k.sk.SendCoinsFromAccountToModule(ctx, owner, k.liquidityModule, depositCoins)
 		if er != nil {
 			return er
 		}
 
-		er = k.sk.BurnCoins(ctx, types.ModuleName, depositCoins)
+		er = k.sk.BurnCoins(ctx, k.liquidityModule, depositCoins)
 		if er != nil {
 			return er
 		}
@@ -190,12 +193,12 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 		stableCoin := p.Fee.AddToCoin(sdk.NewCoin(types.StableDenom, changeInDebt))
 		withdrawCoins := sdk.NewCoins(stableCoin)
 
-		er := k.sk.MintCoins(ctx, types.ModuleName, withdrawCoins)
+		er := k.sk.MintCoins(ctx, k.liquidityModule, withdrawCoins)
 		if er != nil {
 			return er
 		}
 
-		er = k.sk.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, withdrawCoins)
+		er = k.sk.SendCoinsFromModuleToAccount(ctx, k.liquidityModule, owner, withdrawCoins)
 		if er != nil {
 			return er
 		}

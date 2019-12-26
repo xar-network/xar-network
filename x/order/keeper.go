@@ -39,20 +39,22 @@ const (
 type IteratorCB func(order types3.Order) bool
 
 type Keeper struct {
-	sk           supply.Keeper
-	marketKeeper market.Keeper
-	storeKey     sdk.StoreKey
-	queue        types.Backend
-	cdc          *codec.Codec
+	sk              supply.Keeper
+	marketKeeper    market.Keeper
+	storeKey        sdk.StoreKey
+	queue           types.Backend
+	cdc             *codec.Codec
+	liquidityModule string
 }
 
-func NewKeeper(sk supply.Keeper, mk market.Keeper, storeKey sdk.StoreKey, queue types.Backend, cdc *codec.Codec) Keeper {
+func NewKeeper(sk supply.Keeper, mk market.Keeper, storeKey sdk.StoreKey, queue types.Backend, cdc *codec.Codec, liquidityModule string) Keeper {
 	return Keeper{
-		sk:           sk,
-		marketKeeper: mk,
-		storeKey:     storeKey,
-		queue:        queue,
-		cdc:          cdc,
+		sk:              sk,
+		marketKeeper:    mk,
+		storeKey:        storeKey,
+		queue:           queue,
+		cdc:             cdc,
+		liquidityModule: liquidityModule,
 	}
 }
 
@@ -110,22 +112,23 @@ func (k Keeper) Post(ctx sdk.Context, owner sdk.AccAddress, mktID store.EntityID
 
 // all from-module transactions should be handled with this func
 func (k Keeper) SendCoinsFromModuleToAccount(ctx sdk.Context, addr sdk.AccAddress, coinsToSend sdk.Coins) sdk.Error {
-	k.ValidateCoinTransfer(ctx, coinsToSend)
+	//TODO rework so that execution also removes coins (clearance happens in execution, use order instead?)
+	//k.ValidateCoinTransfer(ctx, coinsToSend)
 
-	return k.sk.SendCoinsFromModuleToAccount(ctx, ModuleName, addr, coinsToSend)
+	return k.sk.SendCoinsFromModuleToAccount(ctx, k.liquidityModule, addr, coinsToSend)
 }
 
 func (k Keeper) ValidateCoinTransfer(ctx sdk.Context, coinsToSend sdk.Coins) {
-	frosenCoins := k.GetFrozenCoins(ctx)
-	mAcc := k.sk.GetModuleAccount(ctx, ModuleName)
+	frozenCoins := k.GetFrozenCoins(ctx)
+	mAcc := k.sk.GetModuleAccount(ctx, k.liquidityModule)
 	moduleCoins := mAcc.GetCoins()
-	avalibleCoins := moduleCoins.Sub(frosenCoins)
+	avalibleCoins := moduleCoins.Sub(frozenCoins)
 	// should panic if avalibleCoins sub coinsToSend would contain coins with negative amount
 	avalibleCoins.Sub(coinsToSend)
 }
 
 func (k Keeper) ReceiveAndFreezeCoins(ctx sdk.Context, owner sdk.AccAddress, coins sdk.Coins) sdk.Error {
-	err := k.sk.SendCoinsFromAccountToModule(ctx, owner, ModuleName, coins)
+	err := k.sk.SendCoinsFromAccountToModule(ctx, owner, k.liquidityModule, coins)
 	if err != nil {
 		return err
 	}
@@ -153,6 +156,7 @@ func (k Keeper) UnfreezeCoins(ctx sdk.Context, coins sdk.Coins) {
 }
 
 func (k Keeper) FreezeCoins(ctx sdk.Context, coins sdk.Coins) {
+	//TODO: Change to be on an account level
 	frozenCoins := k.GetFrozenCoins(ctx)
 	frozenCoins = frozenCoins.Add(coins)
 	k.SetFrozenCoins(ctx, frozenCoins)
@@ -249,6 +253,11 @@ func (k Keeper) Cancel(ctx sdk.Context, id store.EntityID) sdk.Error {
 	}
 
 	coins := sdk.NewCoins(sdk.NewCoin(postedAsset, amount))
+
+	if coins.IsAnyNegative() {
+		panic(coins.String())
+	}
+
 	err = k.UnfreezeAndReturnCoins(ctx, ord.Owner, coins)
 	if err != nil {
 		return err

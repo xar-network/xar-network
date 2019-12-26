@@ -286,15 +286,15 @@ func NewXarApp(
 	app.issueKeeper = issue.NewKeeper(keys[issue.StoreKey], issueSubspace, app.bankKeeper, app.supplyKeeper, issue.DefaultCodespace, auth.FeeCollectorName)
 	app.oracleKeeper = oracle.NewKeeper(keys[oracle.StoreKey], app.cdc, oracleSubspace, oracle.DefaultCodespace)
 	app.recordKeeper = record.NewKeeper(app.cdc, keys[record.StoreKey], recordSubspace, record.DefaultCodespace)
-	app.csdtKeeper = csdt.NewKeeper(app.cdc, keys[csdt.StoreKey], csdtSubspace, app.oracleKeeper, app.bankKeeper, app.supplyKeeper)
-	app.coinswapKeeper = coinswap.NewKeeper(cdc, keys[coinswap.StoreKey], app.bankKeeper, app.supplyKeeper, &app.accountKeeper, coinswapSubspace)
-	app.syntheticKeeper = synthetic.NewKeeper(app.cdc, keys[synthetic.StoreKey], syntheticSubspace, app.oracleKeeper, app.bankKeeper, app.supplyKeeper)
+	app.csdtKeeper = csdt.NewKeeper(app.cdc, keys[csdt.StoreKey], csdtSubspace, app.oracleKeeper, app.bankKeeper, app.supplyKeeper, csdt.ModuleName)
+	app.coinswapKeeper = coinswap.NewKeeper(cdc, keys[coinswap.StoreKey], app.bankKeeper, app.supplyKeeper, &app.accountKeeper, coinswapSubspace /*, csdt.ModuleName*/)
+	app.syntheticKeeper = synthetic.NewKeeper(app.cdc, keys[synthetic.StoreKey], syntheticSubspace, app.oracleKeeper, app.bankKeeper, app.supplyKeeper /*, csdt.ModuleName*/)
 	app.auctionKeeper = auction.NewKeeper(app.cdc, app.supplyKeeper, keys[auction.StoreKey], auctionSubspace)
 	app.liquidatorKeeper = liquidator.NewKeeper(app.cdc, keys[liquidator.StoreKey], liquidatorSubspace, app.csdtKeeper, app.auctionKeeper, app.bankKeeper, app.supplyKeeper)
 
 	app.marketKeeper = market.NewKeeper(keys[markettypes.StoreKey], app.cdc, marketSubspace, market.DefaultCodespace)
-	app.orderKeeper = order.NewKeeper(app.supplyKeeper, app.marketKeeper, keys[ordertypes.StoreKey], queue, app.cdc)
-	app.execKeeper = execution.NewKeeper(queue, app.marketKeeper, app.orderKeeper, app.bankKeeper, executionSubspace)
+	app.orderKeeper = order.NewKeeper(app.supplyKeeper, app.marketKeeper, keys[ordertypes.StoreKey], queue, app.cdc, csdt.ModuleName)
+	app.execKeeper = execution.NewKeeper(queue, app.marketKeeper, app.orderKeeper, app.supplyKeeper, executionSubspace, auth.FeeCollectorName, csdt.ModuleName)
 
 	app.denominationsKeeper = denominations.NewKeeper(keys[denominations.StoreKey], app.cdc, app.accountKeeper, app.supplyKeeper, denominationsSubspace, denominations.DefaultCodespace)
 
