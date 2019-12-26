@@ -79,6 +79,12 @@ func (k Keeper) Post(ctx sdk.Context, owner sdk.AccAddress, mktID store.EntityID
 		}
 		postedAmt = p
 	} else {
+		// Ensure that should this order be filled, it can be represented as a bid
+
+		_, err := matcheng.NormalizeQuoteQuantity(price, quantity)
+		if err != nil {
+			return types3.Order{}, sdk.ErrInvalidCoins(err.Error())
+		}
 		postedAsset = mkt.BaseAssetDenom
 		postedAmt = quantity
 	}
