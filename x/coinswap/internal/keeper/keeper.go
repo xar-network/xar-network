@@ -30,7 +30,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/tendermint/tendermint/libs/log"
-	"github.com/xar-network/xar-network/x/uniswap/internal/types"
+	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
 
 // Keeper of the coinswap store
@@ -44,7 +44,7 @@ type Keeper struct {
 	paramSpace params.Subspace
 }
 
-// NewKeeper returns a uniswap keeper. It handles:
+// NewKeeper returns a coinswap keeper. It handles:
 // - creating new ModuleAccounts for each trading pair
 // - burning minting liquidity coins
 // - sending to and from ModuleAccounts
@@ -187,7 +187,7 @@ func (keeper Keeper) RemoveLiquidityTransfer(ctx sdk.Context, account sdk.AccAdd
 // address provided.
 func (keeper Keeper) RecieveCoins(ctx sdk.Context, addr sdk.AccAddress, coins ...sdk.Coin) sdk.Error {
 	// the logic below was probably incorrect too
-	// following uniswap whitepaper (https://hackmd.io/@477aQ9OrQTCbVR3fq1Qzxg/HJ9jLsfTz?type=view#Adding-Liquidity)
+	// following coinswap whitepaper (https://hackmd.io/@477aQ9OrQTCbVR3fq1Qzxg/HJ9jLsfTz?type=view#Adding-Liquidity)
 	// minted tokens are added to both reservePool coins and liquidity provider storage
 
 	//err := keeper.sk.SendCoinsFromModuleToAccount(ctx, moduleName, addr, coins)

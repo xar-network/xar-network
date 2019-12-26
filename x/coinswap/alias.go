@@ -17,12 +17,12 @@ limitations under the License.
 
 */
 
-package uniswap
+package coinswap
 
 import (
-	"github.com/xar-network/xar-network/x/uniswap/client/rest"
-	"github.com/xar-network/xar-network/x/uniswap/internal/keeper"
-	"github.com/xar-network/xar-network/x/uniswap/internal/types"
+	"github.com/xar-network/xar-network/x/coinswap/client/rest"
+	"github.com/xar-network/xar-network/x/coinswap/internal/keeper"
+	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
 
 type (

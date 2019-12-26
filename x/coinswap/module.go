@@ -17,7 +17,7 @@ limitations under the License.
 
 */
 
-package uniswap
+package coinswap
 
 import (
 	"encoding/json"
@@ -30,9 +30,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/xar-network/xar-network/x/uniswap/client/cli"
-	"github.com/xar-network/xar-network/x/uniswap/client/rest"
-	"github.com/xar-network/xar-network/x/uniswap/internal/keeper"
+	"github.com/xar-network/xar-network/x/coinswap/client/cli"
+	"github.com/xar-network/xar-network/x/coinswap/client/rest"
+	"github.com/xar-network/xar-network/x/coinswap/internal/keeper"
 )
 
 var (
@@ -81,7 +81,7 @@ func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command {
 	// Group nameservice queries under a subcommand
 	auctionQueryCmd := &cobra.Command{
 		Use:   QuerierRoute,
-		Short: "Querying commands for the uniswap module",
+		Short: "Querying commands for the coinswap module",
 	}
 
 	auctionQueryCmd.AddCommand(

@@ -17,7 +17,7 @@ limitations under the License.
 
 */
 
-package uniswap
+package coinswap
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/stretchr/testify/require"
-	"github.com/xar-network/xar-network/x/uniswap/internal/types"
+	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
 
 const nonNativeDenomTest = "asd"
