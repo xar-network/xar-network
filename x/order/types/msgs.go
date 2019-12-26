@@ -71,6 +71,14 @@ func (msg MsgPost) ValidateBasic() sdk.Error {
 	if msg.TimeInForce > MaxTimeInForce {
 		return sdk.ErrInternal("time in force cannot be larger than 600")
 	}
+
+	if msg.Direction == matcheng.Bid {
+
+		_, err := matcheng.NormalizeQuoteQuantity(msg.Price, msg.Quantity)
+		if err != nil {
+			return sdk.ErrInternal(err.Error())
+		}
+	}
 	return nil
 }
 
