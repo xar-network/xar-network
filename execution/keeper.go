@@ -241,7 +241,9 @@ func (k Keeper) ExecuteFill(ctx sdk.Context, clearingPrice sdk.Uint, f matcheng.
 				return err
 			}
 		} else {
-			panic("clearing price too small to represent")
+			// This is dust, and can possibly happen, but dust can't be represented
+			// So instead, we just clear the order
+			//panic("clearing price too small to represent")
 		}
 	}
 
