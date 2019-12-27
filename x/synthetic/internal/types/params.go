@@ -101,7 +101,7 @@ type SyntheticParam struct {
 // String implements fmt.Stringer
 func (sp SyntheticParam) String() string {
 	return fmt.Sprintf(`Synthetic:
-	Denom: %s`, sp.Denom)
+	MarketDenom: %s`, sp.Denom)
 }
 
 // SyntheticParams array of SyntheticParam
