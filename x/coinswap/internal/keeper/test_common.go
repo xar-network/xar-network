@@ -17,7 +17,7 @@ limitations under the License.
 
 */
 
-package uniswap
+package keeper
 
 import (
 	"testing"
@@ -38,7 +38,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	supplyKeeper "github.com/cosmos/cosmos-sdk/x/supply"
-	"github.com/xar-network/xar-network/x/uniswap/internal/types"
+	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
 
 // create a codec used only for testing
@@ -60,7 +60,7 @@ func createTestInput(t *testing.T, amt sdk.Int, nAccs int64) (sdk.Context, Keepe
 	keyParams := sdk.NewKVStoreKey(params.StoreKey)
 	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
-	keyCoinswap := sdk.NewKVStoreKey(types.StoreKey)
+	keyUniswap := sdk.NewKVStoreKey(types.StoreKey)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
@@ -68,19 +68,18 @@ func createTestInput(t *testing.T, amt sdk.Int, nAccs int64) (sdk.Context, Keepe
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyCoinswap, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyUniswap, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 
 	cdc := makeTestCodec()
-	ctx := sdk.NewContext(ms, abci.Header{ChainID: "uniswap-chain"}, false, log.NewNopLogger())
+	ctx := sdk.NewContext(ms, abci.Header{ChainID: "coinswap-chain"}, false, log.NewNopLogger())
 
 	pk := params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
 	ak := auth.NewAccountKeeper(cdc, keyAcc, pk.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
 	bk := bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, nil)
 
-	initialCoins := sdk.Coins{sdk.NewCoin("stake", sdk.NewInt(100000000000)), sdk.NewCoin("asd", sdk.NewInt(100000000000)), sdk.NewCoin("asd2", sdk.NewInt(100000000000))}.Sort()
-	//sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, amt))
+	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, amt))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 
 	// module account permissions
@@ -89,12 +88,7 @@ func createTestInput(t *testing.T, amt sdk.Int, nAccs int64) (sdk.Context, Keepe
 	}
 
 	sk := supplyKeeper.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
-	mAcc := supplyKeeper.NewEmptyModuleAccount(types.ModuleName, []string{supply.Minter, supply.Burner, supply.Staking}...)
-	sk.SetModuleAccount(ctx, mAcc)
-	sk.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
-	mc := sk.GetModuleAccount(ctx, types.ModuleName)
-	require.NotNil(t, mc)
-	keeper := NewKeeper(cdc, keyCoinswap, bk, sk, &ak, pk.Subspace(types.DefaultParamspace))
+	keeper := NewKeeper(cdc, keyUniswap, bk, sk, &ak, pk.Subspace(types.DefaultParamspace))
 	keeper.SetParams(ctx, types.DefaultParams())
 
 	return ctx, keeper, accs

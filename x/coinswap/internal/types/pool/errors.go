@@ -33,7 +33,7 @@ const (
 	CodeNotAllDenomsAreInPool
 )
 
-var codespace sdk.CodespaceType = "uniswap"
+var codespace sdk.CodespaceType = "coinswap"
 
 func SetCodespace(c sdk.CodespaceType) {
 	codespace = c

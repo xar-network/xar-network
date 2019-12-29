@@ -53,7 +53,7 @@ func NewDefaultFee() Fee {
 // The other thing you can do with MinimumAdditionalFee is creating a constant fee (when it is not matter  how large amount is - a fee is always the same).
 // To do it - just create a fee with zeroInt set as Numerator and Denominator and set MinimumAdditionalFee to a constant value.
 func (f Fee) AddToAmount(amount sdk.Int) sdk.Int {
-	if amount.LTE(sdk.ZeroInt()) {
+	if amount.LT(sdk.ZeroInt()) {
 		panic(MsgIncorrectBaseAmountForFee)
 	}
 
@@ -128,6 +128,8 @@ func FromPercent(percentToAdd sdk.Dec) (f Fee) {
 
 	f.Numerator = num
 	f.Denominator = denominator
+	f.MinimumAdditionalFee = sdk.NewInt(1)
+	f.MinimumSubFee = sdk.NewInt(1)
 	return
 }
 

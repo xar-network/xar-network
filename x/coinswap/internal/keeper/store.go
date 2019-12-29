@@ -2,7 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/xar-network/xar-network/x/uniswap/internal/types/pool"
+	"github.com/xar-network/xar-network/x/coinswap/internal/types/pool"
 )
 
 var reservePoolStorePrefix = []byte{0x01}

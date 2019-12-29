@@ -17,12 +17,12 @@ limitations under the License.
 
 */
 
-package uniswap
+package coinswap
 
 import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/xar-network/xar-network/x/uniswap/internal/types"
+	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
 
 // NewHandler returns a handler for "coinswap" type messages.
@@ -62,7 +62,7 @@ func HandleMsgSwapOrder(ctx sdk.Context, msg MsgSwapOrder, k Keeper) sdk.Result 
 // just a wrapper around "swap"
 // the only difference is that msgTransactionOrder has an additional check.
 // it is necessary for sender and recipient to be different addresses.
-// it just reproduces logic of the original "transactionOrder" message from uniswap
+// it just reproduces logic of the original "transactionOrder" message from coinswap
 func HandleMsgTransactionOrder(ctx sdk.Context, msg MsgTransactionOrder, k Keeper) sdk.Result {
 	m := MsgSwapOrder{
 		msg.Input,

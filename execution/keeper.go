@@ -32,39 +32,41 @@ import (
 	types2 "github.com/xar-network/xar-network/x/order/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 )
 
 const (
-       DefaultParamspace = "execution"
+	DefaultParamspace = "execution"
 )
 
 var (
-       KeyFee         = []byte("fee")
+	KeyFee = []byte("fee")
 
-       logger = log.WithModule("execution")
+	logger = log.WithModule("execution")
 )
 
 type Params struct {
-       Fee         fee.Fee 		`json:"fee"`
+	Fee fee.Fee `json:"fee"`
 }
 
 // Implements params.ParamSet.
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
-       return params.ParamSetPairs{
-               {KeyFee, &p.Fee},
-       }
+	return params.ParamSetPairs{
+		{KeyFee, &p.Fee},
+	}
 }
 
 type Keeper struct {
-	queue     types.Backend
-	mk        market.Keeper
-	ordK      order.Keeper
-	bk        bank.Keeper
-	metrics   *Metrics
-	saveFills bool
-	paramSpace params.Subspace
+	queue            types.Backend
+	mk               market.Keeper
+	ordK             order.Keeper
+	sk               supply.Keeper
+	metrics          *Metrics
+	saveFills        bool
+	paramSpace       params.Subspace
+	feeCollectorName string // name of the FeeCollector ModuleAccount
+	liquidityModule  string
 }
 
 type matcherByMarket struct {
@@ -72,19 +74,21 @@ type matcherByMarket struct {
 	mktID   store.EntityID
 }
 
-func NewKeeper(queue types.Backend, mk market.Keeper, ordK order.Keeper, bk bank.Keeper, paramSpace params.Subspace) Keeper {
+func NewKeeper(queue types.Backend, mk market.Keeper, ordK order.Keeper, sk supply.Keeper, paramSpace params.Subspace, feeCollectorName string, liquidityModule string) Keeper {
 	return Keeper{
-		queue:   queue,
-		mk:      mk,
-		ordK:    ordK,
-		bk:      bk,
-		metrics: PrometheusMetrics(),
-		paramSpace: paramSpace.WithKeyTable(ParamKeyTable()),
+		queue:            queue,
+		mk:               mk,
+		ordK:             ordK,
+		sk:               sk,
+		metrics:          PrometheusMetrics(),
+		paramSpace:       paramSpace.WithKeyTable(ParamKeyTable()),
+		feeCollectorName: feeCollectorName,
+		liquidityModule:  liquidityModule,
 	}
 }
 
 func ParamKeyTable() params.KeyTable {
-       return params.NewKeyTable().RegisterParamSet(&Params{})
+	return params.NewKeyTable().RegisterParamSet(&Params{})
 }
 
 func (k Keeper) ExecuteAndCancelExpired(ctx sdk.Context) sdk.Error {
@@ -134,6 +138,7 @@ func (k Keeper) ExecuteAndCancelExpired(ctx sdk.Context) sdk.Error {
 		matcheng.ReturnMatcher(m.matcher)
 	}
 	var fillCount int
+
 	for _, res := range toFill {
 		fillCount += len(res.Fills)
 		for _, f := range res.Fills {
@@ -165,30 +170,42 @@ func (k Keeper) ExecuteFill(ctx sdk.Context, clearingPrice sdk.Uint, f matcheng.
 		panic(err)
 	}
 
-	params := Params{}
-	k.paramSpace.Get(ctx, KeyFee, &params)
+	feeParams := k.GetParams(ctx)
 
-	fQtyUnfilled := sdk.Int(f.QtyUnfilled)
 	if ord.Direction == matcheng.Bid {
-		fQtyFilled := sdk.Uint(params.Fee.AddToAmount(sdk.Int(f.QtyFilled)))
-		fQtyUnfilled = params.Fee.SubFromAmount(fQtyUnfilled)
-		quoteAmount, ok := sdk.NewIntFromString(fQtyFilled.String())
+		filledFee := feeParams.Fee.GetAmountFee(sdk.Int(f.QtyFilled))
+		quoteAmount, ok := sdk.NewIntFromString(f.QtyFilled.String())
+		amountLessFee := quoteAmount.Sub(filledFee)
+
+		if amountLessFee.IsNegative() {
+			panic("amount less fees are negative or zero")
+		}
+
 		if !ok {
 			panic("invalid QtyFilled value")
 		}
-		_, err = k.bk.AddCoins(ctx, ord.Owner, sdk.NewCoins(sdk.NewCoin(mkt.BaseAssetDenom, quoteAmount)))
+		// Send filled quantity less fees to bidder
+		err = k.sk.SendCoinsFromModuleToAccount(ctx, k.liquidityModule, ord.Owner, sdk.NewCoins(sdk.NewCoin(mkt.BaseAssetDenom, amountLessFee)))
 		if err != nil {
 			return err
 		}
+
+		// Send fees to fee module
+		err = k.sk.SendCoinsFromModuleToModule(ctx, k.liquidityModule, k.feeCollectorName, sdk.NewCoins(sdk.NewCoin(mkt.BaseAssetDenom, filledFee)))
+		if err != nil {
+			return err
+		}
+
 		if clearingPrice.LT(ord.Price) {
+
 			diff := ord.Price.Sub(clearingPrice)
-			refund, qErr := matcheng.NormalizeQuoteQuantity(diff, fQtyFilled)
+			refund, qErr := matcheng.NormalizeQuoteQuantity(diff, f.QtyFilled)
 			refundInt, ok := sdk.NewIntFromString(refund.String())
 			if !ok {
 				panic("invalid refundInt value")
 			}
 			if qErr == nil {
-				_, err = k.bk.AddCoins(ctx, ord.Owner, sdk.NewCoins(sdk.NewCoin(mkt.QuoteAssetDenom, refundInt)))
+				err = k.sk.SendCoinsFromModuleToAccount(ctx, k.liquidityModule, ord.Owner, sdk.NewCoins(sdk.NewCoin(mkt.QuoteAssetDenom, refundInt)))
 				if err != nil {
 					return err
 				}
@@ -196,30 +213,41 @@ func (k Keeper) ExecuteFill(ctx sdk.Context, clearingPrice sdk.Uint, f matcheng.
 				logger.Info(
 					"refund amount too small",
 					"order_id", ord.ID.String(),
-					"qty_filled", fQtyFilled.String(),
+					"qty_filled", f.QtyFilled.String(),
 					"price_delta", diff.String(),
 				)
 			}
 		}
 	} else {
-		fQtyFilled := sdk.Uint(params.Fee.SubFromAmount(sdk.Int(f.QtyFilled)))
-		fQtyUnfilled = params.Fee.AddToAmount(fQtyUnfilled)
-		baseAmount, qErr := matcheng.NormalizeQuoteQuantity(clearingPrice, fQtyFilled)
+		filledFee := feeParams.Fee.GetAmountFee(sdk.Int(f.QtyFilled))
+		baseAmount, qErr := matcheng.NormalizeQuoteQuantity(clearingPrice, f.QtyFilled)
 		baseAmountInt, ok := sdk.NewIntFromString(baseAmount.String())
+		amountLessFee := baseAmountInt.Sub(filledFee)
+
+		if amountLessFee.IsNegative() {
+			panic("amount less fees are negative or zero")
+		}
+
 		if !ok {
 			panic("invalid baseAmountInt")
 		}
 		if qErr == nil {
-			_, err = k.bk.AddCoins(ctx, ord.Owner, sdk.NewCoins(sdk.NewCoin(mkt.QuoteAssetDenom, baseAmountInt)))
+			err = k.sk.SendCoinsFromModuleToAccount(ctx, k.liquidityModule, ord.Owner, sdk.NewCoins(sdk.NewCoin(mkt.QuoteAssetDenom, amountLessFee)))
+			if err != nil {
+				return err
+			}
+			err = k.sk.SendCoinsFromModuleToModule(ctx, k.liquidityModule, k.feeCollectorName, sdk.NewCoins(sdk.NewCoin(mkt.QuoteAssetDenom, filledFee)))
 			if err != nil {
 				return err
 			}
 		} else {
-			panic("clearing price too small to represent")
+			// This is dust, and can possibly happen, but dust can't be represented
+			// So instead, we just clear the order
+			//panic("clearing price too small to represent")
 		}
 	}
 
-	ord.Quantity = sdk.Uint(fQtyUnfilled)
+	ord.Quantity = sdk.Uint(f.QtyUnfilled)
 	if ord.Quantity.Equal(sdk.ZeroUint()) {
 		logger.Info("order completely filled", "id", ord.ID.String())
 		if err := k.ordK.Del(ctx, ord.ID); err != nil {
@@ -245,6 +273,23 @@ func (k Keeper) ExecuteFill(ctx sdk.Context, clearingPrice sdk.Uint, f matcheng.
 		Price:       clearingPrice,
 	})
 	return nil
+}
+
+// SetParams sets the execution module's parameters.
+func (k Keeper) SetParams(ctx sdk.Context, params Params) sdk.Error {
+	k.paramSpace.SetParamSet(ctx, &params)
+	return nil
+}
+
+// GetParams gets the execution module's parameters.
+func (k Keeper) GetParams(ctx sdk.Context) (params Params) {
+	if !k.paramSpace.Has(ctx, KeyFee) {
+		percent, _ := sdk.NewDecFromStr("0.01")
+		fee := fee.FromPercent(percent)
+		k.SetParams(ctx, Params{Fee: fee})
+	}
+	k.paramSpace.GetParamSet(ctx, &params)
+	return
 }
 
 func getMatcherByMarket(matchers map[string]*matcherByMarket, ord types2.Order) *matcherByMarket {

@@ -19,16 +19,23 @@ limitations under the License.
 
 package types
 
-const (
-	// ModuleName is the name of the module.
-	ModuleName = "uniswap"
-
-	// RouterKey is the message route for the uniswap module.
-	RouterKey = ModuleName
-
-	// StoreKey is the default store key for the uniswap module.
-	StoreKey = ModuleName
-
-	// QuerierRoute is the querier route for the uniswap module.
-	QuerierRoute = StoreKey
+import (
+	"github.com/cosmos/cosmos-sdk/codec"
 )
+
+// RegisterCodec registers concrete types on the codec.
+func RegisterCodec(cdc *codec.Codec) {
+	cdc.RegisterConcrete(MsgSwapOrder{}, "coinswap/MsgSwapOrder", nil)
+	cdc.RegisterConcrete(MsgAddLiquidity{}, "coinswap/MsgAddLiquidity", nil)
+	cdc.RegisterConcrete(MsgRemoveLiquidity{}, "coinswap/MsgRemoveLiquidity", nil)
+}
+
+// ModuleCdc generic sealed codec to be used throughout module
+var ModuleCdc *codec.Codec
+
+func init() {
+	ModuleCdc = codec.New()
+	RegisterCodec(ModuleCdc)
+	codec.RegisterCrypto(ModuleCdc)
+	ModuleCdc.Seal()
+}

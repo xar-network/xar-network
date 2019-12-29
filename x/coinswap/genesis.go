@@ -17,11 +17,11 @@ limitations under the License.
 
 */
 
-package uniswap
+package coinswap
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/xar-network/xar-network/x/uniswap/internal/types"
+	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
 
 // TODO: ...

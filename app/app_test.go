@@ -184,7 +184,7 @@ func TestXardGeneric(t *testing.T) {
 	setGenesis(gapp)
 
 	modAccPerms := GetMaccPerms()
-	require.Equal(t, 12, len(modAccPerms))
+	require.Equal(t, 13, len(modAccPerms))
 }
 
 func TestXardValidateGenesis(t *testing.T) {

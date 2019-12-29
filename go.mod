@@ -19,6 +19,7 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v1.1.0
 	github.com/prometheus/common v0.6.0
+	github.com/robertkrimen/godocdown v0.0.0-20130622164427-0bfa04905481 // indirect
 	github.com/rs/cors v1.7.0
 	github.com/snikch/goodman v0.0.0-20171125024755-10e37e294daa
 	github.com/spf13/cobra v0.0.5

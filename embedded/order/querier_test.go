@@ -21,6 +21,7 @@ package order
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -68,10 +69,10 @@ func TestQuerier(t *testing.T) {
 		res, err := doListQuery(ListQueryRequest{})
 		require.NoError(t, err)
 
-		assert.Equal(t, 50, len(res.Orders))
+		assert.Equal(t, 55, len(res.Orders))
 		testutil.AssertEqualEntityIDs(t, store.NewEntityID(55), res.Orders[0].ID)
 		testutil.AssertEqualEntityIDs(t, store.NewEntityID(6), res.Orders[49].ID)
-		testutil.AssertEqualEntityIDs(t, store.NewEntityID(5), res.NextID)
+		testutil.AssertEqualEntityIDs(t, store.NewEntityID(0), res.NextID)
 	})
 	t.Run("should work with an offset", func(t *testing.T) {
 		id := store.NewEntityID(0)
@@ -117,7 +118,7 @@ func TestQuerier(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assert.Equal(t, 50, len(res.Orders))
+		assert.Equal(t, 55, len(res.Orders))
 		testutil.AssertEqualEntityIDs(t, store.NewEntityID(109), res.Orders[0].ID)
 		testutil.AssertEqualEntityIDs(t, store.NewEntityID(11), res.Orders[49].ID)
 	})
@@ -265,14 +266,14 @@ func TestQuerier(t *testing.T) {
 				MarketID: market,
 				ID:       id,
 				Owner:    owner,
-				CreatedTime: int64(i),
+				CreatedTime: time.Unix(int64(i), 0),
 			}))
 		}
 
 		res, err := doListQuery(ListQueryRequest{
 			Limit: 1000,
-			UnixTimeAfter: 0,
-			UnixTimeBefore: 1000,
+			UnixTimeAfter: time.Unix(int64(0), 0).UnixNano(),
+			UnixTimeBefore: time.Unix(int64(1000), 0).UnixNano(),
 		})
 		require.NoError(t, err)
 
@@ -280,26 +281,60 @@ func TestQuerier(t *testing.T) {
 
 		res, err = doListQuery(ListQueryRequest{
 			Limit: 1000,
-			UnixTimeAfter: 100,
-			UnixTimeBefore: 100,
+			UnixTimeAfter: time.Unix(int64(100), 0).UnixNano(),
+			UnixTimeBefore: time.Unix(int64(100), 0).UnixNano(),
 		})
 		require.NoError(t, err)
 
 		assert.Equal(t, len(res.Orders), 1)
-		assert.Equal(t, res.Orders[0].CreatedTime, int64(100))
+		assert.Equal(t, res.Orders[0].CreatedTime.UnixNano(), time.Unix(int64(100), 0).UnixNano())
 
 		res, err = doListQuery(ListQueryRequest{
 			Limit: 1000,
-			UnixTimeAfter: 51,
-			UnixTimeBefore: 100,
+			UnixTimeAfter: time.Unix(int64(51), 0).UnixNano(),
+			UnixTimeBefore: time.Unix(int64(100), 0).UnixNano(),
 		})
 		require.NoError(t, err)
 
 		assert.Equal(t, len(res.Orders), 50)
 		for _, ord := range res.Orders {
-			assert.GreaterOrEqual(t, ord.CreatedTime, int64(51))
-			assert.LessOrEqual(t, ord.CreatedTime, int64(100))
+			assert.GreaterOrEqual(t, ord.CreatedTime.UnixNano(), time.Unix(int64(51), 0).UnixNano())
+			assert.LessOrEqual(t, ord.CreatedTime.UnixNano(), time.Unix(int64(100), 0).UnixNano())
 		}
+	})
+	t.Run("should support filter by order id for one order", func(t *testing.T) {
+		id := store.NewEntityID(0)
+		genOwner := testutil.RandAddr()
+		for i := 0; i < 110; i++ {
+			id = id.Inc()
+			var owner sdk.AccAddress
+			if i%2 == 0 {
+				owner = genOwner
+			}
+
+			var market store.EntityID
+			if i%2 == 0 {
+				market = store.NewEntityID(2)
+			} else {
+				market = store.NewEntityID(1)
+			}
+
+			require.NoError(t, k.OnEvent(types.OrderCreated{
+				MarketID: market,
+				ID:       id,
+				Owner:    owner,
+				CreatedTime: time.Unix(int64(i), 0),
+			}))
+		}
+
+		res, err := doListQuery(ListQueryRequest{
+			Start: store.NewEntityID(50),
+			Limit: 1,
+		})
+		require.NoError(t, err)
+
+		assert.Equal(t, len(res.Orders), 1)
+		assert.Equal(t, res.Orders[0].ID, store.NewEntityID(50))
 	})
 
 	t.Run("should return an error if the request does not deserialize", func(t *testing.T) {
