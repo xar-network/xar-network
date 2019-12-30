@@ -44,6 +44,7 @@ var (
 	KeyDebtParams           = []byte("DebtParams")
 	KeyCircuitBreaker       = []byte("CircuitBreaker")
 	KeyNominees             = []byte("Nominees")
+	KeyFee                  = []byte("Fee")
 	DefaultGlobalDebt       = sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000)))
 	DefaultCircuitBreaker   = false
 	DefaultCollateralParams = CollateralParams{CollateralParam{
@@ -60,7 +61,7 @@ type Params struct {
 	DebtParams       DebtParams       `json:"debt_params" yaml:"debt_params"`
 	GlobalDebtLimit  sdk.Coins        `json:"global_debt_limit" yaml:"global_debt_limit"`
 	CircuitBreaker   bool             `json:"circuit_breaker" yaml:"circuit_breaker"`
-	Fee              fee.Fee        `json:"fee" yaml:"fee"`
+	Fee              fee.Fee          `json:"fee" yaml:"fee"`
 	Nominees         []string         `json:"nominees" yaml:"nominees"`
 }
 
@@ -92,8 +93,9 @@ func (p Params) String() string {
 	Collateral Params: %s
 	Debt Params: %s
 	Nominees: %s
+	Fee: %s
 	Circuit Breaker: %t`,
-		p.GlobalDebtLimit, p.CollateralParams, p.DebtParams, p.Nominees, p.CircuitBreaker,
+		p.GlobalDebtLimit, p.CollateralParams, p.DebtParams, p.Nominees, p.Fee, p.CircuitBreaker,
 	)
 }
 
@@ -196,6 +198,7 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 		{Key: KeyDebtParams, Value: &p.DebtParams},
 		{Key: KeyCircuitBreaker, Value: &p.CircuitBreaker},
 		{Key: KeyNominees, Value: &p.Nominees},
+		{Key: KeyFee, Value: &p.Fee},
 	}
 }
 

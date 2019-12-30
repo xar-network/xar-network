@@ -66,51 +66,136 @@ func NewKeeper(
 // TODO can/should this function be split up?
 func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, changeInCollateral sdk.Int, changeInDebt sdk.Int) sdk.Error {
 
-	// Phase 1: Get state, make changes in memory and check if they're ok.
-
-	// Check collateral type ok
-	p := k.GetParams(ctx)
-	if !p.IsCollateralPresent(collateralDenom) { // maybe abstract this logic into GetCSDT
-		return sdk.ErrInternal("collateral type not enabled to create CSDTs")
-	}
-
 	// Check the owner has enough collateral and stable coins
-	if changeInCollateral.IsPositive() { // adding collateral to CSDT
-		ok := k.bank.HasCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
-		if !ok {
-			return sdk.ErrInsufficientCoins("not enough collateral in sender's account")
-		}
-	}
-	if changeInDebt.IsNegative() { // reducing debt, by adding stable coin to CSDT
-		ok := k.bank.HasCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg())))
-		if !ok {
-			return sdk.ErrInsufficientCoins("not enough stable coin in sender's account")
-		}
+	err := validateCoinTransfer(ctx, k, owner, collateralDenom, changeInCollateral, changeInDebt)
+	if err != nil {
+		return err
 	}
 
-	// Change collateral and debt recorded in CSDT
-	// Get CSDT (or create if not exists)
-	csdt, found := k.GetCSDT(ctx, owner, collateralDenom)
-	if !found {
-		csdt = types.CSDT{
-			Owner:            owner,
-			CollateralDenom:  collateralDenom,
-			CollateralAmount: sdk.NewCoins(sdk.NewCoin(collateralDenom, sdk.ZeroInt())),
-			Debt:             sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.ZeroInt())),
-			AccumulatedFees:  sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.ZeroInt())),
-		}
+	err = k.changeState(ctx, owner, collateralDenom, changeInCollateral, changeInDebt)
+	if err != nil {
+		return err
 	}
-	// Add/Subtract collateral and debt
+
+	err = k.executeCoinTransfer(ctx, owner, collateralDenom, changeInCollateral, changeInDebt)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k Keeper) executeCoinTransfer(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, changeInCollateral, changeInDebt sdk.Int) sdk.Error {
+	err := k.handleCollateralChange(ctx, owner, collateralDenom, changeInCollateral)
+	if err != nil {
+		return err
+	}
+
+	err = k.handleDebtChange(ctx, owner, collateralDenom, changeInDebt)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (k Keeper) changeState(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, changeInCollateral, changeInDebt sdk.Int) sdk.Error {
+
+	csdt := k.createOrGetCSDT(ctx, owner, collateralDenom)
+
+	err := k.changeCsdtState(ctx, &csdt, collateralDenom, changeInCollateral, changeInDebt)
+	if err != nil {
+		return err
+	}
+
+	err = k.validateAndSetGlobalDebt(ctx, changeInDebt)
+	if err != nil {
+		return err
+	}
+
+	err = k.validateAndSetCollateralState(ctx, changeInDebt, &csdt)
+	if err != nil {
+		return err
+	}
+
+	if csdt.CollateralAmount.IsZero() && csdt.Debt.IsZero() { // TODO maybe abstract this logic into SetCSDT
+		k.DeleteCSDT(ctx, csdt)
+	} else {
+		k.SetCSDT(ctx, csdt)
+	}
+	return err
+}
+
+func (k Keeper) handleDebtChange(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, changeInDebt sdk.Int) sdk.Error {
+	p := k.GetParams(ctx)
+	if changeInDebt.IsNegative() { //Depositing stable coin from owner to CSDT (decrease supply)
+		depositCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg()))
+
+		err := k.sk.SendCoinsFromAccountToModule(ctx, owner, k.liquidityModule, depositCoins)
+		if err != nil {
+			return err
+		}
+
+		return k.sk.BurnCoins(ctx, k.liquidityModule, depositCoins)
+	}
+	//Withdrawing stable coins to owner (minting)
+	stableCoin := p.Fee.AddToCoin(sdk.NewCoin(types.StableDenom, changeInDebt))
+	withdrawCoins := sdk.NewCoins(stableCoin)
+
+	err := k.sk.MintCoins(ctx, k.liquidityModule, withdrawCoins)
+	if err != nil {
+		return err
+	}
+
+	return k.sk.SendCoinsFromModuleToAccount(ctx, k.liquidityModule, owner, withdrawCoins)
+}
+
+func (k Keeper) handleCollateralChange(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, changeInCollateral sdk.Int) sdk.Error {
+	// change owner's coins (increase or decrease)
+	if changeInCollateral.IsNegative() {
+		return k.sk.SendCoinsFromModuleToAccount(ctx, k.liquidityModule, owner, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral.Neg())))
+	}
+
+	return k.sk.SendCoinsFromAccountToModule(ctx, owner, k.liquidityModule, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
+}
+
+// TODO: should we handle a case when csdt == nil?
+func (k Keeper) changeCsdtState(ctx sdk.Context, csdt *types.CSDT, collateralDenom string, changeInCollateral, changeInDebt sdk.Int, ) sdk.Error {
+	err := addCollateralToCsdt(collateralDenom, changeInCollateral, csdt)
+	if err != nil {
+		return err
+	}
+
+	err = addDebtToCsdt(changeInDebt, csdt)
+	if err != nil {
+		return err
+	}
+
+	currentPrice := k.oracle.GetCurrentPrice(ctx, csdt.CollateralDenom).Price
+	liquidationRatio := k.oracle.GetCurrentPrice(ctx, csdt.CollateralDenom).Price
+	err = csdt.Validate(currentPrice, liquidationRatio)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func addCollateralToCsdt(collateralDenom string, changeInCollateral sdk.Int, csdt *types.CSDT) sdk.Error {
 	var collateralCoins sdk.Coins
-	var debtCoins sdk.Coins
 
 	if changeInCollateral.IsNegative() {
 		collateralCoins = sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral.Neg()))
 		csdt.CollateralAmount = csdt.CollateralAmount.Sub(collateralCoins)
+
 	} else {
 		collateralCoins = sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral))
 		csdt.CollateralAmount = csdt.CollateralAmount.Add(collateralCoins)
 	}
+	return nil
+}
+
+func addDebtToCsdt(changeInDebt sdk.Int, csdt *types.CSDT) sdk.Error {
+	var debtCoins sdk.Coins
 
 	if csdt.CollateralAmount.IsAnyNegative() {
 		return sdk.ErrInternal(" can't withdraw more collateral than exists in CSDT")
@@ -128,94 +213,27 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 		return sdk.ErrInternal("can't pay back more debt than exists in CSDT")
 	}
 
-	// If we have prices denominated in non csdt pairs, this changes the model
-	isUnderCollateralized := csdt.IsUnderCollateralized(
-		k.oracle.GetCurrentPrice(ctx, csdt.CollateralDenom).Price,
-		p.GetCollateralParam(csdt.CollateralDenom).LiquidationRatio,
-	)
-	if isUnderCollateralized {
-		return sdk.ErrInternal("Change to CSDT would put it below liquidation ratio")
-	}
-	// TODO check for dust
+	return nil
+}
 
-	// Add/Subtract from global debt limit
-	gDebt := k.GetGlobalDebt(ctx)
-	gDebt = gDebt.Add(changeInDebt)
-	if gDebt.IsNegative() {
-		return sdk.ErrInternal("global debt can't be negative") // This should never happen if debt per CSDT can't be negative
-	}
-	if gDebt.GT(p.GlobalDebtLimit.AmountOf(types.StableDenom)) {
-		return sdk.ErrInternal("change to CSDT would put the system over the global debt limit")
+func validateCoinTransfer(ctx sdk.Context, k Keeper, owner sdk.AccAddress, collateralDenom string, changeInCollateral sdk.Int, changeInDebt sdk.Int) sdk.Error {
+	p := k.GetParams(ctx)
+	if !p.IsCollateralPresent(collateralDenom) { // maybe abstract this logic into GetCSDT
+		return sdk.ErrInternal("collateral type not enabled to create CSDTs")
 	}
 
-	// Add/Subtract from collateral debt limit
-	collateralState, found := k.GetCollateralState(ctx, csdt.CollateralDenom)
-	if !found {
-		collateralState = types.CollateralState{Denom: csdt.CollateralDenom, TotalDebt: sdk.ZeroInt()} // Already checked that this denom is authorized, so ok to create new CollateralState
-	}
-	collateralState.TotalDebt = collateralState.TotalDebt.Add(changeInDebt)
-	if collateralState.TotalDebt.IsNegative() {
-		return sdk.ErrInternal("total debt for this collateral type can't be negative") // This should never happen if debt per CSDT can't be negative
-	}
-	if collateralState.TotalDebt.GT(p.GetCollateralParam(csdt.CollateralDenom).DebtLimit.AmountOf(types.StableDenom)) {
-		return sdk.ErrInternal("change to CSDT would put the system over the debt limit for this collateral type")
-	}
-
-	// Phase 2: Update all the state
-
-	// change owner's coins (increase or decrease)
-	var err sdk.Error
-	if changeInCollateral.IsNegative() {
-		err = k.sk.SendCoinsFromModuleToAccount(ctx, k.liquidityModule, owner, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral.Neg())))
-		if err != nil {
-			panic(err) // this shouldn't happen because coin balance was checked earlier
-		}
-	} else {
-		err = k.sk.SendCoinsFromAccountToModule(ctx, owner, k.liquidityModule, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
-		if err != nil {
-			panic(err) // this shouldn't happen because coin balance was checked earlier
+	if changeInCollateral.IsPositive() { // adding collateral to CSDT
+		ok := k.bank.HasCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
+		if !ok {
+			return sdk.ErrInsufficientCoins("not enough collateral in sender's account")
 		}
 	}
-
-	if changeInDebt.IsNegative() { //Depositing stable coin from owner to CSDT (decrease supply)
-		depositCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg()))
-
-		er := k.sk.SendCoinsFromAccountToModule(ctx, owner, k.liquidityModule, depositCoins)
-		if er != nil {
-			return er
-		}
-
-		er = k.sk.BurnCoins(ctx, k.liquidityModule, depositCoins)
-		if er != nil {
-			return er
-		}
-	} else { //Withdrawing stable coins to owner (minting)
-		stableCoin := p.Fee.AddToCoin(sdk.NewCoin(types.StableDenom, changeInDebt))
-		withdrawCoins := sdk.NewCoins(stableCoin)
-
-		er := k.sk.MintCoins(ctx, k.liquidityModule, withdrawCoins)
-		if er != nil {
-			return er
-		}
-
-		er = k.sk.SendCoinsFromModuleToAccount(ctx, k.liquidityModule, owner, withdrawCoins)
-		if er != nil {
-			return er
+	if changeInDebt.IsNegative() { // reducing debt, by adding stable coin to CSDT
+		ok := k.bank.HasCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg())))
+		if !ok {
+			return sdk.ErrInsufficientCoins("not enough stable coin in sender's account")
 		}
 	}
-	if err != nil {
-		panic(err) // this shouldn't happen because coin balance was checked earlier
-	}
-	// Set CSDT
-	if csdt.CollateralAmount.IsZero() && csdt.Debt.IsZero() { // TODO maybe abstract this logic into SetCSDT
-		k.DeleteCSDT(ctx, csdt)
-	} else {
-		k.SetCSDT(ctx, csdt)
-	}
-	// set total debts
-	k.SetGlobalDebt(ctx, gDebt)
-	k.SetCollateralState(ctx, collateralState)
-
 	return nil
 }
 
@@ -342,6 +360,21 @@ func (k Keeper) GetCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom s
 	return csdt, true
 }
 
+func (k Keeper) createOrGetCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string) types.CSDT {
+	csdt, found := k.GetCSDT(ctx, owner, collateralDenom)
+	if !found {
+		csdt = types.CSDT{
+			Owner:            owner,
+			CollateralDenom:  collateralDenom,
+			CollateralAmount: sdk.NewCoins(sdk.NewCoin(collateralDenom, sdk.ZeroInt())),
+			Debt:             sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.ZeroInt())),
+			AccumulatedFees:  sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.ZeroInt())),
+		}
+		return csdt
+	}
+	return csdt
+}
+
 //Potentially change this logic to use the account interface?
 func (k Keeper) SetCSDT(ctx sdk.Context, csdt types.CSDT) {
 	// get store
@@ -416,6 +449,40 @@ func (k Keeper) GetGlobalDebt(ctx sdk.Context) sdk.Int {
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &globalDebt)
 	return globalDebt
 }
+
+// Add/Subtract from global debt limit
+func (k Keeper) validateAndSetGlobalDebt(ctx sdk.Context, changeInDebt sdk.Int) sdk.Error {
+	p := k.GetParams(ctx)
+	gDebt := k.GetGlobalDebt(ctx)
+	gDebt = gDebt.Add(changeInDebt)
+	if gDebt.IsNegative() {
+		return sdk.ErrInternal("global debt can't be negative") // This should never happen if debt per CSDT can't be negative
+	}
+	if gDebt.GT(p.GlobalDebtLimit.AmountOf(types.StableDenom)) {
+		return sdk.ErrInternal("change to CSDT would put the system over the global debt limit")
+	}
+	k.SetGlobalDebt(ctx, gDebt)
+	return nil
+}
+
+// Add/Subtract from collateral debt limit
+func (k Keeper) validateAndSetCollateralState(ctx sdk.Context, changeInDebt sdk.Int, csdt *types.CSDT) sdk.Error {
+	p := k.GetParams(ctx)
+	collateralState, found := k.GetCollateralState(ctx, csdt.CollateralDenom)
+	if !found {
+		collateralState = types.CollateralState{Denom: csdt.CollateralDenom, TotalDebt: sdk.ZeroInt()} // Already checked that this denom is authorized, so ok to create new CollateralState
+	}
+	collateralState.TotalDebt = collateralState.TotalDebt.Add(changeInDebt)
+	if collateralState.TotalDebt.IsNegative() {
+		return sdk.ErrInternal("total debt for this collateral type can't be negative") // This should never happen if debt per CSDT can't be negative
+	}
+	if collateralState.TotalDebt.GT(p.GetCollateralParam(csdt.CollateralDenom).DebtLimit.AmountOf(types.StableDenom)) {
+		return sdk.ErrInternal("change to CSDT would put the system over the debt limit for this collateral type")
+	}
+	k.SetCollateralState(ctx, collateralState)
+	return nil
+}
+
 func (k Keeper) SetGlobalDebt(ctx sdk.Context, globalDebt sdk.Int) {
 	// get store
 	store := ctx.KVStore(k.storeKey)

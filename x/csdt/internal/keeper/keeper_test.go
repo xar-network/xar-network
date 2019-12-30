@@ -205,7 +205,8 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 			keeper.GetSupply().MintCoins(ctx, types.ModuleName, tc.priorState.ModuleCoins)
 
 			// call func under test
-			keeper.SetParams(ctx, types.DefaultParams())
+			params := types.DefaultParams()
+			keeper.SetParams(ctx, params)
 			err := keeper.ModifyCSDT(ctx, tc.args.owner, tc.args.collateralDenom, tc.args.changeInCollateral, tc.args.changeInDebt)
 			mapp.EndBlock(abci.RequestEndBlock{})
 			mapp.Commit()

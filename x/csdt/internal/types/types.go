@@ -48,6 +48,18 @@ func (csdt CSDT) IsUnderCollateralized(price sdk.Dec, liquidationRatio sdk.Dec) 
 	return collateralValue.LT(minCollateralValue) // TODO LT or LTE?
 }
 
+// will handle all the validation in the future updates
+func (csdt CSDT) Validate(price sdk.Dec, liquidationRatio sdk.Dec) sdk.Error {
+	isUnderCollateralized := csdt.IsUnderCollateralized(
+		price,
+		liquidationRatio,
+	)
+	if isUnderCollateralized {
+		return sdk.ErrInternal("Change to CSDT would put it below liquidation ratio")
+	}
+	return nil
+}
+
 func (csdt CSDT) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`CSDT:
   Owner:      %s
