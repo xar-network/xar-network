@@ -178,7 +178,7 @@ func (k Keeper) ExecuteFill(ctx sdk.Context, clearingPrice sdk.Uint, f matcheng.
 		amountLessFee := quoteAmount.Sub(filledFee)
 
 		if amountLessFee.IsNegative() {
-			panic("amount less fees are negative or zero")
+			panic("amount less fees are negative")
 		}
 
 		if !ok {
