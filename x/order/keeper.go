@@ -238,10 +238,7 @@ func (k Keeper) Cancel(ctx sdk.Context, id store.EntityID) sdk.Error {
 	var postedAmt sdk.Uint
 	if ord.Direction == matcheng.Bid {
 		postedAsset = mkt.QuoteAssetDenom
-		p, err := matcheng.NormalizeQuoteQuantity(ord.Price, ord.Quantity)
-		if err != nil {
-			return sdk.ErrInvalidCoins(err.Error())
-		}
+		p, _ := matcheng.NormalizeQuoteQuantity(ord.Price, ord.Quantity)
 		postedAmt = p
 	} else {
 		postedAsset = mkt.BaseAssetDenom
