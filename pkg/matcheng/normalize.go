@@ -21,6 +21,7 @@ package matcheng
 
 import (
 	"errors"
+	"fmt"
 	"math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -41,7 +42,7 @@ func NormalizeQuoteQuantity(quotePrice sdk.Uint, baseQuantity sdk.Uint) (sdk.Uin
 	res := sdk.NewUintFromBigInt(quotePDec.Mul(baseMult).TruncateInt().BigInt())
 	var err error
 	if res.IsZero() {
-		err = errors.New(fmt.Sprintf("quantity too small to represent %s %s", quotePDec.String(), baseMult.String())
+		err = errors.New(fmt.Sprintf("quantity too small to represent %s %s", quotePDec.String(), baseMult.String()))
 	}
 	return res, err
 }
