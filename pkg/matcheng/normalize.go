@@ -41,7 +41,7 @@ func NormalizeQuoteQuantity(quotePrice sdk.Uint, baseQuantity sdk.Uint) (sdk.Uin
 	res := sdk.NewUintFromBigInt(quotePDec.Mul(baseMult).TruncateInt().BigInt())
 	var err error
 	if res.IsZero() {
-		err = errors.New("quantity too small to represent, setting to 0")
+		err = errors.New(fmt.Sprintf("quantity too small to represent %s %s", quotePDec.String(), baseMult.String())
 	}
 	return res, err
 }
