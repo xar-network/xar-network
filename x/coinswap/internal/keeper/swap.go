@@ -21,7 +21,6 @@ package keeper
 
 import (
 	"fmt"
-	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/xar-network/xar-network/x/coinswap/internal/types"
@@ -31,7 +30,7 @@ func (keeper Keeper) SwapCoins(ctx sdk.Context, sender, recipient sdk.AccAddress
 	notNativeDenom := keeper.GetNotNative(ctx, coinBought.Denom, coinSold.Denom)
 	rp, found := keeper.GetReservePool(ctx, notNativeDenom)
 	if !found {
-		return types.ErrReservePoolNotFound(types.DefaultCodespace,"cannot swap coins in a reserve pool that has not been created")
+		return types.ErrReservePoolNotFound(types.DefaultCodespace, "cannot swap coins in a reserve pool that has not been created")
 	}
 	_, err := rp.Swap(coinSold, coinBought)
 	if err != nil {
@@ -249,17 +248,8 @@ func (keeper Keeper) DenomIsNative(ctx sdk.Context, denom string) bool {
 // GetPoolName returns the ModuleAccount name for the provided denominations.
 // The module name is in the format of 'swap:denom:denom' where the denominations
 // are sorted alphabetically.
-func (keeper Keeper) GetPoolName(denom1, denom2 string) (string, sdk.Error) {
-	// replaced ':' with digits to pass a regex check inside 'AddCoins'
-	// though punctuation is not suitable, it is possible to use digits as a trailing symbols
-	switch strings.Compare(denom1, denom2) {
-	case -1:
-		return "swap1" + denom1 + "2" + denom2, nil
-	case 1:
-		return "swap1" + denom2 + "2" + denom1, nil
-	default:
-		return "", types.ErrEqualDenom(types.DefaultCodespace, "denomnations for forming module name are equal")
-	}
+func (keeper Keeper) GetPoolName(denom string) string {
+	return "p" + denom
 }
 
 // returns not native denom
@@ -279,11 +269,6 @@ func (keeper Keeper) GetNotNative(ctx sdk.Context, denom1, denom2 string) string
 	return notNative
 }
 
-func (keeper Keeper) MustGetPoolName(denom1, denom2 string) string {
-	moduleName, err := keeper.GetPoolName(denom1, denom2)
-	if err != nil {
-		panic(err)
-	}
-
-	return moduleName
+func (keeper Keeper) MustGetPoolName(denom string) string {
+	return keeper.GetPoolName(denom)
 }

@@ -23,7 +23,6 @@ import (
 	"bufio"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -75,7 +74,7 @@ func GetCmdAddLiquidity(cdc *codec.Codec) *cobra.Command {
 			fmt.Sprintf(`Add liquidity to the reserve pool for a trading pair.
 
 Example:
-$ %s tx coinswap add-liquidity dai 1000atom --min-reward 100 --deadline 2h --from mykey
+$ %s tx coinswap add-liquidity dai 1000atom --min-reward 100 --from mykey
 `,
 				version.ClientName,
 			),
@@ -101,16 +100,9 @@ $ %s tx coinswap add-liquidity dai 1000atom --min-reward 100 --deadline 2h --fro
 				return err
 			}
 
-			durationArg := viper.GetString(Deadline)
-			duration, err := time.ParseDuration(durationArg)
-			if err != nil {
-				return fmt.Errorf("failed to parse the duration : %s", err)
-			}
-			deadline := time.Now().Add(duration).UTC()
-
 			senderAddr := cliCtx.GetFromAddress()
 
-			msg := types.NewMsgAddLiquidity(depositCoin, deposit.Amount, minReward.Amount, deadline, senderAddr)
+			msg := types.NewMsgAddLiquidity(depositCoin, deposit.Amount, minReward.Amount, senderAddr)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
@@ -134,7 +126,7 @@ func GetCmdRemoveLiquidity(cdc *codec.Codec) *cobra.Command {
 			fmt.Sprintf(`Remove liquidity from the reserve pool for a trading pair.
 
 Example:
-$ %s tx coinswap remove-liquidity dai 1000atom --min-native 100atom --deadline 2h --from mykey
+$ %s tx coinswap remove-liquidity dai 1000atom --min-native 100atom --from mykey
 `,
 				version.ClientName,
 			),
@@ -160,25 +152,16 @@ $ %s tx coinswap remove-liquidity dai 1000atom --min-native 100atom --deadline 2
 				return err
 			}
 
-			durationArg := viper.GetString(Deadline)
-			duration, err := time.ParseDuration(durationArg)
-			if err != nil {
-				return fmt.Errorf("failed to parse the duration : %s", err)
-			}
-			deadline := time.Now().Add(duration).UTC()
-
 			senderAddr := cliCtx.GetFromAddress()
 
-			msg := types.NewMsgRemoveLiquidity(withdrawCoin, poolTokens, minNative.Amount, deadline, senderAddr)
+			msg := types.NewMsgRemoveLiquidity(withdrawCoin, poolTokens, minNative.Amount, senderAddr)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
 
 	cmd.Flags().String(MinNative, "", "minimum amount of the native asset the sender is willing to accept (required)")
-	cmd.Flags().String(Deadline, "1h", "duration for which the transaction is valid (required)")
 
 	cmd.MarkFlagRequired(MinNative)
-	cmd.MarkFlagRequired(Deadline)
 
 	return cmd
 }
@@ -193,7 +176,7 @@ func GetCmdBuyOrder(cdc *codec.Codec) *cobra.Command {
 			fmt.Sprintf(`Buy order for a trading pair.
 
 Example:
-$ %s tx coinswap buy-order 5atom 2eth --deadline 2h --recipient recipientAddr --from mykey
+$ %s tx coinswap buy-order 5atom 2eth --recipient recipientAddr --from mykey
 `,
 				version.ClientName,
 			),
@@ -213,13 +196,6 @@ $ %s tx coinswap buy-order 5atom 2eth --deadline 2h --recipient recipientAddr --
 				return err
 			}
 
-			durationArg := viper.GetString(Deadline)
-			duration, err := time.ParseDuration(durationArg)
-			if err != nil {
-				return fmt.Errorf("failed to parse the duration : %s", err)
-			}
-			deadline := time.Now().Add(duration).UTC()
-
 			senderAddr := cliCtx.GetFromAddress()
 
 			recipientAddrArg := viper.GetString(Recipient)
@@ -228,16 +204,14 @@ $ %s tx coinswap buy-order 5atom 2eth --deadline 2h --recipient recipientAddr --
 				return err
 			}
 
-			msg := types.NewMsgSwapOrder(input, output, deadline, senderAddr, recipientAddr, true)
+			msg := types.NewMsgSwapOrder(input, output, senderAddr, recipientAddr, true)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
 
 	cmd.Flags().String(Recipient, "", "recipient's address (required)")
-	cmd.Flags().String(Deadline, "1h", "duration for which the transaction is valid (required)")
 
 	cmd.MarkFlagRequired(Recipient)
-	cmd.MarkFlagRequired(Deadline)
 
 	return cmd
 }
@@ -252,7 +226,7 @@ func GetCmdSellOrder(cdc *codec.Codec) *cobra.Command {
 			fmt.Sprintf(`Sell order for a trading pair.
 
 Example:
-$ %s tx coinswap sell-order 2eth 5atom --deadline 2h --recipient recipientAddr --from mykey
+$ %s tx coinswap sell-order 2eth 5atom --recipient recipientAddr --from mykey
 `,
 				version.ClientName,
 			),
@@ -272,13 +246,6 @@ $ %s tx coinswap sell-order 2eth 5atom --deadline 2h --recipient recipientAddr -
 				return err
 			}
 
-			durationArg := viper.GetString(Deadline)
-			duration, err := time.ParseDuration(durationArg)
-			if err != nil {
-				return fmt.Errorf("failed to parse the duration : %s", err)
-			}
-			deadline := time.Now().Add(duration).UTC()
-
 			senderAddr := cliCtx.GetFromAddress()
 
 			recipientAddrArg := viper.GetString(Recipient)
@@ -287,16 +254,14 @@ $ %s tx coinswap sell-order 2eth 5atom --deadline 2h --recipient recipientAddr -
 				return err
 			}
 
-			msg := types.NewMsgSwapOrder(input, output, deadline, senderAddr, recipientAddr, false)
+			msg := types.NewMsgSwapOrder(input, output, senderAddr, recipientAddr, false)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
 
 	cmd.Flags().String(Recipient, "", "recipient's address (required)")
-	cmd.Flags().String(Deadline, "1h", "duration for which the transaction is valid (required)")
 
 	cmd.MarkFlagRequired(Recipient)
-	cmd.MarkFlagRequired(Deadline)
 
 	return cmd
 }

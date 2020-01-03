@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"log"
 	"testing"
-	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
@@ -35,8 +34,6 @@ const nonNativeDenomTest = "asd"
 
 func TestSwap(t *testing.T) {
 	ctx, keeper, accs := createTestInput(t, sdk.NewInt(0), 1)
-	tm, err := time.Parse("2006-01-02T15:04:05.000Z", "2022-04-23T18:25:43.511Z")
-	require.NoError(t, err)
 
 	oneCoin := sdk.NewInt(1)
 	testCoinAmt := sdk.NewInt(14)
@@ -45,7 +42,7 @@ func TestSwap(t *testing.T) {
 	nativeCoinAmt := sdk.NewInt(10040)
 	nonNativeCoinAmt := sdk.NewInt(151000)
 
-	err = addLiquidityForTest(t, ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom)
+	err := addLiquidityForTest(t, ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom)
 	require.NoError(t, err)
 
 	TestCoin1 := sdk.NewCoin(nativeDenom, oneCoin)
@@ -57,7 +54,6 @@ func TestSwap(t *testing.T) {
 	msg := MsgSwapOrder{
 		TestCoin1,
 		TestCoin2,
-		tm,
 		accs[0].GetAddress(),
 		accs[0].GetAddress(),
 		false,
@@ -90,10 +86,6 @@ func TestSwap(t *testing.T) {
 
 func TestDoubleSwap(t *testing.T) {
 	ctx, keeper, accs := createTestInput(t, sdk.NewInt(0), 1)
-	tm, err := time.Parse("2006-01-02T15:04:05.000Z", "2022-04-23T18:25:43.511Z")
-	if err != nil {
-		require.NoError(t, err)
-	}
 
 	oneCoin := sdk.NewInt(1)
 	testCoinAmt1 := sdk.NewInt(16)
@@ -109,7 +101,7 @@ func TestDoubleSwap(t *testing.T) {
 	nativeCoinAmt := sdk.NewInt(10040)
 	nonNativeCoinAmt := sdk.NewInt(151000)
 
-	err = addLiquidityForTest(t, ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom)
+	err := addLiquidityForTest(t, ctx, keeper, accs, nativeCoinAmt, nonNativeCoinAmt, testDenom)
 	if err != nil {
 		require.NoError(t, err)
 	}
@@ -129,7 +121,6 @@ func TestDoubleSwap(t *testing.T) {
 	msg := MsgSwapOrder{
 		TestCoin1,
 		TestCoin2,
-		tm,
 		accs[0].GetAddress(),
 		accs[0].GetAddress(),
 		false,
@@ -176,15 +167,10 @@ func addLiquidityForTest(t *testing.T, ctx sdk.Context, keeper Keeper, accs []ex
 	var nativeDenomAmt = nativeAmt
 	var minReward = sdk.NewInt(1)
 
-	tm, err := time.Parse("2006-01-02T15:04:05.000Z", "2022-04-23T18:25:43.511Z")
-	if err != nil {
-		return err
-	}
-
 	nonNativeDeposit := sdk.Coin{Denom: denom, Amount: nonNativeDenomAmt}
 	nativeDeposit := sdk.Coin{Denom: keeper.GetNativeDenom(ctx), Amount: nativeDenomAmt}
 
-	err = keeper.MintCoins(ctx, sdk.Coins{nonNativeDeposit})
+	err := keeper.MintCoins(ctx, sdk.Coins{nonNativeDeposit})
 	if err != nil {
 		return err
 	}
@@ -199,7 +185,6 @@ func addLiquidityForTest(t *testing.T, ctx sdk.Context, keeper Keeper, accs []ex
 		Deposit:       nonNativeDeposit,
 		DepositAmount: nativeDenomAmt,
 		MinReward:     minReward,
-		Deadline:      tm,
 		Sender:        accs[0].GetAddress(),
 	}
 	//keeper.CreateReservePool(ctx, denom)

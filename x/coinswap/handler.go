@@ -21,6 +21,7 @@ package coinswap
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/xar-network/xar-network/x/coinswap/internal/types"
 )
@@ -48,11 +49,6 @@ func NewHandler(k Keeper) sdk.Handler {
 
 // HandleMsgSwapOrder.
 func HandleMsgSwapOrder(ctx sdk.Context, msg MsgSwapOrder, k Keeper) sdk.Result {
-	// check that deadline has not passed
-	if ctx.BlockHeader().Time.After(msg.Deadline) {
-		return ErrInvalidDeadline(DefaultCodespace, "deadline has passed for MsgSwapOrder").Result()
-	}
-
 	if msg.IsDoubleSwap(k.GetNativeDenom(ctx)) {
 		return DoubleSwap(ctx, k, msg)
 	}
@@ -67,7 +63,6 @@ func HandleMsgTransactionOrder(ctx sdk.Context, msg MsgTransactionOrder, k Keepe
 	m := MsgSwapOrder{
 		msg.Input,
 		msg.Output,
-		msg.Deadline,
 		msg.Sender,
 		msg.Recipient,
 		msg.IsBuyOrder,
@@ -201,7 +196,15 @@ func validateSwapMsg(msg *MsgSwapOrder, calculatedAmount sdk.Int) sdk.Error {
 // created. The first liquidity provider sets the exchange rate.
 // TODO create the initial setting liquidity, additional liquidity does not have to be in the same ratio
 func HandleMsgAddLiquidity(ctx sdk.Context, msg MsgAddLiquidity, keeper Keeper) sdk.Result {
-	nativeCoins := sdk.NewCoin(keeper.GetNativeDenom(ctx), msg.DepositAmount)
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err.Result()
+	}
+	nativeDenom := keeper.GetNativeDenom(ctx)
+	if nativeDenom == msg.Deposit.Denom {
+		return sdk.ErrInvalidCoins("deposit denom == native denom").Result()
+	}
+	nativeCoins := sdk.NewCoin(nativeDenom, msg.DepositAmount)
 
 	rp := keeper.CreateOrGetReservePool(ctx, msg.Deposit.Denom)
 

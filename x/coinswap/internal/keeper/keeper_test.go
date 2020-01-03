@@ -51,7 +51,7 @@ func TestCreateReservePool(t *testing.T) {
 	require.True(t, found)
 	require.NotNil(t, pool)
 	poolName := pool.GetName()
-	poolExpectedName := keeper.MustGetPoolName(keeper.GetNativeDenom(ctx), testDenom)
+	poolExpectedName := keeper.MustGetPoolName(testDenom)
 	require.Equal(t, poolName, poolExpectedName)
 }
 

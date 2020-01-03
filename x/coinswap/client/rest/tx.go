@@ -96,7 +96,7 @@ func postAddLiquidityHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		msg := types.NewMsgAddLiquidity(req.Deposit, req.DepositAmount, req.MinReward, req.Deadline, senderAddr)
+		msg := types.NewMsgAddLiquidity(req.Deposit, req.DepositAmount, req.MinReward, senderAddr)
 		utils.WriteGenerateStdTxResponse(w, cliCtx, req.BaseReq, []sdk.Msg{msg})
 	}
 }
@@ -120,7 +120,7 @@ func postRemoveLiquidityHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		msg := types.NewMsgRemoveLiquidity(req.Withdraw, req.WithdrawAmount, req.MinNative, req.Deadline, senderAddr)
+		msg := types.NewMsgRemoveLiquidity(req.Withdraw, req.WithdrawAmount, req.MinNative, senderAddr)
 		utils.WriteGenerateStdTxResponse(w, cliCtx, req.BaseReq, []sdk.Msg{msg})
 	}
 }
@@ -144,7 +144,7 @@ func postSwapOrderHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		msg := types.NewMsgSwapOrder(req.Input, req.Output, req.Deadline, senderAddr, req.Recipient, req.IsBuyOrder)
+		msg := types.NewMsgSwapOrder(req.Input, req.Output, senderAddr, req.Recipient, req.IsBuyOrder)
 		utils.WriteGenerateStdTxResponse(w, cliCtx, req.BaseReq, []sdk.Msg{msg})
 	}
 }

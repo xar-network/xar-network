@@ -10,7 +10,7 @@ var reservePoolStorePrefix = []byte{0x01}
 // creates reserve pool and returns it as a response
 func (keeper Keeper) CreateReservePool(ctx sdk.Context, nonNativeDenom string) pool.ReservePool {
 	nativeDenom := keeper.GetNativeDenom(ctx)
-	poolName := keeper.MustGetPoolName(nativeDenom, nonNativeDenom)
+	poolName := keeper.MustGetPoolName(nonNativeDenom)
 	resPool := pool.NewReservePool(nativeDenom, nonNativeDenom, poolName)
 	keeper.SetReservePool(ctx, resPool)
 
@@ -19,7 +19,7 @@ func (keeper Keeper) CreateReservePool(ctx sdk.Context, nonNativeDenom string) p
 
 func (keeper Keeper) GetReservePool(ctx sdk.Context, denom string) (rp pool.ReservePool, found bool) {
 	store := ctx.KVStore(keeper.storeKey)
-	poolName := keeper.MustGetPoolName(keeper.GetNativeDenom(ctx), denom)
+	poolName := keeper.MustGetPoolName(denom)
 
 	key := reservePoolKey(poolName, reservePoolStorePrefix)
 	value := store.Get(key)
@@ -32,9 +32,7 @@ func (keeper Keeper) GetReservePool(ctx sdk.Context, denom string) (rp pool.Rese
 }
 
 func (keeper Keeper) CreateOrGetReservePool(ctx sdk.Context, nonNativeDenom string) pool.ReservePool {
-	nativeDenom := keeper.GetNativeDenom(ctx)
-
-	poolName := keeper.MustGetPoolName(nativeDenom, nonNativeDenom)
+	poolName := keeper.MustGetPoolName(nonNativeDenom)
 	rp, found := keeper.GetReservePool(ctx, poolName)
 	if !found {
 		rp = keeper.CreateReservePool(ctx, nonNativeDenom)

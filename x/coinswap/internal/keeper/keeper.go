@@ -91,32 +91,28 @@ func (keeper Keeper) BurnCoins(ctx sdk.Context, moduleName string, amt sdk.Int) 
 func (keeper Keeper) DoubleSwap(ctx sdk.Context, msg types.MsgSwapOrder) sdk.Result {
 	nativeDenom := keeper.GetNativeDenom(ctx)
 
-	if msg.IsBuyOrder {
-		nativeMideatorAmt, nonNativeCoinAmt := keeper.DoubleSwapOutputAmount(ctx, msg.Input, msg.Output)
-		nativeMideator := sdk.NewCoin(nativeDenom, nativeMideatorAmt)
+	nativeMideatorAmt, nonNativeCoinAmt := keeper.DoubleSwapOutputAmount(ctx, msg.Input, msg.Output)
+	nativeMideator := sdk.NewCoin(nativeDenom, nativeMideatorAmt)
 
-		moduleNameA := keeper.MustGetPoolName(nativeDenom, msg.Input.Denom)
-		mAccA := keeper.ModuleAccountFromName(ctx, moduleNameA)
+	moduleNameA := keeper.MustGetPoolName(msg.Input.Denom)
+	mAccA := keeper.ModuleAccountFromName(ctx, moduleNameA)
 
-		moduleNameB := keeper.MustGetPoolName(nativeDenom, msg.Output.Denom)
-		mAccB := keeper.ModuleAccountFromName(ctx, moduleNameB)
+	moduleNameB := keeper.MustGetPoolName(msg.Output.Denom)
+	mAccB := keeper.ModuleAccountFromName(ctx, moduleNameB)
 
-		err := keeper.SendCoins(ctx, msg.Sender, mAccA.Address, msg.Input)
-		if err != nil {
-			return err.Result()
-		}
+	err := keeper.SendCoins(ctx, msg.Sender, mAccA.Address, msg.Input)
+	if err != nil {
+		return err.Result()
+	}
 
-		err = keeper.SendCoins(ctx, mAccA.Address, mAccB.Address, nativeMideator)
-		if err != nil {
-			return err.Result()
-		}
+	err = keeper.SendCoins(ctx, mAccA.Address, mAccB.Address, nativeMideator)
+	if err != nil {
+		return err.Result()
+	}
 
-		err = keeper.SendCoins(ctx, mAccB.Address, msg.Recipient, sdk.NewCoin(msg.Output.Denom, nonNativeCoinAmt))
-		if err != nil {
-			return err.Result()
-		}
-	} else {
-		//inputAmountA, inputAmountB := keeper.DoubleSwapOutputAmount(ctx, msg.Input, msg.Output)
+	err = keeper.SendCoins(ctx, mAccB.Address, msg.Recipient, sdk.NewCoin(msg.Output.Denom, nonNativeCoinAmt))
+	if err != nil {
+		return err.Result()
 	}
 
 	return sdk.Result{}
@@ -277,7 +273,7 @@ func (keeper Keeper) MustGetAllDenoms(ctx sdk.Context, msg *types.MsgAddLiquidit
 	nativeDenom = keeper.GetNativeDenom(ctx)
 	tokenDenom = msg.Deposit.Denom
 
-	return nativeDenom, tokenDenom, keeper.MustGetPoolName(nativeDenom, tokenDenom)
+	return nativeDenom, tokenDenom, keeper.MustGetPoolName(tokenDenom)
 }
 
 // GetFeeParam returns the current FeeParam from the global param store

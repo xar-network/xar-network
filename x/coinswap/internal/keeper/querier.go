@@ -52,8 +52,7 @@ func queryLiquidity(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, s
 		return nil, sdk.ErrUnknownRequest(sdk.AppendMsgToErr("incorrectly formatted request data", err.Error()))
 	}
 
-	nativeDenom := k.GetNativeDenom(ctx)
-	moduleName, err := k.GetPoolName(nativeDenom, denom.NonNativeDenom)
+	moduleName := k.GetPoolName(denom.NonNativeDenom)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not retrieve module name", err.Error()))
 	}
