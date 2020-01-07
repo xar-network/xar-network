@@ -119,6 +119,7 @@ func setupTestKeepers() (sdk.Context, keepers) {
 		oracleKeeper,
 		bankKeeper,
 		supplyKeeper,
+		csdt.ModuleName,
 	)
 	liquidatorKeeper := keeper.NewKeeper(
 		cdc,

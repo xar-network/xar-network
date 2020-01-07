@@ -21,6 +21,7 @@ package types
 
 import (
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/xar-network/xar-network/types/fee"
 )
@@ -29,6 +30,7 @@ import (
 var (
 	KeySyntheticParams     = []byte("SyntheticParams")
 	KeyNominees            = []byte("Nominees")
+	KeyFees                = []byte("Fees")
 	DefaultSyntheticParams = SyntheticParams{SyntheticParam{
 		Denom: "sbtc",
 	}}
@@ -128,6 +130,7 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
 		{Key: KeySyntheticParams, Value: &p.SyntheticParams},
 		{Key: KeyNominees, Value: &p.Nominees},
+		{Key: KeyFees, Value: &p.Fee},
 	}
 }
 

@@ -228,7 +228,15 @@ func HandleMsgAddLiquidity(ctx sdk.Context, msg MsgAddLiquidity, keeper Keeper) 
 
 // HandleMsgRemoveLiquidity handler for MsgRemoveLiquidity
 func HandleMsgRemoveLiquidity(ctx sdk.Context, msg MsgRemoveLiquidity, keeper Keeper) sdk.Result {
-	// check that deadline has not passed
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err.Result()
+	}
+	nativeDenom := keeper.GetNativeDenom(ctx)
+	if nativeDenom == msg.Withdraw.Denom {
+		return sdk.ErrInvalidCoins("deposit denom == native denom").Result()
+	}
+
 	nativeCoins := sdk.NewCoin(keeper.GetNativeDenom(ctx), msg.WithdrawAmount)
 
 	rp := keeper.CreateOrGetReservePool(ctx, msg.Withdraw.Denom)

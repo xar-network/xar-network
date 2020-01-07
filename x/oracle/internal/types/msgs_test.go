@@ -55,7 +55,6 @@ func TestMsgPlaceBid_ValidateBasic(t *testing.T) {
 	// }}
 	price, _ := sdk.NewDecFromStr("0.3005")
 	expiry := time.Now().Add(time.Hour * 2)
-	negativeExpiry := time.Now()
 	negativePrice, _ := sdk.NewDecFromStr("-3.05")
 
 	tests := []struct {
@@ -67,7 +66,6 @@ func TestMsgPlaceBid_ValidateBasic(t *testing.T) {
 		{"emptyAddr", types.MsgPostPrice{sdk.AccAddress{}, "xrp", price, expiry}, false},
 		{"emptyAsset", types.MsgPostPrice{addr, "", price, expiry}, false},
 		{"negativePrice", types.MsgPostPrice{addr, "xrp", negativePrice, expiry}, false},
-		{"negativeExpiry", types.MsgPostPrice{addr, "xrp", price, negativeExpiry}, false},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {

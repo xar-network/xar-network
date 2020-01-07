@@ -110,7 +110,7 @@ func SignCheckDeliver(
 func TestApp_BuyAndSellSynthetic(t *testing.T) {
 	// Setup
 	mapp, keeper := setUpMockAppWithoutGenesis()
-	genAccs, addrs, _, privKeys := mock.CreateGenAccounts(1, cs(c(synthetic.StableDenom, 100)))
+	genAccs, addrs, _, privKeys := mock.CreateGenAccounts(1, cs(c(synthetic.StableDenom, 101)))
 	testAddr := addrs[0]
 	testPrivKey := privKeys[0]
 	mock.SetGenesis(mapp, genAccs)
@@ -154,7 +154,7 @@ func TestApp_BuyAndSellSynthetic(t *testing.T) {
 	msgs = []sdk.Msg{types.NewMsgSellSynthetic(testAddr, (c("sbtc", 100)))}
 	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{1}, true, true, testPrivKey)
 
-	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 100)))
+	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 99)))
 }
 
 func TestApp_ParamExport(t *testing.T) {

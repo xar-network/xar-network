@@ -190,8 +190,7 @@ func (k Keeper) ModifyCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDeno
 			return er
 		}
 	} else { //Withdrawing stable coins to owner (minting)
-		stableCoin := p.Fee.AddToCoin(sdk.NewCoin(types.StableDenom, changeInDebt))
-		withdrawCoins := sdk.NewCoins(stableCoin)
+		withdrawCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt))
 
 		er := k.sk.MintCoins(ctx, k.liquidityModule, withdrawCoins)
 		if er != nil {

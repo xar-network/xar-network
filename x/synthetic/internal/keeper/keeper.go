@@ -179,13 +179,6 @@ func (k Keeper) SellSynthetic(ctx sdk.Context, seller sdk.AccAddress, coin sdk.C
 	return nil
 }
 
-func (k Keeper) GetStableDenom() string {
-	return types.StableDenom
-}
-func (k Keeper) GetGovDenom() string {
-	return types.GovDenom
-}
-
 // GetOracle allows testing
 func (k Keeper) GetOracle() types.OracleKeeper {
 	return k.oracle

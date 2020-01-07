@@ -40,6 +40,4 @@ const (
 
 	// StableDenom asset code of the dollar-denominated debt coin
 	StableDenom = "ucsdt" // TODO allow to be changed
-	// GovDenom asset code of the governance coin
-	GovDenom = "uftm"
 )

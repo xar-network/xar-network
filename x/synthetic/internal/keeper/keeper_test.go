@@ -36,7 +36,7 @@ import (
 
 // How could one reduce the number of params in the test cases. Create a table driven test for each of the 4 add/withdraw collateral/debt?
 
-func TestKeeper_ModifyCSDT(t *testing.T) {
+func TestKeeper_BuySynthetic(t *testing.T) {
 	_, addrs := mock.GeneratePrivKeyAddressPairs(2)
 	ownerAddr := addrs[0]
 
@@ -45,7 +45,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 	// initialize csdt owner account with coins
 	genAcc := auth.BaseAccount{
 		Address: ownerAddr,
-		Coins:   sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(1000))),
+		Coins:   sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(2000))),
 	}
 
 	mock.SetGenesis(mapp, []exported.Account{&genAcc})
