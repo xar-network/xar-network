@@ -66,32 +66,12 @@ func (k Keeper) checkCsdtChanges(ctx sdk.Context, collateralDenom string, change
 		return types.CSDT{}, sdk.Int{}, types.CollateralState{}, sdk.ErrInternal("collateral type not enabled to create CSDTs"), true
 	}
 
-	// Check the owner has enough collateral and stable coins
-	if changeInCollateral.IsPositive() { // adding collateral to CSDT
-		ok := k.bank.HasCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
-		if !ok {
-			return types.CSDT{}, sdk.Int{}, types.CollateralState{}, sdk.ErrInsufficientCoins("not enough collateral in sender's account"), true
-		}
-	}
-	if changeInDebt.IsNegative() { // reducing debt, by adding stable coin to CSDT
-		ok := k.bank.HasCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg())))
-		if !ok {
-			return types.CSDT{}, sdk.Int{}, types.CollateralState{}, sdk.ErrInsufficientCoins("not enough stable coin in sender's account"), true
-		}
+	err := k.checkEnoughCollateralAndStableCoin(changeInCollateral, ctx, owner, collateralDenom, changeInDebt)
+	if err != nil {
+		return types.CSDT{}, sdk.Int{}, types.CollateralState{}, err, true
 	}
 
-	// Change collateral and debt recorded in CSDT
-	// Get CSDT (or create if not exists)
-	csdt, found := k.GetCSDT(ctx, owner, collateralDenom)
-	if !found {
-		csdt = types.CSDT{
-			Owner:            owner,
-			CollateralDenom:  collateralDenom,
-			CollateralAmount: sdk.NewCoins(sdk.NewCoin(collateralDenom, sdk.ZeroInt())),
-			Debt:             sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.ZeroInt())),
-			AccumulatedFees:  sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.ZeroInt())),
-		}
-	}
+	csdt := k.getOrCreateCsdt(ctx, owner, collateralDenom)
 	// Add/Subtract collateral and debt
 	var collateralCoins sdk.Coins
 	var debtCoins sdk.Coins
@@ -153,6 +133,39 @@ func (k Keeper) checkCsdtChanges(ctx sdk.Context, collateralDenom string, change
 		return types.CSDT{}, sdk.Int{}, types.CollateralState{}, sdk.ErrInternal("change to CSDT would put the system over the debt limit for this collateral type"), true
 	}
 	return csdt, gDebt, collateralState, nil, false
+}
+
+// Check the owner has enough collateral and stable coins
+func (k Keeper) checkEnoughCollateralAndStableCoin(changeInCollateral sdk.Int, ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, changeInDebt sdk.Int) sdk.Error {
+	if changeInCollateral.IsPositive() { // adding collateral to CSDT
+		ok := k.bank.HasCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(collateralDenom, changeInCollateral)))
+		if !ok {
+			return sdk.ErrInsufficientCoins("not enough collateral in sender's account")
+		}
+	}
+	if changeInDebt.IsNegative() { // reducing debt, by adding stable coin to CSDT
+		ok := k.bank.HasCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(types.StableDenom, changeInDebt.Neg())))
+		if !ok {
+			return sdk.ErrInsufficientCoins("not enough stable coin in sender's account")
+		}
+	}
+	return nil
+}
+
+// Change collateral and debt recorded in CSDT
+// Get CSDT (or create if not exists)
+func (k Keeper) getOrCreateCsdt(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string) types.CSDT {
+	csdt, found := k.GetCSDT(ctx, owner, collateralDenom)
+	if !found {
+		csdt = types.CSDT{
+			Owner:            owner,
+			CollateralDenom:  collateralDenom,
+			CollateralAmount: sdk.NewCoins(sdk.NewCoin(collateralDenom, sdk.ZeroInt())),
+			Debt:             sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.ZeroInt())),
+			AccumulatedFees:  sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.ZeroInt())),
+		}
+	}
+	return csdt
 }
 
 func (k Keeper) updateCsdtState(changeInCollateral sdk.Int, ctx sdk.Context, owner sdk.AccAddress, collateralDenom string, changeInDebt sdk.Int, csdt types.CSDT, gDebt sdk.Int, collateralState types.CollateralState) sdk.Error {
