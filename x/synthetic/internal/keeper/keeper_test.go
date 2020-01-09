@@ -89,3 +89,50 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 
 	require.NoError(t, err)
 }
+
+func TestMarketBalance(t *testing.T) {
+	testRatioChange(t)
+	testAddFee(t)
+}
+
+func testRatioChange(t *testing.T) {
+	mb := types.EmptyMarketBalance("asd")
+
+	mb.IncreaseLongVolume(sdk.NewInt(2000))
+	require.Equal(t, mb.Imbalance.Ratio, float64(0))
+
+	mb.IncreaseShortVolume(sdk.NewInt(1000))
+	require.Equal(t, mb.Imbalance.Ratio, float64(1)) // 100% diff
+	mb.Flash()
+
+	mb.IncreaseLongVolume(sdk.NewInt(1500))
+	mb.IncreaseShortVolume(sdk.NewInt(1000))
+	require.Equal(t, mb.Imbalance.Ratio, float64(0.5)) // 50% diff
+}
+
+func testAddFee(t *testing.T) {
+	mb := types.EmptyMarketBalance("asd")
+
+	mb.IncreaseLongVolume(sdk.NewInt(2000))
+	mb.IncreaseShortVolume(sdk.NewInt(1000))
+
+	testAmt := sdk.NewInt(100)
+	val := mb.AddFee(testAmt)
+	assumedVal := sdk.NewInt(105) // 100% of an imbalance should lead to a 5% of a fee
+	require.True(t, val.Equal(assumedVal))
+	mb.Flash()
+	testFlash(t, &mb)
+
+	mb.IncreaseLongVolume(sdk.NewInt(1500))
+	mb.IncreaseShortVolume(sdk.NewInt(1000))
+	testAmt = sdk.NewInt(100)
+	val = mb.AddFee(testAmt)
+	assumedVal = sdk.NewInt(101) // 50% of an imbalance should lead to a 1% of a fee
+	require.True(t, val.Equal(assumedVal))
+}
+
+func testFlash(t *testing.T, mb *types.MarketBalance) {
+	require.True(t, mb.LongVolume.Equal(sdk.ZeroInt()))
+	require.True(t, mb.ShortVolume.Equal(sdk.ZeroInt()))
+	require.Equal(t, mb.Imbalance.Ratio, float64(0))
+}
