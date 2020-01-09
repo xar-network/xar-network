@@ -60,7 +60,7 @@ func handleMsgCreateOrModifyCSDT(ctx sdk.Context, keeper keeper.Keeper, msg type
 		return err.Result()
 	}
 
-	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, msg.CollateralChange, msg.DebtChange)
+	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, msg.CollateralChange, msg.DebtDenom, msg.DebtChange)
 	if err != nil {
 		return err.Result()
 	}
@@ -75,7 +75,7 @@ func handleMsgDepositCollateral(ctx sdk.Context, keeper keeper.Keeper, msg types
 		return err.Result()
 	}
 
-	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, msg.CollateralChange, sdk.NewInt(0))
+	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, msg.CollateralChange, "", sdk.NewInt(0))
 	if err != nil {
 		return err.Result()
 	}
@@ -90,7 +90,7 @@ func handleMsgWithdrawCollateral(ctx sdk.Context, keeper keeper.Keeper, msg type
 		return err.Result()
 	}
 
-	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, msg.CollateralChange.Neg(), sdk.NewInt(0))
+	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, msg.CollateralChange.Neg(), "", sdk.NewInt(0))
 	if err != nil {
 		return err.Result()
 	}
@@ -105,7 +105,7 @@ func handleMsgSettleDebt(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSet
 		return err.Result()
 	}
 
-	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, sdk.NewInt(0), msg.DebtChange.Neg())
+	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, sdk.NewInt(0), msg.DebtDenom, msg.DebtChange.Neg())
 	if err != nil {
 		return err.Result()
 	}
@@ -120,7 +120,7 @@ func handleMsgWithdrawDebt(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgW
 		return err.Result()
 	}
 
-	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, sdk.NewInt(0), msg.DebtChange)
+	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, sdk.NewInt(0), msg.DebtDenom, msg.DebtChange)
 	if err != nil {
 		return err.Result()
 	}

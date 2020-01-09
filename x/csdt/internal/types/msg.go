@@ -30,15 +30,17 @@ type MsgCreateOrModifyCSDT struct {
 	Sender           sdk.AccAddress `json:"sender" yaml:"sender"`
 	CollateralDenom  string         `json:"collateral_denom" yaml:"collateral_denom"`
 	CollateralChange sdk.Int        `json:"collateral_change" yaml:"collateral_change"`
+	DebtDenom		 string         `json:"debt_denom" yaml:"debt_denom"`
 	DebtChange       sdk.Int        `json:"debt_change" yaml:"debt_change"`
 }
 
 // NewMsgCreateOrModifyCSDT returns a new MsgCreateOrModifyCSDT.
-func NewMsgCreateOrModifyCSDT(sender sdk.AccAddress, collateralDenom string, collateralChange sdk.Int, debtChange sdk.Int) MsgCreateOrModifyCSDT {
+func NewMsgCreateOrModifyCSDT(sender sdk.AccAddress, collateralDenom string, collateralChange sdk.Int, debtDenom string, debtChange sdk.Int) MsgCreateOrModifyCSDT {
 	return MsgCreateOrModifyCSDT{
 		Sender:           sender,
 		CollateralDenom:  collateralDenom,
 		CollateralChange: collateralChange,
+		DebtDenom: 		  debtDenom,
 		DebtChange:       debtChange,
 	}
 }

@@ -86,6 +86,17 @@ func (cps Params) GetCollateralParam(collateralDenom string) CollateralParam {
 	panic("collateral params not found in module params")
 }
 
+func (cps Params) GetDebtParam(denom string) DebtParam {
+	// search for matching denom, return
+	for _, cp := range cps.DebtParams {
+		if cp.Denom == denom {
+			return cp
+		}
+	}
+	// panic if not found, to be safe
+	panic("collateral params not found in module params")
+}
+
 // String implements fmt.Stringer
 func (p Params) String() string {
 	return fmt.Sprintf(`Params:

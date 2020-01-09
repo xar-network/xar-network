@@ -34,6 +34,7 @@ type CSDT struct {
 	Owner            sdk.AccAddress `json:"owner" yaml:"owner"`                         // Account that authorizes changes to the CSDT
 	CollateralDenom  string         `json:"collateral_denom" yaml:"collateral_denom"`   // Type of collateral stored in this CSDT
 	CollateralAmount sdk.Coins      `json:"collateral_amount" yaml:"collateral_amount"` // Amount of collateral stored in this CSDT
+	DebtDenom		 string         `json:"debt_denom" yaml:"debt_denom"`   			// Type of debt stored in this CSDT
 	Debt             sdk.Coins      `json:"debt" yaml:"debt"`
 	AccumulatedFees  sdk.Coins      `json:"accumulated_fees" yaml:"accumulated_fees"`
 	FeesUpdated      time.Time      `json:"fees_updated" yaml:"fees_updated"` // Amount of stable coin drawn from this CSDT
