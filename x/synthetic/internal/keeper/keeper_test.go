@@ -136,3 +136,37 @@ func testFlash(t *testing.T, mb *types.MarketBalance) {
 	require.True(t, mb.ShortVolume.Equal(sdk.ZeroInt()))
 	require.Equal(t, mb.Imbalance.Ratio, float64(0))
 }
+
+func TestSnapshot(t *testing.T) {
+	coeffs := []sdk.Uint{
+		sdk.NewUint(100),
+		sdk.NewUint(90),
+		sdk.NewUint(80),
+		sdk.NewUint(70),
+		sdk.NewUint(60),
+		sdk.NewUint(50),
+		sdk.NewUint(40),
+		sdk.NewUint(30),
+		sdk.NewUint(20),
+		sdk.NewUint(10),
+	}
+	two := sdk.NewUint(2)
+	one := sdk.OneUint()
+	snap := types.NewVolumeSnapshots(coeffs)
+	snap.AddSnapshot(two, one)
+	snap.AddSnapshot(two, one)
+	snap.AddSnapshot(two, one)
+	snap.AddSnapshot(two, one)
+	snap.AddSnapshot(two, one)
+	snap.AddSnapshot(two, one)
+	snap.AddSnapshot(two, one)
+	snap.AddSnapshot(two, one)
+	snap.AddSnapshot(two, one)
+	snap.AddSnapshot(two, one)
+
+	wsnap := snap.GetWeightedVolumes()
+	assumedShortVal := sdk.NewUint(550) // 550 = 100 + 90 + 80 + 70 + 60 + 50 + 40 + 30 + 20 + 10
+	assumedLongVal := sdk.NewUint(1100)
+	require.True(t, wsnap.LongVolume.Equal(assumedLongVal))
+	require.True(t, wsnap.ShortVolume.Equal(assumedShortVal))
+}

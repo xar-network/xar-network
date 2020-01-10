@@ -116,7 +116,9 @@ func (m *MarketBalance) AddFee(amount sdk.Int) sdk.Int {
 	return amt
 }
 
-func (m *MarketBalance) GetFeeForAmount(amount sdk.Int) sdk.Int {}
+func (m *MarketBalance) GetFeeForAmount(amount sdk.Int) sdk.Int {
+	return sdk.ZeroInt()
+}
 
 // TODO: find a better name
 func feePercentToNomDenom(fee float64) (sdk.Int,sdk.Int) {
