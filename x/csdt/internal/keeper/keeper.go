@@ -314,6 +314,25 @@ func (k Keeper) GetGovDenom() string {
 }
 
 // ---------- Store Wrappers ----------
+func (k Keeper) getTotalBorrowsKey(collateralDenom string) []byte {
+	return bytes.Join(
+		[][]byte{
+			[]byte("borrow"),
+			[]byte(collateralDenom),
+		},
+		nil, // no separator
+	)
+}
+
+func (k Keeper) getTotalCashKey(collateralDenom string) []byte {
+	return bytes.Join(
+		[][]byte{
+			[]byte("cash"),
+			[]byte(collateralDenom),
+		},
+		nil, // no separator
+	)
+}
 
 func (k Keeper) getCSDTKeyPrefix(collateralDenom string) []byte {
 	return bytes.Join(
@@ -324,6 +343,7 @@ func (k Keeper) getCSDTKeyPrefix(collateralDenom string) []byte {
 		nil, // no separator
 	)
 }
+
 func (k Keeper) getCSDTKey(owner sdk.AccAddress, collateralDenom string) []byte {
 	return bytes.Join(
 		[][]byte{
@@ -333,6 +353,33 @@ func (k Keeper) getCSDTKey(owner sdk.AccAddress, collateralDenom string) []byte 
 		nil, // no separator
 	)
 }
+
+// GetTotalBorrows gets the global borrows for a specific denomination
+func (k Keeper) GetTotalBorrows(ctx sdk.Context, collateralDenom string) (sdk.Uint, bool) {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(k.getTotalBorrowsKey(collateralDenom))
+	// unmarshal
+	if bz == nil {
+		return sdk.ZeroUint(), false
+	}
+	var cash sdk.Uint
+	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &cash)
+	return cash, true
+}
+
+// GetTotalCash gets the global cash for a specific denomination
+func (k Keeper) GetTotalCash(ctx sdk.Context, collateralDenom string) (sdk.Uint, bool) {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(k.getTotalCashKey(collateralDenom))
+	// unmarshal
+	if bz == nil {
+		return sdk.ZeroUint(), false
+	}
+	var cash sdk.Uint
+	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &cash)
+	return cash, true
+}
+
 func (k Keeper) GetCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string) (types.CSDT, bool) {
 	// get store
 	store := ctx.KVStore(k.storeKey)
@@ -345,6 +392,24 @@ func (k Keeper) GetCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom s
 	var csdt types.CSDT
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &csdt)
 	return csdt, true
+}
+
+// SetTotalBorrows stores the global borrow value for a specific denomination
+func (k Keeper) SetTotalBorrows(ctx sdk.Context, totalBorrows sdk.Uint, collateralDenom string) {
+	// get store
+	store := ctx.KVStore(k.storeKey)
+	// marshal and set
+	bz := k.cdc.MustMarshalBinaryLengthPrefixed(totalBorrows)
+	store.Set(k.getTotalBorrowsKey(collateralDenom), bz)
+}
+
+// SetTotalCash stores the global cash value for a specific denomination
+func (k Keeper) SetTotalCash(ctx sdk.Context, totalCash sdk.Uint, collateralDenom string) {
+	// get store
+	store := ctx.KVStore(k.storeKey)
+	// marshal and set
+	bz := k.cdc.MustMarshalBinaryLengthPrefixed(totalCash)
+	store.Set(k.getTotalCashKey(collateralDenom), bz)
 }
 
 // Potentially change this logic to use the account interface?
