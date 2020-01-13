@@ -51,6 +51,9 @@ func NewKeeper(
 	supply types.SupplyKeeper,
 	liquidityModule string,
 ) Keeper {
+	// Run gorotine for PoolSnapshot creates
+
+
 	return Keeper{
 		storeKey:        storeKey,
 		oracle:          oracle,
@@ -235,6 +238,13 @@ func validateCoinTransfer(ctx sdk.Context, k Keeper, owner sdk.AccAddress, chang
 		if !ok {
 			return sdk.ErrInsufficientCoins("not enough collateral in sender's account")
 		}
+	} else {
+		// Check decrease limitations
+		cParm := p.GetCollateralParam(changeInCollateral.Denom)
+
+		if !k.isValidDecreaseLimits(ctx, cParm) {
+			return sdk.ErrInsufficientCoins("not enough collateral in global pool account (try later)")
+		}
 	}
 	if changeInDebt.IsNegative() { // reducing debt, by adding coin to CSDT
 		ok := k.bank.HasCoins(ctx, owner, sdk.NewCoins(sdk.NewCoin(changeInDebt.Denom, changeInDebt.Amount.Neg())))
@@ -243,6 +253,36 @@ func validateCoinTransfer(ctx sdk.Context, k Keeper, owner sdk.AccAddress, chang
 		}
 	}
 	return nil
+}
+
+func (k Keeper) isValidDecreaseLimits(ctx sdk.Context, parm types.CollateralParam) bool {
+	// Check all decrease limits
+	if parm.DecreaseLimits == nil {
+		return true
+	}
+
+	poolVals := k.bank.GetCoins(ctx, sk.GetModuleAccount(ctx, k.liquidityModule))
+	poolVal := poolVals.AmountOf(parm.Denom)
+
+	snap := NewPoolSnapshot(ctx, parm.Denom)
+	for _, lim := range parm.DecreaseLimits {
+		// Get snapshot and current pool value
+		snapVal := snap.GetPool(lim.Period)
+		if snapVal == nil {
+			// If have not snapshot for this denom and period - ignore this limit
+			continue
+		}
+
+		// Min pool value for current limit
+		borderLimit := snapVal.Sub(snapVal.Mul(sdk.NewInt(100)).Mod(lim.Percent))
+		if poolVal.LTE(borderLimit) {
+			// If pool value lower then min pool value from limit - return false
+			return false
+		}
+	}
+
+	// If not detect any limits - return true ("isValid")
+	return true
 }
 
 // TODO
@@ -442,9 +482,6 @@ func (k Keeper) validateAndSetGlobalDebt(ctx sdk.Context, changeInDebt sdk.Coin,
 		return sdk.ErrInternal("change to CSDT would put the system over the debt limit for this debt type")
 	}
 
-	// Check denoms proportional balances
-
-
 	k.SetCollateralState(ctx, collateralState)
 	return nil
 }
@@ -463,9 +500,6 @@ func (k Keeper) validateAndSetCollateralState(ctx sdk.Context, changeInDebt sdk.
 	if collateralState.TotalDebt.GT(p.GetCollateralParam(changeInDebt.Denom).DebtLimit.AmountOf(changeInDebt.Denom)) {
 		return sdk.ErrInternal("change to CSDT would put the system over the debt limit for this collateral type")
 	}
-
-	// Check denoms proportional balances
-
 
 	k.SetCollateralState(ctx, collateralState)
 	return nil
