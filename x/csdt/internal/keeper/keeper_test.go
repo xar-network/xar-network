@@ -468,6 +468,41 @@ func TestKeeper_GetSetDeleteCSDT(t *testing.T) {
 	_, found = keeper.GetCSDT(ctx, csdt.Owner, csdt.CollateralDenom)
 	require.False(t, found)
 }
+
+func TestKeeper_GetSetGlobalBorrows(t *testing.T) {
+	// setup keeper, create global cash
+	mapp, keeper, _, _ := setUpMockAppWithoutGenesis()
+	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
+	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
+	ctx := mapp.BaseApp.NewContext(false, header)
+	gBorrows := sdk.NewUint(888890000)
+
+	// write and read from store
+	keeper.SetTotalBorrows(ctx, gBorrows, "btc")
+	readGDebt, ok := keeper.GetTotalBorrows(ctx, "btc")
+
+	// check before and after match
+	require.True(t, ok, "must exist")
+	require.Equal(t, gBorrows, readGDebt)
+}
+
+func TestKeeper_GetSetGlobalCash(t *testing.T) {
+	// setup keeper, create global cash
+	mapp, keeper, _, _ := setUpMockAppWithoutGenesis()
+	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
+	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
+	ctx := mapp.BaseApp.NewContext(false, header)
+	gCash := sdk.NewUint(99990000)
+
+	// write and read from store
+	keeper.SetTotalCash(ctx, gCash, "btc")
+	readGDebt, ok := keeper.GetTotalCash(ctx, "btc")
+
+	// check before and after match
+	require.True(t, ok, "must exist")
+	require.Equal(t, gCash, readGDebt)
+}
+
 func TestKeeper_GetSetGDebt(t *testing.T) {
 	// setup keeper, create GDebt
 	mapp, keeper, _, _ := setUpMockAppWithoutGenesis()
