@@ -6,37 +6,75 @@ import (
 	"math"
 	"math/big"
 	"strconv"
+	"time"
 )
 
 type MarketBalance struct {
-	MarketDenom string    `json:"denom" yaml:"denom"`
-	LongVolume  sdk.Int   `json:"long_volume" yaml:"long_volume"`
-	ShortVolume sdk.Int   `json:"short_volume" yaml:"short_volume"`
-	Imbalance   Imbalance `json:"imbalance" yaml:"imbalance"`
-	Fee         float64   `json:"fee_percent"  yaml:"fee_percent"`
+	MarketDenom string          `json:"denom" yaml:"denom"`
+	LongVolume  sdk.Int         `json:"long_volume" yaml:"long_volume"`
+	ShortVolume sdk.Int         `json:"short_volume" yaml:"short_volume"`
+	Imbalance   Imbalance       `json:"imbalance" yaml:"imbalance"`
+	Snapshots   VolumeSnapshots `json:"snapshots"`
+	Timer       IntervalTimer   `json:"timer" yaml:"timer"`
+	Fee         float64         `json:"fee_percent"  yaml:"fee_percent"`
 }
 
-func EmptyMarketBalance(denom string) MarketBalance {
+// if you prefer to ignore timer settings, just pass zero as an interval value
+func EmptyMarketBalance(denom string, interval time.Duration) MarketBalance {
 	return MarketBalance{
 		denom,
 		sdk.NewInt(0),
 		sdk.NewInt(0),
 		Imbalance{},
+		NewVolumeSnapshots(1, []sdk.Int{sdk.NewInt(1)}),
+		TimerFromInterval(interval),
 		0,
 	}
 }
 
+// creates snapshot if it a deadline has passed
+func (m *MarketBalance) CheckForDeadline() {
+	if m.Timer.IntervalIsZero() {
+		return
+	}
+
+	if !m.Timer.IsExpired(time.Now()) {
+		return
+	}
+
+	m.SnapshotAndFlash()
+	m.Timer.Reset()
+}
+
 func (m *MarketBalance) IncreaseLongVolume(amount sdk.Int) {
+	m.CheckForDeadline()
+
 	m.LongVolume = m.LongVolume.Add(amount)
 	m.recalculate()
 }
 
 func (m *MarketBalance) IncreaseShortVolume(amount sdk.Int) {
+	m.CheckForDeadline()
+
 	m.ShortVolume = m.ShortVolume.Add(amount)
 	m.recalculate()
 }
 
-func (m *MarketBalance) Flash() {
+func (m *MarketBalance) Snapshot() VolumeSnapshot {
+	return NewVolumeSnapshot(m.LongVolume, m.ShortVolume)
+}
+
+func (m *MarketBalance) SaveSnapshot(v VolumeSnapshot) {
+	m.Snapshots.AddSnapshot(v)
+}
+
+func (m *MarketBalance) SnapshotAndFlash() {
+	snapshot := m.Snapshot()
+	m.SaveSnapshot(snapshot)
+	m.FlashVolumes()
+}
+
+func (m *MarketBalance) FlashVolumes() {
 	m.LongVolume = sdk.ZeroInt()
 	m.ShortVolume = sdk.ZeroInt()
 	m.Imbalance.Ratio = 0
@@ -105,7 +143,7 @@ func (m *MarketBalance) AddFee(amount sdk.Int) sdk.Int {
 	}
 
 	feePercent := m.CalculateFeePercent(m.Imbalance.Ratio)
-	if feePercent == 0 {// in fact it is not possible to happen since m.Imbalance.Ratio has already been checked
+	if feePercent == 0 { // in fact it is not possible to happen since m.Imbalance.Ratio has already been checked
 		panic(amount)
 	}
 
@@ -121,7 +159,7 @@ func (m *MarketBalance) GetFeeForAmount(amount sdk.Int) sdk.Int {
 }
 
 // TODO: find a better name
-func feePercentToNomDenom(fee float64) (sdk.Int,sdk.Int) {
+func feePercentToNomDenom(fee float64) (sdk.Int, sdk.Int) {
 	num := int64((100 + fee) * 1000)
 	den := int64(100 * 1000)
 	return sdk.NewInt(num), sdk.NewInt(den)

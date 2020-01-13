@@ -103,7 +103,7 @@ func testRatioChange(t *testing.T) {
 
 	mb.IncreaseShortVolume(sdk.NewInt(1000))
 	require.Equal(t, mb.Imbalance.Ratio, float64(1)) // 100% diff
-	mb.Flash()
+	mb.FlashVolumes()
 
 	mb.IncreaseLongVolume(sdk.NewInt(1500))
 	mb.IncreaseShortVolume(sdk.NewInt(1000))
@@ -120,7 +120,7 @@ func testAddFee(t *testing.T) {
 	val := mb.AddFee(testAmt)
 	assumedVal := sdk.NewInt(105) // 100% of an imbalance should lead to a 5% of a fee
 	require.True(t, val.Equal(assumedVal))
-	mb.Flash()
+	mb.FlashVolumes()
 	testFlash(t, &mb)
 
 	mb.IncreaseLongVolume(sdk.NewInt(1500))
@@ -138,35 +138,35 @@ func testFlash(t *testing.T, mb *types.MarketBalance) {
 }
 
 func TestSnapshot(t *testing.T) {
-	coeffs := []sdk.Uint{
-		sdk.NewUint(100),
-		sdk.NewUint(90),
-		sdk.NewUint(80),
-		sdk.NewUint(70),
-		sdk.NewUint(60),
-		sdk.NewUint(50),
-		sdk.NewUint(40),
-		sdk.NewUint(30),
-		sdk.NewUint(20),
-		sdk.NewUint(10),
+	coeffs := []sdk.Int{
+		sdk.NewInt(100),
+		sdk.NewInt(90),
+		sdk.NewInt(80),
+		sdk.NewInt(70),
+		sdk.NewInt(60),
+		sdk.NewInt(50),
+		sdk.NewInt(40),
+		sdk.NewInt(30),
+		sdk.NewInt(20),
+		sdk.NewInt(10),
 	}
-	two := sdk.NewUint(2)
-	one := sdk.OneUint()
-	snap := types.NewVolumeSnapshots(coeffs)
-	snap.AddSnapshot(two, one)
-	snap.AddSnapshot(two, one)
-	snap.AddSnapshot(two, one)
-	snap.AddSnapshot(two, one)
-	snap.AddSnapshot(two, one)
-	snap.AddSnapshot(two, one)
-	snap.AddSnapshot(two, one)
-	snap.AddSnapshot(two, one)
-	snap.AddSnapshot(two, one)
-	snap.AddSnapshot(two, one)
+	two := sdk.NewInt(2)
+	one := sdk.OneInt()
+	snap := types.NewVolumeSnapshots(len(coeffs), coeffs)
+	snap.AddSnapshotValues(two, one)
+	snap.AddSnapshotValues(two, one)
+	snap.AddSnapshotValues(two, one)
+	snap.AddSnapshotValues(two, one)
+	snap.AddSnapshotValues(two, one)
+	snap.AddSnapshotValues(two, one)
+	snap.AddSnapshotValues(two, one)
+	snap.AddSnapshotValues(two, one)
+	snap.AddSnapshotValues(two, one)
+	snap.AddSnapshotValues(two, one)
 
 	wsnap := snap.GetWeightedVolumes()
-	assumedShortVal := sdk.NewUint(550) // 550 = 100 + 90 + 80 + 70 + 60 + 50 + 40 + 30 + 20 + 10
-	assumedLongVal := sdk.NewUint(1100)
+	assumedShortVal := sdk.NewInt(550) // 550 = 100 + 90 + 80 + 70 + 60 + 50 + 40 + 30 + 20 + 10
+	assumedLongVal := sdk.NewInt(1100)
 	require.True(t, wsnap.LongVolume.Equal(assumedLongVal))
 	require.True(t, wsnap.ShortVolume.Equal(assumedShortVal))
 }

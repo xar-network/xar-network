@@ -5,21 +5,22 @@ import (
 )
 
 type VolumeSnapshot struct {
-	LongVolume  sdk.Uint `json:"long_volume"`
-	ShortVolume sdk.Uint `json:"short_volume"`
+	LongVolume  sdk.Int `json:"long_volume"`
+	ShortVolume sdk.Int `json:"short_volume"`
 }
 
-func NewVolumeSnapshot() VolumeSnapshot {
+func NewVolumeSnapshot(long, short sdk.Int) VolumeSnapshot {
 	return VolumeSnapshot{
-		sdk.ZeroUint(),
-		sdk.ZeroUint(),
+		long,
+		short,
 	}
 }
 
-// we assume that you might want to check
-func (v *VolumeSnapshot) AddAndVerify(snap *VolumeSnapshot) {
-	v.ShortVolume = v.ShortVolume.Add(snap.ShortVolume)
-	v.LongVolume = v.LongVolume.Add(snap.LongVolume)
+func NewEmptyVolumeSnapshot() VolumeSnapshot {
+	return VolumeSnapshot{
+		sdk.ZeroInt(),
+		sdk.ZeroInt(),
+	}
 }
 
 func (v *VolumeSnapshot) Add(snap *VolumeSnapshot) {
@@ -27,35 +28,43 @@ func (v *VolumeSnapshot) Add(snap *VolumeSnapshot) {
 	v.LongVolume = v.LongVolume.Add(snap.LongVolume)
 }
 
-func (v *VolumeSnapshot) AddVolumes(LongVolume, ShortVolume sdk.Uint) {
+func (v *VolumeSnapshot) AddVolumes(LongVolume, ShortVolume sdk.Int) {
 	v.ShortVolume = v.ShortVolume.Add(ShortVolume)
 	v.LongVolume = v.LongVolume.Add(LongVolume)
 }
 
 type VolumeSnapshots struct {
 	maxSnapshotNumber int
-	coefficients      []sdk.Uint
+	coefficients      []sdk.Int
 	snapshots         []VolumeSnapshot
 }
 
 // Creates new VolumeSnapshot storage
 // A maximum snapshot number equals to a length of a coefficients array
-func NewVolumeSnapshots(coefficients []sdk.Uint) VolumeSnapshots {
-	maxSnapshotNumber := len(coefficients)
+func NewVolumeSnapshots(maxSnapshotNumber int, coefficients []sdk.Int) VolumeSnapshots {
+
 	if maxSnapshotNumber == 0 {
-		panic("coefficients cannot be empty")
+		panic("snapshots cannot be empty")
 	}
 
 	v := VolumeSnapshots{maxSnapshotNumber, coefficients, nil}
 	return v
 }
 
-func (v *VolumeSnapshots) AddSnapshot(LongVolume, ShortVolume sdk.Uint) {
-	v.snapshots = append(v.snapshots, VolumeSnapshot{LongVolume, ShortVolume})
+func (v *VolumeSnapshots) AddSnapshotValues(LongVolume, ShortVolume sdk.Int) {
+	v.AddSnapshot(VolumeSnapshot{LongVolume, ShortVolume})
+}
+
+
+func (v *VolumeSnapshots) AddSnapshot(snapshot VolumeSnapshot) {
+	if len(v.snapshots) == v.maxSnapshotNumber {
+		v.snapshots = v.snapshots[1:]
+	}
+	v.snapshots = append(v.snapshots, snapshot)
 }
 
 func (v *VolumeSnapshots) GetWeightedVolumes() *VolumeSnapshot {
-	var weightedVolumes = NewVolumeSnapshot()
+	var weightedVolumes = NewEmptyVolumeSnapshot()
 	for i := 0; i < len(v.snapshots); i++ {
 		coefficient := v.coefficients[i]
 
