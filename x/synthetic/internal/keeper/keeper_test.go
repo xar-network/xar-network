@@ -20,7 +20,6 @@ limitations under the License.
 package keeper_test
 
 import (
-	"log"
 	"testing"
 	"time"
 
@@ -87,71 +86,6 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 
 	require.NoError(t, err)
 	err = keeper.SellSynthetic(ctx, ownerAddr, sdk.NewCoin("sbtc", sdk.NewInt(1000)))
-
-	require.NoError(t, err)
-}
-
-func TestEndblockSnapshot(t *testing.T) {
-	_, addrs := mock.GeneratePrivKeyAddressPairs(2)
-	ownerAddr := addrs[0]
-
-	// setup keeper
-	mapp, keeper, _, _ := setUpMockAppWithoutGenesis()
-	// initialize csdt owner account with coins
-	genAcc := auth.BaseAccount{
-		Address: ownerAddr,
-		Coins:   sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(1005))),
-	}
-
-	mock.SetGenesis(mapp, []exported.Account{&genAcc})
-	// create a new context
-	header := abci.Header{Height: mapp.LastBlockHeight() + 1, Time:time.Now()}
-	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
-	ctx := mapp.BaseApp.NewContext(false, header)
-	// setup store state
-	oracleParams := oracle.DefaultParams()
-	oracleParams.Assets = oracle.Assets{
-		oracle.Asset{
-			AssetCode:  "sbtc",
-			BaseAsset:  "sbtc",
-			QuoteAsset: types.StableDenom,
-			Oracles: oracle.Oracles{
-				oracle.Oracle{
-					Address: addrs[1],
-				},
-			},
-		},
-	}
-	oracleParams.Nominees = []string{addrs[1].String()}
-
-	keeper.GetOracle().SetParams(ctx, oracleParams)
-	_, _ = keeper.GetOracle().SetPrice(
-		ctx, addrs[1], "sbtc",
-		sdk.MustNewDecFromStr("1.0"),
-		time.Now().Add(time.Hour*1))
-	_ = keeper.GetOracle().SetCurrentPrices(ctx)
-
-	keeper.GetSupply().SetSupply(ctx, supply.NewSupply(sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(1000)))))
-
-	// call func under test
-	keeper.SetParams(ctx, types.DefaultParams())
-	err := keeper.BuySynthetic(ctx, ownerAddr, sdk.NewCoin("sbtc", sdk.NewInt(1000)))
-	mapp.EndBlock(abci.RequestEndBlock{})
-	mapp.Commit()
-
-	startNewBlock(mapp)
-	h := ctx.BlockHeader()
-	log.Println(h.Height)
-
-	require.NoError(t, err)
-	err = keeper.SellSynthetic(ctx, ownerAddr, sdk.NewCoin("sbtc", sdk.NewInt(1000)))
-	endBlock(mapp)
-
-
-	startNewBlock(mapp)
-	endBlock(mapp)
-	h = ctx.WithBlockHeight(ctx.BlockHeight()-1).BlockHeader()
-	log.Println(h)
 
 	require.NoError(t, err)
 }
