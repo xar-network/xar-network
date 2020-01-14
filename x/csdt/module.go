@@ -22,6 +22,7 @@ package csdt
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -143,12 +144,70 @@ func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 }
 
 // BeginBlock performs a no-op.
-func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(ctx sdk.Context, rbb abci.RequestBeginBlock) {
+	// Create snapshots for denom pools by border of periods from decrease limits parameters
+	cParms := am.keeper.GetParams(ctx).CollateralParams
+
+	// Get current block time and prev block time for find periods borders
+	curBlockTime := rbb.Header.Time
+	prevBlockTime := ctx.WithBlockHeight(rbb.Header.Height - 1).BlockTime()
+
+	// Scan all decrease limits parameters
+	for _, p := range cParms {
+		// Prepare snapshot object for this denom
+		snap := keeper.NewPoolSnapshot(ctx, p.Denom)
+
+		// Get current pool value for limited denom
+		poolVal := am.keeper.GetPoolValue(ctx, p.Denom)
+
+		// Scan limit periods for detect periods borders and save snapshot if required (if now is period border)
+		for _, lim := range p.DecreaseLimits {
+			if isPeriodBorder(lim.Period, curBlockTime, prevBlockTime) {
+				snap.SetPool(lim.Period, poolVal)
+			}
+		}
+	}
+}
 
 // EndBlock returns the end blocker for the bank module. It returns no validator
 // updates.
 
 // Fees should be accrued here, need a global fee that can be used for buybacks or liquidation
-func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (AppModule) EndBlock(_ sdk.Context, reb abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
+}
+
+func isPeriodBorder(period string, curTime, prevTime time.Time) bool {
+	switch period {
+	case "h":
+		// Hour period
+		curHour := curTime.Unix() / int64(time.Hour.Seconds())
+		prevHour := prevTime.Unix() / int64(time.Hour.Seconds())
+		if curHour > prevHour {
+			return true
+		}
+	case "d":
+		// Day period
+		curDay := curTime.Unix() / ( 24 * int64(time.Hour.Seconds() ))
+		prevDay := prevTime.Unix() / ( 24 * int64(time.Hour.Seconds() ))
+		if curDay > prevDay {
+			return true
+		}
+	case "w":
+		// Week period
+		curWeek := (curTime.Unix() - 345600) / 604800
+		prevWeek := (prevTime.Unix() - 345600) / 604800
+		if curWeek > prevWeek {
+			return true
+		}
+	case "m":
+		// Month period
+		curMonth := curTime.Month()
+		prevMonth := prevTime.Month()
+		if curMonth != prevMonth {
+			return true
+		}
+	}
+
+	return false
 }

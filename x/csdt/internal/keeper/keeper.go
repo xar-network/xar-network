@@ -51,9 +51,6 @@ func NewKeeper(
 	supply types.SupplyKeeper,
 	liquidityModule string,
 ) Keeper {
-	// Run gorotine for PoolSnapshot creates
-
-
 	return Keeper{
 		storeKey:        storeKey,
 		oracle:          oracle,
@@ -110,12 +107,12 @@ func (k Keeper) changeState(ctx sdk.Context, owner sdk.AccAddress, changeInColla
 		return err
 	}
 
-	err = k.validateAndSetGlobalDebt(ctx, changeInDebt, &csdt)
+	err = k.validateAndSetGlobalDebt(ctx, changeInDebt)
 	if err != nil {
 		return err
 	}
 
-	err = k.validateAndSetCollateralState(ctx, changeInDebt, &csdt)
+	err = k.validateAndSetCollateralState(ctx, changeInDebt)
 	if err != nil {
 		return err
 	}
@@ -255,13 +252,17 @@ func validateCoinTransfer(ctx sdk.Context, k Keeper, owner sdk.AccAddress, chang
 	return nil
 }
 
+func (k Keeper) GetPoolValue(ctx sdk.Context, poolDenom string) sdk.Int {
+	return k.bank.GetCoins(ctx, k.sk.GetModuleAccount(ctx, k.liquidityModule).GetAddress()).AmountOf(poolDenom)
+}
+
 func (k Keeper) isValidDecreaseLimits(ctx sdk.Context, parm types.CollateralParam) bool {
 	// Check all decrease limits
 	if parm.DecreaseLimits == nil {
 		return true
 	}
 
-	poolVals := k.bank.GetCoins(ctx, sk.GetModuleAccount(ctx, k.liquidityModule))
+	poolVals := k.bank.GetCoins(ctx, k.sk.GetModuleAccount(ctx, k.liquidityModule).GetAddress())
 	poolVal := poolVals.AmountOf(parm.Denom)
 
 	snap := NewPoolSnapshot(ctx, parm.Denom)
@@ -468,7 +469,7 @@ func (k Keeper) GetCSDTs(ctx sdk.Context, collateralDenom string, price sdk.Dec)
 
 // Add/Subtract from global debt limit
 // TODO: How validate GlobalDebt with debtDenom?
-func (k Keeper) validateAndSetGlobalDebt(ctx sdk.Context, changeInDebt sdk.Coin, csdt *types.CSDT) sdk.Error {
+func (k Keeper) validateAndSetGlobalDebt(ctx sdk.Context, changeInDebt sdk.Coin) sdk.Error {
 	p := k.GetParams(ctx)
 	collateralState, found := k.GetCollateralState(ctx, changeInDebt.Denom)
 	if !found {
@@ -487,7 +488,7 @@ func (k Keeper) validateAndSetGlobalDebt(ctx sdk.Context, changeInDebt sdk.Coin,
 }
 
 // Add/Subtract from collateral debt limit
-func (k Keeper) validateAndSetCollateralState(ctx sdk.Context, changeInDebt sdk.Coin, csdt *types.CSDT) sdk.Error {
+func (k Keeper) validateAndSetCollateralState(ctx sdk.Context, changeInDebt sdk.Coin) sdk.Error {
 	p := k.GetParams(ctx)
 	collateralState, found := k.GetCollateralState(ctx, changeInDebt.Denom)
 	if !found {

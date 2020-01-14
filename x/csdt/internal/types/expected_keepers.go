@@ -47,6 +47,7 @@ type OracleKeeper interface {
 type SupplyKeeper interface {
 	GetSupply(ctx sdk.Context) (supply exported.SupplyI)
 	SetSupply(ctx sdk.Context, supply exported.SupplyI)
+	GetModuleAccount(ctx sdk.Context, moduleName string) exported.ModuleAccountI
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) sdk.Error
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) sdk.Error
 	BurnCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) sdk.Error
