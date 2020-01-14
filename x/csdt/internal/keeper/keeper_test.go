@@ -479,11 +479,11 @@ func TestKeeper_GetSetGlobalBorrows(t *testing.T) {
 
 	// write and read from store
 	keeper.SetTotalBorrows(ctx, gBorrows, "btc")
-	readGDebt, ok := keeper.GetTotalBorrows(ctx, "btc")
+	readGBorrows, ok := keeper.GetTotalBorrows(ctx, "btc")
 
 	// check before and after match
 	require.True(t, ok, "must exist")
-	require.Equal(t, gBorrows, readGDebt)
+	require.Equal(t, gBorrows, readGBorrows)
 }
 
 func TestKeeper_GetSetGlobalCash(t *testing.T) {
@@ -496,11 +496,28 @@ func TestKeeper_GetSetGlobalCash(t *testing.T) {
 
 	// write and read from store
 	keeper.SetTotalCash(ctx, gCash, "btc")
-	readGDebt, ok := keeper.GetTotalCash(ctx, "btc")
+	readGCash, ok := keeper.GetTotalCash(ctx, "btc")
 
 	// check before and after match
 	require.True(t, ok, "must exist")
-	require.Equal(t, gCash, readGDebt)
+	require.Equal(t, gCash, readGCash)
+}
+
+func TestKeeper_GetSetGlobalReserve(t *testing.T) {
+	// setup keeper, create global reserve
+	mapp, keeper, _, _ := setUpMockAppWithoutGenesis()
+	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
+	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
+	ctx := mapp.BaseApp.NewContext(false, header)
+	gCash := sdk.NewUint(77770000)
+
+	// write and read from store
+	keeper.SetTotalReserve(ctx, gCash, "btc")
+	readGReserve, ok := keeper.GetTotalReserve(ctx, "btc")
+
+	// check before and after match
+	require.True(t, ok, "must exist")
+	require.Equal(t, gCash, readGReserve)
 }
 
 func TestKeeper_GetSetGDebt(t *testing.T) {
