@@ -334,6 +334,16 @@ func (k Keeper) getTotalCashKey(collateralDenom string) []byte {
 	)
 }
 
+func (k Keeper) getTotalReserveKey(collateralDenom string) []byte {
+	return bytes.Join(
+		[][]byte{
+			[]byte("reserve"),
+			[]byte(collateralDenom),
+		},
+		nil, // no separator
+	)
+}
+
 func (k Keeper) getCSDTKeyPrefix(collateralDenom string) []byte {
 	return bytes.Join(
 		[][]byte{
@@ -380,6 +390,19 @@ func (k Keeper) GetTotalCash(ctx sdk.Context, collateralDenom string) (sdk.Uint,
 	return cash, true
 }
 
+// GetTotalReserve gets the global reserve value for a specific denomination
+func (k Keeper) GetTotalReserve(ctx sdk.Context, collateralDenom string) (sdk.Uint, bool) {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(k.getTotalReserveKey(collateralDenom))
+	// unmarshal
+	if bz == nil {
+		return sdk.ZeroUint(), false
+	}
+	var reserve sdk.Uint
+	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &reserve)
+	return reserve, true
+}
+
 func (k Keeper) GetCSDT(ctx sdk.Context, owner sdk.AccAddress, collateralDenom string) (types.CSDT, bool) {
 	// get store
 	store := ctx.KVStore(k.storeKey)
@@ -410,6 +433,15 @@ func (k Keeper) SetTotalCash(ctx sdk.Context, totalCash sdk.Uint, collateralDeno
 	// marshal and set
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(totalCash)
 	store.Set(k.getTotalCashKey(collateralDenom), bz)
+}
+
+// SetTotalReserve stores the global reserve value for a specific denomination
+func (k Keeper) SetTotalReserve(ctx sdk.Context, totalReserve sdk.Uint, collateralDenom string) {
+	// get store
+	store := ctx.KVStore(k.storeKey)
+	// marshal and set
+	bz := k.cdc.MustMarshalBinaryLengthPrefixed(totalReserve)
+	store.Set(k.getTotalReserveKey(collateralDenom), bz)
 }
 
 // Potentially change this logic to use the account interface?
