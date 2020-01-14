@@ -9,31 +9,71 @@ import (
 	"time"
 )
 
+// TODO: It is a good idea to make fields private and define a custom marshaller
+//  it is not assumed that user has a permission to change a state of an object otherwise than via setters
 type MarketBalance struct {
-	MarketDenom string          `json:"denom" yaml:"denom"`
-	LongVolume  sdk.Int         `json:"long_volume" yaml:"long_volume"`
-	ShortVolume sdk.Int         `json:"short_volume" yaml:"short_volume"`
-	Imbalance   Imbalance       `json:"imbalance" yaml:"imbalance"`
-	Snapshots   VolumeSnapshots `json:"snapshots"`
-	Timer       IntervalTimer   `json:"timer" yaml:"timer"`
-	Fee         float64         `json:"fee_percent"  yaml:"fee_percent"`
+	MarketDenom     string          `json:"denom" yaml:"denom"`
+	LongVolume      sdk.Int         `json:"long_volume" yaml:"long_volume"`
+	ShortVolume     sdk.Int         `json:"short_volume" yaml:"short_volume"`
+	Imbalance       Imbalance       `json:"imbalance" yaml:"imbalance"`
+	VolumeSnapshots VolumeSnapshots `json:"VolumeSnapshots"`
+	Timer           IntervalTimer   `json:"timer" yaml:"timer"` // unsafe logic! not tested well
+	BlockLimit      int             `json:"block_limit"  yaml:"block_limit"`
+	BlocksPassed    int             `json:"block_passed"  yaml:"block_passed"`
 }
 
 // if you prefer to ignore timer settings, just pass zero as an interval value
-func EmptyMarketBalance(denom string, interval time.Duration) MarketBalance {
+func EmptyMarketBalance(denom string, blockLimit int) MarketBalance {
 	return MarketBalance{
 		denom,
 		sdk.NewInt(0),
 		sdk.NewInt(0),
 		Imbalance{},
 		NewVolumeSnapshots(1, []sdk.Int{sdk.NewInt(1)}),
-		TimerFromInterval(interval),
+		TimerFromInterval(time.Duration(0)),
+		blockLimit,
+		0,
+	}
+} // if you prefer to ignore timer settings, just pass zero as an interval value
+func NewMarketBalance(denom string, snapshots VolumeSnapshots, blockLimit int) MarketBalance {
+	return MarketBalance{
+		denom,
+		sdk.NewInt(0),
+		sdk.NewInt(0),
+		Imbalance{},
+		snapshots,
+		TimerFromInterval(time.Duration(0)),
+		blockLimit,
 		0,
 	}
 }
 
-// creates snapshot if it a deadline has passed
+// call this function on the end of the block
+func (m *MarketBalance) OnEndBlock() {
+	m.BlocksPassed++
+	if m.BlocksPassed == m.BlockLimit {
+		m.BlocksPassed = 0
+		m.SnapshotAndFlash()
+	}
+}
+
+// Todo: Unsafe! Needs more testing to use
+func (m *MarketBalance) Schedule() {
+	f := func() {
+		m.SnapshotAndFlash()
+		m.Timer.Reset()
+	}
+
+	m.Timer.Schedule(f)
+}
+
+// creates snapshot if it a deadline has passed.
+// use it if (for some reason) it is inappropriate to use timer scheduler callback
 func (m *MarketBalance) CheckForDeadline() {
+	if m.Timer.IsScheduling {
+		return
+	}
+
 	if m.Timer.IntervalIsZero() {
 		return
 	}
@@ -50,14 +90,14 @@ func (m *MarketBalance) IncreaseLongVolume(amount sdk.Int) {
 	m.CheckForDeadline()
 
 	m.LongVolume = m.LongVolume.Add(amount)
-	m.recalculate()
+	m.Recalculate()
 }
 
 func (m *MarketBalance) IncreaseShortVolume(amount sdk.Int) {
 	m.CheckForDeadline()
 
 	m.ShortVolume = m.ShortVolume.Add(amount)
-	m.recalculate()
+	m.Recalculate()
 }
 
 func (m *MarketBalance) Snapshot() VolumeSnapshot {
@@ -65,7 +105,7 @@ func (m *MarketBalance) Snapshot() VolumeSnapshot {
 }
 
 func (m *MarketBalance) SaveSnapshot(v VolumeSnapshot) {
-	m.Snapshots.AddSnapshot(v)
+	m.VolumeSnapshots.AddSnapshot(v)
 }
 
 func (m *MarketBalance) SnapshotAndFlash() {
@@ -77,28 +117,31 @@ func (m *MarketBalance) SnapshotAndFlash() {
 func (m *MarketBalance) FlashVolumes() {
 	m.LongVolume = sdk.ZeroInt()
 	m.ShortVolume = sdk.ZeroInt()
-	m.Imbalance.Ratio = 0
+	m.Imbalance.Ratio = sdk.ZeroDec()
 }
 
 func (m *MarketBalance) GetImbalance() Imbalance {
 	return m.Imbalance
 }
 
-func (m *MarketBalance) recalculate() {
+func (m *MarketBalance) Recalculate() {
 	m.calculateImbalance()
 }
 
 func (m *MarketBalance) calculateImbalance() {
-	if m.LongVolume.GT(m.ShortVolume) {
-		ratio := m.getRatio(m.LongVolume, m.ShortVolume)
+	latestSnapshot := m.VolumeSnapshots.AppendSnapshot(m.Snapshot())
+	volumes := latestSnapshot.GetWeightedVolumes()
+
+	if volumes.LongVolume.GT(volumes.ShortVolume) {
+		ratio := m.getRatio(volumes.LongVolume, volumes.ShortVolume)
 		m.Imbalance = Imbalance{
 			matcheng.Bid,
 			ratio,
 		}
 	}
 
-	if m.ShortVolume.GT(m.LongVolume) {
-		ratio := m.getRatio(m.ShortVolume, m.LongVolume)
+	if volumes.ShortVolume.GT(volumes.LongVolume) {
+		ratio := m.getRatio(volumes.ShortVolume, m.LongVolume)
 		m.Imbalance = Imbalance{
 			matcheng.Ask,
 			ratio,
@@ -106,21 +149,17 @@ func (m *MarketBalance) calculateImbalance() {
 	}
 }
 
-func (m MarketBalance) getRatio(num1, den1 sdk.Int) float64 {
+// num1/den1 - 1
+func (m MarketBalance) getRatio(num1, den1 sdk.Int) sdk.Dec {
 	num := sdk.NewDecFromBigInt(num1.BigInt())
 	den := sdk.NewDecFromBigInt(den1.BigInt())
 
 	if num.Equal(sdk.ZeroDec()) || den.Equal(sdk.ZeroDec()) {
-		return 0
+		return sdk.ZeroDec()
 	}
 
 	ratio := num.Quo(den).Sub(sdk.OneDec())
-	floatStr := ratio.String()
-	flt, err := strconv.ParseFloat(floatStr, 64)
-	if err != nil {
-		panic(err)
-	}
-	return flt
+	return ratio
 }
 
 // we assume that percent cannot be more that math.MaxFloat64 (4503599627370496)
@@ -138,16 +177,22 @@ func (m *MarketBalance) CalculateFeePercent(marketImbalance float64) float64 {
 
 func (m *MarketBalance) AddFee(amount sdk.Int) sdk.Int {
 	//var scale int64 = 1000
-	if m.Imbalance.Ratio == 0 {
+	if m.Imbalance.Ratio.Equal(sdk.ZeroDec()) {
 		return amount
 	}
 
-	feePercent := m.CalculateFeePercent(m.Imbalance.Ratio)
+	floatStr := m.Imbalance.Ratio.String()
+	flt, err := strconv.ParseFloat(floatStr, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	feePercent := m.CalculateFeePercent(flt)
 	if feePercent == 0 { // in fact it is not possible to happen since m.Imbalance.Ratio has already been checked
 		panic(amount)
 	}
 
-	num, denum := feePercentToNomDenom(feePercent)
+	num, denum := fractionForPercentAddition(feePercent)
 
 	amt := amount.Mul(num).Quo(denum)
 
@@ -155,13 +200,56 @@ func (m *MarketBalance) AddFee(amount sdk.Int) sdk.Int {
 }
 
 func (m *MarketBalance) GetFeeForAmount(amount sdk.Int) sdk.Int {
-	return sdk.ZeroInt()
+	if m.Imbalance.Ratio.Equal(sdk.ZeroDec()) {
+		return amount
+	}
+
+	floatStr := m.Imbalance.Ratio.String()
+	flt, err := strconv.ParseFloat(floatStr, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	feePercent := m.CalculateFeePercent(flt)
+	if feePercent == 0 { // in fact it is not possible to happen since m.Imbalance.Ratio has already been checked
+		panic(amount)
+	}
+
+	num, denum := fractionForPercent(feePercent)
+
+	amt := amount.Mul(num).Quo(denum)
+	return amt
+}
+
+func (m *MarketBalance) GetFeeForDirection(amount sdk.Int, direction matcheng.Direction) sdk.Int {
+	if direction == matcheng.Bid {
+		if m.ShortVolume.LT(m.LongVolume) {
+			return m.GetFeeForAmount(amount)
+		}
+		return sdk.ZeroInt()
+	} else {
+		if m.LongVolume.LT(m.ShortVolume) {
+			return m.GetFeeForAmount(amount)
+		}
+		return sdk.ZeroInt()
+	}
 }
 
 // TODO: find a better name
-func feePercentToNomDenom(fee float64) (sdk.Int, sdk.Int) {
-	num := int64((100 + fee) * 1000)
-	den := int64(100 * 1000)
+// returns a fraction p/q for a given percent
+// it is assumed that 100% = 1.0
+// so x * p/q = x + (x * percent)
+func fractionForPercentAddition(percent float64) (sdk.Int, sdk.Int) {
+	num := int64(100 + percent)
+	den := int64(100)
+	return sdk.NewInt(num), sdk.NewInt(den)
+}
+
+// returns a fraction p/q for a given percent
+// so x * p/q = x * percent
+func fractionForPercent(percent float64) (sdk.Int, sdk.Int) {
+	num := int64(percent)
+	den := int64(100)
 	return sdk.NewInt(num), sdk.NewInt(den)
 }
 

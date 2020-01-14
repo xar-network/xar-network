@@ -1,14 +1,15 @@
 package types
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/xar-network/xar-network/pkg/matcheng"
 )
 
 type Imbalance struct {
 	Direction matcheng.Direction `json:"direction" yaml:"direction"`
-	Ratio     float64            `json:"ratio" yaml:"ratio"`
+	Ratio     sdk.Dec            `json:"ratio" yaml:"ratio"`
 }
 
 func (i Imbalance) IsImbalanced() bool {
-	return i.Ratio == 0
+	return i.Ratio.Equal(sdk.ZeroDec())
 }

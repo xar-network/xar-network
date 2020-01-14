@@ -21,24 +21,38 @@ package types
 
 import (
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/xar-network/xar-network/types/fee"
+)
+
+const (
+	defaultBlocksPerSnapshot = 10000
+	defaultSnapshotLimit     = 100
 )
 
 // Parameter keys
 var (
 	KeySyntheticParams     = []byte("SyntheticParams")
 	KeyNominees            = []byte("Nominees")
+	KeyFee                 = []byte("Fee")
+	KeyMarketBalanceParam  = []byte("MarketBalanceParam")
 	DefaultSyntheticParams = SyntheticParams{SyntheticParam{
 		Denom: "sbtc",
 	}}
+	DefaultMarketBalanceParam = MarketBalanceParam{
+		defaultBlocksPerSnapshot,
+		defaultSnapshotLimit,
+		nil,
+	}
 )
 
 // Params governance parameters for synthetic module
 type Params struct {
-	SyntheticParams SyntheticParams `json:"synthetic_params" yaml:"synthetic_params"`
-	Nominees        []string        `json:"nominees" yaml:"nominees"`
-	Fee             fee.Fee         `json:"fee" yaml:"fee"`
+	SyntheticParams    SyntheticParams    `json:"synthetic_params" yaml:"synthetic_params"`
+	Nominees           []string           `json:"nominees" yaml:"nominees"`
+	Fee                fee.Fee            `json:"fee" yaml:"fee"`
+	MarketBalanceParam MarketBalanceParam `json:"market_balance_param" yaml:"market_balance_param"`
 }
 
 func (p Params) IsSyntheticPresent(denom string) bool {
@@ -77,11 +91,13 @@ func NewParams(
 	syntheticParams SyntheticParams,
 	nominees []string,
 	fee fee.Fee,
+	mbParam MarketBalanceParam,
 ) Params {
 	return Params{
-		SyntheticParams: syntheticParams,
-		Nominees:        nominees,
-		Fee:             fee,
+		SyntheticParams:    syntheticParams,
+		Nominees:           nominees,
+		Fee:                fee,
+		MarketBalanceParam: mbParam,
 	}
 }
 
@@ -91,6 +107,7 @@ func DefaultParams() Params {
 		DefaultSyntheticParams,
 		[]string{},
 		fee.FromPercentString("0.005"),
+		DefaultMarketBalanceParam,
 	)
 }
 
@@ -128,6 +145,8 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
 		{Key: KeySyntheticParams, Value: &p.SyntheticParams},
 		{Key: KeyNominees, Value: &p.Nominees},
+		{Key: KeyFee, Value: &p.Fee},
+		{Key: KeyMarketBalanceParam, Value: &p.MarketBalanceParam},
 	}
 }
 
@@ -142,4 +161,15 @@ func (p Params) Validate() error {
 		syntheticDupMap[sp.Denom] = 1
 	}
 	return nil
+}
+
+type MarketBalanceParam struct {
+	BlocksPerSnapshot int `json:"blocks_per_snapshot" yaml:"blocks_per_snapshot"`
+	SnapshotLimit     int `json:"snapshot_limit" yaml:"snapshot_limit"`
+	Coefficients      []sdk.Int
+}
+
+func (m MarketBalanceParam) String() string {
+	return fmt.Sprintf(`BlocksPerSnapshot: %v
+						SnapshotLimit: %v`, m.BlocksPerSnapshot, m.SnapshotLimit)
 }

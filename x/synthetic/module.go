@@ -21,7 +21,6 @@ package synthetic
 
 import (
 	"encoding/json"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -143,12 +142,20 @@ func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 }
 
 // BeginBlock performs a no-op.
-func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
+}
 
 // EndBlock returns the end blocker for the bank module. It returns no validator
 // updates.
 
 // Fees should be accrued here, need a global fee that can be used for buybacks or liquidation
-func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	balances := am.keeper.GetMarketBalances(ctx)
+	for _, v := range balances {
+		v.OnEndBlock()
+	}
+
+	am.keeper.SetMarketBalances(ctx, balances)
+
 	return []abci.ValidatorUpdate{}
 }

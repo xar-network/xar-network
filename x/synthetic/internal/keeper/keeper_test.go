@@ -45,7 +45,7 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 	// initialize csdt owner account with coins
 	genAcc := auth.BaseAccount{
 		Address: ownerAddr,
-		Coins:   sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(1000))),
+		Coins:   sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(1005))),
 	}
 
 	mock.SetGenesis(mapp, []exported.Account{&genAcc})
@@ -93,25 +93,26 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 func TestMarketBalance(t *testing.T) {
 	testRatioChange(t)
 	testAddFee(t)
+	testGetFee(t)
 }
 
 func testRatioChange(t *testing.T) {
-	mb := types.EmptyMarketBalance("asd")
+	mb := types.EmptyMarketBalance("asd", 0)
 
 	mb.IncreaseLongVolume(sdk.NewInt(2000))
-	require.Equal(t, mb.Imbalance.Ratio, float64(0))
+	require.True(t, mb.Imbalance.Ratio.Equal(sdk.MustNewDecFromStr("0")))
 
 	mb.IncreaseShortVolume(sdk.NewInt(1000))
-	require.Equal(t, mb.Imbalance.Ratio, float64(1)) // 100% diff
+	require.True(t, mb.Imbalance.Ratio.Equal(sdk.MustNewDecFromStr("1"))) // 100% diff
 	mb.FlashVolumes()
 
 	mb.IncreaseLongVolume(sdk.NewInt(1500))
 	mb.IncreaseShortVolume(sdk.NewInt(1000))
-	require.Equal(t, mb.Imbalance.Ratio, float64(0.5)) // 50% diff
+	require.True(t, mb.Imbalance.Ratio.Equal(sdk.MustNewDecFromStr("0.5"))) // 50% diff
 }
 
 func testAddFee(t *testing.T) {
-	mb := types.EmptyMarketBalance("asd")
+	mb := types.EmptyMarketBalance("asd", 0)
 
 	mb.IncreaseLongVolume(sdk.NewInt(2000))
 	mb.IncreaseShortVolume(sdk.NewInt(1000))
@@ -131,13 +132,84 @@ func testAddFee(t *testing.T) {
 	require.True(t, val.Equal(assumedVal))
 }
 
+func testGetFee(t *testing.T) {
+	mb := types.EmptyMarketBalance("asd", 0)
+
+	mb.IncreaseLongVolume(sdk.NewInt(2000))
+	mb.IncreaseShortVolume(sdk.NewInt(1000))
+
+	testAmt := sdk.NewInt(100)
+	val := mb.GetFeeForAmount(testAmt)
+	assumedVal := sdk.NewInt(5) // 100% of an imbalance should lead to a 5% of a fee
+	require.True(t, val.Equal(assumedVal))
+	mb.FlashVolumes()
+	testFlash(t, &mb)
+
+	mb.IncreaseLongVolume(sdk.NewInt(1500))
+	mb.IncreaseShortVolume(sdk.NewInt(1000))
+	testAmt = sdk.NewInt(100)
+	val = mb.GetFeeForAmount(testAmt)
+	assumedVal = sdk.NewInt(1) // 50% of an imbalance should lead to a 1% of a fee
+	require.True(t, val.Equal(assumedVal))
+}
+
 func testFlash(t *testing.T, mb *types.MarketBalance) {
 	require.True(t, mb.LongVolume.Equal(sdk.ZeroInt()))
 	require.True(t, mb.ShortVolume.Equal(sdk.ZeroInt()))
-	require.Equal(t, mb.Imbalance.Ratio, float64(0))
+	require.True(t, mb.Imbalance.Ratio.Equal(sdk.ZeroDec()))
 }
 
-func TestSnapshot(t *testing.T) {
+func TestSnapshots(t *testing.T) {
+	testBasicSnapshotFuncs(t)
+	testFeesWithSnapshot(t)
+}
+
+func TestEndBlock(t *testing.T) {
+	snaps := types.NewVolumeSnapshots(2, nil)
+	mb := types.NewMarketBalance("asd", snaps, 1)
+
+	newLong := sdk.NewInt(2000)
+	newShort := sdk.NewInt(1000)
+	mb.IncreaseLongVolume(newLong)
+	mb.IncreaseShortVolume(newShort)
+	mb.OnEndBlock()
+	mb.OnEndBlock()
+
+	require.True(t, len(mb.VolumeSnapshots.Snapshots) == 2)
+	require.True(t, mb.VolumeSnapshots.Snapshots[0].LongVolume.Equal(newLong))
+	require.True(t, mb.VolumeSnapshots.Snapshots[0].ShortVolume.Equal(newShort))
+	require.True(t, mb.VolumeSnapshots.Snapshots[1].LongVolume.Equal(sdk.ZeroInt()))
+	require.True(t, mb.VolumeSnapshots.Snapshots[1].ShortVolume.Equal(sdk.ZeroInt()))
+}
+
+func testFeesWithSnapshot(t *testing.T) {
+	mb := getMarketBalanceAndSnapshots()
+	wsnap := mb.VolumeSnapshots.GetWeightedVolumes()
+	assumedRatio := wsnap.LongVolume.Quo(wsnap.ShortVolume).Sub(sdk.OneInt())
+	require.True(t, assumedRatio.Equal(mb.Imbalance.Ratio.TruncateInt()))
+
+	testAmt := sdk.NewInt(100)
+	val := mb.GetFeeForAmount(testAmt)
+	assumedVal := sdk.NewInt(5) // 100% of an imbalance should lead to a 5% of a fee
+	require.True(t, val.Equal(assumedVal))
+}
+
+func testBasicSnapshotFuncs(t *testing.T) {
+	wsnap := getDefaultSnapshots().GetWeightedVolumes()
+	assumedShortVal := sdk.NewInt(551) // 551 = 100 + 90 + 80 + 70 + 60 + 50 + 40 + 30 + 20 + 10 + 1
+	assumedLongVal := sdk.NewInt(1102)
+	require.True(t, wsnap.LongVolume.Equal(assumedLongVal))
+	require.True(t, wsnap.ShortVolume.Equal(assumedShortVal))
+}
+
+func getMarketBalanceAndSnapshots() *types.MarketBalance {
+	mb := types.EmptyMarketBalance("asd", 0)
+	mb.VolumeSnapshots = *getDefaultSnapshots()
+	mb.Recalculate()
+	return &mb
+}
+
+func getDefaultSnapshots() *types.VolumeSnapshots {
 	coeffs := []sdk.Int{
 		sdk.NewInt(100),
 		sdk.NewInt(90),
@@ -152,7 +224,7 @@ func TestSnapshot(t *testing.T) {
 	}
 	two := sdk.NewInt(2)
 	one := sdk.OneInt()
-	snap := types.NewVolumeSnapshots(len(coeffs), coeffs)
+	snap := types.NewVolumeSnapshots(len(coeffs)+1, coeffs)
 	snap.AddSnapshotValues(two, one)
 	snap.AddSnapshotValues(two, one)
 	snap.AddSnapshotValues(two, one)
@@ -163,10 +235,6 @@ func TestSnapshot(t *testing.T) {
 	snap.AddSnapshotValues(two, one)
 	snap.AddSnapshotValues(two, one)
 	snap.AddSnapshotValues(two, one)
-
-	wsnap := snap.GetWeightedVolumes()
-	assumedShortVal := sdk.NewInt(550) // 550 = 100 + 90 + 80 + 70 + 60 + 50 + 40 + 30 + 20 + 10
-	assumedLongVal := sdk.NewInt(1100)
-	require.True(t, wsnap.LongVolume.Equal(assumedLongVal))
-	require.True(t, wsnap.ShortVolume.Equal(assumedShortVal))
+	snap.AddSnapshotValues(two, one)
+	return &snap
 }

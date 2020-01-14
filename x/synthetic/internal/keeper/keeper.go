@@ -23,6 +23,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/xar-network/xar-network/pkg/matcheng"
 	"github.com/xar-network/xar-network/x/synthetic/internal/types"
 )
 
@@ -67,6 +68,12 @@ func (k Keeper) BuySynthetic(ctx sdk.Context, buyer sdk.AccAddress, coin sdk.Coi
 		return sdk.ErrInternal("synthetic type not enabled to create synthetics")
 	}
 
+	mb, found := k.GetMarketBalance(ctx, coin.Denom)
+	if !found {
+		snap := types.NewVolumeSnapshots(p.MarketBalanceParam.SnapshotLimit, p.MarketBalanceParam.Coefficients)
+		mb = types.NewMarketBalance(coin.Denom, snap, p.MarketBalanceParam.BlocksPerSnapshot)
+	}
+
 	price := k.oracle.GetCurrentPrice(ctx, coin.Denom).Price
 
 	if price.IsNil() || price.IsZero() || price.IsNegative() {
@@ -82,7 +89,8 @@ func (k Keeper) BuySynthetic(ctx sdk.Context, buyer sdk.AccAddress, coin sdk.Coi
 	if !ok {
 		return sdk.ErrInternal("quantity can not be represented")
 	}
-	quantityWithFee := p.Fee.AddToAmount(quantity)
+	foundersFee := mb.GetFeeForDirection(quantity, matcheng.Bid)
+	quantityWithFee := p.Fee.AddToAmount(quantity).Add(foundersFee)
 
 	purchaseCoins := sdk.NewCoins(sdk.NewCoin(types.StableDenom, quantityWithFee))
 	if !purchaseCoins.IsValid() || purchaseCoins.IsAnyNegative() {
@@ -114,6 +122,9 @@ func (k Keeper) BuySynthetic(ctx sdk.Context, buyer sdk.AccAddress, coin sdk.Coi
 	if er != nil {
 		return er
 	}
+
+	mb.IncreaseLongVolume(quantityWithFee)
+	k.SetMarketBalance(ctx, mb)
 	return nil
 }
 
@@ -127,6 +138,12 @@ func (k Keeper) SellSynthetic(ctx sdk.Context, seller sdk.AccAddress, coin sdk.C
 	p := k.GetParams(ctx)
 	if !p.IsSyntheticPresent(coin.Denom) {
 		return sdk.ErrInternal("synthetic type not enabled to create synthetics")
+	}
+
+	mb, found := k.GetMarketBalance(ctx, coin.Denom)
+	if !found {
+		snap := types.NewVolumeSnapshots(p.MarketBalanceParam.SnapshotLimit, p.MarketBalanceParam.Coefficients)
+		mb = types.NewMarketBalance(coin.Denom, snap, p.MarketBalanceParam.BlocksPerSnapshot)
 	}
 
 	price := k.oracle.GetCurrentPrice(ctx, coin.Denom).Price
@@ -144,7 +161,9 @@ func (k Keeper) SellSynthetic(ctx sdk.Context, seller sdk.AccAddress, coin sdk.C
 	if !ok {
 		return sdk.ErrInternal("quantity can not be represented")
 	}
-	quantitySubFee := p.Fee.SubFromAmount(quantity)
+
+	foundersFee := mb.GetFeeForDirection(quantity, matcheng.Ask)
+	quantitySubFee := p.Fee.SubFromAmount(quantity).Sub(foundersFee)
 
 	syntheticCoins := sdk.NewCoins(coin)
 	if !syntheticCoins.IsValid() || syntheticCoins.IsAnyNegative() {
@@ -176,6 +195,9 @@ func (k Keeper) SellSynthetic(ctx sdk.Context, seller sdk.AccAddress, coin sdk.C
 	if er != nil {
 		return er
 	}
+
+	mb.IncreaseShortVolume(quantitySubFee)
+	k.SetMarketBalance(ctx, mb)
 	return nil
 }
 
