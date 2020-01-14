@@ -71,7 +71,7 @@ func (k Keeper) BuySynthetic(ctx sdk.Context, buyer sdk.AccAddress, coin sdk.Coi
 	mb, found := k.GetMarketBalance(ctx, coin.Denom)
 	if !found {
 		snap := types.NewVolumeSnapshots(p.MarketBalanceParam.SnapshotLimit, p.MarketBalanceParam.Coefficients)
-		mb = types.NewMarketBalance(coin.Denom, snap, p.MarketBalanceParam.BlocksPerSnapshot)
+		mb = types.NewMarketBalance(coin.Denom, snap, p.MarketBalanceParam.BlocksPerSnapshot, p.MarketBalanceParam.TimerInterval)
 	}
 
 	price := k.oracle.GetCurrentPrice(ctx, coin.Denom).Price
@@ -143,7 +143,7 @@ func (k Keeper) SellSynthetic(ctx sdk.Context, seller sdk.AccAddress, coin sdk.C
 	mb, found := k.GetMarketBalance(ctx, coin.Denom)
 	if !found {
 		snap := types.NewVolumeSnapshots(p.MarketBalanceParam.SnapshotLimit, p.MarketBalanceParam.Coefficients)
-		mb = types.NewMarketBalance(coin.Denom, snap, p.MarketBalanceParam.BlocksPerSnapshot)
+		mb = types.NewMarketBalance(coin.Denom, snap, p.MarketBalanceParam.BlocksPerSnapshot, p.MarketBalanceParam.TimerInterval)
 	}
 
 	price := k.oracle.GetCurrentPrice(ctx, coin.Denom).Price

@@ -60,11 +60,7 @@ func (t *IntervalTimer) Reset() {
 }
 
 func (t *IntervalTimer) IsExpired(now time.Time) bool {
-	if !now.After(t.TimeStart) {
-		panic("a time passed is out of lower bound")
-	}
-
-	return now.Before(t.DeadLine)
+	return now.After(t.TimeStart) && now.Before(t.DeadLine)
 }
 
 func (t *IntervalTimer) IntervalIsZero() bool {

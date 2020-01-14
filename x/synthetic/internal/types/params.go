@@ -24,11 +24,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/xar-network/xar-network/types/fee"
+	"time"
 )
 
 const (
-	defaultBlocksPerSnapshot = 10000
+	defaultBlocksPerSnapshot = 0
 	defaultSnapshotLimit     = 100
+	defaultTimerInterval     = time.Hour * 24
 )
 
 // Parameter keys
@@ -42,6 +44,7 @@ var (
 	}}
 	DefaultMarketBalanceParam = MarketBalanceParam{
 		defaultBlocksPerSnapshot,
+		defaultTimerInterval,
 		defaultSnapshotLimit,
 		nil,
 	}
@@ -164,12 +167,14 @@ func (p Params) Validate() error {
 }
 
 type MarketBalanceParam struct {
-	BlocksPerSnapshot int `json:"blocks_per_snapshot" yaml:"blocks_per_snapshot"`
-	SnapshotLimit     int `json:"snapshot_limit" yaml:"snapshot_limit"`
-	Coefficients      []sdk.Int
+	BlocksPerSnapshot int           `json:"blocks_per_snapshot" yaml:"blocks_per_snapshot"`
+	TimerInterval     time.Duration `json:"timer_interval" yaml:"timer_interval"`
+	SnapshotLimit     int           `json:"snapshot_limit" yaml:"snapshot_limit"`
+	Coefficients      []sdk.Int     `json:"coefficients" yaml:"coefficients"`
 }
 
 func (m MarketBalanceParam) String() string {
 	return fmt.Sprintf(`BlocksPerSnapshot: %v
-						SnapshotLimit: %v`, m.BlocksPerSnapshot, m.SnapshotLimit)
+						SnapshotLimit: %v
+						TimerInterval: %v`, m.BlocksPerSnapshot, m.SnapshotLimit, m.TimerInterval)
 }

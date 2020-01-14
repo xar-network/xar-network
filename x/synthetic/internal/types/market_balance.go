@@ -2,6 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/xar-network/xar-network/pkg/matcheng"
 	"math"
 	"math/big"
@@ -35,25 +36,34 @@ func EmptyMarketBalance(denom string, blockLimit int) MarketBalance {
 		0,
 	}
 } // if you prefer to ignore timer settings, just pass zero as an interval value
-func NewMarketBalance(denom string, snapshots VolumeSnapshots, blockLimit int) MarketBalance {
+func NewMarketBalance(denom string, snapshots VolumeSnapshots, blockLimit int, interval time.Duration) MarketBalance {
 	return MarketBalance{
 		denom,
 		sdk.NewInt(0),
 		sdk.NewInt(0),
 		Imbalance{},
 		snapshots,
-		TimerFromInterval(time.Duration(0)),
+		TimerFromInterval(interval),
 		blockLimit,
 		0,
 	}
 }
 
 // call this function on the end of the block
-func (m *MarketBalance) OnEndBlock() {
-	m.BlocksPassed++
-	if m.BlocksPassed == m.BlockLimit {
-		m.BlocksPassed = 0
-		m.SnapshotAndFlash()
+func (m *MarketBalance) OnEndBlock(header abci.Header) {
+	if m.BlockLimit != 0 {
+		m.BlocksPassed++
+		if m.BlocksPassed == m.BlockLimit {
+			m.BlocksPassed = 0
+			m.SnapshotAndFlash()
+		}
+	}
+
+	if m.Timer.Interval != time.Duration(0) {
+		if m.Timer.IsExpired(header.Time) {
+			m.Timer.Reset()
+			m.SnapshotAndFlash()
+		}
 	}
 }
 

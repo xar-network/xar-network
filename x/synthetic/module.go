@@ -152,7 +152,7 @@ func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	balances := am.keeper.GetMarketBalances(ctx)
 	for _, v := range balances {
-		v.OnEndBlock()
+		v.OnEndBlock(ctx.BlockHeader())
 	}
 
 	am.keeper.SetMarketBalances(ctx, balances)
