@@ -253,7 +253,7 @@ func validateCoinTransfer(ctx sdk.Context, k Keeper, owner sdk.AccAddress, chang
 }
 
 func (k Keeper) GetPoolValue(ctx sdk.Context, poolDenom string) sdk.Int {
-	return k.bank.GetCoins(ctx, k.sk.GetModuleAccount(ctx, k.liquidityModule).GetAddress()).AmountOf(poolDenom)
+	return k.sk.GetModuleAccount(ctx, k.liquidityModule).GetCoins().AmountOf(poolDenom)
 }
 
 func (k Keeper) isValidDecreaseLimits(ctx sdk.Context, parm types.CollateralParam) bool {
@@ -262,8 +262,7 @@ func (k Keeper) isValidDecreaseLimits(ctx sdk.Context, parm types.CollateralPara
 		return true
 	}
 
-	poolVals := k.bank.GetCoins(ctx, k.sk.GetModuleAccount(ctx, k.liquidityModule).GetAddress())
-	poolVal := poolVals.AmountOf(parm.Denom)
+	poolVal := k.GetPoolValue(ctx, parm.Denom)
 
 	snap := NewPoolSnapshot(ctx, parm.Denom)
 	for _, lim := range parm.DecreaseLimits {
