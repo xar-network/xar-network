@@ -180,7 +180,7 @@ func (k Keeper) changeCsdtState(ctx sdk.Context, csdt *types.CSDT, changeInColla
 	// TODO: Is require other checks for csdt.DebtDenom?
 	currentPrice := k.oracle.GetCurrentPrice(ctx, changeInCollateral.Denom).Price
 	liquidationRatio := k.oracle.GetCurrentPrice(ctx, changeInCollateral.Denom).Price
-	err = csdt.Validate(currentPrice, liquidationRatio)
+	err = csdt.Validate(currentPrice, liquidationRatio, changeInCollateral.Denom)
 	if err != nil {
 		return err
 	}
@@ -306,6 +306,7 @@ func (k Keeper) PartialSeizeCSDT(ctx sdk.Context, owner sdk.AccAddress, collater
 	isUnderCollateralized := csdt.IsUnderCollateralized(
 		k.oracle.GetCurrentPrice(ctx, collateralDenom).Price,
 		p.GetCollateralParam(collateralDenom).LiquidationRatio,
+		collateralDenom,
 	)
 	if !isUnderCollateralized {
 		return sdk.ErrInternal("CSDT is not currently under the liquidation ratio")

@@ -166,6 +166,7 @@ func modifyCsdtHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			requestBody.Csdt.Sender,
 			requestBody.Csdt.CollateralDenom,
 			requestBody.Csdt.CollateralChange,
+			requestBody.Csdt.DebtDenom,
 			requestBody.Csdt.DebtChange,
 		)
 		utils.WriteGenerateStdTxResponse(w, cliCtx, requestBody.BaseReq, []sdk.Msg{msg})

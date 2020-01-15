@@ -57,7 +57,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 // GetCmdModifyCsdt cli command for creating and modifying csdts.
 func GetCmdModifyCsdt(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "modifycsdt [from_key_or_addres] [collateralDenom] [collateralChange] [debtChange]",
+		Use:   "modifycsdt [from_key_or_addres] [collateralDenom] [collateralChange] [debtDenom] [debtChange]",
 		Short: "create or modify a csdt",
 		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -70,12 +70,12 @@ func GetCmdModifyCsdt(cdc *codec.Codec) *cobra.Command {
 				fmt.Printf("invalid collateral amount - %s \n", string(args[2]))
 				return nil
 			}
-			debtChange, ok := sdk.NewIntFromString(args[3])
+			debtChange, ok := sdk.NewIntFromString(args[4])
 			if !ok {
 				fmt.Printf("invalid debt amount - %s \n", string(args[3]))
 				return nil
 			}
-			msg := types.NewMsgCreateOrModifyCSDT(cliCtx.GetFromAddress(), args[1], collateralChange, debtChange)
+			msg := types.NewMsgCreateOrModifyCSDT(cliCtx.GetFromAddress(), args[1], collateralChange, args[3], debtChange)
 			err := msg.ValidateBasic()
 			if err != nil {
 				return err

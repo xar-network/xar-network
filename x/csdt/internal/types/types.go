@@ -38,8 +38,8 @@ type CSDT struct {
 	FeesUpdated      time.Time      `json:"fees_updated" yaml:"fees_updated"` // Amount of stable coin drawn from this CSDT
 }
 
-func (csdt CSDT) IsUnderCollateralized(price sdk.Dec, liquidationRatio sdk.Dec) bool {
-	collateralValue := sdk.NewDecFromInt(csdt.CollateralAmount.AmountOf(csdt.CollateralDenom)).Mul(price)
+func (csdt CSDT) IsUnderCollateralized(price sdk.Dec, liquidationRatio sdk.Dec, denom string) bool {
+	collateralValue := sdk.NewDecFromInt(csdt.CollateralAmount.AmountOf(denom)).Mul(price)
 	minCollateralValue := sdk.NewDec(0)
 	for _, c := range csdt.Debt {
 		minCollateralValue = minCollateralValue.Add(liquidationRatio.Mul(c.Amount.ToDec()))
@@ -48,10 +48,11 @@ func (csdt CSDT) IsUnderCollateralized(price sdk.Dec, liquidationRatio sdk.Dec) 
 }
 
 // will handle all the validation in the future updates
-func (csdt CSDT) Validate(price sdk.Dec, liquidationRatio sdk.Dec) sdk.Error {
+func (csdt CSDT) Validate(price sdk.Dec, liquidationRatio sdk.Dec, denom string) sdk.Error {
 	isUnderCollateralized := csdt.IsUnderCollateralized(
 		price,
 		liquidationRatio,
+		denom,
 	)
 	if isUnderCollateralized {
 		return sdk.ErrInternal("Change to CSDT would put it below liquidation ratio")
@@ -62,13 +63,11 @@ func (csdt CSDT) Validate(price sdk.Dec, liquidationRatio sdk.Dec) sdk.Error {
 func (csdt CSDT) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`CSDT:
   Owner:      %s
-	Collateral Type: %s
 	Collateral: %s
 	Debt: %s
 	Fees: %s
 	Fees Last Updated: %s`,
 		csdt.Owner,
-		csdt.CollateralDenom,
 		csdt.CollateralAmount,
 		csdt.Debt,
 		csdt.AccumulatedFees,
@@ -102,10 +101,28 @@ func (csdts ByCollateralRatio) Less(i, j int) bool {
 		csdts[j].Debt.IsAnyNegative() {
 		panic("negative collateral and debt not supported in CSDTs")
 	}
-	// TODO overflows could cause panics
-	left := csdts[i].CollateralAmount.AmountOf(csdts[i].CollateralDenom).Mul(csdts[j].Debt.AmountOf(StableDenom))
-	right := csdts[j].CollateralAmount.AmountOf(csdts[j].CollateralDenom).Mul(csdts[i].Debt.AmountOf(StableDenom))
-	return left.LT(right)
+
+	ltCount := 0
+	gtCount := 0
+	for _, clt := range csdts[i].CollateralAmount {
+		debtInt := csdts[j].Debt.AmountOf(clt.Denom)
+		left := clt.Amount.Mul(debtInt)
+
+		for _, cltR := range csdts[j].CollateralAmount {
+			debtInt = csdts[i].Debt.AmountOf(cltR.Denom)
+			right := cltR.Amount.Mul(debtInt)
+
+			if left.LT(right) {
+				ltCount++
+			} else {
+				gtCount++
+			}
+		}
+	}
+	//left := csdts[i].CollateralAmount.AmountOf(csdts[i].CollateralDenom).Mul(csdts[j].Debt.AmountOf(StableDenom))
+	//right := csdts[j].CollateralAmount.AmountOf(csdts[j].CollateralDenom).Mul(csdts[i].Debt.AmountOf(StableDenom))
+
+	return ltCount > gtCount
 }
 
 // CollateralState stores global information tied to a particular collateral type.
