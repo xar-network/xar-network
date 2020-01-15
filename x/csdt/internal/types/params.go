@@ -25,6 +25,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/xar-network/xar-network/types/fee"
+	"time"
 )
 
 /*
@@ -142,15 +143,22 @@ func DefaultParams() Params {
 }
 
 type PoolDecreaseLimitParam struct {
-	Period  string  `json:"period" yaml:"period"`		// "h" - hour, "d" - day, "w" - week, "m" - month
-	Percent sdk.Int `json:"percent" yaml:"percent"`
+	BorderTime time.Time	`json:"border_time" yaml:"border_time"`
+	Period  time.Duration  `json:"period" yaml:"period"`
+	MaxPercent sdk.Int `json:"max_percent" yaml:"max_percent"`
+}
+
+func (p1 *PoolDecreaseLimitParam) IsEqual(p2 PoolDecreaseLimitParam) bool {
+	return p1.BorderTime == p2.BorderTime &&
+		p1.Period == p2.Period &&
+		p1.MaxPercent == p2.MaxPercent
 }
 
 type CollateralParam struct {
 	Denom            string    `json:"denom" yaml:"denom"`                         // Coin name of collateral type
 	LiquidationRatio sdk.Dec   `json:"liquidation_ratio" yaml:"liquidation_ratio"` // The ratio (Collateral (priced in stable coin) / Debt) under which a CSDT will be liquidated
 	DebtLimit        sdk.Coins `json:"debt_limit" yaml:"debt_limit"`               // Maximum amount of debt allowed to be drawn from this collateral type
-	DecreaseLimits	 []PoolDecreaseLimitParam `json:"decrease_limit" yaml:"decrease_limit"`
+	DecreaseLimits	 []PoolDecreaseLimitParam `json:"decrease_limits" yaml:"decrease_limits"`
 	//DebtFloor        sdk.Int // used to prevent dust
 }
 

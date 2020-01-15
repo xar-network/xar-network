@@ -263,18 +263,19 @@ func (k Keeper) isValidDecreaseLimits(ctx sdk.Context, parm types.CollateralPara
 	}
 
 	poolVal := k.GetPoolValue(ctx, parm.Denom)
+	snap, _ := k.GetPoolSnapshot(ctx)
 
-	snap := NewPoolSnapshot(ctx, parm.Denom)
 	for _, lim := range parm.DecreaseLimits {
 		// Get snapshot and current pool value
-		snapVal := snap.GetPool(lim.Period)
-		if snapVal == nil {
+		snapCoin := snap.GetVal(lim, parm.Denom)
+		if snapCoin == nil {
 			// If have not snapshot for this denom and period - ignore this limit
 			continue
 		}
+		snapVal := snapCoin.Amount
 
 		// Min pool value for current limit
-		borderLimit := snapVal.Sub(snapVal.Mul(sdk.NewInt(100)).Mod(lim.Percent))
+		borderLimit := snapVal.Sub(snapVal.Mul(sdk.NewInt(100)).Mod(lim.MaxPercent))
 		if poolVal.LTE(borderLimit) {
 			// If pool value lower then min pool value from limit - return false
 			return false
@@ -464,6 +465,44 @@ func (k Keeper) GetCSDTs(ctx sdk.Context, collateralDenom string, price sdk.Dec)
 	}
 
 	return csdts, nil
+}
+
+// Pool snapshots
+func (k Keeper) getPoolSnapshotKey() []byte {
+	return bytes.Join(
+		[][]byte{
+			[]byte("poolsnapshot"),
+		},
+		nil, // no separator
+	)
+}
+func (k Keeper) GetPoolSnapshot(ctx sdk.Context) (types.PoolSnapshot, bool) {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(k.getPoolSnapshotKey())
+	if bz == nil {
+		return types.PoolSnapshot{}, false
+	}
+	var snap types.PoolSnapshot
+	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &snap)
+	return snap, true
+}
+
+func (k Keeper) createOrGetPoolSnapshot(ctx sdk.Context) types.PoolSnapshot {
+	snap, found := k.GetPoolSnapshot(ctx)
+	if !found {
+		snap = types.PoolSnapshot{
+			ByLimits: make([]types.PoolSnapValue, 0),
+		}
+		return snap
+	}
+	return snap
+}
+func (k Keeper) SetPoolSnapshot(ctx sdk.Context, snap types.PoolSnapshot) {
+	// get store
+	store := ctx.KVStore(k.storeKey)
+	// marshal and set
+	bz := k.cdc.MustMarshalBinaryLengthPrefixed(snap)
+	store.Set(k.getPoolSnapshotKey(), bz)
 }
 
 // Add/Subtract from global debt limit

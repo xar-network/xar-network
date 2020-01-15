@@ -30,6 +30,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/xar-network/xar-network/x/csdt/client/cli"
 	"github.com/xar-network/xar-network/x/csdt/internal/keeper"
+	ktypes "github.com/xar-network/xar-network/x/csdt/internal/types"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -152,61 +153,43 @@ func (am AppModule) BeginBlock(ctx sdk.Context, rbb abci.RequestBeginBlock) {
 	curBlockTime := rbb.Header.Time
 	prevBlockTime := ctx.WithBlockHeight(rbb.Header.Height - 1).BlockTime()
 
+	// Read pool snapshot
+	poolSnap, _ := am.keeper.GetPoolSnapshot(ctx)
+
 	// Scan all decrease limits parameters
 	for _, p := range cParms {
-		// Prepare snapshot object for this denom
-		snap := keeper.NewPoolSnapshot(ctx, p.Denom)
-
-		// Get current pool value for limited denom
+		// Get pool value for this denom
 		poolVal := am.keeper.GetPoolValue(ctx, p.Denom)
+		poolCoin := sdk.NewCoin(p.Denom, poolVal)
 
 		// Scan limit periods for detect periods borders and save snapshot if required (if now is period border)
 		for _, lim := range p.DecreaseLimits {
-			if isPeriodBorder(lim.Period, curBlockTime, prevBlockTime) {
-				snap.SetPool(lim.Period, poolVal)
+			if isPeriodBorder(lim, curBlockTime, prevBlockTime) {
+				poolSnap.SetVal(lim, poolCoin)
 			}
 		}
 	}
+
+	// Save pool snapshot
+	am.keeper.SetPoolSnapshot(ctx, poolSnap)
 }
 
 // EndBlock returns the end blocker for the bank module. It returns no validator
 // updates.
 
 // Fees should be accrued here, need a global fee that can be used for buybacks or liquidation
-func (AppModule) EndBlock(_ sdk.Context, reb abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
 
-func isPeriodBorder(period string, curTime, prevTime time.Time) bool {
-	switch period {
-	case "h":
-		// Hour period
-		curHour := curTime.Unix() / int64(time.Hour.Seconds())
-		prevHour := prevTime.Unix() / int64(time.Hour.Seconds())
-		if curHour > prevHour {
-			return true
-		}
-	case "d":
-		// Day period
-		curDay := curTime.Unix() / ( 24 * int64(time.Hour.Seconds() ))
-		prevDay := prevTime.Unix() / ( 24 * int64(time.Hour.Seconds() ))
-		if curDay > prevDay {
-			return true
-		}
-	case "w":
-		// Week period
-		curWeek := (curTime.Unix() - 345600) / 604800
-		prevWeek := (prevTime.Unix() - 345600) / 604800
-		if curWeek > prevWeek {
-			return true
-		}
-	case "m":
-		// Month period
-		curMonth := curTime.Month()
-		prevMonth := prevTime.Month()
-		if curMonth != prevMonth {
-			return true
-		}
+func isPeriodBorder(limit ktypes.PoolDecreaseLimitParam, curTime, prevTime time.Time) bool {
+	diffCur := curTime.Sub(limit.BorderTime).Milliseconds()
+	diffPrev := prevTime.Sub(limit.BorderTime).Milliseconds()
+	countCur := diffCur / limit.Period.Milliseconds()
+	countPrev := diffPrev / limit.Period.Milliseconds()
+
+	if countCur > countPrev {
+		return true
 	}
 
 	return false

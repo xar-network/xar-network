@@ -114,3 +114,40 @@ type CollateralState struct {
 	TotalDebt sdk.Int // total debt collateralized by a this coin type
 	//AccumulatedFees sdk.Int // Ignoring fees for now
 }
+
+type PoolSnapValue struct {
+	Limit 	PoolDecreaseLimitParam
+	Val		sdk.Coin
+}
+
+type PoolSnapshot struct {
+	ByLimits []PoolSnapValue
+}
+
+func (snap *PoolSnapshot) GetVal(limit PoolDecreaseLimitParam, denom string) *sdk.Coin {
+	for _, v := range snap.ByLimits {
+		if v.Val.Denom == denom {
+			if v.Limit.IsEqual(limit) {
+				return &v.Val
+			}
+		}
+	}
+
+	return nil
+}
+
+func (snap *PoolSnapshot) SetVal(limit PoolDecreaseLimitParam, val sdk.Coin) {
+	for _, v := range snap.ByLimits {
+		if v.Val.Denom == val.Denom {
+			if v.Limit.IsEqual(limit) {
+				v.Val = val
+				return
+			}
+		}
+	}
+
+	snap.ByLimits = append(snap.ByLimits, PoolSnapValue{
+		Limit: limit,
+		Val:   val,
+	})
+}
