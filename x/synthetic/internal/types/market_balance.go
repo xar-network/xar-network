@@ -49,8 +49,8 @@ func NewMarketBalance(denom string, snapshots VolumeSnapshots, blockLimit int, i
 	}
 }
 
-// call this function on the end of the block
-func (m *MarketBalance) OnEndBlock(header abci.Header) {
+// call this function on the end of the block or when a new block starts
+func (m *MarketBalance) HandleBlockEvent(header abci.Header) {
 	if m.BlockLimit != 0 {
 		m.BlocksPassed++
 		if m.BlocksPassed == m.BlockLimit {
@@ -78,7 +78,6 @@ func (m *MarketBalance) Schedule() {
 }
 
 // creates snapshot if it a deadline has passed.
-// use it if (for some reason) it is inappropriate to use timer scheduler callback
 func (m *MarketBalance) CheckForDeadline() {
 	if m.Timer.IsScheduling {
 		return
@@ -97,15 +96,11 @@ func (m *MarketBalance) CheckForDeadline() {
 }
 
 func (m *MarketBalance) IncreaseLongVolume(amount sdk.Int) {
-	m.CheckForDeadline()
-
 	m.LongVolume = m.LongVolume.Add(amount)
 	m.Recalculate()
 }
 
 func (m *MarketBalance) IncreaseShortVolume(amount sdk.Int) {
-	m.CheckForDeadline()
-
 	m.ShortVolume = m.ShortVolume.Add(amount)
 	m.Recalculate()
 }

@@ -191,8 +191,8 @@ func testOnEndBlockCounter(t *testing.T) {
 	newShort := sdk.NewInt(1000)
 	mb.IncreaseLongVolume(newLong)
 	mb.IncreaseShortVolume(newShort)
-	mb.OnEndBlock(abci.Header{})
-	mb.OnEndBlock(abci.Header{})
+	mb.HandleBlockEvent(abci.Header{})
+	mb.HandleBlockEvent(abci.Header{})
 
 	require.True(t, len(mb.VolumeSnapshots.Snapshots) == 2)
 	require.True(t, mb.VolumeSnapshots.Snapshots[0].LongVolume.Equal(newLong))
@@ -211,8 +211,8 @@ func TestOnEndBlockTimer(t *testing.T) {
 	newShort := sdk.NewInt(1000)
 	mb.IncreaseLongVolume(newLong)
 	mb.IncreaseShortVolume(newShort)
-	mb.OnEndBlock(abci.Header{Time: tn.Add(time.Hour)})
-	mb.OnEndBlock(abci.Header{Time: tn.Add(time.Hour).Add(time.Hour)})
+	mb.HandleBlockEvent(abci.Header{Time: tn.Add(time.Hour)})
+	mb.HandleBlockEvent(abci.Header{Time: tn.Add(time.Hour).Add(time.Hour)})
 
 	require.True(t, len(mb.VolumeSnapshots.Snapshots) == 2)
 	require.True(t, mb.VolumeSnapshots.Snapshots[0].LongVolume.Equal(newLong))
