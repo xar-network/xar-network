@@ -456,7 +456,7 @@ func (k Keeper) GetCSDTs(ctx sdk.Context, collateralDenom string, price sdk.Dec)
 	if !price.IsNil() && !price.IsNegative() {
 		var filteredCSDTs types.CSDTs
 		for _, csdt := range csdts {
-			if csdt.IsUnderCollateralized(price, p.GetCollateralParam(collateralDenom).LiquidationRatio) {
+			if csdt.IsUnderCollateralized(price, p.GetCollateralParam(collateralDenom).LiquidationRatio, collateralDenom) {
 				filteredCSDTs = append(filteredCSDTs, csdt)
 			} else {
 				break // break early because list is sorted

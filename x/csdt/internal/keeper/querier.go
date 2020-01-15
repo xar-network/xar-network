@@ -57,11 +57,10 @@ func queryGetCsdts(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byt
 	if len(requestParams.Owner) != 0 {
 		if len(requestParams.CollateralDenom) != 0 {
 			// owner and collateral specified - get a single CSDT
-			csdt, found := keeper.GetCSDT(ctx, requestParams.Owner, requestParams.CollateralDenom)
+			csdt, found := keeper.GetCSDT(ctx, requestParams.Owner)
 			if !found {
 				csdt = types.CSDT{
 					Owner:            requestParams.Owner,
-					CollateralDenom:  requestParams.CollateralDenom,
 					CollateralAmount: sdk.NewCoins(sdk.NewCoin(requestParams.CollateralDenom, sdk.ZeroInt())),
 					Debt:             sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.ZeroInt())),
 				}

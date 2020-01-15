@@ -121,7 +121,6 @@ func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
 	keeper.SetParams(ctx, types.DefaultParams())
-	keeper.SetGlobalDebt(ctx, sdk.NewInt(1000000000))
 	keeper.GetSupply().SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	oracleParams := oracle.DefaultParams()
 	oracleParams.Assets = oracle.Assets{
@@ -151,30 +150,30 @@ func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 	log.Println(currP)
 
 	// Create CSDT
-	msgs := []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(10), i(5))}
+	msgs := []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(10), "uftm", i(5))}
 	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{0}, true, true, testPrivKey)
 
 	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 5), c("uftm", 90)))
 
 	// Modify CSDT
-	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(40), i(5))}
+	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(40), "uftm", i(5))}
 	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{1}, true, true, testPrivKey)
 
 	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 10), c("uftm", 50)))
 
 	// Delete CSDT
-	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(-50), i(-10))}
+	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(-50), "uftm", i(-10))}
 	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{2}, true, true, testPrivKey)
 
 	mock.CheckBalance(t, mapp, testAddr, cs(c("uftm", 100)))
 
 	// deposit
-	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(10), i(5))}
+	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(10), "uftm", i(5))}
 	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{3}, true, true, testPrivKey)
 
 	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 5), c("uftm", 90)))
 
-	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(0), i(1))}
+	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(0), "uftm", i(1))}
 	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{4}, true, true, testPrivKey)
 
 	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 6), c("uftm", 90)))
@@ -193,11 +192,9 @@ func TestApp_ParamExport(t *testing.T) {
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
 	keeper.SetParams(ctx, types.DefaultParams())
-	keeper.SetGlobalDebt(ctx, sdk.NewInt(1000000000))
 
 	genState := csdt.ExportGenesis(ctx, keeper)
 	require.Equal(t, 1, len(genState.Params.CollateralParams))
-
 }
 
 // Avoid cluttering test cases with long function name
@@ -226,7 +223,7 @@ func setUpMockAppWithoutGenesis() (*mock.App, csdt.Keeper) {
 	oracleKeeper := oracle.NewKeeper(keyOracle, mapp.Cdc, mapp.ParamsKeeper.Subspace(oracle.DefaultParamspace), oracle.DefaultCodespace)
 	bankKeeper := bank.NewBaseKeeper(mapp.AccountKeeper, mapp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, map[string]bool{})
 	supplyKeeper := supply.NewKeeper(mapp.Cdc, keySupply, mapp.AccountKeeper, bankKeeper, maccPerms)
-	csdtKeeper := csdt.NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace(types.DefaultParamspace), oracleKeeper, bankKeeper, supplyKeeper)
+	csdtKeeper := csdt.NewKeeper(mapp.Cdc, keyCSDT, mapp.ParamsKeeper.Subspace(types.DefaultParamspace), oracleKeeper, bankKeeper, supplyKeeper, csdt.ModuleName)
 
 	// Register routes
 	mapp.Router().AddRoute("csdt", csdt.NewHandler(csdtKeeper))
