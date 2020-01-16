@@ -10,13 +10,14 @@ import (
 
 // CSDT is the state of a single account.
 type CSDT struct {
-	//ID             []byte                                    // removing IDs for now to make things simpler
+	// ID             []byte                                    // removing IDs for now to make things simpler
 	Owner            sdk.AccAddress `json:"owner" yaml:"owner"`                         // Account that authorizes changes to the CSDT
 	CollateralDenom  string         `json:"collateral_denom" yaml:"collateral_denom"`   // Type of collateral stored in this CSDT
 	CollateralAmount sdk.Coins      `json:"collateral_amount" yaml:"collateral_amount"` // Amount of collateral stored in this CSDT
 	Debt             sdk.Coins      `json:"debt" yaml:"debt"`
+	Interest         sdk.Coins      `json:"interest" yaml:"interest"` // Amount of interest accumulated on collateral stored in this CSDT
 	AccumulatedFees  sdk.Coins      `json:"accumulated_fees" yaml:"accumulated_fees"`
-	FeesUpdated      time.Time      `json:"fees_updated" yaml:"fees_updated"` // Amount of stable coin drawn from this CSDT
+	FeesUpdated      time.Time      `json:"fees_updated" yaml:"fees_updated"`
 }
 
 func (csdt CSDT) IsUnderCollateralized(price sdk.Dec, liquidationRatio sdk.Dec) bool {

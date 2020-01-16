@@ -327,10 +327,11 @@ func (msg MsgAddCollateralParam) GetSigners() []sdk.AccAddress {
 
 // MsgSetCollateralParam sets collateral in CSDT management
 type MsgSetCollateralParam struct {
-	Nominee          sdk.AccAddress `json:"nominee" yaml:"nominee"`
-	CollateralDenom  string         `json:"collateral_denom" yaml:"collateral_denom"`
-	LiquidationRatio sdk.Dec        `json:"liquidation_ratio" yaml:"liquidation_ratio"`
-	DebtLimit        sdk.Coins      `json:"debt_limit" yaml:"debt_limit"`
+	Nominee          sdk.AccAddress    `json:"nominee" yaml:"nominee"`
+	CollateralDenom  string            `json:"collateral_denom" yaml:"collateral_denom"`
+	LiquidationRatio sdk.Dec           `json:"liquidation_ratio" yaml:"liquidation_ratio"`
+	DebtLimit        sdk.Coins         `json:"debt_limit" yaml:"debt_limit"`
+	InterestModel    InterestRateModel `json:"interest_model" yaml:"interest_model"`
 }
 
 // NewMsgSetCollateralParam returns a new MsgSetCollateralParam.

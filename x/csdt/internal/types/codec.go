@@ -14,6 +14,8 @@ func init() {
 
 // RegisterCodec registers concrete types on the codec.
 func RegisterCodec(cdc *codec.Codec) {
+	cdc.RegisterInterface((*InterestRateModel)(nil), nil)
+	cdc.RegisterConcrete(CsdtInterest{}, "csdt/CsdtInterest", nil)
 	cdc.RegisterConcrete(MsgCreateOrModifyCSDT{}, "csdt/MsgCreateOrModifyCSDT", nil)
 	cdc.RegisterConcrete(MsgDepositCollateral{}, "csdt/MsgDepositCollateral", nil)
 	cdc.RegisterConcrete(MsgWithdrawCollateral{}, "csdt/MsgWithdrawCollateral", nil)
@@ -22,4 +24,5 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgTransferCSDT{}, "csdt/MsgTransferCSDT", nil)
 	cdc.RegisterConcrete(MsgAddCollateralParam{}, "csdt/MsgAddCollateralParam", nil)
 	cdc.RegisterConcrete(MsgSetCollateralParam{}, "csdt/MsgSetCollateralParam", nil)
+
 }

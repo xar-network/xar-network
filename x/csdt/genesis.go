@@ -20,6 +20,11 @@ type GenesisState struct {
 	// don't need to setup CollateralStates as they are created as needed
 }
 
+var (
+	DefaultBaseRatePerYear   = sdk.NewUint(10)
+	DefaultMultiplierPerYear = sdk.NewUint(1)
+)
+
 // DefaultGenesisState returns a default genesis state
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
@@ -30,26 +35,31 @@ func DefaultGenesisState() GenesisState {
 					Denom:            "ubtc",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
+					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
 				},
 				{
 					Denom:            "ubnb",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
+					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
 				},
 				{
 					Denom:            "ueth",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
+					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
 				},
 				{
 					Denom:            "uftm",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
+					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
 				},
 				{
 					Denom:            "uzar",
 					LiquidationRatio: sdk.MustNewDecFromStr("1.3"),
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
+					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
 				},
 			},
 		},

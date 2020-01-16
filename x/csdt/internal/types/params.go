@@ -30,6 +30,7 @@ var (
 		Denom:            "uftm",
 		LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
 		DebtLimit:        sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000))),
+		InterestModel:    NewCsdtInterest(sdk.NewUint(1), sdk.NewUint(1)),
 	}}
 	DefaultDebtParams = DebtParams{}
 )
@@ -105,10 +106,11 @@ func DefaultParams() Params {
 }
 
 type CollateralParam struct {
-	Denom            string    `json:"denom" yaml:"denom"`                         // Coin name of collateral type
-	LiquidationRatio sdk.Dec   `json:"liquidation_ratio" yaml:"liquidation_ratio"` // The ratio (Collateral (priced in stable coin) / Debt) under which a CSDT will be liquidated
-	DebtLimit        sdk.Coins `json:"debt_limit" yaml:"debt_limit"`               // Maximum amount of debt allowed to be drawn from this collateral type
-	//DebtFloor        sdk.Int // used to prevent dust
+	Denom            string            `json:"denom" yaml:"denom"`                         // Coin name of collateral type
+	LiquidationRatio sdk.Dec           `json:"liquidation_ratio" yaml:"liquidation_ratio"` // The ratio (Collateral (priced in stable coin) / Debt) under which a CSDT will be liquidated
+	DebtLimit        sdk.Coins         `json:"debt_limit" yaml:"debt_limit"`               // Maximum amount of debt allowed to be drawn from this collateral type
+	InterestModel    InterestRateModel `json:"interest_model" yaml:"interest_model"`       // The interest model algorithm
+	// DebtFloor        sdk.Int // used to prevent dust
 }
 
 // String implements fmt.Stringer
