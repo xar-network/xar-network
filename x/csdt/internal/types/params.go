@@ -49,11 +49,25 @@ var (
 	DefaultGlobalDebt       = sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000)))
 	DefaultCircuitBreaker   = false
 	DefaultCollateralParams = CollateralParams{CollateralParam{
-		Denom:            "uftm",
-		LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
-		DebtLimit:        sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000))),
+			Denom:            "uftm",
+			LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
+			DebtLimit:        sdk.NewCoins(sdk.NewCoin("uftm", sdk.NewInt(500000000000))),
+		},
+		CollateralParam{
+			Denom:            StableDenom,
+			LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
+			DebtLimit:        sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000))),
 	}}
-	DefaultDebtParams = DebtParams{}
+	DefaultDebtParams = DebtParams{DebtParam{
+			Denom:          "uftm",
+			ReferenceAsset: "",
+			DebtLimit:      sdk.NewCoins(sdk.NewCoin("uftm", sdk.NewInt(500000000000))),
+		},
+		DebtParam{
+			Denom:          StableDenom,
+			ReferenceAsset: "",
+			DebtLimit:      sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000))),
+	}}
 )
 
 // Params governance parameters for cdp module
@@ -95,7 +109,7 @@ func (cps Params) GetDebtParam(denom string) DebtParam {
 		}
 	}
 	// panic if not found, to be safe
-	panic("collateral params not found in module params")
+	panic("debt params not found in module params")
 }
 
 // String implements fmt.Stringer

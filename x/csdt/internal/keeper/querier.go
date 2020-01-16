@@ -73,7 +73,7 @@ func queryGetCsdts(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byt
 	} else {
 		// owner not specified -- get all CSDTs or all CSDTs of one collateral type, optionally filtered by price
 		var errSdk sdk.Error // := doesn't work here
-		csdts, errSdk = keeper.GetCSDTs(ctx, requestParams.CollateralDenom, requestParams.UnderCollateralizedAt)
+		csdts, errSdk = keeper.GetCSDTs(ctx)
 		if errSdk != nil {
 			return nil, errSdk
 		}

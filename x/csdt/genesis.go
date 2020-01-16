@@ -107,13 +107,11 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) GenesisState {
 	params := k.GetParams(ctx)
 	csdts := types.CSDTs{}
 
-	for _, param := range params.CollateralParams {
-		l, err := k.GetCSDTs(ctx, param.Denom, sdk.Dec{})
-		if err != nil {
-			panic(err)
-		} else {
-			csdts = append(csdts, l...)
-		}
+	l, err := k.GetCSDTs(ctx)
+	if err != nil {
+		panic(err)
+	} else {
+		csdts = append(csdts, l...)
 	}
 
 	return GenesisState{

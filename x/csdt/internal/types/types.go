@@ -168,3 +168,46 @@ func (snap *PoolSnapshot) SetVal(limit PoolDecreaseLimitParam, val sdk.Coin) {
 		Val:   val,
 	})
 }
+
+type SignedCoin struct {
+	sdk.Coin
+	isNeg		bool
+}
+
+func NewSignedCoin(denom string, amount sdk.Int) SignedCoin {
+
+	if amount.IsNegative() {
+		return SignedCoin{
+			Coin:  sdk.NewCoin(denom, amount.Neg()),
+			isNeg: true,
+		}
+	}
+
+	return SignedCoin{
+		Coin:  sdk.NewCoin(denom, amount),
+		isNeg: false,
+	}
+}
+
+func NewSignedCoinFromCoin(coin sdk.Coin) SignedCoin {
+	return SignedCoin{
+		Coin:  coin,
+		isNeg: false,
+	}
+}
+
+func (c *SignedCoin) IsNegative() bool {
+	return c.isNeg
+}
+
+func (c *SignedCoin) IsPositive() bool {
+	return !c.isNeg
+}
+
+func (c SignedCoin) String() string {
+	s := ""
+	if c.isNeg {
+		s = "-"
+	}
+	return s+c.Coin.String()
+}
