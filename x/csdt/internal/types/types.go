@@ -79,7 +79,10 @@ func (csdts ByCollateralRatio) Less(i, j int) bool {
 
 // CollateralState stores global information tied to a particular collateral type.
 type CollateralState struct {
-	Denom     string  // Type of collateral
-	TotalDebt sdk.Int // total debt collateralized by a this coin type
-	//AccumulatedFees sdk.Int // Ignoring fees for now
+	Denom        string   // Type of collateral
+	TotalDebt    sdk.Int  // total debt collateralized by a this coin type
+	TotalCash    sdk.Uint // total cash supply
+	TotalBorrows sdk.Uint // total borrows balance
+	Reserves     sdk.Uint // portion of accrued interest set aside as reserves
+	// AccumulatedFees sdk.Int // Ignoring fees for now
 }
