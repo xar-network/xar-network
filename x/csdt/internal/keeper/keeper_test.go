@@ -23,7 +23,6 @@ package keeper_test
 import (
 	"fmt"
 	"github.com/xar-network/xar-network/types/fee"
-	"log"
 	"testing"
 	"time"
 
@@ -82,6 +81,8 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 
 	tests := []struct {
 		name       string
+		params	   		*types.Params
+		poolSnapshot	*types.PoolSnapshot
 		priorState state
 		price      string
 		// also missing CSDTModuleParams
@@ -92,6 +93,8 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 	}{
 		{
 			"addCollateralAndDecreaseDebt",
+			nil,
+			nil,
 			state{CSDT{
 				Owner:            ownerAddr,
 				CollateralAmount: cs(c("uftm", 100)),
@@ -109,6 +112,8 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 		},
 		{
 			"removeTooMuchCollateral",
+			nil,
+			nil,
 			state{CSDT{
 				Owner:            ownerAddr,
 				CollateralAmount: cs(c("uftm", 1000)),
@@ -126,6 +131,8 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 		},
 		{
 			"withdrawTooMuchStableCoin",
+			nil,
+			nil,
 			state{CSDT{
 				Owner:            ownerAddr,
 				CollateralAmount: cs(c("uftm", 300)),
@@ -143,6 +150,8 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 		},
 		{
 			"createCSDTAndWithdrawStable",
+			nil,
+			nil,
 			state{CSDT{}, cs(c("uftm", 10), c(StableDenom, 10)), i(0), CollateralState{Denom: "uftm", TotalDebt: i(0)}, cs(c("uftm", 0))},
 			"1.00",
 			args{ownerAddr, "uftm", i(5), StableDenom, i(2)},
@@ -156,6 +165,8 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 		},
 		{
 			"emptyCSDTUtfm",
+			nil,
+			nil,
 			state{CSDT{
 				Owner:            ownerAddr,
 				CollateralAmount: cs(c("uftm", 1000)),
@@ -169,6 +180,8 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 		},
 		{
 			"emptyCSDTStable",
+			nil,
+			nil,
 			state{CSDT{
 				Owner:            ownerAddr,
 				CollateralAmount: cs(c("uftm", 0)),
@@ -182,6 +195,8 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 		},
 		{
 			"invalidCollateralType",
+			nil,
+			nil,
 			state{CSDT{}, cs(c("shitcoin", 5000000)), i(0), CollateralState{}, cs(c("uftm", 0))},
 			"0.000001",
 			args{ownerAddr, "shitcoin", i(5000000), StableDenom, i(1)}, // ratio of 5:1
@@ -191,6 +206,8 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 		},
 		{
 			"addCollateralAndDecreaseDebtNotStable",
+			nil,
+			nil,
 			state{CSDT{
 				Owner:            ownerAddr,
 				CollateralAmount: cs(c("uftm", 100)),
@@ -208,6 +225,8 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 		},
 		{
 			"addCollateralAndIncreaseDebtNotStable",
+			nil,
+			nil,
 			state{CSDT{
 				Owner:            ownerAddr,
 				CollateralAmount: cs(c("uftm", 100)),
@@ -223,13 +242,109 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 			}, cs(c("uftm", 20), c(StableDenom, 2)), i(1), CollateralState{Denom: "uftm", TotalDebt: i(22)}, cs(c("uftm", 110))},
 			true,
 		},
+		{
+			"returnCollateralWithLimitDetect",
+			&types.Params{
+				CollateralParams: types.CollateralParams{
+					types.CollateralParam{
+						Denom:            "uftm",
+						LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
+						DebtLimit:        sdk.NewCoins(sdk.NewCoin("uftm", sdk.NewInt(500000000000))),
+						DecreaseLimits:   []types.PoolDecreaseLimitParam{
+							{
+								BorderTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								Period:     time.Hour,
+								MaxPercent: sdk.NewInt(1),
+							},
+						},
+					},
+				},
+				DebtParams:       types.DefaultDebtParams,
+				GlobalDebtLimit:  types.DefaultGlobalDebt,
+				CircuitBreaker:   types.DefaultCircuitBreaker,
+				Fee:              NewDefaultFee(),
+				Nominees:         []string{},
+			},
+			&types.PoolSnapshot{
+				ByLimits: []types.PoolSnapValue{
+					{
+						Limit: types.PoolDecreaseLimitParam{
+							BorderTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+							Period:     time.Hour,
+							MaxPercent: sdk.NewInt(1),
+						},
+						Val:   sdk.NewCoin("uftm", sdk.NewInt(10000)),
+					},
+				},
+			},
+			state{CSDT{
+				Owner:            ownerAddr,
+				CollateralAmount: cs(c("uftm", 100)),
+				Debt:             cs(c(StableDenom, 2), c("uftm", 10)),
+			}, cs(c("uftm", 20), c(StableDenom, 2)), i(2), CollateralState{Denom: "uftm", TotalDebt: i(2)}, cs(c("uftm", 100))},
+			"10.345",
+			args{ownerAddr, "uftm", i(-10), "uftm", i(0)},
+			false,
+			state{CSDT{
+				Owner:            ownerAddr,
+				CollateralAmount: cs(c("uftm", 100)),
+				Debt:             cs(c(StableDenom, 2), c("uftm", 10)),
+			}, cs(c("uftm", 20), c(StableDenom, 2)), i(2), CollateralState{Denom: "uftm", TotalDebt: i(2)}, cs(c("uftm", 100))},
+			true,
+		},
+		{
+			"returnCollateralWithOutLimitDetect",
+			&types.Params{
+				CollateralParams: types.CollateralParams{
+					types.CollateralParam{
+						Denom:            "uftm",
+						LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
+						DebtLimit:        sdk.NewCoins(sdk.NewCoin("uftm", sdk.NewInt(500000000000))),
+						DecreaseLimits:   []types.PoolDecreaseLimitParam{
+							{
+								BorderTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								Period:     time.Hour,
+								MaxPercent: sdk.NewInt(90),
+							},
+						},
+					},
+				},
+				DebtParams:       types.DefaultDebtParams,
+				GlobalDebtLimit:  types.DefaultGlobalDebt,
+				CircuitBreaker:   types.DefaultCircuitBreaker,
+				Fee:              NewDefaultFee(),
+				Nominees:         []string{},
+			},
+			&types.PoolSnapshot{
+				ByLimits: []types.PoolSnapValue{
+					{
+						Limit: types.PoolDecreaseLimitParam{
+							BorderTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+							Period:     time.Hour,
+							MaxPercent: sdk.NewInt(1),
+						},
+						Val:   sdk.NewCoin("uftm", sdk.NewInt(10000)),
+					},
+				},
+			},
+			state{CSDT{
+				Owner:            ownerAddr,
+				CollateralAmount: cs(c("uftm", 100)),
+				Debt:             cs(c(StableDenom, 2), c("uftm", 10)),
+			}, cs(c("uftm", 20), c(StableDenom, 2)), i(2), CollateralState{Denom: "uftm", TotalDebt: i(2)}, cs(c("uftm", 100))},
+			"10.345",
+			args{ownerAddr, "uftm", i(-1), "uftm", i(0)},
+			true,
+			state{CSDT{
+				Owner:            ownerAddr,
+				CollateralAmount: cs(c("uftm", 99)),
+				Debt:             cs(c(StableDenom, 2), c("uftm", 10)),
+			}, cs(c("uftm", 21), c(StableDenom, 2)), i(2), CollateralState{Denom: "uftm", TotalDebt: i(1)}, cs(c("uftm", 100))},
+			true,
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			//log.Printf("DBG test name:\n%s\n", tc.name)
-			//log.Println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-			//defer log.Println("-------------------------------------------------------------------------------------------")
-
 			// setup keeper
 			mapp, keeper, _, _ := setUpMockAppWithoutGenesis()
 			// initialize csdt owner account with coins
@@ -277,15 +392,18 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 
 			// call func under test
 			params := DefaultTestParams()
+			if tc.params != nil {
+				params  = *tc.params
+			}
 			keeper.SetParams(ctx, params)
 
-			log.Printf("DBG Call ModifyCSDT: %s, %s", types.NewSignedCoin(tc.args.collateralDenom, tc.args.changeInCollateral), types.NewSignedCoin(tc.args.debtDenom, tc.args.changeInDebt))
+			if tc.poolSnapshot != nil {
+				keeper.SetPoolSnapshot(ctx, *tc.poolSnapshot)
+			}
 
 			err := keeper.ModifyCSDT(ctx, tc.args.owner, types.NewSignedCoin(tc.args.collateralDenom, tc.args.changeInCollateral), types.NewSignedCoin(tc.args.debtDenom, tc.args.changeInDebt))
 			mapp.EndBlock(abci.RequestEndBlock{})
 			mapp.Commit()
-
-			// log.Printf("DBG:\nerr: %+v\n", err)
 
 			// check for err
 			if tc.expectPass {
@@ -294,13 +412,8 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 				require.Error(t, err)
 			}
 			// get new state for verification
-			//log.Printf("DBG:\nget CSDT owner: %s\n", tc.args.owner)
 			actualCSDT, found := keeper.GetCSDT(ctx, tc.args.owner)
 			actualCstate, _ := keeper.GetCollateralState(ctx, tc.args.collateralDenom)
-
-			//log.Printf("DBG:\nCSDT: %+v\n", actualCSDT)
-
-			//log.Printf("DBG0000:\n1: %+v\n2: %+v\n", tc.expectedState.CollateralState, actualCstate)
 
 			// check state
 			require.Equal(t, tc.expectedState.CSDT, actualCSDT)
@@ -370,8 +483,6 @@ func TestKeeper_PartialSeizeCSDT(t *testing.T) {
 	require.False(t, found)
 	collateralState, found := keeper.GetCollateralState(ctx, collateral)
 	require.True(t, found)
-
-	//log.Printf("DBG: Should by 0:\n%v", collateralState)
 
 	require.Equal(t, sdk.ZeroInt(), collateralState.TotalDebt)
 }
