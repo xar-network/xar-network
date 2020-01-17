@@ -199,6 +199,17 @@ func TestApp_CreateModifyDeleteCSDT(t *testing.T) {
 
 	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 6), c("uftm", 90)))
 
+	// deposit not StableDenom
+	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(0), "uftm", i(1))}
+	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{5}, true, true, testPrivKey)
+
+	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 6), c("uftm", 91)))
+
+	msgs = []sdk.Msg{types.NewMsgCreateOrModifyCSDT(testAddr, "uftm", i(0), "uftm", i(-1))}
+	SignCheckDeliver(t, mapp.Cdc, mapp.BaseApp, abci.Header{Height: mapp.LastBlockHeight() + 1}, msgs, []uint64{0}, []uint64{6}, true, true, testPrivKey)
+
+	mock.CheckBalance(t, mapp, testAddr, cs(c(types.StableDenom, 6), c("uftm", 90)))
+
 	addr := mapp.AccountKeeper.GetAccount(ctx, testAddr)
 	log.Println(addr)
 }

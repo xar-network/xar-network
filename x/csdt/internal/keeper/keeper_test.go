@@ -189,6 +189,40 @@ func TestKeeper_ModifyCSDT(t *testing.T) {
 			state{CSDT{}, cs(c("shitcoin", 5000000)), i(0), CollateralState{}, cs(c("uftm", 0))},
 			false,
 		},
+		{
+			"addCollateralAndDecreaseDebtNotStable",
+			state{CSDT{
+				Owner:            ownerAddr,
+				CollateralAmount: cs(c("uftm", 100)),
+				Debt:             cs(c(StableDenom, 2), c("uftm", 10)),
+			}, cs(c("uftm", 20), c(StableDenom, 2)), i(2), CollateralState{Denom: "uftm", TotalDebt: i(2)}, cs(c("uftm", 100))},
+			"10.345",
+			args{ownerAddr, "uftm", i(10), "uftm", i(-1)},
+			true,
+			state{CSDT{
+				Owner:            ownerAddr,
+				CollateralAmount: cs(c("uftm", 110)),
+				Debt:             cs(c(StableDenom, 2), c("uftm", 9)),
+			}, cs(c("uftm", 9), c(StableDenom, 2)), i(1), CollateralState{Denom: "uftm", TotalDebt: i(11)}, cs(c("uftm", 110))},
+			true,
+		},
+		{
+			"addCollateralAndIncreaseDebtNotStable",
+			state{CSDT{
+				Owner:            ownerAddr,
+				CollateralAmount: cs(c("uftm", 100)),
+				Debt:             cs(c(StableDenom, 2), c("uftm", 10)),
+			}, cs(c("uftm", 20), c(StableDenom, 2)), i(2), CollateralState{Denom: "uftm", TotalDebt: i(2)}, cs(c("uftm", 100))},
+			"10.345",
+			args{ownerAddr, "uftm", i(10), "uftm", i(10)},
+			true,
+			state{CSDT{
+				Owner:            ownerAddr,
+				CollateralAmount: cs(c("uftm", 110)),
+				Debt:             cs(c(StableDenom, 2), c("uftm", 20)),
+			}, cs(c("uftm", 20), c(StableDenom, 2)), i(1), CollateralState{Denom: "uftm", TotalDebt: i(22)}, cs(c("uftm", 110))},
+			true,
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {

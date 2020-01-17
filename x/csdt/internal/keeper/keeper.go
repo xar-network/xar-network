@@ -229,7 +229,7 @@ func addDebtToCsdt(changeInDebt types.SignedCoin, csdt *types.CSDT) sdk.Error {
 		if debtCoins.IsAnyGT(csdt.Debt) {
 			return sdk.ErrInternal("not enough coins in sender's account")
 		}
-		// log.Printf("DBG: CSDT sub addDebtToCsdt: \n%+v\n", debtCoins)
+		log.Printf("DBG: CSDT sub addDebtToCsdt: \n%+v\n%+v\n", csdt.Debt, debtCoins)
 		csdt.Debt = csdt.Debt.Sub(debtCoins)
 	} else {
 		// log.Printf("DBG: CSDT add addDebtToCsdt: \n%+v\n", debtCoins)
