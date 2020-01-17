@@ -30,7 +30,6 @@ import (
 // GenesisState is the state that must be provided at genesis.
 type GenesisState struct {
 	Params     types.Params `json:"params"`
-	GlobalDebt sdk.Int      `json:"global_debt"`
 	CSDTs      types.CSDTs  `json:"csdts" yaml:"csdts"`
 	// don't need to setup CollateralStates as they are created as needed
 }
@@ -69,7 +68,6 @@ func DefaultGenesisState() GenesisState {
 			},
 			Fee: fee.FromPercentString("0"),
 		},
-		sdk.ZeroInt(),
 		types.CSDTs{},
 	}
 }
@@ -77,7 +75,6 @@ func DefaultGenesisState() GenesisState {
 func NewGenesisState(params types.Params, globalDebt sdk.Int) GenesisState {
 	return GenesisState{
 		Params:     params,
-		GlobalDebt: globalDebt,
 		CSDTs:      types.CSDTs{},
 	}
 }
@@ -89,8 +86,6 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data GenesisState) {
 	for _, csdt := range data.CSDTs {
 		k.SetCSDT(ctx, csdt)
 	}
-
-	k.SetGlobalDebt(ctx, data.GlobalDebt)
 }
 
 // ValidateGenesis performs basic validation of genesis data returning an
@@ -112,19 +107,15 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) GenesisState {
 	params := k.GetParams(ctx)
 	csdts := types.CSDTs{}
 
-	for _, param := range params.CollateralParams {
-		l, err := k.GetCSDTs(ctx, param.Denom, sdk.Dec{})
-		if err != nil {
-			panic(err)
-		} else {
-			csdts = append(csdts, l...)
-		}
+	l, err := k.GetCSDTs(ctx)
+	if err != nil {
+		panic(err)
+	} else {
+		csdts = append(csdts, l...)
 	}
-	debt := k.GetGlobalDebt(ctx)
 
 	return GenesisState{
 		Params:     params,
-		GlobalDebt: debt,
 		CSDTs:      csdts,
 	}
 }

@@ -60,7 +60,9 @@ func handleMsgCreateOrModifyCSDT(ctx sdk.Context, keeper keeper.Keeper, msg type
 		return err.Result()
 	}
 
-	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, msg.CollateralChange, msg.DebtChange)
+	collateral := types.NewSignedCoin(msg.CollateralDenom, msg.CollateralChange)
+	debt := types.NewSignedCoin(msg.DebtDenom, msg.DebtChange)
+	err = keeper.ModifyCSDT(ctx, msg.Sender, collateral, debt)
 	if err != nil {
 		return err.Result()
 	}
@@ -75,7 +77,9 @@ func handleMsgDepositCollateral(ctx sdk.Context, keeper keeper.Keeper, msg types
 		return err.Result()
 	}
 
-	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, msg.CollateralChange, sdk.NewInt(0))
+	collateral := types.NewSignedCoin(msg.CollateralDenom, msg.CollateralChange)
+	debt := types.NewSignedCoin("", sdk.NewInt(0))
+	err = keeper.ModifyCSDT(ctx, msg.Sender, collateral, debt)
 	if err != nil {
 		return err.Result()
 	}
@@ -90,7 +94,9 @@ func handleMsgWithdrawCollateral(ctx sdk.Context, keeper keeper.Keeper, msg type
 		return err.Result()
 	}
 
-	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, msg.CollateralChange.Neg(), sdk.NewInt(0))
+	collateral := types.NewSignedCoin(msg.CollateralDenom, msg.CollateralChange.Neg())
+	debt := types.NewSignedCoin("", sdk.NewInt(0))
+	err = keeper.ModifyCSDT(ctx, msg.Sender, collateral, debt)
 	if err != nil {
 		return err.Result()
 	}
@@ -105,7 +111,9 @@ func handleMsgSettleDebt(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSet
 		return err.Result()
 	}
 
-	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, sdk.NewInt(0), msg.DebtChange.Neg())
+	collateral := types.NewSignedCoin(msg.CollateralDenom, sdk.NewInt(0))
+	debt := types.NewSignedCoin(msg.DebtDenom, msg.DebtChange.Neg())
+	err = keeper.ModifyCSDT(ctx, msg.Sender, collateral, debt)
 	if err != nil {
 		return err.Result()
 	}
@@ -120,7 +128,9 @@ func handleMsgWithdrawDebt(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgW
 		return err.Result()
 	}
 
-	err = keeper.ModifyCSDT(ctx, msg.Sender, msg.CollateralDenom, sdk.NewInt(0), msg.DebtChange)
+	collateral := types.NewSignedCoin(msg.CollateralDenom, sdk.NewInt(0))
+	debt := types.NewSignedCoin(msg.DebtDenom, msg.DebtChange)
+	err = keeper.ModifyCSDT(ctx, msg.Sender, collateral, debt)
 	if err != nil {
 		return err.Result()
 	}

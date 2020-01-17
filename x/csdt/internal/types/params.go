@@ -25,6 +25,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/xar-network/xar-network/types/fee"
+	"time"
 )
 
 /*
@@ -48,11 +49,25 @@ var (
 	DefaultGlobalDebt       = sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000)))
 	DefaultCircuitBreaker   = false
 	DefaultCollateralParams = CollateralParams{CollateralParam{
-		Denom:            "uftm",
-		LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
-		DebtLimit:        sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000))),
+			Denom:            "uftm",
+			LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
+			DebtLimit:        sdk.NewCoins(sdk.NewCoin("uftm", sdk.NewInt(500000000000))),
+		},
+		CollateralParam{
+			Denom:            StableDenom,
+			LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
+			DebtLimit:        sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000))),
 	}}
-	DefaultDebtParams = DebtParams{}
+	DefaultDebtParams = DebtParams{DebtParam{
+			Denom:          "uftm",
+			ReferenceAsset: "",
+			DebtLimit:      sdk.NewCoins(sdk.NewCoin("uftm", sdk.NewInt(500000000000))),
+		},
+		DebtParam{
+			Denom:          StableDenom,
+			ReferenceAsset: "",
+			DebtLimit:      sdk.NewCoins(sdk.NewCoin(StableDenom, sdk.NewInt(500000000000))),
+	}}
 )
 
 // Params governance parameters for cdp module
@@ -84,6 +99,17 @@ func (cps Params) GetCollateralParam(collateralDenom string) CollateralParam {
 	}
 	// panic if not found, to be safe
 	panic("collateral params not found in module params")
+}
+
+func (cps Params) GetDebtParam(denom string) DebtParam {
+	// search for matching denom, return
+	for _, cp := range cps.DebtParams {
+		if cp.Denom == denom {
+			return cp
+		}
+	}
+	// panic if not found, to be safe
+	panic("debt params not found in module params")
 }
 
 // String implements fmt.Stringer
@@ -130,10 +156,23 @@ func DefaultParams() Params {
 	)
 }
 
+type PoolDecreaseLimitParam struct {
+	BorderTime time.Time	`json:"border_time" yaml:"border_time"`
+	Period  time.Duration  `json:"period" yaml:"period"`
+	MaxPercent sdk.Int `json:"max_percent" yaml:"max_percent"`
+}
+
+func (p1 *PoolDecreaseLimitParam) IsEqual(p2 PoolDecreaseLimitParam) bool {
+	return p1.BorderTime == p2.BorderTime &&
+		p1.Period == p2.Period &&
+		p1.MaxPercent == p2.MaxPercent
+}
+
 type CollateralParam struct {
 	Denom            string    `json:"denom" yaml:"denom"`                         // Coin name of collateral type
 	LiquidationRatio sdk.Dec   `json:"liquidation_ratio" yaml:"liquidation_ratio"` // The ratio (Collateral (priced in stable coin) / Debt) under which a CSDT will be liquidated
 	DebtLimit        sdk.Coins `json:"debt_limit" yaml:"debt_limit"`               // Maximum amount of debt allowed to be drawn from this collateral type
+	DecreaseLimits	 []PoolDecreaseLimitParam `json:"decrease_limits" yaml:"decrease_limits"`
 	//DebtFloor        sdk.Int // used to prevent dust
 }
 

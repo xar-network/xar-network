@@ -32,15 +32,14 @@ import (
 type CSDT struct {
 	//ID             []byte                                    // removing IDs for now to make things simpler
 	Owner            sdk.AccAddress `json:"owner" yaml:"owner"`                         // Account that authorizes changes to the CSDT
-	CollateralDenom  string         `json:"collateral_denom" yaml:"collateral_denom"`   // Type of collateral stored in this CSDT
 	CollateralAmount sdk.Coins      `json:"collateral_amount" yaml:"collateral_amount"` // Amount of collateral stored in this CSDT
 	Debt             sdk.Coins      `json:"debt" yaml:"debt"`
 	AccumulatedFees  sdk.Coins      `json:"accumulated_fees" yaml:"accumulated_fees"`
 	FeesUpdated      time.Time      `json:"fees_updated" yaml:"fees_updated"` // Amount of stable coin drawn from this CSDT
 }
 
-func (csdt CSDT) IsUnderCollateralized(price sdk.Dec, liquidationRatio sdk.Dec) bool {
-	collateralValue := sdk.NewDecFromInt(csdt.CollateralAmount.AmountOf(csdt.CollateralDenom)).Mul(price)
+func (csdt CSDT) IsUnderCollateralized(price sdk.Dec, liquidationRatio sdk.Dec, denom string) bool {
+	collateralValue := sdk.NewDecFromInt(csdt.CollateralAmount.AmountOf(denom)).Mul(price)
 	minCollateralValue := sdk.NewDec(0)
 	for _, c := range csdt.Debt {
 		minCollateralValue = minCollateralValue.Add(liquidationRatio.Mul(c.Amount.ToDec()))
@@ -49,10 +48,11 @@ func (csdt CSDT) IsUnderCollateralized(price sdk.Dec, liquidationRatio sdk.Dec) 
 }
 
 // will handle all the validation in the future updates
-func (csdt CSDT) Validate(price sdk.Dec, liquidationRatio sdk.Dec) sdk.Error {
+func (csdt CSDT) Validate(price sdk.Dec, liquidationRatio sdk.Dec, denom string) sdk.Error {
 	isUnderCollateralized := csdt.IsUnderCollateralized(
 		price,
 		liquidationRatio,
+		denom,
 	)
 	if isUnderCollateralized {
 		return sdk.ErrInternal("Change to CSDT would put it below liquidation ratio")
@@ -63,13 +63,11 @@ func (csdt CSDT) Validate(price sdk.Dec, liquidationRatio sdk.Dec) sdk.Error {
 func (csdt CSDT) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`CSDT:
   Owner:      %s
-	Collateral Type: %s
 	Collateral: %s
 	Debt: %s
 	Fees: %s
 	Fees Last Updated: %s`,
 		csdt.Owner,
-		csdt.CollateralDenom,
 		csdt.CollateralAmount,
 		csdt.Debt,
 		csdt.AccumulatedFees,
@@ -103,10 +101,28 @@ func (csdts ByCollateralRatio) Less(i, j int) bool {
 		csdts[j].Debt.IsAnyNegative() {
 		panic("negative collateral and debt not supported in CSDTs")
 	}
-	// TODO overflows could cause panics
-	left := csdts[i].CollateralAmount.AmountOf(csdts[i].CollateralDenom).Mul(csdts[j].Debt.AmountOf(StableDenom))
-	right := csdts[j].CollateralAmount.AmountOf(csdts[j].CollateralDenom).Mul(csdts[i].Debt.AmountOf(StableDenom))
-	return left.LT(right)
+
+	ltCount := 0
+	gtCount := 0
+	for _, clt := range csdts[i].CollateralAmount {
+		debtInt := csdts[j].Debt.AmountOf(clt.Denom)
+		left := clt.Amount.Mul(debtInt)
+
+		for _, cltR := range csdts[j].CollateralAmount {
+			debtInt = csdts[i].Debt.AmountOf(cltR.Denom)
+			right := cltR.Amount.Mul(debtInt)
+
+			if left.LT(right) {
+				ltCount++
+			} else {
+				gtCount++
+			}
+		}
+	}
+	//left := csdts[i].CollateralAmount.AmountOf(csdts[i].CollateralDenom).Mul(csdts[j].Debt.AmountOf(StableDenom))
+	//right := csdts[j].CollateralAmount.AmountOf(csdts[j].CollateralDenom).Mul(csdts[i].Debt.AmountOf(StableDenom))
+
+	return ltCount > gtCount
 }
 
 // CollateralState stores global information tied to a particular collateral type.
@@ -114,4 +130,84 @@ type CollateralState struct {
 	Denom     string  // Type of collateral
 	TotalDebt sdk.Int // total debt collateralized by a this coin type
 	//AccumulatedFees sdk.Int // Ignoring fees for now
+}
+
+type PoolSnapValue struct {
+	Limit 	PoolDecreaseLimitParam
+	Val		sdk.Coin
+}
+
+type PoolSnapshot struct {
+	ByLimits []PoolSnapValue
+}
+
+func (snap *PoolSnapshot) GetVal(limit PoolDecreaseLimitParam, denom string) *sdk.Coin {
+	for _, v := range snap.ByLimits {
+		if v.Val.Denom == denom {
+			if v.Limit.IsEqual(limit) {
+				return &v.Val
+			}
+		}
+	}
+
+	return nil
+}
+
+func (snap *PoolSnapshot) SetVal(limit PoolDecreaseLimitParam, val sdk.Coin) {
+	for _, v := range snap.ByLimits {
+		if v.Val.Denom == val.Denom {
+			if v.Limit.IsEqual(limit) {
+				v.Val = val
+				return
+			}
+		}
+	}
+
+	snap.ByLimits = append(snap.ByLimits, PoolSnapValue{
+		Limit: limit,
+		Val:   val,
+	})
+}
+
+type SignedCoin struct {
+	sdk.Coin
+	isNeg		bool
+}
+
+func NewSignedCoin(denom string, amount sdk.Int) SignedCoin {
+
+	if amount.IsNegative() {
+		return SignedCoin{
+			Coin:  sdk.NewCoin(denom, amount.Neg()),
+			isNeg: true,
+		}
+	}
+
+	return SignedCoin{
+		Coin:  sdk.NewCoin(denom, amount),
+		isNeg: false,
+	}
+}
+
+func NewSignedCoinFromCoin(coin sdk.Coin) SignedCoin {
+	return SignedCoin{
+		Coin:  coin,
+		isNeg: false,
+	}
+}
+
+func (c *SignedCoin) IsNegative() bool {
+	return c.isNeg
+}
+
+func (c *SignedCoin) IsPositive() bool {
+	return !c.isNeg
+}
+
+func (c SignedCoin) String() string {
+	s := ""
+	if c.isNeg {
+		s = "-"
+	}
+	return s+c.Coin.String()
 }
