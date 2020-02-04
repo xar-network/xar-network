@@ -7,16 +7,27 @@ Baseline from Kava Cosmos Module
 package csdt
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/xar-network/xar-network/x/csdt/internal/keeper"
 	"github.com/xar-network/xar-network/x/csdt/internal/types"
 )
 
+type CoinU struct {
+	Denom  string   `json:"denom"`
+	Amount sdk.Uint `json:"amount"`
+}
+
+type CoinUs []CoinU
+
 // GenesisState is the state that must be provided at genesis.
 type GenesisState struct {
-	Params     types.Params `json:"params"`
-	GlobalDebt sdk.Int      `json:"global_debt"`
-	CSDTs      types.CSDTs  `json:"csdts" yaml:"csdts"`
+	Params        types.Params `json:"params"`
+	GlobalDebt    sdk.Int      `json:"global_debt"`
+	CSDTs         types.CSDTs  `json:"csdts" yaml:"csdts"`
+	TotalBorrows  CoinUs       `json:"total_borrows"`
+	TotalSupplies CoinUs       `json:"total_supplies"`
 	// don't need to setup CollateralStates as they are created as needed
 }
 
@@ -65,6 +76,8 @@ func DefaultGenesisState() GenesisState {
 		},
 		sdk.ZeroInt(),
 		types.CSDTs{},
+		CoinUs{},
+		CoinUs{},
 	}
 }
 
@@ -105,7 +118,8 @@ func ValidateGenesis(data GenesisState) error {
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) GenesisState {
 	params := k.GetParams(ctx)
 	csdts := types.CSDTs{}
-
+	borrows := CoinUs{}
+	supplies := CoinUs{}
 	for _, param := range params.CollateralParams {
 		l, err := k.GetCSDTs(ctx, param.Denom, sdk.Dec{})
 		if err != nil {
@@ -113,12 +127,32 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) GenesisState {
 		} else {
 			csdts = append(csdts, l...)
 		}
+
+		borrow, ok := k.GetTotalBorrows(ctx, param.Denom)
+		if !ok {
+			panic(fmt.Sprintf("Failed to retrieve total borrows for '%s'", param.Denom))
+		}
+		borrows = append(borrows, CoinU{
+			Denom:  param.Denom,
+			Amount: borrow,
+		})
+
+		supply, ok := k.GetTotalCash(ctx, param.Denom)
+		if !ok {
+			panic(fmt.Sprintf("Failed to retrieve total cash/supply for '%s'", param.Denom))
+		}
+		supplies = append(supplies, CoinU{
+			Denom:  param.Denom,
+			Amount: supply,
+		})
 	}
 	debt := k.GetGlobalDebt(ctx)
 
 	return GenesisState{
-		Params:     params,
-		GlobalDebt: debt,
-		CSDTs:      csdts,
+		Params:        params,
+		GlobalDebt:    debt,
+		CSDTs:         csdts,
+		TotalBorrows:  borrows,
+		TotalSupplies: supplies,
 	}
 }
