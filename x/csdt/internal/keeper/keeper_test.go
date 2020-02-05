@@ -564,7 +564,8 @@ func TestKeeper_GetSetCollateralState(t *testing.T) {
 	header := abci.Header{Height: mapp.LastBlockHeight() + 1}
 	mapp.BeginBlock(abci.RequestBeginBlock{Header: header})
 	ctx := mapp.BaseApp.NewContext(false, header)
-	collateralState := CollateralState{Denom: "uftm", TotalDebt: i(15400)}
+	collateralState := CollateralState{Denom: "uftm", TotalDebt: i(15400),
+		TotalBorrows: u(1000), TotalCash: u(10000), Reserves: u(500)}
 
 	// write and read from store
 	keeper.SetCollateralState(ctx, collateralState)
