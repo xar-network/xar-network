@@ -28,6 +28,7 @@ type GenesisState struct {
 	CSDTs         types.CSDTs  `json:"csdts" yaml:"csdts"`
 	TotalBorrows  CoinUs       `json:"total_borrows"`
 	TotalSupplies CoinUs       `json:"total_supplies"`
+	TotalReserves CoinUs       `json:"total_reserves"`
 	// don't need to setup CollateralStates as they are created as needed
 }
 
@@ -78,6 +79,7 @@ func DefaultGenesisState() GenesisState {
 		types.CSDTs{},
 		CoinUs{},
 		CoinUs{},
+		CoinUs{},
 	}
 }
 
@@ -120,6 +122,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) GenesisState {
 	csdts := types.CSDTs{}
 	borrows := CoinUs{}
 	supplies := CoinUs{}
+	reserves := CoinUs{}
 	for _, param := range params.CollateralParams {
 		l, err := k.GetCSDTs(ctx, param.Denom, sdk.Dec{})
 		if err != nil {
@@ -145,6 +148,15 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) GenesisState {
 			Denom:  param.Denom,
 			Amount: supply,
 		})
+
+		reserve, ok := k.GetTotalReserve(ctx, param.Denom)
+		if !ok {
+			panic(fmt.Sprintf("Failed to retrieve total reserve for '%s'", param.Denom))
+		}
+		reserves = append(reserves, CoinU{
+			Denom:  param.Denom,
+			Amount: reserve,
+		})
 	}
 	debt := k.GetGlobalDebt(ctx)
 
@@ -154,5 +166,6 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) GenesisState {
 		CSDTs:         csdts,
 		TotalBorrows:  borrows,
 		TotalSupplies: supplies,
+		TotalReserves: reserves,
 	}
 }
