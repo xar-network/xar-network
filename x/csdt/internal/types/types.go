@@ -87,3 +87,10 @@ type CollateralState struct {
 	Reserves     sdk.Uint // portion of accrued interest set aside as reserves
 	// AccumulatedFees sdk.Int // Ignoring fees for now
 }
+
+type CoinU struct {
+	Denom  string   `json:"denom"`
+	Amount sdk.Uint `json:"amount"`
+}
+
+type CoinUs []CoinU
