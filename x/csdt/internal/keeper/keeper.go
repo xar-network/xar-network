@@ -341,36 +341,6 @@ func (k Keeper) GetGovDenom() string {
 }
 
 // ---------- Store Wrappers ----------
-func (k Keeper) getTotalBorrowsKey(collateralDenom string) []byte {
-	return bytes.Join(
-		[][]byte{
-			[]byte("borrow"),
-			[]byte(collateralDenom),
-		},
-		nil, // no separator
-	)
-}
-
-func (k Keeper) getTotalCashKey(collateralDenom string) []byte {
-	return bytes.Join(
-		[][]byte{
-			[]byte("cash"),
-			[]byte(collateralDenom),
-		},
-		nil, // no separator
-	)
-}
-
-func (k Keeper) getTotalReserveKey(collateralDenom string) []byte {
-	return bytes.Join(
-		[][]byte{
-			[]byte("reserve"),
-			[]byte(collateralDenom),
-		},
-		nil, // no separator
-	)
-}
-
 func (k Keeper) getCSDTKeyPrefix(collateralDenom string) []byte {
 	return bytes.Join(
 		[][]byte{

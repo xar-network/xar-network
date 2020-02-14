@@ -1,10 +1,45 @@
 package keeper
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	"bytes"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
 
 var (
 	LastBlockKey = []byte{0x00} // key for the last interest accrual block
 )
+
+// Wrappers
+func (k Keeper) getTotalBorrowsKey(collateralDenom string) []byte {
+	return bytes.Join(
+		[][]byte{
+			[]byte("borrow"),
+			[]byte(collateralDenom),
+		},
+		nil, // no separator
+	)
+}
+
+func (k Keeper) getTotalCashKey(collateralDenom string) []byte {
+	return bytes.Join(
+		[][]byte{
+			[]byte("cash"),
+			[]byte(collateralDenom),
+		},
+		nil, // no separator
+	)
+}
+
+func (k Keeper) getTotalReserveKey(collateralDenom string) []byte {
+	return bytes.Join(
+		[][]byte{
+			[]byte("reserve"),
+			[]byte(collateralDenom),
+		},
+		nil, // no separator
+	)
+}
 
 // GetLastAccrualBlock gets the last time of interest accrual
 func (k Keeper) GetLastAccrualBlock(ctx sdk.Context) (lastBlock int64) {
