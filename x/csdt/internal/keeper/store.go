@@ -7,6 +7,16 @@ import (
 )
 
 // Wrappers
+func (k Keeper) getBorrowIndexKey(collateralDenom string) []byte {
+	return bytes.Join(
+		[][]byte{
+			[]byte("borrow-index"),
+			[]byte(collateralDenom),
+		},
+		nil, // no separator
+	)
+}
+
 func (k Keeper) getLastAccrualKey(collateralDenom string) []byte {
 	return bytes.Join(
 		[][]byte{
@@ -45,6 +55,20 @@ func (k Keeper) getTotalReserveKey(collateralDenom string) []byte {
 		},
 		nil, // no separator
 	)
+}
+
+// GetBorrowIndex gets the borrow index
+func (k Keeper) GetBorrowIndex(ctx sdk.Context, collateralDenom string) (index sdk.Uint, success bool) {
+	index = sdk.ZeroUint()
+	success = false
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(k.getBorrowIndexKey(collateralDenom))
+	if bz == nil {
+		return index, success
+	}
+	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &index)
+	success = true
+	return
 }
 
 // GetLastAccrualBlock gets the last block of interest accrual for a specific denomination
@@ -98,6 +122,13 @@ func (k Keeper) GetTotalReserve(ctx sdk.Context, collateralDenom string) (sdk.Ui
 	var reserve sdk.Uint
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &reserve)
 	return reserve, true
+}
+
+// SetBorrowIndex sets the borrow index
+func (k Keeper) SetBorrowIndex(ctx sdk.Context, index sdk.Uint, collateralDenom string) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshalBinaryLengthPrefixed(index)
+	store.Set(k.getBorrowIndexKey(collateralDenom), bz)
 }
 
 // SetLastAccrualBlock sets the last time of interest accrual for a specific denomination
