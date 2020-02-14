@@ -26,6 +26,7 @@ type GenesisState struct {
 
 var (
 	DefaultBaseRatePerYear   = sdk.NewUint(10)
+	DefaultReserveFactor     = sdk.MustNewDecFromStr("0.05")
 	DefaultMultiplierPerYear = sdk.NewUint(1)
 )
 
@@ -41,7 +42,7 @@ func DefaultGenesisState() GenesisState {
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
 					CollateralFactor: sdk.MustNewDecFromStr("0"),
-					ReserveFactor:    sdk.MustNewDecFromStr("0.05"),
+					ReserveFactor:    DefaultReserveFactor,
 				},
 				{
 					Denom:            "ubnb",
@@ -49,7 +50,7 @@ func DefaultGenesisState() GenesisState {
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
 					CollateralFactor: sdk.MustNewDecFromStr("0"),
-					ReserveFactor:    sdk.MustNewDecFromStr("0.05"),
+					ReserveFactor:    DefaultReserveFactor,
 				},
 				{
 					Denom:            "ueth",
@@ -57,7 +58,7 @@ func DefaultGenesisState() GenesisState {
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
 					CollateralFactor: sdk.MustNewDecFromStr("0.75"),
-					ReserveFactor:    sdk.MustNewDecFromStr("0.05"),
+					ReserveFactor:    DefaultReserveFactor,
 				},
 				{
 					Denom:            "uftm",
@@ -65,7 +66,7 @@ func DefaultGenesisState() GenesisState {
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
 					CollateralFactor: sdk.MustNewDecFromStr("0"),
-					ReserveFactor:    sdk.MustNewDecFromStr("0.05"),
+					ReserveFactor:    DefaultReserveFactor,
 				},
 				{
 					Denom:            "uzar",
@@ -73,7 +74,7 @@ func DefaultGenesisState() GenesisState {
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
 					CollateralFactor: sdk.MustNewDecFromStr("0"),
-					ReserveFactor:    sdk.MustNewDecFromStr("0.05"),
+					ReserveFactor:    DefaultReserveFactor,
 				},
 			},
 		},
