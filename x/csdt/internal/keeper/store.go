@@ -6,11 +6,17 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var (
-	LastBlockKey = []byte{0x00} // key for the last interest accrual block
-)
-
 // Wrappers
+func (k Keeper) getLastAccrualKey(collateralDenom string) []byte {
+	return bytes.Join(
+		[][]byte{
+			[]byte("accrual"),
+			[]byte(collateralDenom),
+		},
+		nil, // no separator
+	)
+}
+
 func (k Keeper) getTotalBorrowsKey(collateralDenom string) []byte {
 	return bytes.Join(
 		[][]byte{
@@ -41,14 +47,17 @@ func (k Keeper) getTotalReserveKey(collateralDenom string) []byte {
 	)
 }
 
-// GetLastAccrualBlock gets the last time of interest accrual
-func (k Keeper) GetLastAccrualBlock(ctx sdk.Context) (lastBlock int64) {
+// GetLastAccrualBlock gets the last block of interest accrual for a specific denomination
+func (k Keeper) GetLastAccrualBlock(ctx sdk.Context, collateralDenom string) (lastBlock int64, success bool) {
+	lastBlock = -1
+	success = false
 	store := ctx.KVStore(k.storeKey)
-	b := store.Get(LastBlockKey)
-	if b == nil {
-		panic("previous interest accrual block not set")
+	bz := store.Get(k.getLastAccrualKey(collateralDenom))
+	if bz == nil {
+		return lastBlock, success
 	}
-	k.cdc.MustUnmarshalBinaryLengthPrefixed(b, &lastBlock)
+	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &lastBlock)
+	success = true
 	return
 }
 
@@ -91,11 +100,11 @@ func (k Keeper) GetTotalReserve(ctx sdk.Context, collateralDenom string) (sdk.Ui
 	return reserve, true
 }
 
-// SetLastAccrualBlock sets the last time of interest accrual
-func (k Keeper) SetLastAccrualBlock(ctx sdk.Context, lastBlock int64) {
+// SetLastAccrualBlock sets the last time of interest accrual for a specific denomination
+func (k Keeper) SetLastAccrualBlock(ctx sdk.Context, lastBlock int64, collateralDenom string) {
 	store := ctx.KVStore(k.storeKey)
-	b := k.cdc.MustMarshalBinaryLengthPrefixed(lastBlock)
-	store.Set(LastBlockKey, b)
+	bz := k.cdc.MustMarshalBinaryLengthPrefixed(lastBlock)
+	store.Set(k.getLastAccrualKey(collateralDenom), bz)
 }
 
 // SetTotalBorrows stores the global borrow value for a specific denomination
