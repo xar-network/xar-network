@@ -25,6 +25,11 @@ func (k Keeper) getInterestRateModel(ctx sdk.Context, collateralDenom string) ty
 	return p.InterestModel
 }
 
+func (k Keeper) getReserveFactor(ctx sdk.Context, collateralDenom string) sdk.Dec {
+	p := k.GetParams(ctx).GetCollateralParam(collateralDenom)
+	return p.ReserveFactor
+}
+
 func (k Keeper) getTotals(ctx sdk.Context, collateralDenom string) (
 	totalBorrows sdk.Uint, totalCash sdk.Uint, globalReserves sdk.Uint) {
 
@@ -46,24 +51,32 @@ func (k Keeper) getTotals(ctx sdk.Context, collateralDenom string) (
 	return totalCash, totalBorrows, globalReserves
 }
 
+func borrowRateMaxMantissa() sdk.Uint {
+	return sdk.NewUint(0.0005e16)
+}
+
 // AccrueInterest accrues interest and updates the borrow index on every operation.
 // This increases compounding, approaching the true value, regardless of whether the rest of the operation succeeds or not
 func (k Keeper) AccrueInterest(ctx sdk.Context, collateralDenom string, reserveFactor sdk.Uint) {
 	logger := k.Logger(ctx)
 
+	currentBlockNumber := ctx.BlockHeight()
 	lastAccruedBlock, borrowIndex := k.getAccrualBlockAndIndex(ctx, collateralDenom)
 
 	// get the interest rate (that was in effect since the last update):
 	ic := k.getInterestRateModel(ctx, collateralDenom)
 	lastTotalSupply, totalBorrows, totalReserves := k.getTotals(ctx, collateralDenom)
-	borrowRate := ic.GetBorrowRate(lastTotalSupply, totalBorrows, totalReserves)
+	borrowRateMantissa := ic.GetBorrowRate(lastTotalSupply, totalBorrows, totalReserves)
+	if borrowRateMantissa.GT(borrowRateMaxMantissa()) {
+		logger.Error("borrow rate is absurdly high")
+	}
 
-	blockDelta := uint64(ctx.BlockHeight() - lastAccruedBlock)
+	blockDelta := uint64(currentBlockNumber - lastAccruedBlock)
 	if blockDelta == 0 {
 		logger.Error("Failed to get accurate block delta")
 		return
 	}
-	simpleInterestFactor := borrowRate.MulUint64(blockDelta)
+	simpleInterestFactor := borrowRateMantissa.MulUint64(blockDelta)
 
 	// update borrowIndex:
 	// borrowIndexNew = borrowIndex × (1 + simpleInterestFactor)
@@ -80,7 +93,7 @@ func (k Keeper) AccrueInterest(ctx sdk.Context, collateralDenom string, reserveF
 	totalReservesNew := totalReserves.Add(interestAccumulated.Mul(reserveFactor))
 
 	// store the updates back to the blockchain:
-	k.SetLastAccrualBlock(ctx, ctx.BlockHeight(), collateralDenom)
+	k.SetLastAccrualBlock(ctx, currentBlockNumber, collateralDenom)
 	k.SetBorrowIndex(ctx, borrowIndexNew, collateralDenom)
 	k.SetTotalBorrows(ctx, totalBorrowsNew, collateralDenom)
 	k.SetTotalReserve(ctx, totalReservesNew, collateralDenom)
