@@ -51,10 +51,6 @@ func (k Keeper) getTotals(ctx sdk.Context, collateralDenom string) (
 	return totalCash, totalBorrows, globalReserves
 }
 
-func borrowRateMaxMantissa() sdk.Uint {
-	return sdk.NewUint(0.0005e16)
-}
-
 // AccrueInterest accrues interest and updates the borrow index on every operation.
 // This increases compounding, approaching the true value, regardless of whether the rest of the operation succeeds or not
 func (k Keeper) AccrueInterest(ctx sdk.Context, collateralDenom string, reserveFactor sdk.Uint) {
@@ -76,21 +72,21 @@ func (k Keeper) AccrueInterest(ctx sdk.Context, collateralDenom string, reserveF
 		logger.Error("Failed to get accurate block delta")
 		return
 	}
-	simpleInterestFactor := borrowRateMantissa.MulUint64(blockDelta)
-
-	// update borrowIndex:
-	// borrowIndexNew = borrowIndex × (1 + simpleInterestFactor)
-	borrowIndexNew := borrowIndex.Mul(sdk.OneUint().Add(simpleInterestFactor))
+	simpleInterestFactor := types.NewExp(borrowRateMantissa).MultiplyScalarUint64(blockDelta)
 
 	// calculate the interest accrued:
 	// interestAccumulated = totalBorrows × simpleInterestFactor
-	interestAccumulated := totalBorrows.Mul(simpleInterestFactor)
+	interestAccumulated := simpleInterestFactor.MultiplyScalarTruncate(totalBorrows)
 
 	// update borrows and reserves:
 	// totalBorrowsNew = totalBorrows + interestAccumulated
 	// totalReservesNew = totalReserves + interestAccumulated × reserveFactor
 	totalBorrowsNew := totalBorrows.Add(interestAccumulated)
 	totalReservesNew := totalReserves.Add(interestAccumulated.Mul(reserveFactor))
+
+	// update borrowIndex:
+	// borrowIndexNew = borrowIndex × (1 + simpleInterestFactor)
+	borrowIndexNew := borrowIndex.Mul(sdk.OneUint().Add(simpleInterestFactor))
 
 	// store the updates back to the blockchain:
 	k.SetLastAccrualBlock(ctx, currentBlockNumber, collateralDenom)
