@@ -110,8 +110,8 @@ type CollateralParam struct {
 	LiquidationRatio sdk.Dec           `json:"liquidation_ratio" yaml:"liquidation_ratio"` // The ratio (Collateral (priced in stable coin) / Debt) under which a CSDT will be liquidated
 	DebtLimit        sdk.Coins         `json:"debt_limit" yaml:"debt_limit"`               // Maximum amount of debt allowed to be drawn from this collateral type
 	InterestModel    InterestRateModel `json:"interest_model" yaml:"interest_model"`       // The interest model algorithm
-	CollateralFactor sdk.Dec           `json:"collateral_factor" yaml:"collateral_factor"` // A multiplier representing the amount you can borrow against your collateral, e.g. .9 to allow borrowing 90% of collateral value. Must be between 0 and 1
-	ReserveFactor    sdk.Dec           `json:"reserve_factor" yaml:"reserve_factor"`       // The portion of accrued interest that goes into reserves, between [0, 1], and likely below 0.10.
+	CollateralFactor sdk.Uint          `json:"collateral_factor" yaml:"collateral_factor"` // A multiplier representing the amount you can borrow against your collateral, e.g. .9 to allow borrowing 90% of collateral value. Must be between 0 and 1
+	ReserveFactor    sdk.Uint          `json:"reserve_factor" yaml:"reserve_factor"`       // The portion of accrued interest that goes into reserves, between [0, 1], and likely below 0.10.
 	// DebtFloor        sdk.Int // used to prevent dust
 }
 

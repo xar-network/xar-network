@@ -26,7 +26,7 @@ type GenesisState struct {
 
 var (
 	DefaultBaseRatePerYear   = sdk.NewUint(10)
-	DefaultReserveFactor     = sdk.MustNewDecFromStr("0.05")
+	DefaultReserveFactor     = sdk.NewUint(0.05e18)
 	DefaultMultiplierPerYear = sdk.NewUint(1)
 )
 
@@ -41,7 +41,7 @@ func DefaultGenesisState() GenesisState {
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
-					CollateralFactor: sdk.MustNewDecFromStr("0"),
+					CollateralFactor: sdk.NewUint(0),
 					ReserveFactor:    DefaultReserveFactor,
 				},
 				{
@@ -49,7 +49,7 @@ func DefaultGenesisState() GenesisState {
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
-					CollateralFactor: sdk.MustNewDecFromStr("0"),
+					CollateralFactor: sdk.NewUint(0),
 					ReserveFactor:    DefaultReserveFactor,
 				},
 				{
@@ -57,7 +57,7 @@ func DefaultGenesisState() GenesisState {
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
-					CollateralFactor: sdk.MustNewDecFromStr("0.75"),
+					CollateralFactor: sdk.NewUint(0.75e18),
 					ReserveFactor:    DefaultReserveFactor,
 				},
 				{
@@ -65,7 +65,7 @@ func DefaultGenesisState() GenesisState {
 					LiquidationRatio: sdk.MustNewDecFromStr("1.5"),
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
-					CollateralFactor: sdk.MustNewDecFromStr("0"),
+					CollateralFactor: sdk.NewUint(0),
 					ReserveFactor:    DefaultReserveFactor,
 				},
 				{
@@ -73,7 +73,7 @@ func DefaultGenesisState() GenesisState {
 					LiquidationRatio: sdk.MustNewDecFromStr("1.3"),
 					DebtLimit:        sdk.NewCoins(sdk.NewCoin(types.StableDenom, sdk.NewInt(500000000000))),
 					InterestModel:    types.NewCsdtInterest(DefaultBaseRatePerYear, DefaultMultiplierPerYear),
-					CollateralFactor: sdk.MustNewDecFromStr("0"),
+					CollateralFactor: sdk.NewUint(0),
 					ReserveFactor:    DefaultReserveFactor,
 				},
 			},

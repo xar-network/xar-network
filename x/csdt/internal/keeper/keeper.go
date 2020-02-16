@@ -248,6 +248,8 @@ func (k Keeper) updateCsdtState(changeInCollateral sdk.Int, ctx sdk.Context, own
 	k.SetGlobalDebt(ctx, gDebt)
 	k.SetCollateralState(ctx, collateralState)
 
+	k.AccrueInterest(ctx, collateralDenom)
+
 	return nil
 }
 

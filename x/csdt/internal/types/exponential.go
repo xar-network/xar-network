@@ -3,6 +3,11 @@ package types
 import sdk "github.com/cosmos/cosmos-sdk/types"
 
 // Based in part on github.com/compound-finance/compound-protocol/contracts/Exponential
+
+// Exponential module for storing fixed-precision decimals
+//  Exp is a struct which stores decimals with a fixed precision of 18 decimal places.
+//    Thus, if we wanted to store the 5.1, mantissa would store 5.1e18. That is:
+//    `NewExp(5100000000000000000)`.
 type Exp struct {
 	mantissa sdk.Uint
 }

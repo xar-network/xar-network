@@ -25,7 +25,7 @@ func (k Keeper) getInterestRateModel(ctx sdk.Context, collateralDenom string) ty
 	return p.InterestModel
 }
 
-func (k Keeper) getReserveFactor(ctx sdk.Context, collateralDenom string) sdk.Dec {
+func (k Keeper) getReserveFactor(ctx sdk.Context, collateralDenom string) sdk.Uint {
 	p := k.GetParams(ctx).GetCollateralParam(collateralDenom)
 	return p.ReserveFactor
 }
@@ -53,9 +53,10 @@ func (k Keeper) getTotals(ctx sdk.Context, collateralDenom string) (
 
 // AccrueInterest accrues interest and updates the borrow index on every operation.
 // This increases compounding, approaching the true value, regardless of whether the rest of the operation succeeds or not
-func (k Keeper) AccrueInterest(ctx sdk.Context, collateralDenom string, reserveFactorMantissa sdk.Uint) {
+func (k Keeper) AccrueInterest(ctx sdk.Context, collateralDenom string) {
 	logger := k.Logger(ctx)
 
+	reserveFactorMantissa := k.getReserveFactor(ctx, collateralDenom)
 	currentBlockNumber := ctx.BlockHeight()
 	lastAccruedBlock, borrowIndex := k.getAccrualBlockAndIndex(ctx, collateralDenom)
 
