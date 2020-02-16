@@ -2,6 +2,7 @@ package types
 
 import sdk "github.com/cosmos/cosmos-sdk/types"
 
+// Based in part on github.com/compound-finance/compound-protocol/contracts/Exponential
 type Exp struct {
 	mantissa sdk.Uint
 }
@@ -38,6 +39,14 @@ func (e Exp) MultiplyScalarTruncate(scalar sdk.Uint) sdk.Uint {
 	return product.Truncate()
 }
 
+// Multiply an Exp by a scalar, truncate, then add to an unsigned integer, returning an unsigned integer
+func (e Exp) MultiplyScalarTruncateAddUInt(scalar sdk.Uint, addition sdk.Uint) sdk.Uint {
+	product := e.MultiplyScalar(scalar)
+	return product.Truncate().Add(addition)
+}
+
+// Truncates the given exp to a whole number value.
+// eg NewExp(sdk.NewUint(15).Mul(ExpScale())).Truncate() = 15
 func (e Exp) Truncate() sdk.Uint {
 	return e.mantissa.Quo(ExpScale())
 }

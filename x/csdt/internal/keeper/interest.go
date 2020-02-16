@@ -53,7 +53,7 @@ func (k Keeper) getTotals(ctx sdk.Context, collateralDenom string) (
 
 // AccrueInterest accrues interest and updates the borrow index on every operation.
 // This increases compounding, approaching the true value, regardless of whether the rest of the operation succeeds or not
-func (k Keeper) AccrueInterest(ctx sdk.Context, collateralDenom string, reserveFactor sdk.Uint) {
+func (k Keeper) AccrueInterest(ctx sdk.Context, collateralDenom string, reserveFactorMantissa sdk.Uint) {
 	logger := k.Logger(ctx)
 
 	currentBlockNumber := ctx.BlockHeight()
@@ -63,10 +63,11 @@ func (k Keeper) AccrueInterest(ctx sdk.Context, collateralDenom string, reserveF
 	ic := k.getInterestRateModel(ctx, collateralDenom)
 	lastTotalSupply, totalBorrows, totalReserves := k.getTotals(ctx, collateralDenom)
 	borrowRateMantissa := ic.GetBorrowRate(lastTotalSupply, totalBorrows, totalReserves)
-	if borrowRateMantissa.GT(borrowRateMaxMantissa()) {
+	if borrowRateMantissa.GT(types.BorrowRateMaxMantissa()) {
 		logger.Error("borrow rate is absurdly high")
 	}
 
+	// Calculate the number of blocks elapsed since the last accrual
 	blockDelta := uint64(currentBlockNumber - lastAccruedBlock)
 	if blockDelta == 0 {
 		logger.Error("Failed to get accurate block delta")
@@ -74,19 +75,20 @@ func (k Keeper) AccrueInterest(ctx sdk.Context, collateralDenom string, reserveF
 	}
 	simpleInterestFactor := types.NewExp(borrowRateMantissa).MultiplyScalarUint64(blockDelta)
 
-	// calculate the interest accrued:
+	// Calculate the interest accumulated into borrows and reserves and the new index:
 	// interestAccumulated = totalBorrows × simpleInterestFactor
 	interestAccumulated := simpleInterestFactor.MultiplyScalarTruncate(totalBorrows)
 
 	// update borrows and reserves:
 	// totalBorrowsNew = totalBorrows + interestAccumulated
-	// totalReservesNew = totalReserves + interestAccumulated × reserveFactor
+	// totalReservesNew = interestAccumulated × reserveFactor + totalReserves
 	totalBorrowsNew := totalBorrows.Add(interestAccumulated)
-	totalReservesNew := totalReserves.Add(interestAccumulated.Mul(reserveFactor))
+	totalReservesNew := types.NewExp(reserveFactorMantissa).MultiplyScalarTruncateAddUInt(
+		interestAccumulated, totalReserves)
 
 	// update borrowIndex:
-	// borrowIndexNew = borrowIndex × (1 + simpleInterestFactor)
-	borrowIndexNew := borrowIndex.Mul(sdk.OneUint().Add(simpleInterestFactor))
+	// borrowIndexNew = simpleInterestFactor * borrowIndex + borrowIndex
+	borrowIndexNew := simpleInterestFactor.MultiplyScalarTruncateAddUInt(borrowIndex, borrowIndex)
 
 	// store the updates back to the blockchain:
 	k.SetLastAccrualBlock(ctx, currentBlockNumber, collateralDenom)

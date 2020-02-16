@@ -79,12 +79,12 @@ func pow18() sdk.Uint {
 }
 
 // Maximum borrow rate that can ever be applied (.0005% / block)
-func borrowRateMaxMantissa() sdk.Uint {
+func BorrowRateMaxMantissa() sdk.Uint {
 	return sdk.NewUint(0.0005e16)
 }
 
 // Maximum fraction of interest that can be set aside for reserves
-func reserveFactorMaxMantissa() sdk.Uint { return pow18() }
+func ReserveFactorMaxMantissa() sdk.Uint { return pow18() }
 
 /**
  * @notice Calculates the utilization rate of the market: `borrows / (cash + borrows - reserves)`
