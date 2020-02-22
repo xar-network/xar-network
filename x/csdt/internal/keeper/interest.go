@@ -31,7 +31,7 @@ func (k Keeper) getReserveFactor(ctx sdk.Context, collateralDenom string) sdk.Ui
 }
 
 func (k Keeper) getTotals(ctx sdk.Context, collateralDenom string) (
-	totalBorrows sdk.Uint, totalCash sdk.Uint, globalReserves sdk.Uint) {
+	totalCash sdk.Uint, totalBorrows sdk.Uint, globalReserves sdk.Uint) {
 
 	totalCash, ok := k.GetTotalCash(ctx, collateralDenom)
 	if !ok {
@@ -96,4 +96,82 @@ func (k Keeper) AccrueInterest(ctx sdk.Context, collateralDenom string) {
 	k.SetBorrowIndex(ctx, borrowIndexNew, collateralDenom)
 	k.SetTotalBorrows(ctx, totalBorrowsNew, collateralDenom)
 	k.SetTotalReserve(ctx, totalReservesNew, collateralDenom)
+}
+
+// map collateral denomination to array of [borrow, supply] rates
+type borrowSupplyArray = [2]sdk.Uint
+type ratesBorrowSupplyMap = map[string]borrowSupplyArray
+
+const (
+	keyBorrowRate = 0
+	keySupplyRate = 1
+)
+
+func (k Keeper) getBorrowSupplyRates(ctx sdk.Context) ratesBorrowSupplyMap {
+	params := k.GetParams(ctx).CollateralParams
+	rates := make(ratesBorrowSupplyMap, len(params))
+	for _, c := range params {
+		denom := c.Denom
+		irm := k.getInterestRateModel(ctx, denom)
+		cash, borrows, reserves := k.getTotals(ctx, denom)
+		borrowRate := irm.GetBorrowRate(cash, borrows, reserves)
+		supplyRate := irm.GetSupplyRate(cash, borrows, reserves, k.getReserveFactor(ctx, denom))
+		rates[denom] = borrowSupplyArray{borrowRate, supplyRate}
+	}
+	return rates
+}
+
+func (k Keeper) adjustCsdtBalances(ctx sdk.Context, csdts types.CSDTs, interestRates ratesBorrowSupplyMap) {
+	logger := k.Logger(ctx)
+	currentBlock := ctx.BlockHeight()
+	for _, csdt := range csdts {
+		denom := csdt.CollateralDenom
+		borrowRate := interestRates[denom][keyBorrowRate]
+		supplyRate := interestRates[denom][keySupplyRate]
+
+		// Adjust for borrows
+		if currentBlock > csdt.DebtAccruedBlock {
+			debtBalance := sdk.NewUintFromString(csdt.Debt.AmountOf(denom).String())
+			if !csdt.Debt.IsZero() {
+				interestUint := types.NewExp(borrowRate).MultiplyScalarTruncate(debtBalance)
+				interest, ok := sdk.NewIntFromString(interestUint.String())
+				if ok {
+					csdt.Debt.Add(sdk.NewCoins(sdk.NewCoin(denom, interest)))
+					csdt.DebtAccruedBlock = currentBlock // block when debt accrued interest
+				} else {
+					logger.Error("failed to add borrow interest to csdt for owner: %s. '%s' could not be converted",
+						csdt.Owner.String(), interestUint.String())
+				}
+			}
+		}
+
+		// Adjust for collateral
+		if currentBlock > csdt.InterestAccruedBlock {
+			collateralBalance := sdk.NewUintFromString(csdt.CollateralAmount.AmountOf(denom).String())
+			if !csdt.CollateralAmount.IsZero() {
+				interestUint := types.NewExp(supplyRate).MultiplyScalarTruncate(collateralBalance)
+				interest, ok := sdk.NewIntFromString(interestUint.String())
+				if ok {
+					csdt.CollateralAmount.Add(sdk.NewCoins(sdk.NewCoin(denom, interest)))
+					csdt.Interest.Add(sdk.NewCoins(sdk.NewCoin(denom, interest))) // lifetime accumulated interest
+					csdt.InterestAccruedBlock = currentBlock
+				} else {
+					logger.Error("failed to add supply interest to csdt for owner: %s. '%s' could not be converted",
+						csdt.Owner.String(), interestUint.String())
+				}
+			}
+		}
+	}
+}
+
+func (k Keeper) AdjustBalances(ctx sdk.Context) {
+	logger := k.Logger(ctx)
+	interestRates := k.getBorrowSupplyRates(ctx)
+
+	csdts, err := k.GetCSDTs(ctx, "", sdk.Dec{})
+	if err != nil {
+		logger.Error("Failed to get CSDTs to adjust balances because: %v", err)
+	}
+
+	k.adjustCsdtBalances(ctx, csdts, interestRates)
 }
