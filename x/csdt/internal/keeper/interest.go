@@ -164,6 +164,7 @@ func (k Keeper) adjustCsdtBalances(ctx sdk.Context, csdts types.CSDTs, interestR
 	}
 }
 
+// AdjustBalances adds interest to both debt and collateral based on stored borrow and supply rates
 func (k Keeper) AdjustBalances(ctx sdk.Context) {
 	logger := k.Logger(ctx)
 	interestRates := k.getBorrowSupplyRates(ctx)
@@ -174,4 +175,40 @@ func (k Keeper) AdjustBalances(ctx sdk.Context) {
 	}
 
 	k.adjustCsdtBalances(ctx, csdts, interestRates)
+}
+
+/**
+ * @notice Calculate the borrow balance of given account based on stored data
+ * @param account The address whose balance should be calculated
+ * @return (the calculated balance or 0 if no debt or error is non-nil, error)
+ */
+func (k Keeper) borrowBalanceStored(ctx sdk.Context, address sdk.AccAddress, collateralDenom string) (
+	result sdk.Uint, err error) {
+	result = sdk.ZeroUint()
+	err = nil
+	// Note: we do not assert that the market is up to date
+
+	// Get borrowBalance and borrowIndex
+	csdt, ok := k.GetCSDT(ctx, address, collateralDenom)
+	if !ok {
+		return result, fmt.Errorf("failed to get '%s' csdt for account: '%s'", collateralDenom, address.String())
+	}
+	borrowBalance := sdk.NewUintFromString(csdt.Debt.AmountOf(collateralDenom).String())
+	borrowIndex := csdt.DebtIndex
+
+	// If borrowBalance = 0 then borrowIndex is likely also 0.
+	// Rather than failing the calculation with a division by 0, we immediately return 0 in this case.
+	if borrowBalance.IsZero() {
+		return
+	}
+
+	// Calculate new borrow balance using the interest index:
+	// recentBorrowBalance = borrower.borrowBalance * market.borrowIndex / borrower.borrowIndex
+	marketBorrowIndex, ok := k.GetBorrowIndex(ctx, collateralDenom)
+	if !ok {
+		return result, fmt.Errorf("failed to get market borrow index for '%s'", collateralDenom)
+	}
+	principalTimesIndex := borrowBalance.Mul(marketBorrowIndex)
+	result = principalTimesIndex.Quo(borrowIndex)
+	return
 }

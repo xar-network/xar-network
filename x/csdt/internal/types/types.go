@@ -16,7 +16,8 @@ type CSDT struct {
 	CollateralAmount     sdk.Coins      `json:"collateral_amount" yaml:"collateral_amount"` // Amount of collateral stored in this CSDT
 	Debt                 sdk.Coins      `json:"debt" yaml:"debt"`
 	DebtAccruedBlock     int64          `json:"debt_accrued_block" yaml:"debt_accrued_block"`
-	Interest             sdk.Coins      `json:"interest" yaml:"interest"` // Amount of interest accumulated on collateral stored in this CSDT
+	DebtIndex            sdk.Uint       `json:"debt_index" yaml:"debt_index"` // index in relation to when debt was initiated, aka borrow index
+	Interest             sdk.Coins      `json:"interest" yaml:"interest"`     // Amount of interest accumulated on collateral stored in this CSDT
 	InterestAccruedBlock int64          `json:"interest_accrued_block" yaml:"interest_accrued_block"`
 	AccumulatedFees      sdk.Coins      `json:"accumulated_fees" yaml:"accumulated_fees"`
 	FeesUpdated          time.Time      `json:"fees_updated" yaml:"fees_updated"`
